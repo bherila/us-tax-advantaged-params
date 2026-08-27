@@ -995,6 +995,140 @@
         "accounts.0.contributionComponents.employerPreTax": 24000,
         "accounts.0.maximumAnnualContributionBasedOnInputs": 24000
       }
+    },
+    {
+      "name": "2005 designated Roth governmental 457b unavailable",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 0
+      },
+      "expectDiagnosticCodes": [
+        "ACCOUNT_TYPE_NOT_AVAILABLE_FOR_YEAR"
+      ]
+    },
+    {
+      "name": "2011 first-year designated Roth governmental 457b",
+      "input": {
+        "taxYear": 2011,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 16500,
+        "accounts.0.contributionComponents.employeeRothDeferral": 16500
+      }
+    },
+    {
+      "name": "2025 SIMPLE 401k match capped by 401a17 compensation",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "simple_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "simpleEmployerContributionMethod": "match_3_percent"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 16500,
+        "accounts.0.contributionComponents.employerPreTax": 10500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 27000
+      }
+    },
+    {
+      "name": "2025 SIMPLE IRA match exempt from 401a17 compensation cap",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "simpleEmployerContributionMethod": "match_3_percent"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 16500,
+        "accounts.0.contributionComponents.employerPreTax": 15000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 31500
+      }
     }
   ]
 }

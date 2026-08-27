@@ -6501,8 +6501,11 @@ function groupIdForAccount(account: NormalizedAccount): string {
 }
 
 function availabilityForAccount(parameters: YearParameters, traits: AccountTraits): boolean {
-  if (!traits.availabilityKey) return true;
-  return parameters.availability[traits.availabilityKey] === true;
+  if (traits.availabilityKey && parameters.availability[traits.availabilityKey] !== true) return false;
+  if (traits.family === "section457" && traits.governmental457 && traits.designatedRoth) {
+    return parameters.section457b.designatedRothAvailableForGovernmentalPlans === true;
+  }
+  return true;
 }
 
 function workplaceCatchUpLimit(
@@ -7725,6 +7728,7 @@ function simpleEmployerContribution(
   context: CalculationContext,
   account: NormalizedAccount,
   annualEmployeeDeferrals: Money,
+  applyCompensationLimitToMatch: boolean,
 ): { amount: Money; known: boolean; statutoryPotential: Money; diagnostics: Diagnostic[] } {
   const diagnostics: Diagnostic[] = [];
   const person = context.persons.get(account.ownerId)!;
@@ -7732,7 +7736,10 @@ function simpleEmployerContribution(
   const cappedCompensation = context.parameters.annualCompensation401a17 === null
     ? compensation
     : Math.min(compensation, context.parameters.annualCompensation401a17);
-  const matchMaximum = minMoney(annualEmployeeDeferrals, compensation * 0.03);
+  // SIMPLE IRA matching compensation is exempt from §401(a)(17); a SIMPLE 401(k)
+  // is a qualified §401(k)(11) plan whose compensation remains subject to it.
+  const matchCompensation = applyCompensationLimitToMatch ? cappedCompensation : compensation;
+  const matchMaximum = minMoney(annualEmployeeDeferrals, matchCompensation * 0.03);
   const nonelectiveMaximum = cappedCompensation * 0.02;
   const additionalCap = context.parameters.simple.additionalNonelectiveContributionCap ?? 0;
   const additionalStatutoryMaximum = minMoney(additionalCap, cappedCompensation * 0.10);
@@ -7865,7 +7872,7 @@ function allocateQualifiedElective(
   if (traits.isStarter) {
     // Starter 401(k) and deferral-only safe-harbor 403(b) plans do not accept employer contributions.
   } else if (traits.isSimple) {
-    const simpleEmployer = simpleEmployerContribution(context, account, employeeBase + ageCatchUpDeferrals(annual));
+    const simpleEmployer = simpleEmployerContribution(context, account, employeeBase + ageCatchUpDeferrals(annual), true);
     diagnostics.push(...simpleEmployer.diagnostics);
     employerKnown = simpleEmployer.known;
     employerDesired = nonnegative(
@@ -7977,6 +7984,7 @@ function allocateSimple(
     context,
     account,
     baseElectiveDeferrals(annual) + ageCatchUpDeferrals(annual),
+    false,
   );
   diagnostics.push(...simpleEmployer.diagnostics);
   let employerAdded = 0;

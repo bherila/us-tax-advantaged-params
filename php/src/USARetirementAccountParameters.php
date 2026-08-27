@@ -6889,10 +6889,14 @@ final class Engine
      */
     private static function availabilityForAccount(array $parameters, array $traits): bool
     {
-        if ($traits['availabilityKey'] === null) {
-            return true;
+        if ($traits['availabilityKey'] !== null
+            && ($parameters['availability'][$traits['availabilityKey']] ?? false) !== true) {
+            return false;
         }
-        return ($parameters['availability'][$traits['availabilityKey']] ?? false) === true;
+        if ($traits['family'] === 'section457' && $traits['governmental457'] && $traits['designatedRoth']) {
+            return ($parameters['section457b']['designatedRothAvailableForGovernmentalPlans'] ?? false) === true;
+        }
+        return true;
     }
 
     /** @param array<string,mixed> $parameters
@@ -8372,6 +8376,7 @@ final class Engine
         array $context,
         array $account,
         float $annualEmployeeDeferrals,
+        bool $applyCompensationLimitToMatch,
     ): array {
         $diagnostics = [];
         $person = $context['persons'][$account['ownerId']];
@@ -8379,7 +8384,10 @@ final class Engine
         $cappedCompensation = $context['parameters']['annualCompensation401a17'] === null
             ? $compensation
             : min($compensation, (float) $context['parameters']['annualCompensation401a17']);
-        $matchMaximum = self::minMoney($annualEmployeeDeferrals, $compensation * 0.03);
+        // SIMPLE IRA matching compensation is exempt from §401(a)(17); a SIMPLE 401(k)
+        // is a qualified §401(k)(11) plan whose compensation remains subject to it.
+        $matchCompensation = $applyCompensationLimitToMatch ? $cappedCompensation : $compensation;
+        $matchMaximum = self::minMoney($annualEmployeeDeferrals, $matchCompensation * 0.03);
         $nonelectiveMaximum = $cappedCompensation * 0.02;
         $additionalCap = (float) ($context['parameters']['simple']['additionalNonelectiveContributionCap'] ?? 0.0);
         $additionalStatutoryMaximum = self::minMoney($additionalCap, $cappedCompensation * 0.10);
@@ -8512,6 +8520,7 @@ final class Engine
                 $context,
                 $account,
                 $employeeBase + self::ageCatchUps($annual),
+                true,
             );
             array_push($diagnostics, ...$simpleEmployer['diagnostics']);
             $employerKnown = $simpleEmployer['known'];
@@ -8640,6 +8649,7 @@ final class Engine
             $context,
             $account,
             self::baseDeferrals($annual) + self::ageCatchUps($annual),
+            false,
         );
         array_push($diagnostics, ...$simpleEmployer['diagnostics']);
         if ($simpleEmployer['known']) {
