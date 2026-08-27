@@ -1,5 +1,8 @@
 # usa-retirement-account-parameters
 
+[![CI](https://github.com/bherila/usa-retirement-account-parameters/actions/workflows/ci.yml/badge.svg)](https://github.com/bherila/usa-retirement-account-parameters/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 `usa-retirement-account-parameters` is a dependency-free calculation engine for historical and current U.S. retirement-account contribution parameters. It calculates account-level and household-level contribution capacity, IRA phase-outs, shared statutory limits, federal income effects, and Roth-conversion taxability.
 
 The repository contains two native implementations with the same behavior:
