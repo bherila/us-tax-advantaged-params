@@ -23,7 +23,11 @@ try {
             throw new InvalidArgumentException("Parity input at index {$index} must be an object.");
         }
         /** @var array<string,mixed> $input */
-        $results[] = USARetirementAccountParameters::calculate($input);
+        try {
+            $results[] = USARetirementAccountParameters::calculate($input);
+        } catch (\USARetirementAccountParameters\RetirementParameterException $error) {
+            $results[] = ['__error' => ['code' => $error->errorCode, 'message' => $error->getMessage()]];
+        }
     }
 
     fwrite(STDOUT, json_encode($results, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));

@@ -38,8 +38,22 @@ $decoded = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_
 $failed = 0;
 foreach ($decoded['vectors'] as $vector) {
     try {
+        if (isset($vector['expectError'])) {
+            try {
+                U::calculate($vector['input']);
+                throw new RuntimeException("{$vector['name']}: expected error {$vector['expectError']['code']} was not thrown");
+            } catch (USARetirementAccountParameters\RetirementParameterException $error) {
+                if ($error->errorCode !== $vector['expectError']['code']) {
+                    throw new RuntimeException(
+                        "{$vector['name']}: expected error {$vector['expectError']['code']}, got {$error->errorCode}",
+                    );
+                }
+            }
+            fwrite(STDOUT, "ok - {$vector['name']}\n");
+            continue;
+        }
         $result = U::calculate($vector['input']);
-        foreach ($vector['expect'] as $resultPath => $expected) {
+        foreach ($vector['expect'] ?? [] as $resultPath => $expected) {
             assertConformanceEqual(
                 $expected,
                 readConformancePath($result, $resultPath),

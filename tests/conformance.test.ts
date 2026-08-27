@@ -6,8 +6,9 @@ import USARetirementAccountParameters from "../src/USARetirementAccountParameter
 interface ConformanceVector {
   name: string;
   input: Parameters<typeof USARetirementAccountParameters.calculate>[0];
-  expect: Record<string, unknown>;
+  expect?: Record<string, unknown>;
   expectDiagnosticCodes?: string[];
+  expectError?: { code: string };
 }
 
 interface ConformanceFile {
@@ -32,8 +33,17 @@ function readPath(value: unknown, path: string): unknown {
 
 for (const vector of conformance.vectors) {
   test(`conformance: ${vector.name}`, () => {
+    if (vector.expectError) {
+      assert.throws(
+        () => USARetirementAccountParameters.calculate(vector.input),
+        (error: unknown) =>
+          (error as { code?: string } | null)?.code === vector.expectError!.code,
+        `${vector.name}: expected error ${vector.expectError.code}`,
+      );
+      return;
+    }
     const result = USARetirementAccountParameters.calculate(vector.input);
-    for (const [path, expected] of Object.entries(vector.expect)) {
+    for (const [path, expected] of Object.entries(vector.expect ?? {})) {
       assert.deepEqual(readPath(result, path), expected, `${vector.name}: ${path}`);
     }
     const codes = new Set(result.diagnostics.map((entry) => entry.code));

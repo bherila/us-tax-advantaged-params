@@ -37,7 +37,9 @@ years 1975 onward:
    modernized approximation.
 4. **Behavioral changes need conformance vectors.** Add or update vectors in
    `data/conformance-vectors.json` alongside the change so the behavior is
-   pinned in both languages.
+   pinned in both languages. A vector declares exactly one of `expect`
+   (result-path assertions) or `expectError` (`{"code": ...}` for inputs that
+   must throw); both kinds run in each native suite and in the parity check.
 5. **Money math**: outputs are rounded to cents, allocation is deterministic
    (ascending `priority`, then input order), and phase-outs use IRS
    worksheet-style rounding to the encoded increment with the encoded positive

@@ -1129,6 +1129,466 @@
         "accounts.0.contributionComponents.employerPreTax": 15000,
         "accounts.0.maximumAnnualContributionBasedOnInputs": 31500
       }
+    },
+    {
+      "name": "2026 MFS living together Roth IRA phase-out",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "livedWithSpouseDuringYear": true,
+            "compensation": {
+              "iraCompensation": 50000
+            },
+            "magi": {
+              "rothIra": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r",
+            "ownerId": "t",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.rothIra": 3750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3750
+      }
+    },
+    {
+      "name": "2026 MFS living together covered traditional IRA deduction phase-out",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "livedWithSpouseDuringYear": true,
+            "compensation": {
+              "iraCompensation": 50000
+            },
+            "magi": {
+              "traditionalIraDeduction": 5000
+            },
+            "coveredByEmployerRetirementPlan": true
+          }
+        ],
+        "accounts": [
+          {
+            "id": "i",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 3750,
+        "accounts.0.contributionComponents.nondeductibleIra": 3750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 7500
+      }
+    },
+    {
+      "name": "2026 modern spousal IRA from joint compensation",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "coveredByEmployerRetirementPlan": false
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 0
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "si",
+            "ownerId": "s",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 7500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 7500
+      }
+    },
+    {
+      "name": "2026 noncovered spouse deduction phase-out band",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 150000
+            },
+            "magi": {
+              "traditionalIraDeduction": 244000
+            },
+            "coveredByEmployerRetirementPlan": true
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 0
+            },
+            "magi": {
+              "traditionalIraDeduction": 244000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "si",
+            "ownerId": "s",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 6000,
+        "accounts.0.contributionComponents.nondeductibleIra": 1500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 7500
+      }
+    },
+    {
+      "name": "2026 ordinary age-50 catch-up at age 56",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 32500
+      }
+    },
+    {
+      "name": "2026 age-64 reversion from enhanced catch-up",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1962,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 32500
+      }
+    },
+    {
+      "name": "2023 first-year Roth employer contribution",
+      "input": {
+        "taxYear": 2023,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "expectedEmployerContribution": 10000,
+              "employerContributionTaxTreatment": "roth",
+              "permitsRothContributions": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 22500,
+        "accounts.0.contributionComponents.employerRoth": 10000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 32500
+      }
+    },
+    {
+      "name": "2010 Roth conversion after MAGI repeal",
+      "input": {
+        "taxYear": 2010,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "magi": {
+              "rothConversion": 500000
+            },
+            "traditionalSepSimpleIraBasis": 2000,
+            "yearEndTraditionalSepSimpleIraValue": 8000
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 2000
+          }
+        ]
+      },
+      "expect": {
+        "conversions.0.status": "determinate",
+        "conversions.0.taxableAmount": 1600,
+        "conversions.0.nontaxableBasisAmount": 400
+      }
+    },
+    {
+      "name": "2020 traditional IRA contribution after age-70-half repeal",
+      "input": {
+        "taxYear": 2020,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1948,
+            "compensation": {
+              "iraCompensation": 20000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "i",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 7000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 7000
+      }
+    },
+    {
+      "name": "1975 first-year traditional IRA fifteen percent limit",
+      "input": {
+        "taxYear": 1975,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1940,
+            "compensation": {
+              "iraCompensation": 20000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "i",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 1500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1500
+      }
+    },
+    {
+      "name": "unsupported tax year 1974",
+      "input": {
+        "taxYear": 1974,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1940
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "UNSUPPORTED_TAX_YEAR"
+      }
+    },
+    {
+      "name": "duplicate account id",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_ira"
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "DUPLICATE_ACCOUNT_ID"
+      }
+    },
+    {
+      "name": "unknown account owner",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "missing",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "UNKNOWN_ACCOUNT_OWNER"
+      }
+    },
+    {
+      "name": "negative compensation is invalid money",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": -1
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_MONEY"
+      }
+    },
+    {
+      "name": "invalid filing status alias",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "XX",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_FILING_STATUS"
+      }
     }
   ]
 }

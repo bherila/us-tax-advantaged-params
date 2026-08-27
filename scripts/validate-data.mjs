@@ -125,14 +125,21 @@ if (conformance) {
       if (!vector?.input || typeof vector.input !== "object" || Array.isArray(vector.input)) {
         fail(`${prefix}.input must be an object.`);
       }
-      if (!vector?.expect || typeof vector.expect !== "object" || Array.isArray(vector.expect)) {
-        fail(`${prefix}.expect must be an object.`);
+      const hasExpect = Boolean(vector?.expect && typeof vector.expect === "object" && !Array.isArray(vector.expect));
+      const hasExpectError = Boolean(vector?.expectError && typeof vector.expectError === "object" && !Array.isArray(vector.expectError));
+      if (hasExpect === hasExpectError) {
+        fail(`${prefix} must declare exactly one of expect or expectError.`);
       }
-      const year = vector?.input?.taxYear;
-      const minimum = parameters?.supportedTaxYears?.minimum;
-      const maximum = parameters?.supportedTaxYears?.maximum;
-      if (!Number.isInteger(year) || (Number.isInteger(minimum) && (year < minimum || year > maximum))) {
-        fail(`${prefix}.input.taxYear is outside the supported range.`);
+      if (hasExpectError && (typeof vector.expectError.code !== "string" || vector.expectError.code.trim() === "")) {
+        fail(`${prefix}.expectError.code must be a nonempty string.`);
+      }
+      if (!hasExpectError) {
+        const year = vector?.input?.taxYear;
+        const minimum = parameters?.supportedTaxYears?.minimum;
+        const maximum = parameters?.supportedTaxYears?.maximum;
+        if (!Number.isInteger(year) || (Number.isInteger(minimum) && (year < minimum || year > maximum))) {
+          fail(`${prefix}.input.taxYear is outside the supported range.`);
+        }
       }
     }
     for (const required of [

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. The project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Fixed
+
+- Designated Roth governmental 457(b) contributions are now gated on their statutory 2011 start date (Small Business Jobs Act of 2010, IRC §402A(e)(1)); earlier years return `unavailable` instead of a determinate Roth deferral.
+- The SIMPLE 401(k) 3% matching contribution is now computed on §401(a)(17)-capped compensation; the SIMPLE IRA match correctly remains exempt from the compensation cap.
+
+### Changed
+
+- Composer autoloading switched from `files` to lazy `classmap` (the engine no longer defines namespace-level constants; `PACKAGE_NAME` and `ENGINE_VERSION` are class constants).
+- The PHP requirement was lowered from 8.5 to 8.2, with PHP 8.2-8.5 tested in CI.
+- The npm package now ships a CommonJS-flavored `.d.cts` declaration for `require` consumers and exports `./data/retirement-parameters.json` and `./package.json` through the exports map.
+
+### Added
+
+- Error-expectation conformance vectors (`expectError`) exercised by both native suites and the cross-language parity check, plus new vectors covering MFS phase-outs, modern spousal IRAs, ordinary age-50 catch-up, age-64 reversion, and effective-year boundaries (1975, 2010, 2020, 2023).
+- `@arethetypeswrong/cli` package-resolution gate, tag-triggered npm publish workflow with provenance, and Dependabot configuration.
+
 ## [0.1.0] - 2026-08-27
 
 ### Added

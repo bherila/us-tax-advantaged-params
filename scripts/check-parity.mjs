@@ -11,7 +11,16 @@ const vectors = JSON.parse(
   await readFile(join(root, "data/conformance-vectors.json"), "utf8"),
 ).vectors;
 const inputs = vectors.map((vector) => vector.input);
-const tsResults = inputs.map((input) => USARetirementAccountParameters.calculate(input));
+const tsResults = inputs.map((input) => {
+  try {
+    return USARetirementAccountParameters.calculate(input);
+  } catch (error) {
+    if (error instanceof Error && typeof error.code === "string") {
+      return { __error: { code: error.code, message: error.message } };
+    }
+    throw error;
+  }
+});
 const php = spawnSync("php", [join(root, "scripts/php-parity-runner.php")], {
   cwd: root,
   input: JSON.stringify(inputs),
