@@ -8,7 +8,7 @@
 The repository contains two native implementations with the same behavior:
 
 - **TypeScript** for npm, exported as `USARetirementAccountParameters`.
-- **PHP 8.5+** for Packagist, in the `USARetirementAccountParameters` namespace.
+- **PHP 8.2+** for Packagist, in the `USARetirementAccountParameters` namespace.
 
 Annual legal parameters are maintained once in `data/retirement-parameters.json` and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
@@ -35,13 +35,21 @@ npm install usa-retirement-account-parameters
 
 The npm package provides ESM, CommonJS, and TypeScript declarations and supports Node.js 20 or later.
 
+```js
+// ESM
+import USARetirementAccountParameters from "usa-retirement-account-parameters";
+
+// CommonJS — the class is the module's default export
+const USARetirementAccountParameters = require("usa-retirement-account-parameters").default;
+```
+
 ### Composer / Packagist
 
 ```bash
 composer require bherila/usa-retirement-account-parameters
 ```
 
-The PHP package requires PHP 8.5 or later and loads the native single-file implementation through Composer.
+The PHP package requires PHP 8.2 or later and loads the native single-file implementation through Composer.
 
 ## TypeScript builder example
 

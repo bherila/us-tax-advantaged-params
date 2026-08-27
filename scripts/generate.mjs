@@ -37,7 +37,13 @@ async function update(path, startMarker, endMarker, generated) {
   try {
     current = await readFile(path, "utf8");
   } catch (error) {
-    if (error && error.code === "ENOENT") return;
+    if (error && error.code === "ENOENT") {
+      if (checkOnly) {
+        console.error(`${path.slice(root.length + 1)} is missing; the drift check requires both engines.`);
+        process.exitCode = 1;
+      }
+      return;
+    }
     throw error;
   }
   const next = replaceGeneratedBlock(current, startMarker, endMarker, generated);

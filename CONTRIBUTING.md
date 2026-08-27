@@ -7,7 +7,7 @@ Contributions are welcome, but tax-law calculation changes require a higher evid
 - Node.js 20 or later.
 - npm with lockfile support.
 - TypeScript 5.8 or later.
-- PHP 8.5 or later for the supported PHP target.
+- PHP 8.2 or later for the supported PHP target.
 
 Install dependencies and run the suite:
 

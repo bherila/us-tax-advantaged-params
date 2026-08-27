@@ -9,10 +9,10 @@
     }
   ],
   "require": {
-    "php": ">=8.5"
+    "php": ">=8.2"
   },
   "autoload": {
-    "files": [
+    "classmap": [
       "php/src/USARetirementAccountParameters.php"
     ]
   },

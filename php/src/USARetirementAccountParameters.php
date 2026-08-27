@@ -10,8 +10,6 @@ use InvalidArgumentException;
 use JsonException;
 use RuntimeException;
 
-const PACKAGE_NAME = 'usa-retirement-account-parameters';
-const ENGINE_VERSION = '0.1.0';
 
 enum FilingStatus: string
 {
@@ -610,6 +608,9 @@ final class RetirementScenarioBuilder
 
 final class USARetirementAccountParameters
 {
+    public const PACKAGE_NAME = 'usa-retirement-account-parameters';
+    public const ENGINE_VERSION = '0.1.0';
+
     private static ?array $parameters = null;
 
     /* <generated-parameters> */
@@ -6046,8 +6047,8 @@ final class Engine
         }
 
         return [
-            'package' => PACKAGE_NAME,
-            'engineVersion' => ENGINE_VERSION,
+            'package' => USARetirementAccountParameters::PACKAGE_NAME,
+            'engineVersion' => USARetirementAccountParameters::ENGINE_VERSION,
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
             'parameters' => $parameters,

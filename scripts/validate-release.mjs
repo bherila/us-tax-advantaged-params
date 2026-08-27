@@ -71,7 +71,7 @@ const nodeVersion = version("node", ["--version"]);
 const npmVersion = version("npm", ["--version"]);
 const tscVersion = version("tsc", ["--version"]);
 const composerVersion = version("composer", ["--version"]);
-const phpTargetValidatedLocally = phpVersion !== null && /^8\.(?:[5-9]|\d{2,})\./.test(phpVersion);
+const phpTargetValidatedLocally = phpVersion !== null && /^8\.(?:[2-9]|\d{2,})\./.test(phpVersion);
 const finishedAt = new Date();
 
 const status = {
@@ -125,8 +125,8 @@ const validationLines = [
   "## Runtime qualification note",
   "",
   phpTargetValidatedLocally
-    ? "The local PHP run used PHP 8.5 or later, matching the Composer requirement."
-    : `The local container provides PHP ${phpVersion ?? "unknown"}, so the native suite was exercised here as a compatibility run below the declared PHP 8.5 floor. The GitHub Actions workflow separately requires PHP 8.5. Do not publish without a green PHP 8.5 CI run.`,
+    ? "The local PHP run satisfied the Composer PHP requirement."
+    : `The local container provides PHP ${phpVersion ?? "unknown"}, below the declared PHP 8.2 floor. The GitHub Actions workflow tests PHP 8.2 through 8.5. Do not publish without a green PHP CI matrix.`,
   "",
   "## Detailed output",
   "",
@@ -160,8 +160,8 @@ const releaseLines = [
     ? "All checks available in this local environment passed."
     : `${failed.length} local validation check(s) failed; the package is not ready for publication.`,
   phpTargetValidatedLocally
-    ? "The PHP target was validated locally on PHP 8.5 or later."
-    : `The local runtime is PHP ${phpVersion ?? "unknown"}; PHP 8.5 is configured in CI but was not available in this container. A green PHP 8.5 CI run remains a publication gate.`,
+    ? "The PHP target was validated locally on a supported PHP version."
+    : `The local runtime is PHP ${phpVersion ?? "unknown"}; the PHP 8.2-8.5 CI matrix remains a publication gate.`,
   composerVersion
     ? "Composer manifest validation ran locally."
     : "Composer was not installed locally; `composer validate --strict` and `composer test` are configured in CI.",

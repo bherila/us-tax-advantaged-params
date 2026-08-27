@@ -8,11 +8,18 @@
   "types": "./dist/types/USARetirementAccountParameters.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/USARetirementAccountParameters.d.ts",
-      "import": "./dist/esm/USARetirementAccountParameters.js",
-      "require": "./dist/cjs/USARetirementAccountParameters.js",
+      "import": {
+        "types": "./dist/types/USARetirementAccountParameters.d.ts",
+        "default": "./dist/esm/USARetirementAccountParameters.js"
+      },
+      "require": {
+        "types": "./dist/types/USARetirementAccountParameters.d.cts",
+        "default": "./dist/cjs/USARetirementAccountParameters.js"
+      },
       "default": "./dist/esm/USARetirementAccountParameters.js"
-    }
+    },
+    "./data/retirement-parameters.json": "./data/retirement-parameters.json",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -36,7 +43,8 @@
     "test:php": "php php/tests/USARetirementAccountParametersTest.php && php php/tests/ConformanceVectorsTest.php",
     "test:parity": "npm run build && node scripts/check-parity.mjs",
     "test": "npm run test:ts && npm run test:php && npm run test:parity",
-    "verify": "npm run validate:data && npm run generate:check && npm run validate:manifests && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && node scripts/check-parity.mjs && node scripts/validate-manifests.mjs --built",
+    "check:types": "mkdir -p dist-tests && npm pack --ignore-scripts --pack-destination dist-tests >/dev/null && attw dist-tests/usa-retirement-account-parameters-$npm_package_version.tgz",
+    "verify": "npm run validate:data && npm run generate:check && npm run validate:manifests && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && node scripts/validate-manifests.mjs --built",
     "validate:release": "node scripts/validate-release.mjs",
     "release:archives": "node scripts/create-release-archives.mjs",
     "prepack": "npm run verify"
@@ -72,6 +80,7 @@
     "provenance": true
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@types/node": "^22.15.33",
     "typescript": "^5.8.3"
   }

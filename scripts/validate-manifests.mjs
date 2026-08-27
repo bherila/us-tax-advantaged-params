@@ -48,14 +48,20 @@ if (packageJson.sideEffects !== false) fail("package.json sideEffects must be fa
 if (packageJson.main !== "./dist/cjs/USARetirementAccountParameters.js") fail("CommonJS main target is incorrect");
 if (packageJson.module !== "./dist/esm/USARetirementAccountParameters.js") fail("ESM module target is incorrect");
 if (packageJson.types !== "./dist/types/USARetirementAccountParameters.d.ts") fail("Top-level types target is incorrect");
-if (packageJson.exports?.["."]?.import !== "./dist/esm/USARetirementAccountParameters.js") {
+if (packageJson.exports?.["."]?.import?.default !== "./dist/esm/USARetirementAccountParameters.js") {
   fail("ESM export target is incorrect");
 }
-if (packageJson.exports?.["."]?.require !== "./dist/cjs/USARetirementAccountParameters.js") {
+if (packageJson.exports?.["."]?.require?.default !== "./dist/cjs/USARetirementAccountParameters.js") {
   fail("CommonJS export target is incorrect");
 }
-if (packageJson.exports?.["."]?.types !== "./dist/types/USARetirementAccountParameters.d.ts") {
-  fail("Type declaration export target is incorrect");
+if (packageJson.exports?.["."]?.import?.types !== "./dist/types/USARetirementAccountParameters.d.ts") {
+  fail("ESM type declaration export target is incorrect");
+}
+if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USARetirementAccountParameters.d.cts") {
+  fail("CommonJS type declaration export target is incorrect");
+}
+if (packageJson.exports?.["./data/retirement-parameters.json"] !== "./data/retirement-parameters.json") {
+  fail("data file export target is incorrect");
 }
 for (const script of [
   "build",
@@ -88,9 +94,9 @@ for (const dependency of ["@types/node", "typescript", "undici-types"]) {
 if (composer.name !== "bherila/usa-retirement-account-parameters") fail("composer.json package name is incorrect");
 if (composer.type !== "library") fail("composer.json type must be library");
 if (composer.license !== "MIT") fail("composer.json license must be MIT");
-if (composer.require?.php !== ">=8.5") fail("composer.json must require PHP >=8.5");
-if (!composer.autoload?.files?.includes("php/src/USARetirementAccountParameters.php")) {
-  fail("composer.json must autoload the native PHP implementation");
+if (composer.require?.php !== ">=8.2") fail("composer.json must require PHP >=8.2");
+if (!composer.autoload?.classmap?.includes("php/src/USARetirementAccountParameters.php")) {
+  fail("composer.json must classmap-autoload the native PHP implementation");
 }
 if (!composer.scripts?.test) fail("composer.json must expose a test script");
 
@@ -150,6 +156,7 @@ if (built) {
     "dist/cjs/USARetirementAccountParameters.js.map",
     "dist/cjs/package.json",
     "dist/types/USARetirementAccountParameters.d.ts",
+    "dist/types/USARetirementAccountParameters.d.cts",
   ]) {
     if (!(await exists(path))) fail(`built artifact is missing: ${path}`);
   }
@@ -168,6 +175,14 @@ if (!tsSource.includes("recognizedCompensationForEmployerAllocation")) {
 }
 if (!phpSource.includes("recognizedCompensationForEmployerAllocation")) {
   fail("PHP §401(a)(17) employer-allocation helper is missing");
+}
+const tsEngineVersion = tsSource.match(/export const ENGINE_VERSION = "([^"]+)"/)?.[1];
+const phpEngineVersion = phpSource.match(/const ENGINE_VERSION = '([^']+)';/)?.[1];
+if (tsEngineVersion !== packageJson.version) {
+  fail(`TypeScript ENGINE_VERSION (${tsEngineVersion}) must match package.json version (${packageJson.version})`);
+}
+if (phpEngineVersion !== packageJson.version) {
+  fail(`PHP ENGINE_VERSION (${phpEngineVersion}) must match package.json version (${packageJson.version})`);
 }
 
 if (errors.length > 0) {

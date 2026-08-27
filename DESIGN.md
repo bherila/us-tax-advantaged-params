@@ -189,7 +189,7 @@ A release must satisfy:
 2. Generated-block drift checking.
 3. Strict TypeScript typechecking.
 4. TypeScript unit and conformance tests.
-5. PHP syntax, unit, and conformance tests on PHP 8.5.
+5. PHP syntax, unit, and conformance tests on PHP 8.2 through 8.5.
 6. Complete TypeScript/PHP output parity.
 7. ESM and CommonJS import smoke tests.
 8. Manifest and package-content validation.
