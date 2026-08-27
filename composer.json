@@ -1,0 +1,56 @@
+{
+  "name": "bherila/usa-retirement-account-parameters",
+  "description": "Historical and current U.S. retirement-account contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ben Herila"
+    }
+  ],
+  "require": {
+    "php": ">=8.5"
+  },
+  "autoload": {
+    "files": [
+      "php/src/USARetirementAccountParameters.php"
+    ]
+  },
+  "scripts": {
+    "lint": [
+      "php -l php/src/USARetirementAccountParameters.php",
+      "php -l php/tests/USARetirementAccountParametersTest.php",
+      "php -l php/tests/ConformanceVectorsTest.php",
+      "php -l scripts/php-parity-runner.php"
+    ],
+    "test:unit": "php php/tests/USARetirementAccountParametersTest.php",
+    "test:conformance": "php php/tests/ConformanceVectorsTest.php",
+    "test": [
+      "@lint",
+      "@test:unit",
+      "@test:conformance"
+    ]
+  },
+  "support": {
+    "issues": "https://github.com/bherila/usa-retirement-account-parameters/issues",
+    "source": "https://github.com/bherila/usa-retirement-account-parameters"
+  },
+  "archive": {
+    "exclude": [
+      "/.github",
+      "/dist",
+      "/dist-tests",
+      "/node_modules",
+      "/tests",
+      "/scripts",
+      "/src",
+      "/data/conformance-vectors.json",
+      "/package.json",
+      "/package-lock.json",
+      "/tsconfig*.json",
+      "/validation-status.json",
+      "/VALIDATION.md",
+      "/RELEASE_STATUS.md"
+    ]
+  }
+}

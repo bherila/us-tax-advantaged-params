@@ -1,0 +1,193 @@
+{
+  "package": "usa-retirement-account-parameters",
+  "version": "0.1.0",
+  "startedAt": "2026-08-27T18:13:41.714Z",
+  "finishedAt": "2026-08-27T18:14:01.044Z",
+  "passed": true,
+  "phpTargetValidatedLocally": false,
+  "supportedTaxYears": {
+    "minimum": 1975,
+    "maximum": 2026
+  },
+  "generatedThroughTaxYear": 2026,
+  "conformanceVectorCount": 27,
+  "runtimes": {
+    "node": "v22.16.0",
+    "npm": "10.9.2",
+    "typescript": "Version 5.8.3",
+    "php": "8.4.23",
+    "composer": null
+  },
+  "checks": [
+    {
+      "name": "Canonical parameter and vector validation",
+      "command": "node scripts/validate-data.mjs",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 169,
+      "stdout": "Canonical data validation passed: 52 contiguous tax years, 10 sources, 27 conformance vectors.\n",
+      "stderr": ""
+    },
+    {
+      "name": "Generated native parameter blocks",
+      "command": "node scripts/generate.mjs --check",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 195,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "Source manifests and publication files",
+      "command": "node scripts/validate-manifests.mjs",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 184,
+      "stdout": "Manifest validation passed.\n",
+      "stderr": ""
+    },
+    {
+      "name": "Strict TypeScript typecheck",
+      "command": "tsc -p tsconfig.json --noEmit",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 2433,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "TypeScript unit and conformance tests",
+      "command": "npm run test:ts",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 4102,
+      "stdout": "\n> usa-retirement-account-parameters@0.1.0 test:ts\n> npm run test:compile && node --test dist-tests/tests/USARetirementAccountParameters.test.js dist-tests/tests/conformance.test.js\n\n\n> usa-retirement-account-parameters@0.1.0 test:compile\n> node scripts/clean-tests.mjs && tsc -p tsconfig.tests.json\n\nTAP version 13\n# Subtest: supports the first general IRA year through the generated year without extrapolation\nok 1 - supports the first general IRA year through the generated year without extrapolation\n  ---\n  duration_ms: 6.033383\n  type: 'test'\n  ...\n# Subtest: normalizes common filing-status and account aliases\nok 2 - normalizes common filing-status and account aliases\n  ---\n  duration_ms: 1.26084\n  type: 'test'\n  ...\n# Subtest: 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity\nok 3 - 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity\n  ---\n  duration_ms: 58.898086\n  type: 'test'\n  ...\n# Subtest: 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold\nok 4 - 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold\n  ---\n  duration_ms: 1.558787\n  type: 'test'\n  ...\n# Subtest: high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up\nok 5 - high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up\n  ---\n  duration_ms: 1.323061\n  type: 'test'\n  ...\n# Subtest: 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method\nok 6 - 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method\n  ---\n  duration_ms: 2.152472\n  type: 'test'\n  ...\n# Subtest: 2026 active-participant traditional IRA deduction phases out while total contribution remains available\nok 7 - 2026 active-participant traditional IRA deduction phases out while total contribution remains available\n  ---\n  duration_ms: 2.730838\n  type: 'test'\n  ...\n# Subtest: traditional and Roth IRAs share one owner-level contribution pool\nok 8 - traditional and Roth IRAs share one owner-level contribution pool\n  ---\n  duration_ms: 1.26079\n  type: 'test'\n  ...\n# Subtest: 401(k) and 457(b) employee limits are separate\nok 9 - 401(k) and 457(b) employee limits are separate\n  ---\n  duration_ms: 2.775821\n  type: 'test'\n  ...\n# Subtest: two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups\nok 10 - two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups\n  ---\n  duration_ms: 2.264648\n  type: 'test'\n  ...\n# Subtest: mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount\nok 11 - mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount\n  ---\n  duration_ms: 1.668262\n  type: 'test'\n  ...\n# Subtest: self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space\nok 12 - self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space\n  ---\n  duration_ms: 0.82929\n  type: 'test'\n  ...\n# Subtest: self-employed SEP maximum uses the reduced 20% net-earnings rate\nok 13 - self-employed SEP maximum uses the reduced 20% net-earnings rate\n  ---\n  duration_ms: 0.835875\n  type: 'test'\n  ...\n# Subtest: 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up\nok 14 - 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up\n  ---\n  duration_ms: 1.860036\n  type: 'test'\n  ...\n# Subtest: 457(b) last-three-years catch-up is selected when larger than the age catch-up\nok 15 - 457(b) last-three-years catch-up is selected when larger than the age catch-up\n  ---\n  duration_ms: 0.659006\n  type: 'test'\n  ...\n# Subtest: 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values\nok 16 - 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values\n  ---\n  duration_ms: 0.658006\n  type: 'test'\n  ...\n# Subtest: pre-1987 401(k) maximum is explicitly indeterminate rather than invented\nok 17 - pre-1987 401(k) maximum is explicitly indeterminate rather than invented\n  ---\n  duration_ms: 3.979189\n  type: 'test'\n  ...\n# Subtest: 1981 active employer-plan participant is ineligible for the modeled IRA contribution\nok 18 - 1981 active employer-plan participant is ineligible for the modeled IRA contribution\n  ---\n  duration_ms: 0.785061\n  type: 'test'\n  ...\n# Subtest: 1982 one-earner spousal IRA preserves the historical $250 nonworking-spouse cap\nok 19 - 1982 one-earner spousal IRA preserves the historical $250 nonworking-spouse cap\n  ---\n  duration_ms: 0.741222\n  type: 'test'\n  ...\n# Subtest: pre-2020 traditional IRA age-70½ restriction is enforced\nok 20 - pre-2020 traditional IRA age-70½ restriction is enforced\n  ---\n  duration_ms: 1.142529\n  type: 'test'\n  ...\n# Subtest: IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits\nok 21 - IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits\n  ---\n  duration_ms: 1.991903\n  type: 'test'\n  ...\n# Subtest: in-plan Roth rollover reports only the pre-tax portion as taxable\nok 22 - in-plan Roth rollover reports only the pre-tax portion as taxable\n  ---\n  duration_ms: 1.119265\n  type: 'test'\n  ...\n# Subtest: defined-benefit and cash-balance contributions remain actuarially indeterminate\nok 23 - defined-benefit and cash-balance contributions remain actuarially indeterminate\n  ---\n  duration_ms: 0.642824\n  type: 'test'\n  ...\n# Subtest: 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied\nok 24 - 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied\n  ---\n  duration_ms: 1.11343\n  type: 'test'\n  ...\n# Subtest: self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions\nok 25 - self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions\n  ---\n  duration_ms: 0.803019\n  type: 'test'\n  ...\n# Subtest: pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling\nok 26 - pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling\n  ---\n  duration_ms: 0.75162\n  type: 'test'\n  ...\n# Subtest: additional SIMPLE nonelective contribution is capped by 10% of recognized compensation\nok 27 - additional SIMPLE nonelective contribution is capped by 10% of recognized compensation\n  ---\n  duration_ms: 0.734504\n  type: 'test'\n  ...\n# Subtest: SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded\nok 28 - SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded\n  ---\n  duration_ms: 0.534998\n  type: 'test'\n  ...\n# Subtest: multiple 403(b) accounts share one owner-level 15-year catch-up pool\nok 29 - multiple 403(b) accounts share one owner-level 15-year catch-up pool\n  ---\n  duration_ms: 1.049554\n  type: 'test'\n  ...\n# Subtest: Roth employer contributions are rejected before their 2023 effective year\nok 30 - Roth employer contributions are rejected before their 2023 effective year\n  ---\n  duration_ms: 0.948037\n  type: 'test'\n  ...\n# Subtest: multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation\nok 31 - multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation\n  ---\n  duration_ms: 1.379246\n  type: 'test'\n  ...\n# Subtest: duplicate taxpayer or spouse roles are rejected\nok 32 - duplicate taxpayer or spouse roles are rejected\n  ---\n  duration_ms: 0.666333\n  type: 'test'\n  ...\n# Subtest: ambiguous M alias is accepted but produces a diagnostic\nok 33 - ambiguous M alias is accepted but produces a diagnostic\n  ---\n  duration_ms: 0.523347\n  type: 'test'\n  ...\n# Subtest: 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate\nok 34 - 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate\n  ---\n  duration_ms: 0.556863\n  type: 'test'\n  ...\n# Subtest: 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling\nok 35 - 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling\n  ---\n  duration_ms: 0.958337\n  type: 'test'\n  ...\n# Subtest: 1997 employer match uses recognized compensation without capping employee elective deferrals\nok 36 - 1997 employer match uses recognized compensation without capping employee elective deferrals\n  ---\n  duration_ms: 1.158386\n  type: 'test'\n  ...\n# Subtest: 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings\nok 37 - 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings\n  ---\n  duration_ms: 0.80119\n  type: 'test'\n  ...\n# Subtest: 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings\nok 38 - 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings\n  ---\n  duration_ms: 1.519144\n  type: 'test'\n  ...\n# Subtest: conformance: ordinary 2026 401k plan-term capacity\nok 39 - conformance: ordinary 2026 401k plan-term capacity\n  ---\n  duration_ms: 54.653218\n  type: 'test'\n  ...\n# Subtest: conformance: 2026 high-wage age-60-to-63 Roth catch-up\nok 40 - conformance: 2026 high-wage age-60-to-63 Roth catch-up\n  ---\n  duration_ms: 7.383238\n  type: 'test'\n  ...\n# Subtest: conformance: 2026 Roth IRA MFJ phaseout\nok 41 - conformance: 2026 Roth IRA MFJ phaseout\n  ---\n  duration_ms: 1.720897\n  type: 'test'\n  ...\n# Subtest: conformance: shared traditional and Roth IRA pool\nok 42 - conformance: shared traditional and Roth IRA pool\n  ---\n  duration_ms: 2.335934\n  type: 'test'\n  ...\n# Subtest: conformance: 401k and governmental 457b are separate\nok 43 - conformance: 401k and governmental 457b are separate\n  ---\n  duration_ms: 2.234091\n  type: 'test'\n  ...\n# Subtest: conformance: mega backdoor 401k fills 415c\nok 44 - conformance: mega backdoor 401k fills 415c\n  ---\n  duration_ms: 0.832406\n  type: 'test'\n  ...\n# Subtest: conformance: self-employed solo 401k\nok 45 - conformance: self-employed solo 401k\n  ---\n  duration_ms: 0.877414\n  type: 'test'\n  ...\n# Subtest: conformance: 403b 15-year catch-up\nok 46 - conformance: 403b 15-year catch-up\n  ---\n  duration_ms: 1.023103\n  type: 'test'\n  ...\n# Subtest: conformance: 457b special last-three-years catch-up\nok 47 - conformance: 457b special last-three-years catch-up\n  ---\n  duration_ms: 2.174297\n  type: 'test'\n  ...\n# Subtest: conformance: 1994 historical employer-plan limits\nok 48 - conformance: 1994 historical employer-plan limits\n  ---\n  duration_ms: 1.519833\n  type: 'test'\n  ...\n# Subtest: conformance: 1985 employer-plan limit remains indeterminate\nok 49 - conformance: 1985 employer-plan limit remains indeterminate\n  ---\n  duration_ms: 0.906887\n  type: 'test'\n  ...\n# Subtest: conformance: 1982 nonworking spouse IRA\nok 50 - conformance: 1982 nonworking spouse IRA\n  ---\n  duration_ms: 0.629147\n  type: 'test'\n  ...\n# Subtest: conformance: IRA conversion Form 8606 pro-rata\nok 51 - conformance: IRA conversion Form 8606 pro-rata\n  ---\n  duration_ms: 1.573275\n  type: 'test'\n  ...\n# Subtest: conformance: in-plan Roth rollover basis\nok 52 - conformance: in-plan Roth rollover basis\n  ---\n  duration_ms: 1.01273\n  type: 'test'\n  ...\n# Subtest: conformance: 2026 enhanced SIMPLE\nok 53 - conformance: 2026 enhanced SIMPLE\n  ---\n  duration_ms: 1.199896\n  type: 'test'\n  ...\n# Subtest: conformance: cash-balance contribution is actuarial\nok 54 - conformance: cash-balance contribution is actuarial\n  ---\n  duration_ms: 0.546347\n  type: 'test'\n  ...\n# Subtest: conformance: self-employed retirement deduction classification\nok 55 - conformance: self-employed retirement deduction classification\n  ---\n  duration_ms: 0.67348\n  type: 'test'\n  ...\n# Subtest: conformance: 2009 MFS living apart Roth conversion\nok 56 - conformance: 2009 MFS living apart Roth conversion\n  ---\n  duration_ms: 0.468884\n  type: 'test'\n  ...\n# Subtest: conformance: SIMPLE additional nonelective 10 percent cap\nok 57 - conformance: SIMPLE additional nonelective 10 percent cap\n  ---\n  duration_ms: 0.545251\n  type: 'test'\n  ...\n# Subtest: conformance: SIMPLE IRA Roth catch-up wage-test exclusion\nok 58 - conformance: SIMPLE IRA Roth catch-up wage-test exclusion\n  ---\n  duration_ms: 0.380583\n  type: 'test'\n  ...\n# Subtest: conformance: aggregate 403b 15-year catch-up pool\nok 59 - conformance: aggregate 403b 15-year catch-up pool\n  ---\n  duration_ms: 0.582418\n  type: 'test'\n  ...\n# Subtest: conformance: pre-2023 Roth employer contribution unavailable\nok 60 - conformance: pre-2023 Roth employer contribution unavailable\n  ---\n  duration_ms: 0.509745\n  type: 'test'\n  ...\n# Subtest: conformance: aggregate IRA conversion basis penny allocation\nok 61 - conformance: aggregate IRA conversion basis penny allocation\n  ---\n  duration_ms: 0.522957\n  type: 'test'\n  ...\n# Subtest: conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate\nok 62 - conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate\n  ---\n  duration_ms: 0.668548\n  type: 'test'\n  ...\n# Subtest: conformance: 1997 nonelective formula applies 401a17 compensation ceiling\nok 63 - conformance: 1997 nonelective formula applies 401a17 compensation ceiling\n  ---\n  duration_ms: 0.588127\n  type: 'test'\n  ...\n# Subtest: conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings\nok 64 - conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings\n  ---\n  duration_ms: 0.370597\n  type: 'test'\n  ...\n# Subtest: conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings\nok 65 - conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings\n  ---\n  duration_ms: 0.395364\n  type: 'test'\n  ...\n1..65\n# tests 65\n# suites 0\n# pass 65\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 452.283332\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP engine syntax",
+      "command": "php -l php/src/USARetirementAccountParameters.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 76,
+      "stdout": "No syntax errors detected in php/src/USARetirementAccountParameters.php\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP unit-test syntax",
+      "command": "php -l php/tests/USARetirementAccountParametersTest.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 98,
+      "stdout": "No syntax errors detected in php/tests/USARetirementAccountParametersTest.php\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP conformance-test syntax",
+      "command": "php -l php/tests/ConformanceVectorsTest.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 64,
+      "stdout": "No syntax errors detected in php/tests/ConformanceVectorsTest.php\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP parity runner syntax",
+      "command": "php -l scripts/php-parity-runner.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 61,
+      "stdout": "No syntax errors detected in scripts/php-parity-runner.php\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP unit tests",
+      "command": "php php/tests/USARetirementAccountParametersTest.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 98,
+      "stdout": "ok - supports 1975 through 2026 without extrapolation\nok - normalizes common aliases\nok - builder pattern calculates an ordinary 2026 401k\nok - 2026 age 60 to 63 high wage catch-up is Roth\nok - high wage catch-up is unavailable without plan Roth catch-up\nok - Roth IRA MFJ phase-out\nok - traditional IRA deduction phases out without reducing total contribution\nok - traditional and Roth IRA share owner pool\nok - 401k and 457b limits are separate\nok - two 401k plans share 402g and retain separate 415c groups\nok - mega backdoor fills remaining 415c space\nok - self employed solo 401k uses 20 percent equivalent rate\nok - self employed SEP uses 20 percent equivalent rate\nok - 403b 15-year catch-up\nok - 457b special catch-up selected when larger\nok - 1994 historical limits\nok - 1985 401k is indeterminate\nok - 1981 active participant is ineligible for IRA\nok - 1982 one earner spousal IRA cap\nok - 2019 traditional IRA age 70.5 restriction\nok - IRA conversion applies Form 8606 pro rata basis\nok - in plan Roth rollover taxes pre-tax portion only\nok - cash balance contribution remains indeterminate\nok - 2026 enhanced SIMPLE and age 60 to 63 catch-up\nok - self employed plan deduction excludes IRA deduction classification\nok - pre 2010 MFS taxpayer living apart may convert under MAGI ceiling\nok - additional SIMPLE nonelective contribution is capped at 10 percent compensation\nok - SIMPLE IRA catch-up remains pre-tax under 408p exclusion\nok - multiple 403b accounts share one 15-year catch-up pool\nok - Roth employer contributions are rejected before 2023\nok - multiple IRA conversions do not over-allocate basis by pennies\nok - duplicate taxpayer or spouse roles are rejected\nok - ambiguous M alias emits diagnostic\nok - 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate\nok - 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling\nok - 1997 employer match uses recognized compensation without capping employee elective deferrals\nok - 1997 self-employed SEP applies reduced-rate and recognized-compensation worksheet ceilings\nok - 1997 self-employed qualified-plan formula applies reduced-rate and recognized-compensation ceilings\n\n38 tests, 0 failed (0.007s)\n",
+      "stderr": ""
+    },
+    {
+      "name": "PHP conformance vectors",
+      "command": "php php/tests/ConformanceVectorsTest.php",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 88,
+      "stdout": "ok - ordinary 2026 401k plan-term capacity\nok - 2026 high-wage age-60-to-63 Roth catch-up\nok - 2026 Roth IRA MFJ phaseout\nok - shared traditional and Roth IRA pool\nok - 401k and governmental 457b are separate\nok - mega backdoor 401k fills 415c\nok - self-employed solo 401k\nok - 403b 15-year catch-up\nok - 457b special last-three-years catch-up\nok - 1994 historical employer-plan limits\nok - 1985 employer-plan limit remains indeterminate\nok - 1982 nonworking spouse IRA\nok - IRA conversion Form 8606 pro-rata\nok - in-plan Roth rollover basis\nok - 2026 enhanced SIMPLE\nok - cash-balance contribution is actuarial\nok - self-employed retirement deduction classification\nok - 2009 MFS living apart Roth conversion\nok - SIMPLE additional nonelective 10 percent cap\nok - SIMPLE IRA Roth catch-up wage-test exclusion\nok - aggregate 403b 15-year catch-up pool\nok - pre-2023 Roth employer contribution unavailable\nok - aggregate IRA conversion basis penny allocation\nok - 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate\nok - 1997 nonelective formula applies 401a17 compensation ceiling\nok - 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings\nok - 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings\n\n27 conformance vectors, 0 failed\n",
+      "stderr": ""
+    },
+    {
+      "name": "ESM, CommonJS, and declaration build",
+      "command": "npm run build",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 9423,
+      "stdout": "\n> usa-retirement-account-parameters@0.1.0 build\n> npm run generate:check && npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json && node scripts/finalize-build.mjs\n\n\n> usa-retirement-account-parameters@0.1.0 generate:check\n> node scripts/generate.mjs --check\n\n\n> usa-retirement-account-parameters@0.1.0 clean\n> node scripts/clean.mjs\n\n",
+      "stderr": ""
+    },
+    {
+      "name": "ESM/CommonJS smoke imports",
+      "command": "node scripts/smoke-imports.mjs",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 187,
+      "stdout": "ESM and CommonJS smoke imports passed.\n",
+      "stderr": ""
+    },
+    {
+      "name": "Complete TypeScript/PHP output parity",
+      "command": "node scripts/check-parity.mjs",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 367,
+      "stdout": "TypeScript/PHP full-output parity passed for 27 vectors.\n",
+      "stderr": ""
+    },
+    {
+      "name": "Built-package manifest validation",
+      "command": "node scripts/validate-manifests.mjs --built",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 189,
+      "stdout": "Manifest validation passed with built artifacts.\n",
+      "stderr": ""
+    },
+    {
+      "name": "npm package dry run",
+      "command": "npm pack --dry-run --ignore-scripts --json",
+      "passed": true,
+      "skipped": false,
+      "exitCode": 0,
+      "durationMs": 877,
+      "stdout": "[\n  {\n    \"id\": \"usa-retirement-account-parameters@0.1.0\",\n    \"name\": \"usa-retirement-account-parameters\",\n    \"version\": \"0.1.0\",\n    \"size\": 117690,\n    \"unpackedSize\": 1289864,\n    \"shasum\": \"057fd71df8e534943b8b5caa077f326ba0e259d8\",\n    \"integrity\": \"sha512-x+iob2OcL/bZXDGFm31UY+oU7JkmcMDhQ0llxXtwE/TS0xmpkQM8SnEJzXV8lp7dGYp6dupt9B0NwtmQf4TPzw==\",\n    \"filename\": \"usa-retirement-account-parameters-0.1.0.tgz\",\n    \"files\": [\n      {\n        \"path\": \"CHANGELOG.md\",\n        \"size\": 1863,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"LICENSE\",\n        \"size\": 1067,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"README.md\",\n        \"size\": 17115,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"SOURCES.md\",\n        \"size\": 5200,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"data/retirement-parameters.json\",\n        \"size\": 161971,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/cjs/package.json\",\n        \"size\": 25,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/cjs/USARetirementAccountParameters.js\",\n        \"size\": 338597,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/cjs/USARetirementAccountParameters.js.map\",\n        \"size\": 201807,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/esm/USARetirementAccountParameters.js\",\n        \"size\": 337506,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/esm/USARetirementAccountParameters.js.map\",\n        \"size\": 201796,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"dist/types/USARetirementAccountParameters.d.ts\",\n        \"size\": 19845,\n        \"mode\": 420\n      },\n      {\n        \"path\": \"package.json\",\n        \"size\": 3072,\n        \"mode\": 420\n      }\n    ],\n    \"entryCount\": 12,\n    \"bundled\": []\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "name": "Composer manifest validation",
+      "command": "composer validate --strict",
+      "passed": true,
+      "skipped": true,
+      "exitCode": null,
+      "durationMs": 8,
+      "stdout": "",
+      "stderr": "composer is not installed in this local environment; the CI workflow performs this check.\n"
+    }
+  ]
+}

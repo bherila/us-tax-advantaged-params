@@ -1,0 +1,24 @@
+* text=auto eol=lf
+*.php text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+/export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/.github export-ignore
+/dist export-ignore
+/dist-tests export-ignore
+/node_modules export-ignore
+/tests export-ignore
+/scripts export-ignore
+/src export-ignore
+/data/conformance-vectors.json export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/tsconfig.json export-ignore
+/tsconfig.*.json export-ignore
+/validation-status.json export-ignore
+/VALIDATION.md export-ignore
+/RELEASE_STATUS.md export-ignore

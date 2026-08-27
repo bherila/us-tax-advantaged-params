@@ -1,0 +1,5239 @@
+{
+  "schemaVersion": 1,
+  "package": "usa-retirement-account-parameters",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1975,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "rounding": {
+    "iraPhaseoutIncrement": 10,
+    "iraPositiveReducedMinimum": 200
+  },
+  "historicalCoveragePolicy": {
+    "description": "The dataset starts with the first generally available IRA contribution year. For pre-1987 employer-plan years lacking a universal modern IRC 402(g) or fully encoded IRC 415 limit, the engines return an indeterminate statutory maximum rather than inventing a number.",
+    "pre1987EmployerPlanLimitStatus": "requires_plan_document_and_historical_law_facts"
+  },
+  "sources": [
+    {
+      "id": "irs-notice-2025-67",
+      "title": "Notice 2025-67, 2026 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb25-49.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2024-80",
+      "title": "Notice 2024-80, 2025 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb24-47.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-coda-manual-2002",
+      "title": "IRS Cash or Deferred Arrangements manual historical limitation table",
+      "url": "https://www.irs.gov/pub/irs-tege/codas.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-sep-sarsep-audit",
+      "title": "IRS SEP/SARSEP Audit Techniques",
+      "url": "https://www.irs.gov/pub/irs-tege/epche1303.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-soi-ira-1983",
+      "title": "IRS SOI Bulletin describing 1981-and-earlier and 1982 IRA limits",
+      "url": "https://www.irs.gov/pub/irs-soi/83rpsumbul.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "dol-401k-history",
+      "title": "U.S. Department of Labor 401(k) plan history",
+      "url": "https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/faqs/401k-plans",
+      "authority": "DOL"
+    },
+    {
+      "id": "irs-notice-2001-56",
+      "title": "Notice 2001-56, compensation limitation under IRC 401(a)(17)",
+      "url": "https://www.irs.gov/pub/irs-drop/n-01-56.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-employee-plans-news-fall-2009",
+      "title": "Employee Plans News, Fall 2009: compensation and elective-deferral limits",
+      "url": "https://www.irs.gov/pub/irs-tege/fall09.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-535-2001",
+      "title": "Publication 535 (2001), deduction worksheet for self-employed retirement-plan contributions",
+      "url": "https://www.irs.gov/pub/irs-prior/p535--2001.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-sarsep-fix-it-guide-contribution-limits",
+      "title": "SARSEP Fix-It Guide: contribution-limit and compensation rules",
+      "url": "https://www.irs.gov/retirement-plans/sarsep-fix-it-guide-total-contributions-employee-elective-deferrals-and-nonelective-employer-contributions-exceeded-the-maximum-legal-limits",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1975": {
+      "year": 1975,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": false,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": false,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "includibleCompensationFraction": null,
+        "specialLastThreeYearsMaximum": null,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": false,
+        "simpleIra": false,
+        "traditional401k": false,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": false,
+        "nongovernmental457b": false,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1976": {
+      "year": 1976,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": false,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": false,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "includibleCompensationFraction": null,
+        "specialLastThreeYearsMaximum": null,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": false,
+        "simpleIra": false,
+        "traditional401k": false,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": false,
+        "nongovernmental457b": false,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1977": {
+      "year": 1977,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 1750,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": false,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "includibleCompensationFraction": null,
+        "specialLastThreeYearsMaximum": null,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": false,
+        "simpleIra": false,
+        "traditional401k": false,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": false,
+        "nongovernmental457b": false,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1978": {
+      "year": 1978,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 1750,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": false,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "includibleCompensationFraction": null,
+        "specialLastThreeYearsMaximum": null,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": false,
+        "simpleIra": false,
+        "traditional401k": false,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": false,
+        "nongovernmental457b": false,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1979": {
+      "year": 1979,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 1750,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": false,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1980": {
+      "year": 1980,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 1750,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1981": {
+      "year": 1981,
+      "ira": {
+        "baseContributionLimit": 1500,
+        "age50CatchUp": 0,
+        "compensationFraction": 0.15,
+        "universalEligibility": false,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 1750,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1982": {
+      "year": 1982,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1983": {
+      "year": 1983,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1984": {
+      "year": 1984,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1985": {
+      "year": 1985,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1986": {
+      "year": 1986,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": false,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": null,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": null,
+      "annualAdditionsCompensationFraction": null,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": false,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": false,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": null,
+        "traditionalIraSpouseCovered": null,
+        "rothIra": null
+      }
+    },
+    "1987": {
+      "year": 1987,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 7000,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1988": {
+      "year": 1988,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 7313,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": null,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1989": {
+      "year": 1989,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 7627,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 200000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1990": {
+      "year": 1990,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 7979,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 209200,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1991": {
+      "year": 1991,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 8475,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 222220,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1992": {
+      "year": 1992,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 8728,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 228860,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1993": {
+      "year": 1993,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 8994,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 235840,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1994": {
+      "year": 1994,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 9240,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 150000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1995": {
+      "year": 1995,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 9240,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 150000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1996": {
+      "year": 1996,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": 250,
+        "oneEarnerHouseholdCombinedLimit": 2250,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 9500,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 150000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": true,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": false,
+        "salaryReductionLimit": null,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": false,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1997": {
+      "year": 1997,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": false
+      },
+      "electiveDeferral402g": 9500,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 160000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 6000,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 7500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": false,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            25000,
+            35000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            40000,
+            50000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": null
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 10000,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 160000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 6000,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 8000,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            30000,
+            40000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            50000,
+            60000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 10000,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 160000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": null,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 6000,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 8000,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            31000,
+            41000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            51000,
+            61000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 10500,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 30000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 170000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 6000,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 8000,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            32000,
+            42000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            52000,
+            62000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "ira": {
+        "baseContributionLimit": 2000,
+        "age50CatchUp": 0,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 10500,
+      "generalAge50CatchUp": 0,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 35000,
+      "annualAdditionsCompensationFraction": 0.25,
+      "annualCompensation401a17": 170000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.15,
+        "selfEmployedEquivalentRate": 0.13043478260869565,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 6500,
+        "generalAge50CatchUp": 0,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 8500,
+        "includibleCompensationFraction": 0.3333333333333333,
+        "specialLastThreeYearsMaximum": 15000,
+        "governmentalAge50CatchUp": 0,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            33000,
+            43000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            53000,
+            63000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "ira": {
+        "baseContributionLimit": 3000,
+        "age50CatchUp": 500,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 11000,
+      "generalAge50CatchUp": 1000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 40000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 200000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 7000,
+        "generalAge50CatchUp": 500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 11000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 22000,
+        "governmentalAge50CatchUp": 1000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            34000,
+            44000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            54000,
+            64000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "ira": {
+        "baseContributionLimit": 3000,
+        "age50CatchUp": 500,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 12000,
+      "generalAge50CatchUp": 2000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 40000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 200000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 8000,
+        "generalAge50CatchUp": 1000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 12000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 24000,
+        "governmentalAge50CatchUp": 2000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            40000,
+            50000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            60000,
+            70000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "ira": {
+        "baseContributionLimit": 3000,
+        "age50CatchUp": 500,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 13000,
+      "generalAge50CatchUp": 3000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 41000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 205000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 9000,
+        "generalAge50CatchUp": 1500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 13000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 26000,
+        "governmentalAge50CatchUp": 3000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            45000,
+            55000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            65000,
+            75000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "ira": {
+        "baseContributionLimit": 4000,
+        "age50CatchUp": 500,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 14000,
+      "generalAge50CatchUp": 4000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 42000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 210000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 10000,
+        "generalAge50CatchUp": 2000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 14000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 28000,
+        "governmentalAge50CatchUp": 4000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": false,
+        "traditional403b": true,
+        "designatedRoth403b": false,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            50000,
+            60000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            70000,
+            80000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "ira": {
+        "baseContributionLimit": 4000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 15000,
+      "generalAge50CatchUp": 5000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 44000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 220000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 450,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 10000,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 15000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 30000,
+        "governmentalAge50CatchUp": 5000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            50000,
+            60000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            75000,
+            85000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            95000,
+            110000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            150000,
+            160000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "ira": {
+        "baseContributionLimit": 4000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 15500,
+      "generalAge50CatchUp": 5000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 45000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 225000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 500,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 10500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 15500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 31000,
+        "governmentalAge50CatchUp": 5000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            52000,
+            62000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            83000,
+            103000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            156000,
+            166000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            99000,
+            114000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            156000,
+            166000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "ira": {
+        "baseContributionLimit": 5000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 15500,
+      "generalAge50CatchUp": 5000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 46000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 230000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 500,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 10500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 15500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 31000,
+        "governmentalAge50CatchUp": 5000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            53000,
+            63000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            85000,
+            105000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            159000,
+            169000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            101000,
+            116000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            159000,
+            169000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "ira": {
+        "baseContributionLimit": 5000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 16500,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 49000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 245000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 11500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 16500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 33000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            55000,
+            65000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            89000,
+            109000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            166000,
+            176000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            105000,
+            120000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            166000,
+            176000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "ira": {
+        "baseContributionLimit": 5000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 16500,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 49000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 245000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 11500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 16500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 33000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": false
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            56000,
+            66000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            89000,
+            109000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            167000,
+            177000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            105000,
+            120000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            167000,
+            177000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "ira": {
+        "baseContributionLimit": 5000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 16500,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 49000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 245000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 11500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 16500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 33000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": false,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            56000,
+            66000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            90000,
+            110000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            169000,
+            179000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            107000,
+            122000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            169000,
+            179000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "ira": {
+        "baseContributionLimit": 5000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 17000,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 50000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 250000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 11500,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 17000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 34000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            58000,
+            68000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            92000,
+            112000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            173000,
+            183000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            110000,
+            125000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            173000,
+            183000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 17500,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 51000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 255000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12000,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 17500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 35000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            59000,
+            69000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            95000,
+            115000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            178000,
+            188000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            112000,
+            127000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            178000,
+            188000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 17500,
+      "generalAge50CatchUp": 5500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 52000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 260000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 550,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12000,
+        "generalAge50CatchUp": 2500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 17500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 35000,
+        "governmentalAge50CatchUp": 5500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            60000,
+            70000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            96000,
+            116000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            181000,
+            191000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            114000,
+            129000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            181000,
+            191000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 18000,
+      "generalAge50CatchUp": 6000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 53000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 265000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 18000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 36000,
+        "governmentalAge50CatchUp": 6000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            61000,
+            71000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            98000,
+            118000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            183000,
+            193000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            116000,
+            131000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            183000,
+            193000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 18000,
+      "generalAge50CatchUp": 6000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 53000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 265000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 18000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 36000,
+        "governmentalAge50CatchUp": 6000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            61000,
+            71000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            98000,
+            118000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            184000,
+            194000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            117000,
+            132000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            184000,
+            194000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 18000,
+      "generalAge50CatchUp": 6000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 54000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 270000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 18000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 36000,
+        "governmentalAge50CatchUp": 6000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            62000,
+            72000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            99000,
+            119000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            186000,
+            196000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            118000,
+            133000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            186000,
+            196000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "ira": {
+        "baseContributionLimit": 5500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 18500,
+      "generalAge50CatchUp": 6000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 55000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 275000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 12500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 18500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 37000,
+        "governmentalAge50CatchUp": 6000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            63000,
+            73000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            101000,
+            121000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            189000,
+            199000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            120000,
+            135000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            189000,
+            199000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "ira": {
+        "baseContributionLimit": 6000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": true,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 19000,
+      "generalAge50CatchUp": 6000,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 56000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 280000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 13000,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 19000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 38000,
+        "governmentalAge50CatchUp": 6000,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            64000,
+            74000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            103000,
+            123000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            193000,
+            203000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            122000,
+            137000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            193000,
+            203000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "ira": {
+        "baseContributionLimit": 6000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 19500,
+      "generalAge50CatchUp": 6500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 57000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 285000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 600,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 13500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 19500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 39000,
+        "governmentalAge50CatchUp": 6500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            65000,
+            75000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            104000,
+            124000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            196000,
+            206000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            124000,
+            139000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            196000,
+            206000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "ira": {
+        "baseContributionLimit": 6000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 19500,
+      "generalAge50CatchUp": 6500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 58000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 290000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 650,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 13500,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 19500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 39000,
+        "governmentalAge50CatchUp": 6500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            66000,
+            76000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            105000,
+            125000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            198000,
+            208000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            125000,
+            140000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            198000,
+            208000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "ira": {
+        "baseContributionLimit": 6000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 20500,
+      "generalAge50CatchUp": 6500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 61000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 305000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 650,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": false
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 14000,
+        "generalAge50CatchUp": 3000,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 20500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 41000,
+        "governmentalAge50CatchUp": 6500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": false,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            68000,
+            78000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            109000,
+            129000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            204000,
+            214000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            129000,
+            144000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            204000,
+            214000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "ira": {
+        "baseContributionLimit": 6500,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 22500,
+      "generalAge50CatchUp": 7500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 66000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 330000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 750,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": true
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 15500,
+        "generalAge50CatchUp": 3500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": null,
+        "certainPlanAge50CatchUp": null,
+        "additionalNonelectiveContributionCap": null
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 22500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 45000,
+        "governmentalAge50CatchUp": 7500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": false,
+        "baseDeferralLimit": null,
+        "age50CatchUp": 0
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": true,
+        "starter401kOrSafeHarbor403b": false
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            73000,
+            83000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            116000,
+            136000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            218000,
+            228000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            138000,
+            153000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            218000,
+            228000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "ira": {
+        "baseContributionLimit": 7000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 23000,
+      "generalAge50CatchUp": 7500,
+      "age60To63CatchUp": null,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 69000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 345000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 750,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": true
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 16000,
+        "generalAge50CatchUp": 3500,
+        "age60To63CatchUp": null,
+        "certainPlanEnhancedSalaryReductionLimit": 17600,
+        "certainPlanAge50CatchUp": 3850,
+        "additionalNonelectiveContributionCap": 5000
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 23000,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 46000,
+        "governmentalAge50CatchUp": 7500,
+        "governmentalAge60To63CatchUp": null,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": true,
+        "baseDeferralLimit": 6000,
+        "age50CatchUp": 1000
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": true,
+        "starter401kOrSafeHarbor403b": true
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            77000,
+            87000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            123000,
+            143000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            230000,
+            240000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            146000,
+            161000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            230000,
+            240000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "ira": {
+        "baseContributionLimit": 7000,
+        "age50CatchUp": 1000,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 23500,
+      "generalAge50CatchUp": 7500,
+      "age60To63CatchUp": 11250,
+      "rothCatchUpPriorYearFicaWageThreshold": null,
+      "annualAdditions415c": 70000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 350000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 750,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": true
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 16500,
+        "generalAge50CatchUp": 3500,
+        "age60To63CatchUp": 5250,
+        "certainPlanEnhancedSalaryReductionLimit": 17600,
+        "certainPlanAge50CatchUp": 3850,
+        "additionalNonelectiveContributionCap": 5100
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 23500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 47000,
+        "governmentalAge50CatchUp": 7500,
+        "governmentalAge60To63CatchUp": 11250,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": true,
+        "baseDeferralLimit": 6000,
+        "age50CatchUp": 1000
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": true,
+        "starter401kOrSafeHarbor403b": true
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            79000,
+            89000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            126000,
+            146000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            236000,
+            246000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            150000,
+            165000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            236000,
+            246000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "ira": {
+        "baseContributionLimit": 7500,
+        "age50CatchUp": 1100,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 24500,
+      "generalAge50CatchUp": 8000,
+      "age60To63CatchUp": 11250,
+      "rothCatchUpPriorYearFicaWageThreshold": 150000,
+      "annualAdditions415c": 72000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 360000,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 800,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": true
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 17000,
+        "generalAge50CatchUp": 4000,
+        "age60To63CatchUp": 5250,
+        "certainPlanEnhancedSalaryReductionLimit": 18100,
+        "certainPlanAge50CatchUp": 3850,
+        "additionalNonelectiveContributionCap": 5300
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 24500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 49000,
+        "governmentalAge50CatchUp": 8000,
+        "governmentalAge60To63CatchUp": 11250,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": true,
+        "baseDeferralLimit": 6000,
+        "age50CatchUp": 1100
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": true,
+        "starter401kOrSafeHarbor403b": true
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            81000,
+            91000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            129000,
+            149000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            242000,
+            252000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            153000,
+            168000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            242000,
+            252000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      }
+    }
+  }
+}

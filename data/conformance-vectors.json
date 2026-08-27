@@ -1,0 +1,1000 @@
+{
+  "schemaVersion": 1,
+  "description": "Language-neutral conformance scenarios consumed by the TypeScript and PHP test suites.",
+  "vectors": [
+    {
+      "name": "ordinary 2026 401k plan-term capacity",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 200000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 72000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24500,
+        "accounts.0.planTermDependentCapacity": 47500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500
+      }
+    },
+    {
+      "name": "2026 high-wage age-60-to-63 Roth catch-up",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 150001
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "permitsRothContributions": true,
+              "permitsRothCatchUp": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 11250,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 35750
+      },
+      "expectDiagnosticCodes": [
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
+    },
+    {
+      "name": "2026 Roth IRA MFJ phaseout",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "rothIra": 247000
+            },
+            "coveredByEmployerRetirementPlan": false
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "rothIra": 247000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "roth",
+            "ownerId": "t",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.rothIra": 3750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3750
+      }
+    },
+    {
+      "name": "shared traditional and Roth IRA pool",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "rothIra": 158000,
+              "traditionalIraDeduction": 50000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "roth",
+            "ownerId": "t",
+            "type": "roth_ira",
+            "priority": 1
+          },
+          {
+            "id": "traditional",
+            "ownerId": "t",
+            "type": "traditional_ira",
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.rothIra": 5000,
+        "accounts.1.contributionComponents.deductibleIra": 2500,
+        "totals.maximumAnnualContributionBasedOnInputs": 7500
+      }
+    },
+    {
+      "name": "401k and governmental 457b are separate",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "private",
+            "planRules": {
+              "planCompensation": 200000
+            }
+          },
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "457b",
+            "employerId": "government",
+            "planRules": {
+              "includibleCompensation457": 200000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 24500,
+        "totals.employeePreTaxContribution": 49000
+      }
+    },
+    {
+      "name": "mega backdoor 401k fills 415c",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 10000,
+              "permitsAfterTaxEmployeeContributions": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employerPreTax": 10000,
+        "accounts.0.contributionComponents.employeeAfterTax": 37500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 72000
+      }
+    },
+    {
+      "name": "self-employed solo 401k",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "selfEmploymentNetEarnings": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "solo",
+            "ownerId": "t",
+            "type": "solo_401k",
+            "planRules": {
+              "isSelfEmployedOwner": true,
+              "netEarningsFromSelfEmploymentAfterHalfSETax": 200000,
+              "planCompensation": 200000,
+              "permitsAfterTaxEmployeeContributions": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employerPreTax": 40000,
+        "accounts.0.contributionComponents.employeeAfterTax": 7500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 72000
+      }
+    },
+    {
+      "name": "403b 15-year catch-up",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "403b",
+            "employerId": "school",
+            "planRules": {
+              "planCompensation": 200000,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 15,
+                "priorElectiveDeferrals": 20000,
+                "priorSpecialCatchUpUsed": 0
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special403bCatchUp": 3000
+      }
+    },
+    {
+      "name": "457b special last-three-years catch-up",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 150000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "gov": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "gov",
+            "planRules": {
+              "includibleCompensation457": 150000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 30000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 24500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 49000
+      },
+      "expectDiagnosticCodes": [
+        "SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP"
+      ]
+    },
+    {
+      "name": "1994 historical employer-plan limits",
+      "input": {
+        "taxYear": 1994,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 9240,
+        "accounts.0.statutoryMaximumAnnualContribution": 25000
+      }
+    },
+    {
+      "name": "1985 employer-plan limit remains indeterminate",
+      "input": {
+        "taxYear": 1985,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HISTORICAL_415C_LIMIT_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "1982 nonworking spouse IRA",
+      "input": {
+        "taxYear": 1982,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1950,
+            "compensation": {
+              "iraCompensation": 20000
+            },
+            "coveredByEmployerRetirementPlan": true
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1950,
+            "compensation": {
+              "iraCompensation": 0
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "spouse-ira",
+            "ownerId": "s",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.deductibleIra": 250,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 250
+      }
+    },
+    {
+      "name": "IRA conversion Form 8606 pro-rata",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "traditionalSepSimpleIraBasis": 20000,
+            "yearEndTraditionalSepSimpleIraValue": 80000,
+            "otherTraditionalSepSimpleIraDistributions": 0
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 20000
+          }
+        ]
+      },
+      "expect": {
+        "conversions.0.nontaxableBasisAmount": 4000,
+        "conversions.0.taxableAmount": 16000,
+        "conversions.0.consumesAnnualContributionLimit": false,
+        "totals.taxableRothConversions": 16000
+      }
+    },
+    {
+      "name": "in-plan Roth rollover basis",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "permitsInPlanRothRollover": true
+            }
+          }
+        ],
+        "conversions": [
+          {
+            "id": "c",
+            "ownerId": "t",
+            "type": "in_plan_roth_rollover",
+            "amount": 50000,
+            "sourceAccountId": "k",
+            "afterTaxBasisInConvertedAmount": 10000
+          }
+        ]
+      },
+      "expect": {
+        "conversions.0.taxableAmount": 40000,
+        "conversions.0.nontaxableBasisAmount": 10000
+      }
+    },
+    {
+      "name": "2026 enhanced SIMPLE",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "simple",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "simpleEnhancedLimitEligible": true,
+              "simpleEmployerContributionMethod": "match_3_percent"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 18100,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 5250,
+        "accounts.0.contributionComponents.employerPreTax": 3000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 26350
+      }
+    },
+    {
+      "name": "cash-balance contribution is actuarial",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "cb",
+            "ownerId": "t",
+            "type": "cash_balance_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION"
+      ]
+    },
+    {
+      "name": "self-employed retirement deduction classification",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "selfEmploymentNetEarnings": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "solo",
+            "ownerId": "t",
+            "type": "solo_401k",
+            "planRules": {
+              "isSelfEmployedOwner": true,
+              "netEarningsFromSelfEmploymentAfterHalfSETax": 200000,
+              "planCompensation": 200000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.federalTaxEffects.selfEmployedRetirementDeduction": 64500,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 64500,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0
+      }
+    },
+    {
+      "name": "2009 MFS living apart Roth conversion",
+      "input": {
+        "taxYear": 2009,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "livedWithSpouseDuringYear": false,
+            "magi": {
+              "rothConversion": 90000
+            },
+            "traditionalSepSimpleIraBasis": 10000,
+            "yearEndTraditionalSepSimpleIraValue": 10000
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 10000
+          }
+        ]
+      },
+      "expect": {
+        "conversions.0.status": "determinate",
+        "conversions.0.nontaxableBasisAmount": 5000,
+        "conversions.0.taxableAmount": 5000
+      }
+    },
+    {
+      "name": "SIMPLE additional nonelective 10 percent cap",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 20000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "simple",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 20000,
+              "simpleEmployerContributionMethod": "nonelective_2_percent",
+              "simpleAdditionalNonelectiveContribution": 5300
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employerPreTax": 2400,
+        "accounts.0.statutoryMaximumAnnualContribution": 19600
+      },
+      "expectDiagnosticCodes": [
+        "SIMPLE_ADDITIONAL_NONELECTIVE_CONTRIBUTION_CAPPED"
+      ]
+    },
+    {
+      "name": "SIMPLE IRA Roth catch-up wage-test exclusion",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "simple",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "simpleEmployerContributionMethod": "match_3_percent"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 17000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 5250,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0
+      }
+    },
+    {
+      "name": "aggregate 403b 15-year catch-up pool",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 300000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "first",
+            "ownerId": "t",
+            "type": "traditional_403b",
+            "employerId": "school-a",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 150000,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 15,
+                "priorElectiveDeferrals": 20000,
+                "priorSpecialCatchUpUsed": 0
+              }
+            }
+          },
+          {
+            "id": "second",
+            "ownerId": "t",
+            "type": "traditional_403b",
+            "employerId": "school-b",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 150000,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 15,
+                "priorElectiveDeferrals": 20000,
+                "priorSpecialCatchUpUsed": 0
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.special403bCatchUp": 3000,
+        "accounts.1.contributionComponents.special403bCatchUp": 0
+      }
+    },
+    {
+      "name": "pre-2023 Roth employer contribution unavailable",
+      "input": {
+        "taxYear": 2022,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "expectedEmployerContribution": 10000,
+              "employerContributionTaxTreatment": "roth"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employerRoth": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 20500
+      },
+      "expectDiagnosticCodes": [
+        "ROTH_EMPLOYER_CONTRIBUTIONS_NOT_AVAILABLE_FOR_YEAR"
+      ]
+    },
+    {
+      "name": "aggregate IRA conversion basis penny allocation",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "traditionalSepSimpleIraBasis": 1,
+            "yearEndTraditionalSepSimpleIraValue": 147
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c1",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 1
+          },
+          {
+            "id": "c2",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 1
+          },
+          {
+            "id": "c3",
+            "ownerId": "t",
+            "type": "ira_to_roth_ira",
+            "amount": 1
+          }
+        ]
+      },
+      "expect": {
+        "conversions.0.nontaxableBasisAmount": 0.01,
+        "conversions.1.nontaxableBasisAmount": 0.01,
+        "conversions.2.nontaxableBasisAmount": 0,
+        "totals.taxableRothConversions": 2.98
+      }
+    },
+    {
+      "name": "1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sep",
+            "ownerId": "t",
+            "type": "sep_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 24000,
+        "accounts.0.contributionComponents.employerPreTax": 24000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24000
+      }
+    },
+    {
+      "name": "1997 nonelective formula applies 401a17 compensation ceiling",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 30000,
+        "accounts.0.contributionComponents.employerPreTax": 24000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24000
+      }
+    },
+    {
+      "name": "1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "selfEmploymentNetEarnings": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sep",
+            "ownerId": "t",
+            "type": "sep_ira",
+            "employerId": "sole-proprietor",
+            "planRules": {
+              "planCompensation": 500000,
+              "isSelfEmployedOwner": true,
+              "netEarningsFromSelfEmploymentAfterHalfSETax": 500000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 24000,
+        "accounts.0.contributionComponents.employerPreTax": 24000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24000
+      }
+    },
+    {
+      "name": "1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "selfEmploymentNetEarnings": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "sole-proprietor",
+            "planRules": {
+              "planCompensation": 500000,
+              "isSelfEmployedOwner": true,
+              "netEarningsFromSelfEmploymentAfterHalfSETax": 500000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 30000,
+        "accounts.0.contributionComponents.employerPreTax": 24000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24000
+      }
+    }
+  ]
+}

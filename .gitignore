@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-tests/
+vendor/
+composer.lock
+*.tgz
+*.zip
+*.sha256
+.DS_Store
+.phpunit.cache/
+coverage/

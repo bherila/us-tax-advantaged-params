@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typescript:
+    name: TypeScript / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:data
+      - run: npm run generate:check
+      - run: npm run validate:manifests
+      - run: npm run typecheck
+      - run: npm run test:ts
+      - run: npm run build
+      - run: node scripts/smoke-imports.mjs
+      - run: node scripts/validate-manifests.mjs --built
+      - run: npm pack --dry-run --ignore-scripts
+
+  php:
+    name: PHP 8.5
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer
+          coverage: none
+      - run: composer validate --strict
+      - run: composer install --no-interaction --no-progress
+      - run: composer test
+
+  parity:
+    name: TypeScript / PHP full-output parity
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+      - run: npm ci
+      - run: npm run build
+      - run: php -l php/src/USARetirementAccountParameters.php
+      - run: php -l scripts/php-parity-runner.php
+      - run: node scripts/check-parity.mjs
+
+  release-validation:
+    name: Publication gate
+    runs-on: ubuntu-24.04-arm
+    needs: [typescript, php, parity]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer
+          coverage: none
+      - run: npm ci
+      - run: npm run validate:release
