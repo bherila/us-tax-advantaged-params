@@ -33,5 +33,16 @@ jobs:
       - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run validate:release
+      - name: Skip if this version is already on the registry
+        id: registry
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "usa-retirement-account-parameters@${version}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "usa-retirement-account-parameters@${version} is already published; skipping publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
       # prepack runs the full verify suite again as the final publication gate.
-      - run: npm publish --access public
+      - if: steps.registry.outputs.published == 'false'
+        run: npm publish --access public
