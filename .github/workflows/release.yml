@@ -25,9 +25,13 @@ jobs:
           php-version: '8.5'
           tools: composer
           coverage: none
+      # Trusted publishing (OIDC): no npm token is stored anywhere. The npm CLI
+      # exchanges this job's OIDC identity for a short-lived credential, which
+      # requires npm >= 11.5.1 and the trusted publisher configured on npmjs.com
+      # (package Settings -> Publishing access -> GitHub Actions, this repo and
+      # workflow file). Provenance is implied by trusted publishing.
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run validate:release
       # prepack runs the full verify suite again as the final publication gate.
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public
