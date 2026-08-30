@@ -21,3 +21,13 @@
 /validation-status.json export-ignore
 /VALIDATION.md export-ignore
 /RELEASE_STATUS.md export-ignore
+
+# The evidence corpus backs the published figures but is not part of either
+# distributed artifact. npm ships via the `files` allowlist in package.json,
+# which already excludes it; Composer ships everything not listed here.
+/evidence export-ignore
+
+# The notices under evidence/ are already-compressed binaries; excluding them
+# from text normalisation and diffing keeps them byte-identical to what was
+# downloaded, which is what SHA256SUMS.txt attests.
+/evidence/**/*.pdf -text -diff

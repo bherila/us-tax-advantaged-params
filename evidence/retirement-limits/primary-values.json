@@ -1,0 +1,774 @@
+{
+  "_comment": "Retirement plan and IRA dollar limits taken verbatim from IRS COLA notices and SSA Federal Register determinations. Verified 2026-08-30. Amounts are dollars. See findings.md for the reconciliation and README.md for method.",
+  "_sources": {
+    "n-25-67": "IRS Notice 2025-67, 2026 Amounts Relating to Retirement Plans and IRAs, as Adjusted for Changes in Cost-of-Living",
+    "n-24-80": "IRS Notice 2024-80, 2025 Amounts Relating to Retirement Plans and IRAs, as Adjusted for Changes in Cost-of-Living",
+    "n-23-75": "IRS Notice 2023-75, 2024 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-22-55": "IRS Notice 2022-55, 2023 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-21-61": "IRS Notice 2021-61, 2022 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-20-79": "IRS Notice 2020-79, 2021 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-19-59": "IRS Notice 2019-59, 2020 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-18-83": "IRS Notice 2018-83, 2019 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-17-64": "IRS Notice 2017-64, 2018 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-16-62": "IRS Notice 2016-62, 2017 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-15-75": "IRS Notice 2015-75, 2016 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "ir-14-099": "IRS News Release IR-2014-99, IRS Announces 2015 Pension Plan Limitations",
+    "ir-13-086": "IRS News Release IR-2013-86, IRS Announces 2014 Pension Plan Limitations",
+    "fr-2025-19763": "SSA, Cost-of-Living Increase and Other Determinations for 2026, 90 FR (Nov. 3, 2025)",
+    "fr-2024-24871": "SSA, Cost-of-Living Increase and Other Determinations for 2025, 89 FR (Oct. 25, 2024)",
+    "fr-2023-23317": "SSA, Cost-of-Living Increase and Other Determinations for 2024, 88 FR (Oct. 23, 2023)",
+    "ir-12-077": "IRS News Release IR-2012-77, IRS Announces 2013 Pension Plan Limitations (file carries an IR-2011-103 page footer; it sets the 2013 limits)",
+    "n-09-94": "IRS Notice 2009-94, 2010 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "n-08-102": "IRS Notice 2008-102, 2009 Limitations Adjusted as Provided in Section 415(d), etc."
+  },
+  "planYears": {
+    "2013": {
+      "source": "ir-12-077",
+      "annualAdditions_415c1A": 51000,
+      "electiveDeferral_402g1": 17500,
+      "section457b_457e15": 17500,
+      "catchUp50_414v2Bi": 5500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 255000,
+      "dbAnnualBenefit_415b1A": 205000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 59000,
+          "end": 69000
+        },
+        "marriedFilingJointly": {
+          "start": 95000,
+          "end": 115000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 178000,
+          "end": 188000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 112000,
+          "end": 127000
+        },
+        "marriedFilingJointly": {
+          "start": 178000,
+          "end": 188000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2014": {
+      "source": "ir-13-086",
+      "annualAdditions_415c1A": 52000,
+      "electiveDeferral_402g1": 17500,
+      "section457b_457e15": 17500,
+      "catchUp50_414v2Bi": 5500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 260000,
+      "dbAnnualBenefit_415b1A": 210000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 60000,
+          "end": 70000
+        },
+        "marriedFilingJointly": {
+          "start": 96000,
+          "end": 116000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 181000,
+          "end": 191000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 114000,
+          "end": 129000
+        },
+        "marriedFilingJointly": {
+          "start": 181000,
+          "end": 191000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2015": {
+      "source": "ir-14-099",
+      "annualAdditions_415c1A": 53000,
+      "electiveDeferral_402g1": 18000,
+      "section457b_457e15": 18000,
+      "catchUp50_414v2Bi": 6000,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 265000,
+      "dbAnnualBenefit_415b1A": 210000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 61000,
+          "end": 71000
+        },
+        "marriedFilingJointly": {
+          "start": 98000,
+          "end": 118000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 183000,
+          "end": 193000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 116000,
+          "end": 131000
+        },
+        "marriedFilingJointly": {
+          "start": 183000,
+          "end": 193000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2016": {
+      "source": "n-15-75",
+      "annualAdditions_415c1A": 53000,
+      "electiveDeferral_402g1": 18000,
+      "section457b_457e15": 18000,
+      "catchUp50_414v2Bi": 6000,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 265000,
+      "dbAnnualBenefit_415b1A": 210000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 61000,
+          "end": 71000
+        },
+        "marriedFilingJointly": {
+          "start": 98000,
+          "end": 118000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 184000,
+          "end": 194000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 117000,
+          "end": 132000
+        },
+        "marriedFilingJointly": {
+          "start": 184000,
+          "end": 194000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2017": {
+      "source": "n-16-62",
+      "annualAdditions_415c1A": 54000,
+      "electiveDeferral_402g1": 18000,
+      "section457b_457e15": 18000,
+      "catchUp50_414v2Bi": 6000,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 270000,
+      "dbAnnualBenefit_415b1A": 215000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 62000,
+          "end": 72000
+        },
+        "marriedFilingJointly": {
+          "start": 99000,
+          "end": 119000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 186000,
+          "end": 196000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 118000,
+          "end": 133000
+        },
+        "marriedFilingJointly": {
+          "start": 186000,
+          "end": 196000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2018": {
+      "source": "n-17-64",
+      "annualAdditions_415c1A": 55000,
+      "electiveDeferral_402g1": 18500,
+      "section457b_457e15": 18500,
+      "catchUp50_414v2Bi": 6000,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 275000,
+      "dbAnnualBenefit_415b1A": 220000,
+      "iraContribution_219b5A": 5500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 63000,
+          "end": 73000
+        },
+        "marriedFilingJointly": {
+          "start": 101000,
+          "end": 121000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 189000,
+          "end": 199000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 120000,
+          "end": 135000
+        },
+        "marriedFilingJointly": {
+          "start": 189000,
+          "end": 199000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2019": {
+      "source": "n-18-83",
+      "annualAdditions_415c1A": 56000,
+      "electiveDeferral_402g1": 19000,
+      "section457b_457e15": 19000,
+      "catchUp50_414v2Bi": 6000,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 280000,
+      "dbAnnualBenefit_415b1A": 225000,
+      "iraContribution_219b5A": 6000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 64000,
+          "end": 74000
+        },
+        "marriedFilingJointly": {
+          "start": 103000,
+          "end": 123000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 193000,
+          "end": 203000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 122000,
+          "end": 137000
+        },
+        "marriedFilingJointly": {
+          "start": 193000,
+          "end": 203000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2020": {
+      "source": "n-19-59",
+      "annualAdditions_415c1A": 57000,
+      "electiveDeferral_402g1": 19500,
+      "section457b_457e15": 19500,
+      "catchUp50_414v2Bi": 6500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 285000,
+      "dbAnnualBenefit_415b1A": 230000,
+      "iraContribution_219b5A": 6000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 65000,
+          "end": 75000
+        },
+        "marriedFilingJointly": {
+          "start": 104000,
+          "end": 124000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 196000,
+          "end": 206000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 124000,
+          "end": 139000
+        },
+        "marriedFilingJointly": {
+          "start": 196000,
+          "end": 206000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2021": {
+      "source": "n-20-79",
+      "annualAdditions_415c1A": 58000,
+      "electiveDeferral_402g1": 19500,
+      "section457b_457e15": 19500,
+      "catchUp50_414v2Bi": 6500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 290000,
+      "dbAnnualBenefit_415b1A": 230000,
+      "iraContribution_219b5A": 6000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 66000,
+          "end": 76000
+        },
+        "marriedFilingJointly": {
+          "start": 105000,
+          "end": 125000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 198000,
+          "end": 208000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 125000,
+          "end": 140000
+        },
+        "marriedFilingJointly": {
+          "start": 198000,
+          "end": 208000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2022": {
+      "source": "n-21-61",
+      "annualAdditions_415c1A": 61000,
+      "electiveDeferral_402g1": 20500,
+      "section457b_457e15": 20500,
+      "catchUp50_414v2Bi": 6500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 305000,
+      "dbAnnualBenefit_415b1A": 245000,
+      "iraContribution_219b5A": 6000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 68000,
+          "end": 78000
+        },
+        "marriedFilingJointly": {
+          "start": 109000,
+          "end": 129000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 204000,
+          "end": 214000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 129000,
+          "end": 144000
+        },
+        "marriedFilingJointly": {
+          "start": 204000,
+          "end": 214000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2023": {
+      "source": "n-22-55",
+      "annualAdditions_415c1A": 66000,
+      "electiveDeferral_402g1": 22500,
+      "section457b_457e15": 22500,
+      "catchUp50_414v2Bi": 7500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 330000,
+      "dbAnnualBenefit_415b1A": 265000,
+      "iraContribution_219b5A": 6500,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 73000,
+          "end": 83000
+        },
+        "marriedFilingJointly": {
+          "start": 116000,
+          "end": 136000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 218000,
+          "end": 228000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 138000,
+          "end": 153000
+        },
+        "marriedFilingJointly": {
+          "start": 218000,
+          "end": 228000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2024": {
+      "source": "n-23-75",
+      "annualAdditions_415c1A": 69000,
+      "electiveDeferral_402g1": 23000,
+      "section457b_457e15": 23000,
+      "catchUp50_414v2Bi": 7500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": 145000,
+      "rothCatchUpWageThreshold_source": "statutory; not stated in Notice 2023-75",
+      "compensationLimit_401a17": 345000,
+      "dbAnnualBenefit_415b1A": 275000,
+      "iraContribution_219b5A": 7000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 77000,
+          "end": 87000
+        },
+        "marriedFilingJointly": {
+          "start": 123000,
+          "end": 143000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 230000,
+          "end": 240000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 146000,
+          "end": 161000
+        },
+        "marriedFilingJointly": {
+          "start": 230000,
+          "end": 240000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "socialSecurityWageBase": 168600,
+      "socialSecurityWageBase_source": "fr-2023-23317"
+    },
+    "2025": {
+      "source": "n-24-80",
+      "annualAdditions_415c1A": 70000,
+      "electiveDeferral_402g1": 23500,
+      "section457b_457e15": 23500,
+      "catchUp50_414v2Bi": 7500,
+      "catchUp60To63_414v2Ei": 11250,
+      "rothCatchUpWageThreshold_414v7A": 145000,
+      "rothCatchUpWageThreshold_note": "Notice 2024-80 calls this 'the Roth catch-up wage threshold for 2024', applied to 2024 wages to determine whether 2025 catch-up contributions must be Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
+      "compensationLimit_401a17": 350000,
+      "dbAnnualBenefit_415b1A": 280000,
+      "iraContribution_219b5A": 7000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 79000,
+          "end": 89000
+        },
+        "marriedFilingJointly": {
+          "start": 126000,
+          "end": 146000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 236000,
+          "end": 246000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 150000,
+          "end": 165000
+        },
+        "marriedFilingJointly": {
+          "start": 236000,
+          "end": 246000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "socialSecurityWageBase": 176100,
+      "socialSecurityWageBase_source": "fr-2024-24871"
+    },
+    "2026": {
+      "source": "n-25-67",
+      "annualAdditions_415c1A": 72000,
+      "electiveDeferral_402g1": 24500,
+      "section457b_457e15": 24500,
+      "catchUp50_414v2Bi": 8000,
+      "catchUp60To63_414v2Ei": 11250,
+      "rothCatchUpWageThreshold_414v7A": 150000,
+      "rothCatchUpWageThreshold_note": "Notice 2025-67 calls this 'the Roth catch-up wage threshold for 2025', applied to 2025 wages to determine whether 2026 catch-up contributions must be Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
+      "compensationLimit_401a17": 360000,
+      "dbAnnualBenefit_415b1A": 290000,
+      "iraContribution_219b5A": 7500,
+      "iraCatchUp50_219b5Bii": 1100,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 81000,
+          "end": 91000
+        },
+        "marriedFilingJointly": {
+          "start": 129000,
+          "end": 149000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 242000,
+          "end": 252000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 153000,
+          "end": 168000
+        },
+        "marriedFilingJointly": {
+          "start": 242000,
+          "end": 252000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "socialSecurityWageBase": 184500,
+      "socialSecurityWageBase_source": "fr-2025-19763"
+    }
+  },
+  "_electiveDeferralComment": "Section 402(g)(1) and section 457(e)(15) have been identical in every year listed. 2013 and 2014 are established by IR-2013-86 ('remains unchanged at $17,500' for 2014, which fixes 2013 at the same amount); 2015 by IR-2014-99; 2016 onward by the named notice.",
+  "electiveDeferralAndSection457b": {
+    "2013": {
+      "amount": 17500,
+      "source": "ir-13-086"
+    },
+    "2014": {
+      "amount": 17500,
+      "source": "ir-13-086"
+    },
+    "2015": {
+      "amount": 18000,
+      "source": "ir-14-099"
+    },
+    "2016": {
+      "amount": 18000,
+      "source": "n-15-75"
+    },
+    "2017": {
+      "amount": 18000,
+      "source": "n-16-62"
+    },
+    "2018": {
+      "amount": 18500,
+      "source": "n-17-64"
+    },
+    "2019": {
+      "amount": 19000,
+      "source": "n-18-83"
+    },
+    "2020": {
+      "amount": 19500,
+      "source": "n-19-59"
+    },
+    "2021": {
+      "amount": 19500,
+      "source": "n-20-79"
+    },
+    "2022": {
+      "amount": 20500,
+      "source": "n-21-61"
+    },
+    "2023": {
+      "amount": 22500,
+      "source": "n-22-55"
+    },
+    "2024": {
+      "amount": 23000,
+      "source": "n-23-75"
+    },
+    "2025": {
+      "amount": 23500,
+      "source": "n-24-80"
+    },
+    "2026": {
+      "amount": 24500,
+      "source": "n-25-67"
+    }
+  }
+}
