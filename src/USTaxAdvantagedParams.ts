@@ -13,7 +13,7 @@
  */
 
 export const PACKAGE_NAME = "us-tax-advantaged-params" as const;
-export const ENGINE_VERSION = "0.1.0" as const;
+export const ENGINE_VERSION = "0.2.0" as const;
 
 export type Money = number;
 export type PersonRole = "taxpayer" | "spouse" | "other";
@@ -216,7 +216,7 @@ export interface PlanRulesInput {
   simpleAdditionalNonelectiveContribution?: Money;
 }
 
-export interface RetirementAccountInput {
+export interface AccountInput {
   id: string;
   ownerId: string;
   type: AccountType | string;
@@ -242,11 +242,11 @@ export interface RothConversionInput {
   sourceAccountId?: string;
 }
 
-export interface RetirementScenarioInput {
+export interface ScenarioInput {
   taxYear: number;
   filingStatus: FilingStatus | string;
   persons: PersonInput[];
-  accounts: RetirementAccountInput[];
+  accounts: AccountInput[];
   conversions?: RothConversionInput[];
 }
 
@@ -336,7 +336,7 @@ export interface ScenarioTotals {
   taxableRothConversions: Money;
 }
 
-export interface RetirementScenarioResult {
+export interface ScenarioResult {
   package: typeof PACKAGE_NAME;
   engineVersion: typeof ENGINE_VERSION;
   taxYear: number;
@@ -5670,17 +5670,17 @@ const RAW_PARAMETERS: ParameterData = {
 } as ParameterData;
 /* </generated-parameters> */
 
-export class RetirementParameterError extends Error {
+export class ParameterError extends Error {
   public readonly code: string;
 
   public constructor(code: string, message: string) {
     super(message);
-    this.name = "RetirementParameterError";
+    this.name = "ParameterError";
     this.code = code;
   }
 }
 
-export class UnsupportedTaxYearError extends RetirementParameterError {
+export class UnsupportedTaxYearError extends ParameterError {
   public constructor(year: number, minimum: number, maximum: number) {
     super(
       "UNSUPPORTED_TAX_YEAR",
@@ -6002,7 +6002,7 @@ function parseFilingStatus(value: FilingStatus | string, diagnostics?: Diagnosti
   const token = normalizeToken(String(value));
   const parsed = FILING_STATUS_ALIASES[token];
   if (!parsed) {
-    throw new RetirementParameterError("INVALID_FILING_STATUS", `Unsupported filing status: ${value}`);
+    throw new ParameterError("INVALID_FILING_STATUS", `Unsupported filing status: ${value}`);
   }
   if (token === "M") {
     diagnostics?.push(
@@ -6023,7 +6023,7 @@ function parseAccountType(value: AccountType | string): AccountType {
   }
   const parsed = ACCOUNT_TYPE_ALIASES[normalizeToken(String(value))];
   if (!parsed) {
-    throw new RetirementParameterError("INVALID_ACCOUNT_TYPE", `Unsupported retirement account type: ${value}`);
+    throw new ParameterError("INVALID_ACCOUNT_TYPE", `Unsupported retirement account type: ${value}`);
   }
   return parsed;
 }
@@ -6034,7 +6034,7 @@ function parseConversionType(value: ConversionType | string): ConversionType {
   }
   const parsed = CONVERSION_TYPE_ALIASES[normalizeToken(String(value))];
   if (!parsed) {
-    throw new RetirementParameterError("INVALID_CONVERSION_TYPE", `Unsupported Roth conversion type: ${value}`);
+    throw new ParameterError("INVALID_CONVERSION_TYPE", `Unsupported Roth conversion type: ${value}`);
   }
   return parsed;
 }
@@ -6052,7 +6052,7 @@ function diagnostic(
 function money(value: unknown, path: string, defaultValue = 0): Money {
   if (value === undefined || value === null) return defaultValue;
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    throw new RetirementParameterError("INVALID_MONEY", `${path} must be a finite, nonnegative number.`);
+    throw new ParameterError("INVALID_MONEY", `${path} must be a finite, nonnegative number.`);
   }
   return roundMoney(value);
 }
@@ -6060,7 +6060,7 @@ function money(value: unknown, path: string, defaultValue = 0): Money {
 function rate(value: unknown, path: string, defaultValue = 0): number {
   if (value === undefined || value === null) return defaultValue;
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
-    throw new RetirementParameterError("INVALID_RATE", `${path} must be a number from 0 through 1.`);
+    throw new ParameterError("INVALID_RATE", `${path} must be a number from 0 through 1.`);
   }
   return value;
 }
@@ -6232,7 +6232,7 @@ interface NormalizedPerson extends PersonInput {
   priorYearFicaWagesByEmployer: Record<string, Money>;
 }
 
-interface NormalizedAccount extends Omit<RetirementAccountInput, "type" | "planRules" | "existingContributions"> {
+interface NormalizedAccount extends Omit<AccountInput, "type" | "planRules" | "existingContributions"> {
   type: AccountType;
   planRules: PlanRulesInput;
   existingContributions: ContributionComponents;
@@ -6287,7 +6287,7 @@ interface AllocationOutcome {
 
 function getParametersForYear(year: number): YearParameters {
   if (!Number.isInteger(year)) {
-    throw new RetirementParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
   }
   const { minimum, maximum } = RAW_PARAMETERS.supportedTaxYears;
   if (year < minimum || year > maximum || !RAW_PARAMETERS.years[String(year)]) {
@@ -6302,18 +6302,18 @@ function deepClone<T>(value: T): T {
 
 function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson> {
   if (!Array.isArray(persons) || persons.length === 0) {
-    throw new RetirementParameterError("PERSON_REQUIRED", "At least one person is required.");
+    throw new ParameterError("PERSON_REQUIRED", "At least one person is required.");
   }
   const result = new Map<string, NormalizedPerson>();
   for (const [index, input] of persons.entries()) {
     if (!input.id?.trim()) {
-      throw new RetirementParameterError("PERSON_ID_REQUIRED", `persons[${index}].id is required.`);
+      throw new ParameterError("PERSON_ID_REQUIRED", `persons[${index}].id is required.`);
     }
     if (result.has(input.id)) {
-      throw new RetirementParameterError("DUPLICATE_PERSON_ID", `Duplicate person ID: ${input.id}`);
+      throw new ParameterError("DUPLICATE_PERSON_ID", `Duplicate person ID: ${input.id}`);
     }
     if (input.birthYear !== undefined && (!Number.isInteger(input.birthYear) || input.birthYear < 1800 || input.birthYear > 3000)) {
-      throw new RetirementParameterError("INVALID_BIRTH_YEAR", `persons[${index}].birthYear is invalid.`);
+      throw new ParameterError("INVALID_BIRTH_YEAR", `persons[${index}].birthYear is invalid.`);
     }
     if (input.birthDate !== undefined) validateIsoDate(input.birthDate, `persons[${index}].birthDate`);
     const compensation = input.compensation ?? {};
@@ -6330,7 +6330,7 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
     }
     const role = input.role ?? (index === 0 ? "taxpayer" : index === 1 ? "spouse" : "other");
     if (role !== "taxpayer" && role !== "spouse" && role !== "other") {
-      throw new RetirementParameterError(
+      throw new ParameterError(
         "INVALID_PERSON_ROLE",
         `persons[${index}].role must be taxpayer, spouse, or other.`,
       );
@@ -6358,7 +6358,7 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
   for (const role of ["taxpayer", "spouse"] as const) {
     const matching = [...result.values()].filter((person) => person.role === role);
     if (matching.length > 1) {
-      throw new RetirementParameterError(
+      throw new ParameterError(
         "DUPLICATE_PERSON_ROLE",
         `Only one person may have the ${role} role; found ${matching.map((person) => person.id).join(", ")}.`,
       );
@@ -6368,20 +6368,20 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
 }
 
 function normalizeAccounts(
-  accounts: RetirementAccountInput[],
+  accounts: AccountInput[],
   persons: Map<string, NormalizedPerson>,
 ): NormalizedAccount[] {
   const ids = new Set<string>();
   return accounts.map((input, index) => {
     if (!input.id?.trim()) {
-      throw new RetirementParameterError("ACCOUNT_ID_REQUIRED", `accounts[${index}].id is required.`);
+      throw new ParameterError("ACCOUNT_ID_REQUIRED", `accounts[${index}].id is required.`);
     }
     if (ids.has(input.id)) {
-      throw new RetirementParameterError("DUPLICATE_ACCOUNT_ID", `Duplicate account ID: ${input.id}`);
+      throw new ParameterError("DUPLICATE_ACCOUNT_ID", `Duplicate account ID: ${input.id}`);
     }
     ids.add(input.id);
     if (!persons.has(input.ownerId)) {
-      throw new RetirementParameterError(
+      throw new ParameterError(
         "UNKNOWN_ACCOUNT_OWNER",
         `Account ${input.id} references unknown owner ${input.ownerId}.`,
       );
@@ -6414,7 +6414,7 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   if (rules.special403bCatchUp) {
     const special = rules.special403bCatchUp;
     if (!Number.isFinite(special.yearsOfService) || special.yearsOfService < 0) {
-      throw new RetirementParameterError("INVALID_YEARS_OF_SERVICE", `${path}.special403bCatchUp.yearsOfService is invalid.`);
+      throw new ParameterError("INVALID_YEARS_OF_SERVICE", `${path}.special403bCatchUp.yearsOfService is invalid.`);
     }
     money(special.priorElectiveDeferrals, `${path}.special403bCatchUp.priorElectiveDeferrals`);
     money(special.priorSpecialCatchUpUsed, `${path}.special403bCatchUp.priorSpecialCatchUpUsed`);
@@ -6429,12 +6429,12 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
 
 function validateIsoDate(value: string, path: string): void {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new RetirementParameterError("INVALID_DATE", `${path} must use YYYY-MM-DD.`);
+    throw new ParameterError("INVALID_DATE", `${path} must use YYYY-MM-DD.`);
   }
   const [year, month, day] = value.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
-    throw new RetirementParameterError("INVALID_DATE", `${path} is not a valid calendar date.`);
+    throw new ParameterError("INVALID_DATE", `${path} is not a valid calendar date.`);
   }
 }
 
@@ -8383,20 +8383,20 @@ function normalizeConversions(
   const ids = new Set<string>();
   return conversions.map((input, index) => {
     if (!input.id?.trim()) {
-      throw new RetirementParameterError("CONVERSION_ID_REQUIRED", `conversions[${index}].id is required.`);
+      throw new ParameterError("CONVERSION_ID_REQUIRED", `conversions[${index}].id is required.`);
     }
     if (ids.has(input.id)) {
-      throw new RetirementParameterError("DUPLICATE_CONVERSION_ID", `Duplicate conversion ID: ${input.id}`);
+      throw new ParameterError("DUPLICATE_CONVERSION_ID", `Duplicate conversion ID: ${input.id}`);
     }
     ids.add(input.id);
     if (!persons.has(input.ownerId)) {
-      throw new RetirementParameterError(
+      throw new ParameterError(
         "UNKNOWN_CONVERSION_OWNER",
         `Conversion ${input.id} references unknown owner ${input.ownerId}.`,
       );
     }
     if (input.sourceAccountId && !accountsById.has(input.sourceAccountId)) {
-      throw new RetirementParameterError(
+      throw new ParameterError(
         "UNKNOWN_CONVERSION_SOURCE_ACCOUNT",
         `Conversion ${input.id} references unknown source account ${input.sourceAccountId}.`,
       );
@@ -8752,7 +8752,7 @@ function calculateIraConversionGroup(
   });
 }
 
-export function calculateRetirementScenario(input: RetirementScenarioInput): RetirementScenarioResult {
+export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const scenarioDiagnostics: Diagnostic[] = [];
   const taxYear = input.taxYear;
   const parameters = getParametersForYear(taxYear);
@@ -9031,8 +9031,8 @@ export class PersonBuilder {
   }
 }
 
-export class RetirementAccountBuilder {
-  private readonly value: RetirementAccountInput;
+export class AccountBuilder {
+  private readonly value: AccountInput;
 
   public constructor(id: string, ownerId: string, type: AccountType | string) {
     this.value = {
@@ -9178,7 +9178,7 @@ export class RetirementAccountBuilder {
     return this;
   }
 
-  public build(): RetirementAccountInput {
+  public build(): AccountInput {
     return deepClone(this.value);
   }
 }
@@ -9225,23 +9225,23 @@ export class RothConversionBuilder {
   }
 }
 
-export class RetirementScenario {
-  public constructor(private readonly input: RetirementScenarioInput) {}
+export class Scenario {
+  public constructor(private readonly input: ScenarioInput) {}
 
-  public calculate(): RetirementScenarioResult {
-    return calculateRetirementScenario(deepClone(this.input));
+  public calculate(): ScenarioResult {
+    return calculateScenario(deepClone(this.input));
   }
 
-  public toInput(): RetirementScenarioInput {
+  public toInput(): ScenarioInput {
     return deepClone(this.input);
   }
 }
 
-export class RetirementScenarioBuilder {
-  private readonly value: RetirementScenarioInput;
+export class ScenarioBuilder {
+  private readonly value: ScenarioInput;
 
-  public static forTaxYear(taxYear: number): RetirementScenarioBuilder {
-    return new RetirementScenarioBuilder(taxYear);
+  public static forTaxYear(taxYear: number): ScenarioBuilder {
+    return new ScenarioBuilder(taxYear);
   }
 
   public constructor(taxYear: number) {
@@ -9276,9 +9276,9 @@ export class RetirementScenarioBuilder {
     return this.addPerson(builder);
   }
 
-  public addAccount(account: RetirementAccountInput | RetirementAccountBuilder): this {
+  public addAccount(account: AccountInput | AccountBuilder): this {
     this.value.accounts.push(
-      account instanceof RetirementAccountBuilder ? account.build() : deepClone(account),
+      account instanceof AccountBuilder ? account.build() : deepClone(account),
     );
     return this;
   }
@@ -9287,9 +9287,9 @@ export class RetirementScenarioBuilder {
     id: string,
     ownerId: string,
     type: AccountType | string,
-    configure?: (builder: RetirementAccountBuilder) => void,
+    configure?: (builder: AccountBuilder) => void,
   ): this {
-    const builder = new RetirementAccountBuilder(id, ownerId, type);
+    const builder = new AccountBuilder(id, ownerId, type);
     configure?.(builder);
     return this.addAccount(builder);
   }
@@ -9313,26 +9313,26 @@ export class RetirementScenarioBuilder {
     return this.addConversion(builder);
   }
 
-  public build(): RetirementScenario {
-    return new RetirementScenario(deepClone(this.value));
+  public build(): Scenario {
+    return new Scenario(deepClone(this.value));
   }
 
-  public calculate(): RetirementScenarioResult {
+  public calculate(): ScenarioResult {
     return this.build().calculate();
   }
 
-  public toInput(): RetirementScenarioInput {
+  public toInput(): ScenarioInput {
     return deepClone(this.value);
   }
 }
 
 export class USTaxAdvantagedParams {
-  public static forTaxYear(taxYear: number): RetirementScenarioBuilder {
-    return RetirementScenarioBuilder.forTaxYear(taxYear);
+  public static forTaxYear(taxYear: number): ScenarioBuilder {
+    return ScenarioBuilder.forTaxYear(taxYear);
   }
 
-  public static calculate(input: RetirementScenarioInput): RetirementScenarioResult {
-    return calculateRetirementScenario(input);
+  public static calculate(input: ScenarioInput): ScenarioResult {
+    return calculateScenario(input);
   }
 
   public static parametersForYear(taxYear: number): YearParameters {

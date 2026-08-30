@@ -1,6 +1,6 @@
 {
   "name": "us-tax-advantaged-params",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Historical and current U.S. tax-advantaged account parameters. Retirement accounts are covered today: contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
   "type": "module",
   "main": "./dist/cjs/USTaxAdvantagedParams.js",

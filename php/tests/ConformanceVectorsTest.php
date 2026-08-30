@@ -42,7 +42,7 @@ foreach ($decoded['vectors'] as $vector) {
             try {
                 U::calculate($vector['input']);
                 throw new RuntimeException("{$vector['name']}: expected error {$vector['expectError']['code']} was not thrown");
-            } catch (USTaxAdvantagedParams\RetirementParameterException $error) {
+            } catch (USTaxAdvantagedParams\ParameterException $error) {
                 if ($error->errorCode !== $vector['expectError']['code']) {
                     throw new RuntimeException(
                         "{$vector['name']}: expected error {$vector['expectError']['code']}, got {$error->errorCode}",

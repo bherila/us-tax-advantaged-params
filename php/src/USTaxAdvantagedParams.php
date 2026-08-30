@@ -83,7 +83,7 @@ enum DiagnosticSeverity: string
     case ERROR = 'error';
 }
 
-class RetirementParameterException extends InvalidArgumentException
+class ParameterException extends InvalidArgumentException
 {
     public function __construct(public readonly string $errorCode, string $message)
     {
@@ -91,7 +91,7 @@ class RetirementParameterException extends InvalidArgumentException
     }
 }
 
-final class UnsupportedTaxYearException extends RetirementParameterException
+final class UnsupportedTaxYearException extends ParameterException
 {
     public function __construct(int $year, int $minimum, int $maximum)
     {
@@ -228,7 +228,7 @@ final class PersonBuilder
     }
 }
 
-final class RetirementAccountBuilder
+final class AccountBuilder
 {
     /** @var array<string,mixed> */
     private array $value;
@@ -474,7 +474,7 @@ final class RothConversionBuilder
     }
 }
 
-final class RetirementScenario
+final class Scenario
 {
     /** @param array<string,mixed> $input */
     public function __construct(private readonly array $input)
@@ -494,7 +494,7 @@ final class RetirementScenario
     }
 }
 
-final class RetirementScenarioBuilder
+final class ScenarioBuilder
 {
     /** @var array<string,mixed> */
     private array $value;
@@ -545,9 +545,9 @@ final class RetirementScenarioBuilder
         return $this->addPerson($builder);
     }
 
-    public function addAccount(RetirementAccountBuilder|array $account): self
+    public function addAccount(AccountBuilder|array $account): self
     {
-        $this->value['accounts'][] = $account instanceof RetirementAccountBuilder
+        $this->value['accounts'][] = $account instanceof AccountBuilder
             ? $account->build()
             : Engine::copy($account);
         return $this;
@@ -559,7 +559,7 @@ final class RetirementScenarioBuilder
         AccountType|string $type,
         ?callable $configure = null,
     ): self {
-        $builder = new RetirementAccountBuilder($id, $ownerId, $type);
+        $builder = new AccountBuilder($id, $ownerId, $type);
         if ($configure !== null) {
             $configure($builder);
         }
@@ -588,9 +588,9 @@ final class RetirementScenarioBuilder
         return $this->addConversion($builder);
     }
 
-    public function build(): RetirementScenario
+    public function build(): Scenario
     {
-        return new RetirementScenario(Engine::copy($this->value));
+        return new Scenario(Engine::copy($this->value));
     }
 
     /** @return array<string,mixed> */
@@ -609,7 +609,7 @@ final class RetirementScenarioBuilder
 final class USTaxAdvantagedParams
 {
     public const PACKAGE_NAME = 'us-tax-advantaged-params';
-    public const ENGINE_VERSION = '0.1.0';
+    public const ENGINE_VERSION = '0.2.0';
 
     private static ?array $parameters = null;
 
@@ -5857,9 +5857,9 @@ private const PARAMETER_JSON = <<<'JSON'
 JSON;
 /* </generated-parameters> */
 
-    public static function forTaxYear(int $taxYear): RetirementScenarioBuilder
+    public static function forTaxYear(int $taxYear): ScenarioBuilder
     {
-        return RetirementScenarioBuilder::forTaxYear($taxYear);
+        return ScenarioBuilder::forTaxYear($taxYear);
     }
 
     /** @param array<string,mixed> $input
@@ -6103,7 +6103,7 @@ final class Engine
             'QUALIFYING_SURVIVING_SPOUSE' => FilingStatus::QUALIFYING_SURVIVING_SPOUSE->value,
         ];
         if (!isset($aliases[$token])) {
-            throw new RetirementParameterException('INVALID_FILING_STATUS', "Unsupported filing status: {$value}");
+            throw new ParameterException('INVALID_FILING_STATUS', "Unsupported filing status: {$value}");
         }
         if ($token === 'M') {
             $diagnostics[] = self::diagnostic(
@@ -6187,7 +6187,7 @@ final class Engine
         ];
         $token = self::normalizeToken($value);
         if (!isset($aliases[$token])) {
-            throw new RetirementParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$value}");
+            throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$value}");
         }
         return $aliases[$token];
     }
@@ -6211,7 +6211,7 @@ final class Engine
         ];
         $token = self::normalizeToken($value);
         if (!isset($aliases[$token])) {
-            throw new RetirementParameterException('INVALID_CONVERSION_TYPE', "Unsupported Roth conversion type: {$value}");
+            throw new ParameterException('INVALID_CONVERSION_TYPE', "Unsupported Roth conversion type: {$value}");
         }
         return $aliases[$token];
     }
@@ -6362,7 +6362,7 @@ final class Engine
         if (in_array($type, [AccountType::DEFINED_BENEFIT_PLAN->value, AccountType::CASH_BALANCE_PLAN->value], true)) {
             return array_replace($base, ['family' => 'defined_benefit', 'employerOnly' => true]);
         }
-        throw new RetirementParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$type}");
+        throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$type}");
     }
 
     /** @return array<string,mixed> */
@@ -6400,11 +6400,11 @@ final class Engine
             return $default;
         }
         if (!is_int($value) && !is_float($value)) {
-            throw new RetirementParameterException('INVALID_MONEY', "{$path} must be a finite, nonnegative number.");
+            throw new ParameterException('INVALID_MONEY', "{$path} must be a finite, nonnegative number.");
         }
         $number = (float) $value;
         if (!is_finite($number) || $number < 0) {
-            throw new RetirementParameterException('INVALID_MONEY', "{$path} must be a finite, nonnegative number.");
+            throw new ParameterException('INVALID_MONEY', "{$path} must be a finite, nonnegative number.");
         }
         return self::roundMoney($number);
     }
@@ -6415,11 +6415,11 @@ final class Engine
             return $default;
         }
         if (!is_int($value) && !is_float($value)) {
-            throw new RetirementParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
         }
         $number = (float) $value;
         if (!is_finite($number) || $number < 0 || $number > 1) {
-            throw new RetirementParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
         }
         return $number;
     }
@@ -6588,24 +6588,24 @@ final class Engine
     private static function normalizePersons(array $persons): array
     {
         if ($persons === []) {
-            throw new RetirementParameterException('PERSON_REQUIRED', 'At least one person is required.');
+            throw new ParameterException('PERSON_REQUIRED', 'At least one person is required.');
         }
         $result = [];
         foreach ($persons as $index => $input) {
             if (!is_array($input)) {
-                throw new RetirementParameterException('INVALID_PERSON', "persons[{$index}] must be an object/associative array.");
+                throw new ParameterException('INVALID_PERSON', "persons[{$index}] must be an object/associative array.");
             }
             $id = trim((string) ($input['id'] ?? ''));
             if ($id === '') {
-                throw new RetirementParameterException('PERSON_ID_REQUIRED', "persons[{$index}].id is required.");
+                throw new ParameterException('PERSON_ID_REQUIRED', "persons[{$index}].id is required.");
             }
             if (isset($result[$id])) {
-                throw new RetirementParameterException('DUPLICATE_PERSON_ID', "Duplicate person ID: {$id}");
+                throw new ParameterException('DUPLICATE_PERSON_ID', "Duplicate person ID: {$id}");
             }
             if (array_key_exists('birthYear', $input)) {
                 $birthYear = $input['birthYear'];
                 if (!is_int($birthYear) || $birthYear < 1800 || $birthYear > 3000) {
-                    throw new RetirementParameterException('INVALID_BIRTH_YEAR', "persons[{$index}].birthYear is invalid.");
+                    throw new ParameterException('INVALID_BIRTH_YEAR', "persons[{$index}].birthYear is invalid.");
                 }
             }
             if (isset($input['birthDate'])) {
@@ -6632,7 +6632,7 @@ final class Engine
             }
             $role = $input['role'] ?? ($index === 0 ? 'taxpayer' : ($index === 1 ? 'spouse' : 'other'));
             if (!in_array($role, ['taxpayer', 'spouse', 'other'], true)) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'INVALID_PERSON_ROLE',
                     "persons[{$index}].role must be taxpayer, spouse, or other.",
                 );
@@ -6660,7 +6660,7 @@ final class Engine
             ));
             if (count($matching) > 1) {
                 $ids = implode(', ', array_column($matching, 'id'));
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'DUPLICATE_PERSON_ROLE',
                     "Only one person may have the {$role} role; found {$ids}.",
                 );
@@ -6679,19 +6679,19 @@ final class Engine
         $result = [];
         foreach ($accounts as $index => $input) {
             if (!is_array($input)) {
-                throw new RetirementParameterException('INVALID_ACCOUNT', "accounts[{$index}] must be an object/associative array.");
+                throw new ParameterException('INVALID_ACCOUNT', "accounts[{$index}] must be an object/associative array.");
             }
             $id = trim((string) ($input['id'] ?? ''));
             if ($id === '') {
-                throw new RetirementParameterException('ACCOUNT_ID_REQUIRED', "accounts[{$index}].id is required.");
+                throw new ParameterException('ACCOUNT_ID_REQUIRED', "accounts[{$index}].id is required.");
             }
             if (isset($ids[$id])) {
-                throw new RetirementParameterException('DUPLICATE_ACCOUNT_ID', "Duplicate account ID: {$id}");
+                throw new ParameterException('DUPLICATE_ACCOUNT_ID', "Duplicate account ID: {$id}");
             }
             $ids[$id] = true;
             $ownerId = (string) ($input['ownerId'] ?? '');
             if (!isset($persons[$ownerId])) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'UNKNOWN_ACCOUNT_OWNER',
                     "Account {$id} references unknown owner {$ownerId}.",
                 );
@@ -6741,7 +6741,7 @@ final class Engine
             $special = $rules['special403bCatchUp'];
             $years = $special['yearsOfService'] ?? null;
             if ((!is_int($years) && !is_float($years)) || !is_finite((float) $years) || (float) $years < 0) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'INVALID_YEARS_OF_SERVICE',
                     "{$path}.special403bCatchUp.yearsOfService is invalid.",
                 );
@@ -6760,7 +6760,7 @@ final class Engine
             ['account_type', 'pretax_first', 'roth_first'],
             true,
         )) {
-            throw new RetirementParameterException(
+            throw new ParameterException(
                 'INVALID_CONTRIBUTION_PREFERENCE',
                 "{$path}.contributionPreference is invalid.",
             );
@@ -6770,7 +6770,7 @@ final class Engine
             ['pretax', 'roth'],
             true,
         )) {
-            throw new RetirementParameterException(
+            throw new ParameterException(
                 'INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT',
                 "{$path}.employerContributionTaxTreatment is invalid.",
             );
@@ -6780,11 +6780,11 @@ final class Engine
     private static function validateIsoDate(string $value, string $path): void
     {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            throw new RetirementParameterException('INVALID_DATE', "{$path} must use YYYY-MM-DD.");
+            throw new ParameterException('INVALID_DATE', "{$path} must use YYYY-MM-DD.");
         }
         [$year, $month, $day] = array_map('intval', explode('-', $value));
         if (!checkdate($month, $day, $year)) {
-            throw new RetirementParameterException('INVALID_DATE', "{$path} is not a valid calendar date.");
+            throw new ParameterException('INVALID_DATE', "{$path} is not a valid calendar date.");
         }
     }
 
@@ -7647,7 +7647,7 @@ final class Engine
             'annual_additions_only' => self::allocateAnnualAdditionsOnly($context, $account, $traits),
             'defined_benefit' => self::allocateDefinedBenefit($account),
             'section457f' => self::allocateSection457f($account),
-            default => throw new RetirementParameterException(
+            default => throw new ParameterException(
                 'UNSUPPORTED_ACCOUNT_FAMILY',
                 "Unsupported account family {$traits['family']}.",
             ),
@@ -9090,31 +9090,31 @@ final class Engine
         $result = [];
         foreach ($conversions as $index => $input) {
             if (!is_array($input)) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'INVALID_CONVERSION',
                     "conversions[{$index}] must be an object/associative array.",
                 );
             }
             $id = trim((string) ($input['id'] ?? ''));
             if ($id === '') {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'CONVERSION_ID_REQUIRED',
                     "conversions[{$index}].id is required.",
                 );
             }
             if (isset($ids[$id])) {
-                throw new RetirementParameterException('DUPLICATE_CONVERSION_ID', "Duplicate conversion ID: {$id}");
+                throw new ParameterException('DUPLICATE_CONVERSION_ID', "Duplicate conversion ID: {$id}");
             }
             $ids[$id] = true;
             $ownerId = (string) ($input['ownerId'] ?? '');
             if (!isset($persons[$ownerId])) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'UNKNOWN_CONVERSION_OWNER',
                     "Conversion {$id} references unknown owner {$ownerId}.",
                 );
             }
             if (isset($input['sourceAccountId']) && !isset($accountsById[$input['sourceAccountId']])) {
-                throw new RetirementParameterException(
+                throw new ParameterException(
                     'UNKNOWN_CONVERSION_SOURCE_ACCOUNT',
                     "Conversion {$id} references unknown source account {$input['sourceAccountId']}.",
                 );

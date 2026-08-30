@@ -4,7 +4,29 @@ All notable changes to this project will be documented in this file. The project
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-30
+
 ### Changed
+
+- **Renamed the remaining retirement-scoped public symbols.** The package models only retirement accounts today, so these names were accurate, but they become wrong the moment a non-retirement account type lands, and renaming them after adoption would be a breaking change for real consumers. Done now, while the consumer count is zero:
+
+  | Before | After |
+  | --- | --- |
+  | `RetirementAccountInput` | `AccountInput` |
+  | `RetirementScenarioInput` | `ScenarioInput` |
+  | `RetirementScenarioResult` | `ScenarioResult` |
+  | `RetirementAccountBuilder` | `AccountBuilder` |
+  | `RetirementScenario` | `Scenario` |
+  | `RetirementScenarioBuilder` | `ScenarioBuilder` |
+  | `RetirementParameterError` (TS) | `ParameterError` |
+  | `RetirementParameterException` (PHP) | `ParameterException` |
+  | `calculateRetirementScenario` (TS) | `calculateScenario` |
+
+  This makes the surface internally consistent: the prefix was already absent from `PersonBuilder`, `RothConversionBuilder`, `AccountType`, and `UnsupportedTaxYearError`/`Exception`, so the retirement-prefixed names were the minority, not the convention. `UnsupportedTaxYearError extends ParameterError` (and the PHP equivalent) is unchanged.
+
+  Genuinely retirement-specific *data* fields keep their names, because they describe retirement plans and will still be correct alongside other account types: `coveredByEmployerRetirementPlan` (the §219(g) active-participant test) and `selfEmployedRetirementDeduction`.
+
+  Breaking, with no compatibility aliases. Calculation behavior, the encoded 1975-2026 parameter range, the result shape, and the conformance vectors are unchanged — the 46-vector cross-language parity suite passes untouched.
 
 - **Renamed the package and its public symbol.** The scope is broadening from federal retirement accounts to U.S. tax-advantaged accounts generally, so the identities were changed before the package acquired consumers:
   - npm: `usa-retirement-account-parameters` → `us-tax-advantaged-params`
@@ -22,6 +44,8 @@ All notable changes to this project will be documented in this file. The project
 - `npm pack --dry-run` no longer fails through `prepack`. npm exported `npm_config_dry_run=true` into the nested `npm pack` that `check:types` runs, so no tarball was written and `attw` failed with `ENOENT`. The inner pack now passes `--no-dry-run`.
 
 ## [0.1.0] - 2026-08-28
+
+> **The `0.1.0` published to npm on 2026-08-30 does not match this entry.** It was built from a tree that already carried the package/symbol rename listed under 0.2.0 above, so its public API is `USTaxAdvantagedParams` with the `Retirement*`-prefixed member names — a combination no tagged release describes. It exists only because the rename was published before a release entry was cut. Use 0.2.0; `0.1.0` is superseded and should be treated as a bootstrap artifact.
 
 ### Fixed
 

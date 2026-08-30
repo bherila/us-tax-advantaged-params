@@ -5,7 +5,7 @@ import USTaxAdvantagedParams, {
   CalculationStatus,
   ConversionType,
   FilingStatus,
-  RetirementParameterError,
+  ParameterError,
   UnsupportedTaxYearError,
 } from "../src/USTaxAdvantagedParams.js";
 
@@ -495,7 +495,7 @@ test("duplicate taxpayer or spouse roles are rejected", () => {
         ],
         accounts: [],
       }),
-    (error: unknown) => error instanceof RetirementParameterError && error.code === "DUPLICATE_PERSON_ROLE",
+    (error: unknown) => error instanceof ParameterError && error.code === "DUPLICATE_PERSON_ROLE",
   );
 });
 

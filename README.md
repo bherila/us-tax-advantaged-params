@@ -141,7 +141,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use USTaxAdvantagedParams\AccountType;
 use USTaxAdvantagedParams\FilingStatus;
 use USTaxAdvantagedParams\PersonBuilder;
-use USTaxAdvantagedParams\RetirementAccountBuilder;
+use USTaxAdvantagedParams\AccountBuilder;
 use USTaxAdvantagedParams\USTaxAdvantagedParams as TaxAdvantagedParams;
 
 $result = TaxAdvantagedParams::forTaxYear(2026)
@@ -168,7 +168,7 @@ $result = TaxAdvantagedParams::forTaxYear(2026)
         'taxpayer-401k',
         'taxpayer',
         AccountType::TRADITIONAL_401K,
-        static function (RetirementAccountBuilder $account): void {
+        static function (AccountBuilder $account): void {
             $account
                 ->employer('employer-a')
                 ->annualAdditionsGroup('employer-a')

@@ -8,9 +8,9 @@ use USTaxAdvantagedParams\AccountType;
 use USTaxAdvantagedParams\CalculationStatus;
 use USTaxAdvantagedParams\ConversionType;
 use USTaxAdvantagedParams\FilingStatus;
-use USTaxAdvantagedParams\RetirementAccountBuilder;
-use USTaxAdvantagedParams\RetirementParameterException;
-use USTaxAdvantagedParams\RetirementScenarioBuilder;
+use USTaxAdvantagedParams\AccountBuilder;
+use USTaxAdvantagedParams\ParameterException;
+use USTaxAdvantagedParams\ScenarioBuilder;
 use USTaxAdvantagedParams\USTaxAdvantagedParams as U;
 use USTaxAdvantagedParams\UnsupportedTaxYearException;
 
@@ -113,10 +113,10 @@ test('normalizes common aliases', function (): void {
 });
 
 test('builder pattern calculates an ordinary 2026 401k', function (): void {
-    $result = RetirementScenarioBuilder::forTaxYear(2026)
+    $result = ScenarioBuilder::forTaxYear(2026)
         ->filingStatus('S')
         ->taxpayer('t', static fn ($person) => $person->bornIn(1980)->w2Compensation(200000))
-        ->account('k', 't', '401k', static fn (RetirementAccountBuilder $plan) =>
+        ->account('k', 't', '401k', static fn (AccountBuilder $plan) =>
             $plan->employer('e')->planCompensation(200000))
         ->calculate();
     $k = accountResult($result, 'k');
@@ -508,8 +508,8 @@ test('duplicate taxpayer or spouse roles are rejected', function (): void {
             ['id' => 't1', 'role' => 'taxpayer', 'birthYear' => 1980],
             ['id' => 't2', 'role' => 'taxpayer', 'birthYear' => 1981],
         ], [], 'MFJ');
-        failTest('Expected RetirementParameterException');
-    } catch (RetirementParameterException $error) {
+        failTest('Expected ParameterException');
+    } catch (ParameterException $error) {
         assertSameValue('DUPLICATE_PERSON_ROLE', $error->errorCode);
     }
 });

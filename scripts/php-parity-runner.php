@@ -25,7 +25,7 @@ try {
         /** @var array<string,mixed> $input */
         try {
             $results[] = USTaxAdvantagedParams::calculate($input);
-        } catch (\USTaxAdvantagedParams\RetirementParameterException $error) {
+        } catch (\USTaxAdvantagedParams\ParameterException $error) {
             $results[] = ['__error' => ['code' => $error->errorCode, 'message' => $error->getMessage()]];
         }
     }
