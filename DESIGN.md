@@ -14,8 +14,8 @@ It does not prepare a tax return, administer a plan, determine controlled-group 
 
 The project has two native single-file engines:
 
-- `src/USARetirementAccountParameters.ts`
-- `php/src/USARetirementAccountParameters.php`
+- `src/USTaxAdvantagedParams.ts`
+- `php/src/USTaxAdvantagedParams.php`
 
 Annual law data lives in `data/retirement-parameters.json`. `scripts/generate.mjs` replaces marked generated blocks in both engines.
 

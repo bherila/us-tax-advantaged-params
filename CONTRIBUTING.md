@@ -19,8 +19,8 @@ npm run verify
 ## Repository layout
 
 ```text
-src/USARetirementAccountParameters.ts          TypeScript engine
-php/src/USARetirementAccountParameters.php    PHP engine
+src/USTaxAdvantagedParams.ts          TypeScript engine
+php/src/USTaxAdvantagedParams.php    PHP engine
 data/retirement-parameters.json                Canonical annual parameters
 data/conformance-vectors.json                  Shared behavioral fixtures
 tests/                                         TypeScript tests

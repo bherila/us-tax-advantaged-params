@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "package": "usa-retirement-account-parameters",
+  "package": "us-tax-advantaged-params",
   "generatedThroughTaxYear": 2026,
   "supportedTaxYears": {
     "minimum": 1975,

@@ -1,14 +1,14 @@
-# usa-retirement-account-parameters
+# us-tax-advantaged-params
 
-[![CI](https://github.com/bherila/usa-retirement-account-parameters/actions/workflows/ci.yml/badge.svg)](https://github.com/bherila/usa-retirement-account-parameters/actions/workflows/ci.yml)
+[![CI](https://github.com/bherila/us-tax-advantaged-params/actions/workflows/ci.yml/badge.svg)](https://github.com/bherila/us-tax-advantaged-params/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-`usa-retirement-account-parameters` is a dependency-free calculation engine for historical and current U.S. retirement-account contribution parameters. It calculates account-level and household-level contribution capacity, IRA phase-outs, shared statutory limits, federal income effects, and Roth-conversion taxability.
+`us-tax-advantaged-params` is a dependency-free calculation engine for historical and current U.S. tax-advantaged account parameters. Retirement accounts are the coverage today: it calculates account-level and household-level contribution capacity, IRA phase-outs, shared statutory limits, federal income effects, and Roth-conversion taxability.
 
 The repository contains two native implementations with the same behavior:
 
-- **TypeScript** for npm, exported as `USARetirementAccountParameters`.
-- **PHP 8.2+** for Packagist, in the `USARetirementAccountParameters` namespace.
+- **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
+- **PHP 8.2+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
 Annual legal parameters are maintained once in `data/retirement-parameters.json` and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
@@ -21,7 +21,7 @@ The encoded range is **1975 through 2026**. The package does not extrapolate a f
 The 1975 starting point corresponds to the first generally available IRA contribution year. Some early employer-plan years cannot be reduced to a universal modern dollar ceiling from tax year alone. In those cases the engine returns an explicit `indeterminate` status and diagnostic rather than inventing a value.
 
 ```ts
-USARetirementAccountParameters.supportedTaxYears();
+USTaxAdvantagedParams.supportedTaxYears();
 // { minimum: 1975, maximum: 2026 }
 ```
 
@@ -30,23 +30,23 @@ USARetirementAccountParameters.supportedTaxYears();
 ### npm
 
 ```bash
-npm install usa-retirement-account-parameters
+npm install us-tax-advantaged-params
 ```
 
 The npm package provides ESM, CommonJS, and TypeScript declarations and supports Node.js 20 or later.
 
 ```js
 // ESM
-import USARetirementAccountParameters from "usa-retirement-account-parameters";
+import USTaxAdvantagedParams from "us-tax-advantaged-params";
 
 // CommonJS — the class is the module's default export
-const USARetirementAccountParameters = require("usa-retirement-account-parameters").default;
+const USTaxAdvantagedParams = require("us-tax-advantaged-params").default;
 ```
 
 ### Composer / Packagist
 
 ```bash
-composer require bherila/usa-retirement-account-parameters
+composer require bherila/us-tax-advantaged-params
 ```
 
 The PHP package requires PHP 8.2 or later and loads the native single-file implementation through Composer.
@@ -54,13 +54,13 @@ The PHP package requires PHP 8.2 or later and loads the native single-file imple
 ## TypeScript builder example
 
 ```ts
-import USARetirementAccountParameters, {
+import USTaxAdvantagedParams, {
   AccountType,
   ConversionType,
   FilingStatus,
-} from "usa-retirement-account-parameters";
+} from "us-tax-advantaged-params";
 
-const result = USARetirementAccountParameters.forTaxYear(2026)
+const result = USTaxAdvantagedParams.forTaxYear(2026)
   .filingStatus(FilingStatus.MARRIED_FILING_JOINTLY)
   .taxpayer("taxpayer", (person) => {
     person
@@ -120,7 +120,7 @@ console.log(result.conversions[0].taxableAmount);
 A built scenario can be inspected and calculated repeatedly:
 
 ```ts
-const scenario = USARetirementAccountParameters.forTaxYear(2026)
+const scenario = USTaxAdvantagedParams.forTaxYear(2026)
   .filingStatus("MFJ")
   .taxpayer("taxpayer", (person) => person.bornIn(1980).w2Compensation(200_000))
   .build();
@@ -138,13 +138,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use USARetirementAccountParameters\AccountType;
-use USARetirementAccountParameters\FilingStatus;
-use USARetirementAccountParameters\PersonBuilder;
-use USARetirementAccountParameters\RetirementAccountBuilder;
-use USARetirementAccountParameters\USARetirementAccountParameters as RetirementParameters;
+use USTaxAdvantagedParams\AccountType;
+use USTaxAdvantagedParams\FilingStatus;
+use USTaxAdvantagedParams\PersonBuilder;
+use USTaxAdvantagedParams\RetirementAccountBuilder;
+use USTaxAdvantagedParams\USTaxAdvantagedParams as TaxAdvantagedParams;
 
-$result = RetirementParameters::forTaxYear(2026)
+$result = TaxAdvantagedParams::forTaxYear(2026)
     ->filingStatus(FilingStatus::MARRIED_FILING_JOINTLY)
     ->taxpayer('taxpayer', static function (PersonBuilder $person): void {
         $person
@@ -193,7 +193,7 @@ The PHP result is an associative-array equivalent of the TypeScript result. Enum
 Builders are optional. Both engines accept the same language-neutral scenario shape, which is useful for services, fixtures, database records, and cross-runtime integrations.
 
 ```ts
-const result = USARetirementAccountParameters.calculate({
+const result = USTaxAdvantagedParams.calculate({
   taxYear: 2026,
   filingStatus: "HOH",
   persons: [

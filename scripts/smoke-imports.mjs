@@ -2,9 +2,9 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 
-const esm = await import("../dist/esm/USARetirementAccountParameters.js");
+const esm = await import("../dist/esm/USTaxAdvantagedParams.js");
 const require = createRequire(import.meta.url);
-const cjs = require("../dist/cjs/USARetirementAccountParameters.js");
+const cjs = require("../dist/cjs/USTaxAdvantagedParams.js");
 
 for (const runtime of [esm, cjs]) {
   const U = runtime.default;

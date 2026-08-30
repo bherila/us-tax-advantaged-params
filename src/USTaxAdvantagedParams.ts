@@ -1,8 +1,9 @@
 /**
- * usa-retirement-account-parameters
+ * us-tax-advantaged-params
  *
- * A dependency-free U.S. retirement contribution-limit and Roth-conversion
- * calculation engine. The annual parameter table is generated from
+ * A dependency-free U.S. tax-advantaged account parameter engine. Retirement
+ * accounts are the coverage today: contribution limits, phase-outs, shared
+ * statutory limits, and Roth conversions. The annual parameter table is generated from
  * data/retirement-parameters.json; do not edit the generated block manually.
  *
  * This package calculates statutory contribution ceilings and federal income
@@ -11,7 +12,7 @@
  * determined defined-benefit/cash-balance contributions.
  */
 
-export const PACKAGE_NAME = "usa-retirement-account-parameters" as const;
+export const PACKAGE_NAME = "us-tax-advantaged-params" as const;
 export const ENGINE_VERSION = "0.1.0" as const;
 
 export type Money = number;
@@ -430,7 +431,7 @@ interface ParameterData {
 /* <generated-parameters> */
 const RAW_PARAMETERS: ParameterData = {
   "schemaVersion": 1,
-  "package": "usa-retirement-account-parameters",
+  "package": "us-tax-advantaged-params",
   "generatedThroughTaxYear": 2026,
   "supportedTaxYears": {
     "minimum": 1975,
@@ -9325,7 +9326,7 @@ export class RetirementScenarioBuilder {
   }
 }
 
-export class USARetirementAccountParameters {
+export class USTaxAdvantagedParams {
   public static forTaxYear(taxYear: number): RetirementScenarioBuilder {
     return RetirementScenarioBuilder.forTaxYear(taxYear);
   }
@@ -9359,4 +9360,4 @@ export class USARetirementAccountParameters {
   }
 }
 
-export default USARetirementAccountParameters;
+export default USTaxAdvantagedParams;

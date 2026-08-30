@@ -49,11 +49,11 @@ run("Generated native parameter blocks", "node", ["scripts/generate.mjs", "--che
 run("Source manifests and publication files", "node", ["scripts/validate-manifests.mjs"]);
 run("Strict TypeScript typecheck", "tsc", ["-p", "tsconfig.json", "--noEmit"]);
 run("TypeScript unit and conformance tests", "npm", ["run", "test:ts"]);
-run("PHP engine syntax", "php", ["-l", "php/src/USARetirementAccountParameters.php"]);
-run("PHP unit-test syntax", "php", ["-l", "php/tests/USARetirementAccountParametersTest.php"]);
+run("PHP engine syntax", "php", ["-l", "php/src/USTaxAdvantagedParams.php"]);
+run("PHP unit-test syntax", "php", ["-l", "php/tests/USTaxAdvantagedParamsTest.php"]);
 run("PHP conformance-test syntax", "php", ["-l", "php/tests/ConformanceVectorsTest.php"]);
 run("PHP parity runner syntax", "php", ["-l", "scripts/php-parity-runner.php"]);
-run("PHP unit tests", "php", ["php/tests/USARetirementAccountParametersTest.php"]);
+run("PHP unit tests", "php", ["php/tests/USTaxAdvantagedParamsTest.php"]);
 run("PHP conformance vectors", "php", ["php/tests/ConformanceVectorsTest.php"]);
 run("ESM, CommonJS, and declaration build", "npm", ["run", "build"]);
 run("ESM/CommonJS smoke imports", "node", ["scripts/smoke-imports.mjs"]);

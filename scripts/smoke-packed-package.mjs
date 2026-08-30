@@ -43,7 +43,7 @@ try {
 
   await writeFile(
     join(directory, "esm-smoke.mjs"),
-    `import U, { AccountType } from "usa-retirement-account-parameters";\n` +
+    `import U, { AccountType } from "us-tax-advantaged-params";\n` +
       `if (U.parametersForYear(1997).annualCompensation401a17 !== 160000) throw new Error("bad ESM parameters");\n` +
       `const result = U.calculate({taxYear:1997,filingStatus:"S",persons:[{id:"t",birthYear:1960,compensation:{w2Compensation:500000}}],accounts:[{id:"sep",ownerId:"t",type:AccountType.SEP_IRA,employerId:"e",planRules:{planCompensation:500000}}]});\n` +
       `if (result.accounts[0].contributionComponents.employerPreTax !== 24000) throw new Error("bad ESM calculation");\n`,
@@ -52,7 +52,7 @@ try {
 
   await writeFile(
     join(directory, "cjs-smoke.cjs"),
-    `const pkg = require("usa-retirement-account-parameters");\n` +
+    `const pkg = require("us-tax-advantaged-params");\n` +
       `const U = pkg.default;\n` +
       `if (U.parametersForYear(1997).annualCompensation401a17 !== 160000) throw new Error("bad CJS parameters");\n` +
       `const result = U.calculate({taxYear:1997,filingStatus:"S",persons:[{id:"t",birthYear:1960,compensation:{w2Compensation:500000}}],accounts:[{id:"plan",ownerId:"t",type:"profit_sharing_plan",employerId:"e",planRules:{planCompensation:500000,employerNonelectiveRate:0.15}}]});\n` +
@@ -62,7 +62,7 @@ try {
 
   const installedPackage = JSON.parse(
     await readFile(
-      join(directory, "node_modules", "usa-retirement-account-parameters", "package.json"),
+      join(directory, "node_modules", "us-tax-advantaged-params", "package.json"),
       "utf8",
     ),
   );

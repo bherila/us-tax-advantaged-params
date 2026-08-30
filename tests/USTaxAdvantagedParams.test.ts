@@ -1,15 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import USARetirementAccountParameters, {
+import USTaxAdvantagedParams, {
   AccountType,
   CalculationStatus,
   ConversionType,
   FilingStatus,
   RetirementParameterError,
   UnsupportedTaxYearError,
-} from "../src/USARetirementAccountParameters.js";
+} from "../src/USTaxAdvantagedParams.js";
 
-const U = USARetirementAccountParameters;
+const U = USTaxAdvantagedParams;
 
 function account(result: ReturnType<typeof U.calculate>, id: string) {
   const found = result.accounts.find((entry) => entry.accountId === id);

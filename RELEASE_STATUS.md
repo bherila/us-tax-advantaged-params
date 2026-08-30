@@ -1,10 +1,10 @@
 # Release Status
 
-## usa-retirement-account-parameters@0.1.0
+## us-tax-advantaged-params@0.1.0
 
 **Local validation:** PASS
 
-The engines encode 1975-2026, include 27 shared conformance vectors, and produce ESM, CommonJS, declaration, and native PHP artifacts.
+The engines encode 1975-2026, include 46 shared conformance vectors, and produce ESM, CommonJS, declaration, and native PHP artifacts.
 
 ### Completed
 
@@ -18,7 +18,7 @@ The engines encode 1975-2026, include 27 shared conformance vectors, and produce
 ### Publication gate
 
 All checks available in this local environment passed.
-The local runtime is PHP 8.4.23; PHP 8.5 is configured in CI but was not available in this container. A green PHP 8.5 CI run remains a publication gate.
-Composer was not installed locally; `composer validate --strict` and `composer test` are configured in CI.
+The PHP target was validated locally on a supported PHP version.
+Composer manifest validation ran locally.
 
 See `VALIDATION.md` and `validation-status.json` for exact commands and output.

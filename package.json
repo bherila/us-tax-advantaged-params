@@ -1,22 +1,22 @@
 {
-  "name": "usa-retirement-account-parameters",
+  "name": "us-tax-advantaged-params",
   "version": "0.1.0",
-  "description": "Historical and current U.S. retirement-account contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
+  "description": "Historical and current U.S. tax-advantaged account parameters. Retirement accounts are covered today: contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
   "type": "module",
-  "main": "./dist/cjs/USARetirementAccountParameters.js",
-  "module": "./dist/esm/USARetirementAccountParameters.js",
-  "types": "./dist/types/USARetirementAccountParameters.d.ts",
+  "main": "./dist/cjs/USTaxAdvantagedParams.js",
+  "module": "./dist/esm/USTaxAdvantagedParams.js",
+  "types": "./dist/types/USTaxAdvantagedParams.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/USARetirementAccountParameters.d.ts",
-        "default": "./dist/esm/USARetirementAccountParameters.js"
+        "types": "./dist/types/USTaxAdvantagedParams.d.ts",
+        "default": "./dist/esm/USTaxAdvantagedParams.js"
       },
       "require": {
-        "types": "./dist/types/USARetirementAccountParameters.d.cts",
-        "default": "./dist/cjs/USARetirementAccountParameters.js"
+        "types": "./dist/types/USTaxAdvantagedParams.d.cts",
+        "default": "./dist/cjs/USTaxAdvantagedParams.js"
       },
-      "default": "./dist/esm/USARetirementAccountParameters.js"
+      "default": "./dist/esm/USTaxAdvantagedParams.js"
     },
     "./data/retirement-parameters.json": "./data/retirement-parameters.json",
     "./package.json": "./package.json"
@@ -39,17 +39,19 @@
     "typecheck": "tsc -p tsconfig.json",
     "build": "npm run generate:check && npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json && node scripts/finalize-build.mjs",
     "test:compile": "node scripts/clean-tests.mjs && tsc -p tsconfig.tests.json",
-    "test:ts": "npm run test:compile && node --test dist-tests/tests/USARetirementAccountParameters.test.js dist-tests/tests/conformance.test.js",
-    "test:php": "php php/tests/USARetirementAccountParametersTest.php && php php/tests/ConformanceVectorsTest.php",
+    "test:ts": "npm run test:compile && node --test dist-tests/tests/USTaxAdvantagedParams.test.js dist-tests/tests/conformance.test.js",
+    "test:php": "php php/tests/USTaxAdvantagedParamsTest.php && php php/tests/ConformanceVectorsTest.php",
     "test:parity": "npm run build && node scripts/check-parity.mjs",
     "test": "npm run test:ts && npm run test:php && npm run test:parity",
-    "check:types": "mkdir -p dist-tests && npm pack --ignore-scripts --pack-destination dist-tests >/dev/null && attw dist-tests/usa-retirement-account-parameters-$npm_package_version.tgz",
+    "check:types": "mkdir -p dist-tests && npm pack --ignore-scripts --no-dry-run --pack-destination dist-tests >/dev/null && attw dist-tests/us-tax-advantaged-params-$npm_package_version.tgz",
     "verify": "npm run validate:data && npm run generate:check && npm run validate:manifests && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && node scripts/validate-manifests.mjs --built",
     "validate:release": "node scripts/validate-release.mjs",
     "release:archives": "node scripts/create-release-archives.mjs",
     "prepack": "npm run verify"
   },
   "keywords": [
+    "tax-advantaged",
+    "tax-advantaged-accounts",
     "retirement",
     "retirement-accounts",
     "401k",
@@ -66,12 +68,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bherila/usa-retirement-account-parameters.git"
+    "url": "git+https://github.com/bherila/us-tax-advantaged-params.git"
   },
   "bugs": {
-    "url": "https://github.com/bherila/usa-retirement-account-parameters/issues"
+    "url": "https://github.com/bherila/us-tax-advantaged-params/issues"
   },
-  "homepage": "https://github.com/bherila/usa-retirement-account-parameters#readme",
+  "homepage": "https://github.com/bherila/us-tax-advantaged-params#readme",
   "engines": {
     "node": ">=20"
   },

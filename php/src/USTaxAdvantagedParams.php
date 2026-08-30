@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace USARetirementAccountParameters;
+namespace USTaxAdvantagedParams;
 
 use DateTimeImmutable;
 use DateTimeZone;
@@ -484,7 +484,7 @@ final class RetirementScenario
     /** @return array<string,mixed> */
     public function calculate(): array
     {
-        return USARetirementAccountParameters::calculate(Engine::copy($this->input));
+        return USTaxAdvantagedParams::calculate(Engine::copy($this->input));
     }
 
     /** @return array<string,mixed> */
@@ -606,9 +606,9 @@ final class RetirementScenarioBuilder
     }
 }
 
-final class USARetirementAccountParameters
+final class USTaxAdvantagedParams
 {
-    public const PACKAGE_NAME = 'usa-retirement-account-parameters';
+    public const PACKAGE_NAME = 'us-tax-advantaged-params';
     public const ENGINE_VERSION = '0.1.0';
 
     private static ?array $parameters = null;
@@ -617,7 +617,7 @@ final class USARetirementAccountParameters
 private const PARAMETER_JSON = <<<'JSON'
 {
   "schemaVersion": 1,
-  "package": "usa-retirement-account-parameters",
+  "package": "us-tax-advantaged-params",
   "generatedThroughTaxYear": 2026,
   "supportedTaxYears": {
     "minimum": 1975,
@@ -6047,8 +6047,8 @@ final class Engine
         }
 
         return [
-            'package' => USARetirementAccountParameters::PACKAGE_NAME,
-            'engineVersion' => USARetirementAccountParameters::ENGINE_VERSION,
+            'package' => USTaxAdvantagedParams::PACKAGE_NAME,
+            'engineVersion' => USTaxAdvantagedParams::ENGINE_VERSION,
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
             'parameters' => $parameters,

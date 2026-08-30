@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. The project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Changed
+
+- **Renamed the package and its public symbol.** The scope is broadening from federal retirement accounts to U.S. tax-advantaged accounts generally, so the identities were changed before the package acquired consumers:
+  - npm: `usa-retirement-account-parameters` → `us-tax-advantaged-params`
+  - Composer: `bherila/usa-retirement-account-parameters` → `bherila/us-tax-advantaged-params`
+  - TypeScript class / default export and PHP class and namespace: `USARetirementAccountParameters` → `USTaxAdvantagedParams`
+  - Engine, test, and built artifact filenames follow the symbol (`src/USTaxAdvantagedParams.ts`, `php/src/USTaxAdvantagedParams.php`, `dist/{esm,cjs}/USTaxAdvantagedParams.js`, `dist/types/USTaxAdvantagedParams.d.{ts,cts}`).
+  - The GitHub repository moved to `bherila/us-tax-advantaged-params`; GitHub redirects the previous path.
+
+  This is a breaking rename with no compatibility alias. Calculation behavior, the encoded 1975-2026 parameter range, the result shape, and the conformance vectors are unchanged.
+
+- `data/retirement-parameters.json` keeps its filename and its `./data/retirement-parameters.json` subpath export; only its `package` field was updated to the new npm name. Renaming the data file is a separate module-layout decision.
+
+### Fixed
+
+- `npm pack --dry-run` no longer fails through `prepack`. npm exported `npm_config_dry_run=true` into the nested `npm pack` that `check:types` runs, so no tarball was written and `attw` failed with `ENOENT`. The inner pack now passes `--no-dry-run`.
+
 ## [0.1.0] - 2026-08-28
 
 ### Fixed

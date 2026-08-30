@@ -1,6 +1,6 @@
 {
-  "name": "bherila/usa-retirement-account-parameters",
-  "description": "Historical and current U.S. retirement-account contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
+  "name": "bherila/us-tax-advantaged-params",
+  "description": "Historical and current U.S. tax-advantaged account parameters. Retirement accounts are covered today: contribution limits, phase-outs, shared-limit allocation, and Roth-conversion tax effects.",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -13,17 +13,17 @@
   },
   "autoload": {
     "classmap": [
-      "php/src/USARetirementAccountParameters.php"
+      "php/src/USTaxAdvantagedParams.php"
     ]
   },
   "scripts": {
     "lint": [
-      "php -l php/src/USARetirementAccountParameters.php",
-      "php -l php/tests/USARetirementAccountParametersTest.php",
+      "php -l php/src/USTaxAdvantagedParams.php",
+      "php -l php/tests/USTaxAdvantagedParamsTest.php",
       "php -l php/tests/ConformanceVectorsTest.php",
       "php -l scripts/php-parity-runner.php"
     ],
-    "test:unit": "php php/tests/USARetirementAccountParametersTest.php",
+    "test:unit": "php php/tests/USTaxAdvantagedParamsTest.php",
     "test:conformance": "php php/tests/ConformanceVectorsTest.php",
     "test": [
       "@lint",
@@ -32,8 +32,8 @@
     ]
   },
   "support": {
-    "issues": "https://github.com/bherila/usa-retirement-account-parameters/issues",
-    "source": "https://github.com/bherila/usa-retirement-account-parameters"
+    "issues": "https://github.com/bherila/us-tax-advantaged-params/issues",
+    "source": "https://github.com/bherila/us-tax-advantaged-params"
   },
   "archive": {
     "exclude": [

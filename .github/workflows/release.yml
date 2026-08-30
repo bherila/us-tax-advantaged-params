@@ -37,9 +37,9 @@ jobs:
         id: registry
         run: |
           version=$(node -p "require('./package.json').version")
-          if npm view "usa-retirement-account-parameters@${version}" version >/dev/null 2>&1; then
+          if npm view "us-tax-advantaged-params@${version}" version >/dev/null 2>&1; then
             echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "usa-retirement-account-parameters@${version} is already published; skipping publish."
+            echo "us-tax-advantaged-params@${version} is already published; skipping publish."
           else
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi

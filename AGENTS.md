@@ -11,8 +11,8 @@ A dual-runtime library encoding U.S. retirement-account contribution limits,
 phase-outs, shared-limit allocation, and Roth-conversion tax effects for tax
 years 1975 onward:
 
-- `src/USARetirementAccountParameters.ts` — native TypeScript engine (npm).
-- `php/src/USARetirementAccountParameters.php` — native PHP 8.5+ engine
+- `src/USTaxAdvantagedParams.ts` — native TypeScript engine (npm).
+- `php/src/USTaxAdvantagedParams.php` — native PHP 8.5+ engine
   (Packagist).
 - `data/retirement-parameters.json` — the single source of truth for annual
   legal parameters.

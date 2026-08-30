@@ -70,7 +70,7 @@ jobs:
           coverage: none
       - run: npm ci
       - run: npm run build
-      - run: php -l php/src/USARetirementAccountParameters.php
+      - run: php -l php/src/USTaxAdvantagedParams.php
       - run: php -l scripts/php-parity-runner.php
       - run: node scripts/check-parity.mjs
 

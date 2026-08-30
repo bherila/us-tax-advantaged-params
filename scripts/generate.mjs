@@ -7,8 +7,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const checkOnly = process.argv.includes("--check");
 const dataPath = join(root, "data", "retirement-parameters.json");
-const tsPath = join(root, "src", "USARetirementAccountParameters.ts");
-const phpPath = join(root, "php", "src", "USARetirementAccountParameters.php");
+const tsPath = join(root, "src", "USTaxAdvantagedParams.ts");
+const phpPath = join(root, "php", "src", "USTaxAdvantagedParams.php");
 
 const raw = await readFile(dataPath, "utf8");
 const parameters = JSON.parse(raw);

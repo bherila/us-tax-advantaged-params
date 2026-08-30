@@ -2,7 +2,7 @@
 
 ## Source policy
 
-Retirement parameters are maintained from primary federal sources whenever available. The canonical machine-readable source list is embedded in `data/retirement-parameters.json` and exposed at runtime through `USARetirementAccountParameters.sourceMetadata()`.
+Retirement parameters are maintained from primary federal sources whenever available. The canonical machine-readable source list is embedded in `data/retirement-parameters.json` and exposed at runtime through `USTaxAdvantagedParams.sourceMetadata()`.
 
 Source metadata documents provenance; it is not fetched at runtime. Calculations are deterministic and network-free.
 

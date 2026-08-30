@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/php/src/USARetirementAccountParameters.php';
+require_once dirname(__DIR__) . '/php/src/USTaxAdvantagedParams.php';
 
-use USARetirementAccountParameters\USARetirementAccountParameters;
+use USTaxAdvantagedParams\USTaxAdvantagedParams;
 
 try {
     $raw = stream_get_contents(STDIN);
@@ -24,8 +24,8 @@ try {
         }
         /** @var array<string,mixed> $input */
         try {
-            $results[] = USARetirementAccountParameters::calculate($input);
-        } catch (\USARetirementAccountParameters\RetirementParameterException $error) {
+            $results[] = USTaxAdvantagedParams::calculate($input);
+        } catch (\USTaxAdvantagedParams\RetirementParameterException $error) {
             $results[] = ['__error' => ['code' => $error->errorCode, 'message' => $error->getMessage()]];
         }
     }

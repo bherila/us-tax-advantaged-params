@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import USARetirementAccountParameters from "../dist/esm/USARetirementAccountParameters.js";
+import USTaxAdvantagedParams from "../dist/esm/USTaxAdvantagedParams.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const vectors = JSON.parse(
@@ -13,7 +13,7 @@ const vectors = JSON.parse(
 const inputs = vectors.map((vector) => vector.input);
 const tsResults = inputs.map((input) => {
   try {
-    return USARetirementAccountParameters.calculate(input);
+    return USTaxAdvantagedParams.calculate(input);
   } catch (error) {
     if (error instanceof Error && typeof error.code === "string") {
       return { __error: { code: error.code, message: error.message } };

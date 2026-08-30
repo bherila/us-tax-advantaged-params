@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import USARetirementAccountParameters from "../src/USARetirementAccountParameters.js";
+import USTaxAdvantagedParams from "../src/USTaxAdvantagedParams.js";
 
 interface ConformanceVector {
   name: string;
-  input: Parameters<typeof USARetirementAccountParameters.calculate>[0];
+  input: Parameters<typeof USTaxAdvantagedParams.calculate>[0];
   expect?: Record<string, unknown>;
   expectDiagnosticCodes?: string[];
   expectError?: { code: string };
@@ -35,14 +35,14 @@ for (const vector of conformance.vectors) {
   test(`conformance: ${vector.name}`, () => {
     if (vector.expectError) {
       assert.throws(
-        () => USARetirementAccountParameters.calculate(vector.input),
+        () => USTaxAdvantagedParams.calculate(vector.input),
         (error: unknown) =>
           (error as { code?: string } | null)?.code === vector.expectError!.code,
         `${vector.name}: expected error ${vector.expectError.code}`,
       );
       return;
     }
-    const result = USARetirementAccountParameters.calculate(vector.input);
+    const result = USTaxAdvantagedParams.calculate(vector.input);
     for (const [path, expected] of Object.entries(vector.expect ?? {})) {
       assert.deepEqual(readPath(result, path), expected, `${vector.name}: ${path}`);
     }

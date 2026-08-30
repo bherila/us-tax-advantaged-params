@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/src/USARetirementAccountParameters.php';
+require_once dirname(__DIR__) . '/src/USTaxAdvantagedParams.php';
 
-use USARetirementAccountParameters\USARetirementAccountParameters as U;
+use USTaxAdvantagedParams\USTaxAdvantagedParams as U;
 
 /** @param array<string,mixed> $value */
 function readConformancePath(array $value, string $path): mixed
@@ -42,7 +42,7 @@ foreach ($decoded['vectors'] as $vector) {
             try {
                 U::calculate($vector['input']);
                 throw new RuntimeException("{$vector['name']}: expected error {$vector['expectError']['code']} was not thrown");
-            } catch (USARetirementAccountParameters\RetirementParameterException $error) {
+            } catch (USTaxAdvantagedParams\RetirementParameterException $error) {
                 if ($error->errorCode !== $vector['expectError']['code']) {
                     throw new RuntimeException(
                         "{$vector['name']}: expected error {$vector['expectError']['code']}, got {$error->errorCode}",

@@ -34,7 +34,7 @@ const packageJson = await parseJson("package.json");
 const lock = await parseJson("package-lock.json");
 const composer = await parseJson("composer.json");
 
-if (packageJson.name !== "usa-retirement-account-parameters") fail("package.json name is incorrect");
+if (packageJson.name !== "us-tax-advantaged-params") fail("package.json name is incorrect");
 if (typeof packageJson.version !== "string" || !/^\d+\.\d+\.\d+(?:[-+].+)?$/.test(packageJson.version)) {
   fail("package.json version must be semantic");
 }
@@ -45,19 +45,19 @@ if (packageJson.dependencies && Object.keys(packageJson.dependencies).length > 0
 }
 if (packageJson.engines?.node !== ">=20") fail("package.json engines.node must be >=20");
 if (packageJson.sideEffects !== false) fail("package.json sideEffects must be false");
-if (packageJson.main !== "./dist/cjs/USARetirementAccountParameters.js") fail("CommonJS main target is incorrect");
-if (packageJson.module !== "./dist/esm/USARetirementAccountParameters.js") fail("ESM module target is incorrect");
-if (packageJson.types !== "./dist/types/USARetirementAccountParameters.d.ts") fail("Top-level types target is incorrect");
-if (packageJson.exports?.["."]?.import?.default !== "./dist/esm/USARetirementAccountParameters.js") {
+if (packageJson.main !== "./dist/cjs/USTaxAdvantagedParams.js") fail("CommonJS main target is incorrect");
+if (packageJson.module !== "./dist/esm/USTaxAdvantagedParams.js") fail("ESM module target is incorrect");
+if (packageJson.types !== "./dist/types/USTaxAdvantagedParams.d.ts") fail("Top-level types target is incorrect");
+if (packageJson.exports?.["."]?.import?.default !== "./dist/esm/USTaxAdvantagedParams.js") {
   fail("ESM export target is incorrect");
 }
-if (packageJson.exports?.["."]?.require?.default !== "./dist/cjs/USARetirementAccountParameters.js") {
+if (packageJson.exports?.["."]?.require?.default !== "./dist/cjs/USTaxAdvantagedParams.js") {
   fail("CommonJS export target is incorrect");
 }
-if (packageJson.exports?.["."]?.import?.types !== "./dist/types/USARetirementAccountParameters.d.ts") {
+if (packageJson.exports?.["."]?.import?.types !== "./dist/types/USTaxAdvantagedParams.d.ts") {
   fail("ESM type declaration export target is incorrect");
 }
-if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USARetirementAccountParameters.d.cts") {
+if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USTaxAdvantagedParams.d.cts") {
   fail("CommonJS type declaration export target is incorrect");
 }
 if (packageJson.exports?.["./data/retirement-parameters.json"] !== "./data/retirement-parameters.json") {
@@ -91,11 +91,11 @@ for (const dependency of ["@types/node", "typescript", "undici-types"]) {
   if (!lock.packages?.[`node_modules/${dependency}`]) fail(`package-lock is missing ${dependency}`);
 }
 
-if (composer.name !== "bherila/usa-retirement-account-parameters") fail("composer.json package name is incorrect");
+if (composer.name !== "bherila/us-tax-advantaged-params") fail("composer.json package name is incorrect");
 if (composer.type !== "library") fail("composer.json type must be library");
 if (composer.license !== "MIT") fail("composer.json license must be MIT");
 if (composer.require?.php !== ">=8.2") fail("composer.json must require PHP >=8.2");
-if (!composer.autoload?.classmap?.includes("php/src/USARetirementAccountParameters.php")) {
+if (!composer.autoload?.classmap?.includes("php/src/USTaxAdvantagedParams.php")) {
   fail("composer.json must classmap-autoload the native PHP implementation");
 }
 if (!composer.scripts?.test) fail("composer.json must expose a test script");
@@ -120,11 +120,11 @@ const requiredSourceFiles = [
   "tsconfig.cjs.json",
   "tsconfig.types.json",
   "tsconfig.tests.json",
-  "src/USARetirementAccountParameters.ts",
-  "tests/USARetirementAccountParameters.test.ts",
+  "src/USTaxAdvantagedParams.ts",
+  "tests/USTaxAdvantagedParams.test.ts",
   "tests/conformance.test.ts",
-  "php/src/USARetirementAccountParameters.php",
-  "php/tests/USARetirementAccountParametersTest.php",
+  "php/src/USTaxAdvantagedParams.php",
+  "php/tests/USTaxAdvantagedParamsTest.php",
   "php/tests/ConformanceVectorsTest.php",
   "data/retirement-parameters.json",
   "data/conformance-vectors.json",
@@ -141,33 +141,39 @@ for (const path of requiredSourceFiles) if (!(await exists(path))) fail(`${path}
 
 for (const obsoletePath of [
   "rules/retirement-parameters.json",
-  "src/USARetirementAccountParameters.php",
-  "tests/USARetirementAccountParametersTest.php",
-  "src/USARetirementAccountParameters.ts.tmp",
+  "src/USTaxAdvantagedParams.php",
+  "tests/USTaxAdvantagedParamsTest.php",
+  "src/USTaxAdvantagedParams.ts.tmp",
+  // Pre-rename filenames (the package was usa-retirement-account-parameters
+  // through 0.1.0); a leftover copy would silently shadow the renamed engine.
+  "src/USARetirementAccountParameters.ts",
+  "tests/USARetirementAccountParameters.test.ts",
+  "php/src/USARetirementAccountParameters.php",
+  "php/tests/USARetirementAccountParametersTest.php",
 ]) {
   if (await exists(obsoletePath)) fail(`obsolete duplicate remains: ${obsoletePath}`);
 }
 
 if (built) {
   for (const path of [
-    "dist/esm/USARetirementAccountParameters.js",
-    "dist/esm/USARetirementAccountParameters.js.map",
-    "dist/cjs/USARetirementAccountParameters.js",
-    "dist/cjs/USARetirementAccountParameters.js.map",
+    "dist/esm/USTaxAdvantagedParams.js",
+    "dist/esm/USTaxAdvantagedParams.js.map",
+    "dist/cjs/USTaxAdvantagedParams.js",
+    "dist/cjs/USTaxAdvantagedParams.js.map",
     "dist/cjs/package.json",
-    "dist/types/USARetirementAccountParameters.d.ts",
-    "dist/types/USARetirementAccountParameters.d.cts",
+    "dist/types/USTaxAdvantagedParams.d.ts",
+    "dist/types/USTaxAdvantagedParams.d.cts",
   ]) {
     if (!(await exists(path))) fail(`built artifact is missing: ${path}`);
   }
 }
 
-const phpSource = await readFile(join(root, "php/src/USARetirementAccountParameters.php"), "utf8");
-if (!phpSource.includes("namespace USARetirementAccountParameters;")) {
+const phpSource = await readFile(join(root, "php/src/USTaxAdvantagedParams.php"), "utf8");
+if (!phpSource.includes("namespace USTaxAdvantagedParams;")) {
   fail("PHP namespace does not match the documented Composer namespace");
 }
-const tsSource = await readFile(join(root, "src/USARetirementAccountParameters.ts"), "utf8");
-if (!tsSource.includes("export class USARetirementAccountParameters")) {
+const tsSource = await readFile(join(root, "src/USTaxAdvantagedParams.ts"), "utf8");
+if (!tsSource.includes("export class USTaxAdvantagedParams")) {
   fail("TypeScript public class export is missing");
 }
 if (!tsSource.includes("recognizedCompensationForEmployerAllocation")) {
