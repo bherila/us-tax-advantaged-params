@@ -5857,6 +5857,673 @@ private const PARAMETER_JSON = <<<'JSON'
 JSON;
 /* </generated-parameters> */
 
+    /* <generated-hsa-parameters> */
+private const HSA_PARAMETER_JSON = <<<'JSON'
+{
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 2004,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "proration": {
+    "method": "sum_annual_amounts_for_eligible_months_then_divide_by_twelve",
+    "monthsInYear": 12
+  },
+  "historicalCoveragePolicy": {
+    "description": "Health savings accounts were created by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. The table therefore starts at 2004 and is never extrapolated forward: a tax year with no published revenue procedure returns an unavailable status and a diagnostic rather than an inflation-projected amount.",
+    "preTaxRelief2006DeductibleCap": "For 2004 through 2006, IRC 223(b)(2) capped each month\u0027s limitation at 1/12 of the lesser of the plan\u0027s annual deductible and the statutory dollar amount. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for taxable years beginning after 2006. In the capped years the engine requires the plan\u0027s annual deductible and returns an indeterminate result without it.",
+    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. Electing it for an earlier year produces a diagnostic and the ordinary month-by-month limitation."
+  },
+  "sources": [
+    {
+      "id": "usc-26-223",
+      "title": "26 U.S.C. 223, Health savings accounts (2023 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2023-title26/pdf/USCODE-2023-title26-subtitleA-chap1-subchapB-partVII-sec223.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2004-2",
+      "title": "Notice 2004-2, Health Savings Accounts (2004 amounts and the IRC 223(b)(3) catch-up schedule)",
+      "url": "https://www.irs.gov/pub/irs-drop/n-04-2.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2004-71",
+      "title": "Rev. Proc. 2004-71, section 3.22, 2005 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-04-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2005-70",
+      "title": "Rev. Proc. 2005-70, section 3.22, 2006 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-05-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53, section 3.24, 2007 high deductible health plan amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2007-36",
+      "title": "Rev. Proc. 2007-36, restated 2007 and new 2008 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-07-36.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2008-29",
+      "title": "Rev. Proc. 2008-29, 2009 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-08-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2009-29",
+      "title": "Rev. Proc. 2009-29, 2010 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-09-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-22",
+      "title": "Rev. Proc. 2010-22, 2011 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-32",
+      "title": "Rev. Proc. 2011-32, 2012 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2012-26",
+      "title": "Rev. Proc. 2012-26, 2013 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-12-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-25",
+      "title": "Rev. Proc. 2013-25, 2014 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-30",
+      "title": "Rev. Proc. 2014-30, 2015 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-30",
+      "title": "Rev. Proc. 2015-30, 2016 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-28",
+      "title": "Rev. Proc. 2016-28, 2017 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-28.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-37",
+      "title": "Rev. Proc. 2017-37, 2018 health savings account amounts as first announced",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-37.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Rev. Proc. 2018-18 (Internal Revenue Bulletin 2018-10), which briefly reduced the 2018 family limit to $6,850",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-27",
+      "title": "Rev. Proc. 2018-27, restoring $6,900 as the operative 2018 family limit",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-27.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-30",
+      "title": "Rev. Proc. 2018-30, 2019 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-25",
+      "title": "Rev. Proc. 2019-25 (Internal Revenue Bulletin 2019-22), 2020 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb19-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-32",
+      "title": "Rev. Proc. 2020-32, 2021 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-25",
+      "title": "Rev. Proc. 2021-25, 2022 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-24",
+      "title": "Rev. Proc. 2022-24, 2023 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-24.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-23",
+      "title": "Rev. Proc. 2023-23, 2024 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-23.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-25",
+      "title": "Rev. Proc. 2024-25, 2025 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-19",
+      "title": "Rev. Proc. 2025-19, 2026 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "2004": {
+      "year": 2004,
+      "annualContributionLimit": {
+        "selfOnly": 2600,
+        "family": 5150
+      },
+      "additionalContributionAmountAge55": 500,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5000,
+          "family": 10000
+        }
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "annualContributionLimit": {
+        "selfOnly": 2650,
+        "family": 5250
+      },
+      "additionalContributionAmountAge55": 600,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5100,
+          "family": 10200
+        }
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "annualContributionLimit": {
+        "selfOnly": 2700,
+        "family": 5450
+      },
+      "additionalContributionAmountAge55": 700,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1050,
+          "family": 2100
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5250,
+          "family": 10500
+        }
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "annualContributionLimit": {
+        "selfOnly": 2850,
+        "family": 5650
+      },
+      "additionalContributionAmountAge55": 800,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5500,
+          "family": 11000
+        }
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "annualContributionLimit": {
+        "selfOnly": 2900,
+        "family": 5800
+      },
+      "additionalContributionAmountAge55": 900,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5600,
+          "family": 11200
+        }
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "annualContributionLimit": {
+        "selfOnly": 3000,
+        "family": 5950
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1150,
+          "family": 2300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5800,
+          "family": 11600
+        }
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "annualContributionLimit": {
+        "selfOnly": 3100,
+        "family": 6250
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6050,
+          "family": 12100
+        }
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "annualContributionLimit": {
+        "selfOnly": 3250,
+        "family": 6450
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6250,
+          "family": 12500
+        }
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "annualContributionLimit": {
+        "selfOnly": 3300,
+        "family": 6550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6350,
+          "family": 12700
+        }
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6650
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6450,
+          "family": 12900
+        }
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "annualContributionLimit": {
+        "selfOnly": 3400,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "annualContributionLimit": {
+        "selfOnly": 3450,
+        "family": 6900
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6650,
+          "family": 13300
+        }
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "annualContributionLimit": {
+        "selfOnly": 3500,
+        "family": 7000
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6750,
+          "family": 13500
+        }
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "annualContributionLimit": {
+        "selfOnly": 3550,
+        "family": 7100
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6900,
+          "family": 13800
+        }
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "annualContributionLimit": {
+        "selfOnly": 3600,
+        "family": 7200
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7000,
+          "family": 14000
+        }
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "annualContributionLimit": {
+        "selfOnly": 3650,
+        "family": 7300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7050,
+          "family": 14100
+        }
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "annualContributionLimit": {
+        "selfOnly": 3850,
+        "family": 7750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1500,
+          "family": 3000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7500,
+          "family": 15000
+        }
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "annualContributionLimit": {
+        "selfOnly": 4150,
+        "family": 8300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1600,
+          "family": 3200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8050,
+          "family": 16100
+        }
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "annualContributionLimit": {
+        "selfOnly": 4300,
+        "family": 8550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1650,
+          "family": 3300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8300,
+          "family": 16600
+        }
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "annualContributionLimit": {
+        "selfOnly": 4400,
+        "family": 8750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1700,
+          "family": 3400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8500,
+          "family": 17000
+        }
+      }
+    }
+  }
+}
+JSON;
+/* </generated-hsa-parameters> */
+
     public static function forTaxYear(int $taxYear): ScenarioBuilder
     {
         return ScenarioBuilder::forTaxYear($taxYear);

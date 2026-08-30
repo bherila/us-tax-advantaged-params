@@ -76,6 +76,8 @@ export enum AccountType {
 
   DEFINED_BENEFIT_PLAN = "defined_benefit_plan",
   CASH_BALANCE_PLAN = "cash_balance_plan",
+
+  HSA = "hsa",
 }
 
 export enum ConversionType {
@@ -157,6 +159,10 @@ export interface ExistingContributionInput {
   rothIra?: Money;
   special403bCatchUp?: Money;
   special457CatchUp?: Money;
+  /** HSA contribution deductible under IRC 223(a). */
+  hsaDeductible?: Money;
+  /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
+  hsaEmployerOrCafeteria?: Money;
 }
 
 export interface Special403bCatchUpInput {
@@ -170,6 +176,96 @@ export interface Section457SpecialCatchUpInput {
   eligible: boolean;
   /** Total unused regular 457(b) deferrals from prior eligible years. */
   unusedDeferralsFromPriorYears: Money;
+}
+
+/** IRC 223(c)(2) high deductible health plan coverage tiers. */
+export type HsaCoverageTier = "self_only" | "family";
+
+export interface HsaMonthlyCoverageInput {
+  /** Calendar month, 1 (January) through 12 (December). */
+  month: number;
+  /** Coverage held on the first day of that month. IRC 223(b)(2). */
+  coverage: HsaCoverageTier;
+}
+
+/**
+ * IRC 223 facts about one owner's HSA eligibility. Whether a person is an
+ * "eligible individual" under IRC 223(c)(1) — high deductible health plan
+ * coverage, absence of disqualifying other coverage, Medicare entitlement under
+ * IRC 223(b)(7), and the IRC 223(b)(6) dependent denial — is supplied by the
+ * caller through the month list, not derived by this engine.
+ */
+export interface HsaRulesInput {
+  /** Coverage tier for every eligible month when the tier does not change. */
+  coverageTier?: HsaCoverageTier;
+  /** Months (1-12) on whose first day the owner was an eligible individual. Defaults to all twelve. */
+  eligibleMonths?: number[];
+  /** Per-month coverage when the tier changes during the year. Mutually exclusive with the two fields above. */
+  monthlyCoverage?: HsaMonthlyCoverageInput[];
+  /** The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by it. */
+  hdhpAnnualDeductible?: Money;
+  /** Elect the IRC 223(b)(8) last-month rule. Requires eligibility in December. */
+  useLastMonthRule?: boolean;
+  /** Whether the IRC 223(b)(8)(B)(iii) testing period was, or will be, satisfied. Omitted means unresolved. */
+  testingPeriodSatisfied?: boolean;
+  /** IRC 223(b)(8)(B)(ii): a testing-period failure caused by death or disability is excepted. */
+  testingPeriodFailureByDeathOrDisability?: boolean;
+  /** IRC 223(b)(5)(B)(ii) agreed share of the one family limit, 0 through 1. */
+  familyLimitShare?: number;
+}
+
+export type HsaTestingPeriodStatus = "satisfied" | "failed" | "failed_exception_applies" | "unresolved";
+
+export interface HsaTestingPeriodObligation {
+  /** Months in the IRC 223(b)(8)(B)(iii) testing period. */
+  months: number;
+  /** First month of the testing period, YYYY-MM. */
+  startMonth: string;
+  /** Last month of the testing period, YYYY-MM. */
+  endMonth: string;
+  status: HsaTestingPeriodStatus;
+  /** IRC 223(b)(8)(B)(i)(I) gross-income inclusion if the period is failed. */
+  grossIncomeInclusionIfFailed: Money;
+  /** IRC 223(b)(8)(B)(i)(II) additional tax, 10 percent of the inclusion. */
+  additionalTaxIfFailed: Money;
+  /** Taxable year the inclusion and additional tax fall in; never the contribution year. */
+  inclusionTaxYear: number;
+}
+
+export interface HsaAccountDetail {
+  /**
+   * Twelve entries, January first, holding the coverage actually supplied for
+   * each month after the IRC 223(b)(5)(A) spousal recharacterization; null
+   * where the owner was not an eligible individual. The IRC 223(b)(8) deeming
+   * is not folded in here — see appliedAnnualLimitByMonth.
+   */
+  coverageTierByMonth: Array<HsaCoverageTier | null>;
+  /** Months actually supplied as eligible, ignoring the IRC 223(b)(8) deeming. */
+  eligibleMonthCount: number;
+  /**
+   * The annual amount whose one-twelfth is the IRC 223(b)(2) monthly limitation
+   * that was applied for each month. Under IRC 223(b)(8)(A)(ii) every month
+   * carries December's amount.
+   */
+  appliedAnnualLimitByMonth: Array<Money | null>;
+  /** The IRC 223(b)(1) limitation applied, before the IRC 223(b)(3) increase and the IRC 223(b)(5) division. */
+  proratedContributionLimit: Money;
+  /** The same figure computed month by month, without IRC 223(b)(8). */
+  contributionLimitWithoutLastMonthRule: Money;
+  /** IRC 223(b)(3) additional contribution amount, prorated over the same months. */
+  additionalContributionAmount: Money;
+  /** IRC 223(b)(5)(B)(ii) share of the one family limit, or null when no family limit is shared. */
+  familyLimitShare: number | null;
+  /** The single IRC 223(b)(5) family limit shared by the spouses, or null. */
+  sharedFamilyContributionLimit: Money | null;
+  lastMonthRuleApplied: boolean;
+  /**
+   * The part of this owner's ceiling that exists only because of IRC
+   * 223(b)(8)(A) — the amount that "could not have been made but for"
+   * the last-month rule if the HSA is funded to its calculated maximum.
+   */
+  amountAttributableToLastMonthRule: Money;
+  testingPeriod: HsaTestingPeriodObligation | null;
 }
 
 export interface PlanRulesInput {
@@ -209,6 +305,8 @@ export interface PlanRulesInput {
 
   special403bCatchUp?: Special403bCatchUpInput;
   section457SpecialCatchUp?: Section457SpecialCatchUpInput;
+  /** IRC 223 health savings account facts. Only read for `hsa` accounts. */
+  hsa?: HsaRulesInput;
 
   /** Grandfathered SARSEP established before 1997. */
   grandfatheredSarsep?: boolean;
@@ -265,6 +363,10 @@ export interface ContributionComponents {
   special457CatchUp: Money;
   /** Known regular contribution whose tax classification cannot be resolved. */
   unclassifiedIra: Money;
+  /** HSA contribution deductible under IRC 223(a). */
+  hsaDeductible: Money;
+  /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
+  hsaEmployerOrCafeteria: Money;
 }
 
 export interface FederalTaxEffects {
@@ -306,6 +408,8 @@ export interface AccountCalculationResult {
   planTermDependentCapacity: Money;
   federalTaxEffects: FederalTaxEffects;
   sharedLimits: SharedLimitUse[];
+  /** IRC 223 detail; present only for `hsa` accounts. */
+  hsa?: HsaAccountDetail;
   diagnostics: Diagnostic[];
 }
 
@@ -331,6 +435,8 @@ export interface ScenarioTotals {
   employerRothContribution: Money;
   deductibleIraContribution: Money;
   nondeductibleIraContribution: Money;
+  /** IRC 223 contributions, deducted and excluded together. */
+  hsaContribution: Money;
   federalAgiReduction: Money;
   federalAgiIncrease: Money;
   taxableRothConversions: Money;
@@ -342,6 +448,8 @@ export interface ScenarioResult {
   taxYear: number;
   filingStatus: FilingStatus;
   parameters: YearParameters;
+  /** IRC 223 parameters for the year, or null when HSAs did not exist or no revenue procedure is encoded. */
+  hsaParameters: HsaYearParameters | null;
   accounts: AccountCalculationResult[];
   conversions: ConversionCalculationResult[];
   totals: ScenarioTotals;
@@ -426,6 +534,42 @@ interface ParameterData {
   historicalCoveragePolicy: Record<string, string>;
   sources: Array<Record<string, string>>;
   years: Record<string, YearParameters>;
+}
+
+interface HsaTierAmounts {
+  selfOnly: Money;
+  family: Money;
+}
+
+export interface HsaYearParameters {
+  year: number;
+  /** IRC 223(b)(2)(A) and (B) annual limitations on the deduction. */
+  annualContributionLimit: HsaTierAmounts;
+  /** IRC 223(b)(3)(B) additional contribution amount for an individual who attains 55 before the close of the year. */
+  additionalContributionAmountAge55: Money;
+  /** True for 2004-2006, when IRC 223(b)(2) capped each month at the lesser of the plan deductible and the dollar amount. */
+  contributionLimitCappedByHdhpAnnualDeductible: boolean;
+  /** IRC 223(b)(8), added by the Tax Relief and Health Care Act of 2006 for years after 2006. */
+  lastMonthRuleAvailable: boolean;
+  /** IRC 223(b)(8)(B)(iii) testing period length, or null where the rule does not exist. */
+  testingPeriodMonths: number | null;
+  /** IRC 223(c)(2)(A) high deductible health plan definition. */
+  hdhp: {
+    minimumAnnualDeductible: HsaTierAmounts;
+    maximumAnnualOutOfPocket: HsaTierAmounts;
+  };
+}
+
+interface HsaParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  proration: { method: string; monthsInYear: number };
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, HsaYearParameters>;
 }
 
 /* <generated-parameters> */
@@ -5670,6 +5814,671 @@ const RAW_PARAMETERS: ParameterData = {
 } as ParameterData;
 /* </generated-parameters> */
 
+/* <generated-hsa-parameters> */
+const RAW_HSA_PARAMETERS: HsaParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 2004,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "proration": {
+    "method": "sum_annual_amounts_for_eligible_months_then_divide_by_twelve",
+    "monthsInYear": 12
+  },
+  "historicalCoveragePolicy": {
+    "description": "Health savings accounts were created by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. The table therefore starts at 2004 and is never extrapolated forward: a tax year with no published revenue procedure returns an unavailable status and a diagnostic rather than an inflation-projected amount.",
+    "preTaxRelief2006DeductibleCap": "For 2004 through 2006, IRC 223(b)(2) capped each month's limitation at 1/12 of the lesser of the plan's annual deductible and the statutory dollar amount. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for taxable years beginning after 2006. In the capped years the engine requires the plan's annual deductible and returns an indeterminate result without it.",
+    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. Electing it for an earlier year produces a diagnostic and the ordinary month-by-month limitation."
+  },
+  "sources": [
+    {
+      "id": "usc-26-223",
+      "title": "26 U.S.C. 223, Health savings accounts (2023 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2023-title26/pdf/USCODE-2023-title26-subtitleA-chap1-subchapB-partVII-sec223.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2004-2",
+      "title": "Notice 2004-2, Health Savings Accounts (2004 amounts and the IRC 223(b)(3) catch-up schedule)",
+      "url": "https://www.irs.gov/pub/irs-drop/n-04-2.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2004-71",
+      "title": "Rev. Proc. 2004-71, section 3.22, 2005 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-04-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2005-70",
+      "title": "Rev. Proc. 2005-70, section 3.22, 2006 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-05-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53, section 3.24, 2007 high deductible health plan amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2007-36",
+      "title": "Rev. Proc. 2007-36, restated 2007 and new 2008 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-07-36.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2008-29",
+      "title": "Rev. Proc. 2008-29, 2009 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-08-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2009-29",
+      "title": "Rev. Proc. 2009-29, 2010 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-09-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-22",
+      "title": "Rev. Proc. 2010-22, 2011 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-32",
+      "title": "Rev. Proc. 2011-32, 2012 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2012-26",
+      "title": "Rev. Proc. 2012-26, 2013 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-12-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-25",
+      "title": "Rev. Proc. 2013-25, 2014 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-30",
+      "title": "Rev. Proc. 2014-30, 2015 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-30",
+      "title": "Rev. Proc. 2015-30, 2016 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-28",
+      "title": "Rev. Proc. 2016-28, 2017 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-28.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-37",
+      "title": "Rev. Proc. 2017-37, 2018 health savings account amounts as first announced",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-37.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Rev. Proc. 2018-18 (Internal Revenue Bulletin 2018-10), which briefly reduced the 2018 family limit to $6,850",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-27",
+      "title": "Rev. Proc. 2018-27, restoring $6,900 as the operative 2018 family limit",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-27.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-30",
+      "title": "Rev. Proc. 2018-30, 2019 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-25",
+      "title": "Rev. Proc. 2019-25 (Internal Revenue Bulletin 2019-22), 2020 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb19-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-32",
+      "title": "Rev. Proc. 2020-32, 2021 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-25",
+      "title": "Rev. Proc. 2021-25, 2022 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-24",
+      "title": "Rev. Proc. 2022-24, 2023 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-24.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-23",
+      "title": "Rev. Proc. 2023-23, 2024 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-23.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-25",
+      "title": "Rev. Proc. 2024-25, 2025 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-19",
+      "title": "Rev. Proc. 2025-19, 2026 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "2004": {
+      "year": 2004,
+      "annualContributionLimit": {
+        "selfOnly": 2600,
+        "family": 5150
+      },
+      "additionalContributionAmountAge55": 500,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5000,
+          "family": 10000
+        }
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "annualContributionLimit": {
+        "selfOnly": 2650,
+        "family": 5250
+      },
+      "additionalContributionAmountAge55": 600,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5100,
+          "family": 10200
+        }
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "annualContributionLimit": {
+        "selfOnly": 2700,
+        "family": 5450
+      },
+      "additionalContributionAmountAge55": 700,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1050,
+          "family": 2100
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5250,
+          "family": 10500
+        }
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "annualContributionLimit": {
+        "selfOnly": 2850,
+        "family": 5650
+      },
+      "additionalContributionAmountAge55": 800,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5500,
+          "family": 11000
+        }
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "annualContributionLimit": {
+        "selfOnly": 2900,
+        "family": 5800
+      },
+      "additionalContributionAmountAge55": 900,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5600,
+          "family": 11200
+        }
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "annualContributionLimit": {
+        "selfOnly": 3000,
+        "family": 5950
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1150,
+          "family": 2300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5800,
+          "family": 11600
+        }
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "annualContributionLimit": {
+        "selfOnly": 3100,
+        "family": 6250
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6050,
+          "family": 12100
+        }
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "annualContributionLimit": {
+        "selfOnly": 3250,
+        "family": 6450
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6250,
+          "family": 12500
+        }
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "annualContributionLimit": {
+        "selfOnly": 3300,
+        "family": 6550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6350,
+          "family": 12700
+        }
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6650
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6450,
+          "family": 12900
+        }
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "annualContributionLimit": {
+        "selfOnly": 3400,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "annualContributionLimit": {
+        "selfOnly": 3450,
+        "family": 6900
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6650,
+          "family": 13300
+        }
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "annualContributionLimit": {
+        "selfOnly": 3500,
+        "family": 7000
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6750,
+          "family": 13500
+        }
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "annualContributionLimit": {
+        "selfOnly": 3550,
+        "family": 7100
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6900,
+          "family": 13800
+        }
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "annualContributionLimit": {
+        "selfOnly": 3600,
+        "family": 7200
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7000,
+          "family": 14000
+        }
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "annualContributionLimit": {
+        "selfOnly": 3650,
+        "family": 7300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7050,
+          "family": 14100
+        }
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "annualContributionLimit": {
+        "selfOnly": 3850,
+        "family": 7750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1500,
+          "family": 3000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7500,
+          "family": 15000
+        }
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "annualContributionLimit": {
+        "selfOnly": 4150,
+        "family": 8300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1600,
+          "family": 3200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8050,
+          "family": 16100
+        }
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "annualContributionLimit": {
+        "selfOnly": 4300,
+        "family": 8550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1650,
+          "family": 3300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8300,
+          "family": 16600
+        }
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "annualContributionLimit": {
+        "selfOnly": 4400,
+        "family": 8750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1700,
+          "family": 3400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8500,
+          "family": 17000
+        }
+      }
+    }
+  }
+} as HsaParameterData;
+/* </generated-hsa-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -5701,7 +6510,8 @@ interface AccountTraits {
     | "section457"
     | "annual_additions_only"
     | "defined_benefit"
-    | "section457f";
+    | "section457f"
+    | "hsa";
   availabilityKey?: string;
   designatedRoth: boolean;
   shares402g: boolean;
@@ -5759,6 +6569,8 @@ const ACCOUNT_TRAITS: Record<AccountType, AccountTraits> = {
 
   [AccountType.DEFINED_BENEFIT_PLAN]: definedBenefitTraits(),
   [AccountType.CASH_BALANCE_PLAN]: definedBenefitTraits(),
+
+  [AccountType.HSA]: hsaTraits(),
 };
 
 function baseTraits(
@@ -5888,6 +6700,10 @@ function annualAdditionsOnlyTraits(): AccountTraits {
   });
 }
 
+function hsaTraits(): AccountTraits {
+  return baseTraits("hsa");
+}
+
 function definedBenefitTraits(): AccountTraits {
   return baseTraits("defined_benefit", { employerOnly: true });
 }
@@ -5973,6 +6789,9 @@ const ACCOUNT_TYPE_ALIASES: Record<string, AccountType> = {
   DEFINED_BENEFIT_PLAN: AccountType.DEFINED_BENEFIT_PLAN,
   CASH_BALANCE: AccountType.CASH_BALANCE_PLAN,
   CASH_BALANCE_PLAN: AccountType.CASH_BALANCE_PLAN,
+  HSA: AccountType.HSA,
+  HEALTH_SAVINGS_ACCOUNT: AccountType.HSA,
+  SECTION_223: AccountType.HSA,
 };
 
 const CONVERSION_TYPE_ALIASES: Record<string, ConversionType> = {
@@ -6097,6 +6916,8 @@ function zeroComponents(): ContributionComponents {
     special403bCatchUp: 0,
     special457CatchUp: 0,
     unclassifiedIra: 0,
+    hsaDeductible: 0,
+    hsaEmployerOrCafeteria: 0,
   };
 }
 
@@ -6115,6 +6936,8 @@ function cloneComponents(source?: ExistingContributionInput): ContributionCompon
   result.rothIra = money(source.rothIra, "existing.rothIra");
   result.special403bCatchUp = money(source.special403bCatchUp, "existing.special403bCatchUp");
   result.special457CatchUp = money(source.special457CatchUp, "existing.special457CatchUp");
+  result.hsaDeductible = money(source.hsaDeductible, "existing.hsaDeductible");
+  result.hsaEmployerOrCafeteria = money(source.hsaEmployerOrCafeteria, "existing.hsaEmployerOrCafeteria");
   return result;
 }
 
@@ -6178,11 +7001,18 @@ function contributionTaxEffects(
     : 0;
   const selfEmployedEmployer = planRules.isSelfEmployedOwner ? components.employerPreTax : 0;
 
-  result.formW2Box1WageReduction = planRules.isSelfEmployedOwner ? 0 : pretaxEmployee;
+  const hsaDeduction = components.hsaDeductible;
+  const hsaExclusion = components.hsaEmployerOrCafeteria;
+
+  result.formW2Box1WageReduction = roundMoney(
+    (planRules.isSelfEmployedOwner ? 0 : pretaxEmployee) + hsaExclusion,
+  );
   result.selfEmployedRetirementDeduction = selfEmployedPlanDeduction;
-  result.federalAgiReduction = roundMoney(pretaxEmployee + selfEmployedEmployer + deductibleIra);
+  result.federalAgiReduction = roundMoney(
+    pretaxEmployee + selfEmployedEmployer + deductibleIra + hsaDeduction,
+  );
   result.federalTaxableIncomeReduction = result.federalAgiReduction;
-  result.ficaWageReduction = 0;
+  result.ficaWageReduction = hsaExclusion;
   result.nondeductibleContribution = roundMoney(components.nondeductibleIra + components.unclassifiedIra);
   result.afterTaxOrRothContribution = roundMoney(
     components.employeeRothDeferral +
@@ -6204,6 +7034,14 @@ function contributionTaxEffects(
   }
   if (result.afterTaxOrRothContribution > 0) {
     result.notes.push("Roth and voluntary after-tax contributions do not reduce current federal AGI.");
+  }
+  if (hsaDeduction > 0) {
+    result.notes.push("An HSA contribution made by the account beneficiary is an above-the-line federal deduction under IRC 223(a).");
+  }
+  if (hsaExclusion > 0) {
+    result.notes.push(
+      "Employer and cafeteria-plan HSA contributions are excluded from gross income under IRC 106(d) and are outside Form W-2 box 1 and Social Security and Medicare wages (Notice 2004-2 A-19). They were never included rather than reduced, and they reduce the IRC 223(a) deduction under IRC 223(b)(4)(B).",
+    );
   }
   return result;
 }
@@ -6259,6 +7097,7 @@ interface CalculationContext {
   taxYear: number;
   filingStatus: FilingStatus;
   parameters: YearParameters;
+  hsaParameters: HsaYearParameters | null;
   persons: Map<string, NormalizedPerson>;
   accountsById: Map<string, NormalizedAccount>;
   scenarioDiagnostics: Diagnostic[];
@@ -6273,6 +7112,10 @@ interface CalculationContext {
   section457BasePools: Map<string, LimitPool>;
   section457CatchUpPools: Map<string, LimitPool>;
   section457SpecialCatchUpPools: Map<string, LimitPool>;
+  hsaBasePools: Map<string, LimitPool>;
+  hsaCatchUpPools: Map<string, LimitPool>;
+  hsaFamilyPools: Map<string, LimitPool>;
+  hsaPlans: Map<string, HsaOwnerPlan>;
 }
 
 interface AllocationOutcome {
@@ -6283,6 +7126,7 @@ interface AllocationOutcome {
   planTermDependentCapacity: Money;
   sharedLimits: SharedLimitUse[];
   diagnostics: Diagnostic[];
+  hsaDetail?: HsaAccountDetail;
 }
 
 function getParametersForYear(year: number): YearParameters {
@@ -6424,6 +7268,81 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
       rules.section457SpecialCatchUp.unusedDeferralsFromPriorYears,
       `${path}.section457SpecialCatchUp.unusedDeferralsFromPriorYears`,
     );
+  }
+  if (rules.hsa) validateHsaRules(rules.hsa, `${path}.hsa`);
+}
+
+const HSA_COVERAGE_TIERS: HsaCoverageTier[] = ["self_only", "family"];
+
+function parseHsaCoverageTier(value: unknown, path: string): HsaCoverageTier {
+  if (typeof value !== "string" || !HSA_COVERAGE_TIERS.includes(value as HsaCoverageTier)) {
+    throw new ParameterError(
+      "INVALID_HSA_COVERAGE_TIER",
+      `${path} must be "self_only" or "family".`,
+    );
+  }
+  return value as HsaCoverageTier;
+}
+
+function validateHsaMonth(value: unknown, path: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > 12) {
+    throw new ParameterError("INVALID_HSA_MONTH", `${path} must be an integer from 1 through 12.`);
+  }
+  return value;
+}
+
+function validateHsaRules(rules: HsaRulesInput, path: string): void {
+  const hasMonthly = rules.monthlyCoverage !== undefined;
+  const hasTierForm = rules.coverageTier !== undefined || rules.eligibleMonths !== undefined;
+  if (hasMonthly && hasTierForm) {
+    throw new ParameterError(
+      "INVALID_HSA_COVERAGE_INPUT",
+      `${path} must supply either monthlyCoverage or coverageTier/eligibleMonths, not both.`,
+    );
+  }
+  if (rules.coverageTier !== undefined) parseHsaCoverageTier(rules.coverageTier, `${path}.coverageTier`);
+  if (rules.eligibleMonths !== undefined) {
+    if (!Array.isArray(rules.eligibleMonths)) {
+      throw new ParameterError("INVALID_HSA_ELIGIBLE_MONTHS", `${path}.eligibleMonths must be an array.`);
+    }
+    const seen = new Set<number>();
+    rules.eligibleMonths.forEach((month, index) => {
+      const value = validateHsaMonth(month, `${path}.eligibleMonths[${index}]`);
+      if (seen.has(value)) {
+        throw new ParameterError(
+          "DUPLICATE_HSA_MONTH",
+          `${path}.eligibleMonths lists month ${value} more than once.`,
+        );
+      }
+      seen.add(value);
+    });
+  }
+  if (rules.monthlyCoverage !== undefined) {
+    if (!Array.isArray(rules.monthlyCoverage)) {
+      throw new ParameterError("INVALID_HSA_MONTHLY_COVERAGE", `${path}.monthlyCoverage must be an array.`);
+    }
+    const seen = new Set<number>();
+    rules.monthlyCoverage.forEach((entry, index) => {
+      if (entry === null || typeof entry !== "object") {
+        throw new ParameterError(
+          "INVALID_HSA_MONTHLY_COVERAGE",
+          `${path}.monthlyCoverage[${index}] must be an object.`,
+        );
+      }
+      const month = validateHsaMonth(entry.month, `${path}.monthlyCoverage[${index}].month`);
+      if (seen.has(month)) {
+        throw new ParameterError(
+          "DUPLICATE_HSA_MONTH",
+          `${path}.monthlyCoverage lists month ${month} more than once.`,
+        );
+      }
+      seen.add(month);
+      parseHsaCoverageTier(entry.coverage, `${path}.monthlyCoverage[${index}].coverage`);
+    });
+  }
+  money(rules.hdhpAnnualDeductible, `${path}.hdhpAnnualDeductible`);
+  if (rules.familyLimitShare !== undefined) {
+    rate(rules.familyLimitShare, `${path}.familyLimitShare`);
   }
 }
 
@@ -6647,6 +7566,7 @@ function createCalculationContext(
   taxYear: number,
   filingStatus: FilingStatus,
   parameters: YearParameters,
+  hsaParameters: HsaYearParameters | null,
   persons: Map<string, NormalizedPerson>,
   accounts: NormalizedAccount[],
   scenarioDiagnostics: Diagnostic[],
@@ -6655,6 +7575,7 @@ function createCalculationContext(
     taxYear,
     filingStatus,
     parameters,
+    hsaParameters,
     persons,
     accountsById: new Map(accounts.map((account) => [account.id, account])),
     scenarioDiagnostics,
@@ -6669,12 +7590,17 @@ function createCalculationContext(
     section457BasePools: new Map(),
     section457CatchUpPools: new Map(),
     section457SpecialCatchUpPools: new Map(),
+    hsaBasePools: new Map(),
+    hsaCatchUpPools: new Map(),
+    hsaFamilyPools: new Map(),
+    hsaPlans: new Map(),
   };
 
   initializeIraPools(context, accounts);
   initializeElectiveDeferralPools(context, accounts);
   initializeAnnualAdditionsPools(context, accounts);
   initializeSection457Pools(context, accounts);
+  initializeHsaPools(context, accounts);
   return context;
 }
 
@@ -6921,6 +7847,650 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
   }
 }
 
+const HSA_MONTHS_IN_YEAR = 12;
+const HSA_ALL_MONTHS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+interface HsaOwnerPlan {
+  status: CalculationStatus;
+  diagnostics: Diagnostic[];
+  statutoryMaximum: Money | null;
+  detail: HsaAccountDetail | null;
+  familyPoolKey: string | null;
+}
+
+interface HsaOwnerFacts {
+  ownerId: string;
+  rules: HsaRulesInput | null;
+  conflict: boolean;
+  months: Array<HsaCoverageTier | null> | null;
+}
+
+function hsaParametersForYear(year: number): HsaYearParameters | null {
+  const row = RAW_HSA_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+/** Twelve coverage slots, or null when no coverage facts were supplied at all. */
+function resolveHsaMonths(rules: HsaRulesInput): Array<HsaCoverageTier | null> | null {
+  const months: Array<HsaCoverageTier | null> = HSA_ALL_MONTHS.map(() => null);
+  if (rules.monthlyCoverage !== undefined) {
+    for (const entry of rules.monthlyCoverage) months[entry.month - 1] = entry.coverage;
+    return months;
+  }
+  if (rules.coverageTier === undefined) return null;
+  for (const month of rules.eligibleMonths ?? HSA_ALL_MONTHS) months[month - 1] = rules.coverageTier;
+  return months;
+}
+
+/**
+ * The two spouses of a married couple, when both are present. IRC 223(b)(5)
+ * applies to "individuals who are married to each other", which covers a
+ * separate return as well as a joint one.
+ */
+function hsaMarriedCouple(context: CalculationContext): [string, string] | null {
+  if (
+    context.filingStatus !== FilingStatus.MARRIED_FILING_JOINTLY &&
+    context.filingStatus !== FilingStatus.MARRIED_FILING_SEPARATELY
+  ) {
+    return null;
+  }
+  let taxpayerId: string | null = null;
+  let spouseId: string | null = null;
+  for (const person of context.persons.values()) {
+    if (person.role === "taxpayer" && taxpayerId === null) taxpayerId = person.id;
+    if (person.role === "spouse" && spouseId === null) spouseId = person.id;
+  }
+  return taxpayerId !== null && spouseId !== null ? [taxpayerId, spouseId] : null;
+}
+
+function initializeHsaPools(context: CalculationContext, accounts: NormalizedAccount[]): void {
+  const hsaAccounts = accounts.filter((account) => ACCOUNT_TRAITS[account.type].family === "hsa");
+  if (hsaAccounts.length === 0) return;
+
+  const ownerIds: string[] = [];
+  const accountsByOwner = new Map<string, NormalizedAccount[]>();
+  for (const account of hsaAccounts) {
+    let list = accountsByOwner.get(account.ownerId);
+    if (!list) {
+      list = [];
+      accountsByOwner.set(account.ownerId, list);
+      ownerIds.push(account.ownerId);
+    }
+    list.push(account);
+  }
+
+  const parameters = context.hsaParameters;
+  if (parameters === null) {
+    const { minimum, maximum } = RAW_HSA_PARAMETERS.supportedTaxYears;
+    const before = context.taxYear < minimum;
+    const entry = diagnostic(
+      before ? "HSA_NOT_AVAILABLE_FOR_TAX_YEAR" : "HSA_PARAMETERS_NOT_PUBLISHED_FOR_TAX_YEAR",
+      DiagnosticSeverity.ERROR,
+      before
+        ? `Health savings accounts were created for taxable years beginning after December 31, 2003, so no IRC 223 limitation exists for tax year ${context.taxYear}.`
+        : `No IRC 223 revenue procedure is encoded for tax year ${context.taxYear}. Encoded HSA years are ${minimum}-${maximum}; a future year is never extrapolated.`,
+      "taxYear",
+      "IRC 223",
+    );
+    for (const ownerId of ownerIds) {
+      context.hsaPlans.set(ownerId, {
+        status: CalculationStatus.UNAVAILABLE,
+        diagnostics: [entry],
+        statutoryMaximum: 0,
+        detail: null,
+        familyPoolKey: null,
+      });
+    }
+    return;
+  }
+
+  const facts = new Map<string, HsaOwnerFacts>();
+  for (const ownerId of ownerIds) {
+    let rules: HsaRulesInput | null = null;
+    let signature: string | null = null;
+    let conflict = false;
+    for (const account of accountsByOwner.get(ownerId)!) {
+      const supplied = account.planRules.hsa;
+      if (supplied === undefined) continue;
+      const encoded = JSON.stringify(supplied);
+      if (signature === null) {
+        signature = encoded;
+        rules = supplied;
+      } else if (signature !== encoded) {
+        conflict = true;
+      }
+    }
+    facts.set(ownerId, {
+      ownerId,
+      rules,
+      conflict,
+      months: rules === null ? null : resolveHsaMonths(rules),
+    });
+  }
+
+  const couple = hsaMarriedCouple(context);
+  const coupleMembersWithAccounts = couple
+    ? couple.filter((personId) => accountsByOwner.has(personId))
+    : [];
+  const familyMonth = HSA_ALL_MONTHS.map((month) =>
+    coupleMembersWithAccounts.some((personId) => facts.get(personId)?.months?.[month - 1] === "family"),
+  );
+  const familySharingApplies = familyMonth.some(Boolean);
+  const recharacterized = new Set<string>();
+  if (familySharingApplies) {
+    // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
+    // as having only that family coverage. It does not make an otherwise
+    // ineligible month eligible, so only supplied months are rewritten.
+    for (const personId of coupleMembersWithAccounts) {
+      const owner = facts.get(personId)!;
+      if (!owner.months) continue;
+      for (const month of HSA_ALL_MONTHS) {
+        if (familyMonth[month - 1] && owner.months[month - 1] === "self_only") {
+          owner.months[month - 1] = "family";
+          recharacterized.add(personId);
+        }
+      }
+    }
+  }
+
+  /**
+   * IRC 223(b)(5)(A) also treats spouses with family coverage under different
+   * plans as covered by the plan with the lowest annual deductible. That only
+   * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
+   * limitation by the deductible.
+   */
+  const coupleDeductibles = coupleMembersWithAccounts
+    .map((personId) => facts.get(personId)?.rules?.hdhpAnnualDeductible)
+    .filter((value): value is Money => value !== undefined);
+  const lowestCoupleDeductible = coupleDeductibles.length > 0 ? Math.min(...coupleDeductibles) : null;
+
+  interface HsaOwnerAmounts {
+    proratedApplied: Money;
+    proratedWithoutLastMonthRule: Money;
+    catchUpApplied: Money;
+    catchUpWithoutLastMonthRule: Money;
+    appliedAnnualLimitByMonth: Array<Money | null>;
+    eligibleMonthCount: number;
+    lastMonthRuleApplied: boolean;
+    diagnostics: Diagnostic[];
+    indeterminate: boolean;
+  }
+
+  const amountsByOwner = new Map<string, HsaOwnerAmounts>();
+
+  for (const ownerId of ownerIds) {
+    const owner = facts.get(ownerId)!;
+    const person = context.persons.get(ownerId)!;
+    const diagnostics: Diagnostic[] = [];
+    let indeterminate = false;
+
+    if (owner.conflict) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+          DiagnosticSeverity.ERROR,
+          "Two health savings accounts owned by the same person supplied different IRC 223 coverage facts. Coverage is a fact about the person, so it must be identical on every one of that person's HSAs.",
+          `persons.${ownerId}`,
+          "IRC 223(b)",
+        ),
+      );
+    }
+    if (owner.rules === null || owner.months === null) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_COVERAGE_FACTS_REQUIRED",
+          DiagnosticSeverity.ERROR,
+          "planRules.hsa with a coverage tier (or a monthlyCoverage list) is required. Whether a person is an eligible individual under IRC 223(c)(1), including Medicare entitlement under IRC 223(b)(7), is a caller-supplied fact.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(1)",
+        ),
+      );
+    }
+
+    const months = owner.months ?? HSA_ALL_MONTHS.map(() => null);
+    const eligibleMonthCount = months.filter((tier) => tier !== null).length;
+    const age = ageAtEndOfTaxYear(person, context.taxYear);
+    if (age === null) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT",
+          DiagnosticSeverity.ERROR,
+          "Birth year or birth date is required to determine whether the IRC 223(b)(3) additional contribution amount for an individual who attains age 55 applies.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(3)(A)",
+        ),
+      );
+    }
+
+    const ownDeductible = owner.rules?.hdhpAnnualDeductible;
+    const deductibleFor = (tier: HsaCoverageTier): Money | null => {
+      if (tier === "family" && familySharingApplies && lowestCoupleDeductible !== null) {
+        return lowestCoupleDeductible;
+      }
+      return ownDeductible ?? null;
+    };
+    let deductibleMissing = false;
+    const annualLimitFor = (tier: HsaCoverageTier): Money => {
+      const statutory = parameters.annualContributionLimit[tier === "family" ? "family" : "selfOnly"];
+      if (!parameters.contributionLimitCappedByHdhpAnnualDeductible) return statutory;
+      const deductible = deductibleFor(tier);
+      if (deductible === null) {
+        deductibleMissing = true;
+        return statutory;
+      }
+      return minMoney(deductible, statutory);
+    };
+
+    const monthlyAnnualLimits = months.map((tier) => (tier === null ? null : annualLimitFor(tier)));
+    if (deductibleMissing) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
+          DiagnosticSeverity.ERROR,
+          `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.`,
+          `persons.${ownerId}`,
+          "IRC 223(b)(2)",
+        ),
+      );
+    }
+
+    const proratedWithoutLastMonthRule = roundMoney(
+      monthlyAnnualLimits.reduce<number>((sum, value) => sum + (value ?? 0), 0) / HSA_MONTHS_IN_YEAR,
+    );
+    const catchUpEligible = age !== null && age >= 55;
+    const catchUpWithoutLastMonthRule = catchUpEligible
+      ? roundMoney((parameters.additionalContributionAmountAge55 * eligibleMonthCount) / HSA_MONTHS_IN_YEAR)
+      : 0;
+
+    let lastMonthRuleApplied = false;
+    let appliedAnnualLimitByMonth = monthlyAnnualLimits;
+    let proratedApplied = proratedWithoutLastMonthRule;
+    let catchUpApplied = catchUpWithoutLastMonthRule;
+
+    if (owner.rules?.useLastMonthRule) {
+      const decemberTier = months[HSA_MONTHS_IN_YEAR - 1];
+      if (!parameters.lastMonthRuleAvailable) {
+        diagnostics.push(
+          diagnostic(
+            "HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR",
+            DiagnosticSeverity.WARNING,
+            `IRC 223(b)(8) was added by the Tax Relief and Health Care Act of 2006 section 305 for taxable years beginning after December 31, 2006, so it does not apply to tax year ${context.taxYear}. The ordinary month-by-month limitation is used instead.`,
+            `persons.${ownerId}`,
+            "IRC 223(b)(8)",
+          ),
+        );
+      } else if (decemberTier === null) {
+        diagnostics.push(
+          diagnostic(
+            "HSA_LAST_MONTH_RULE_REQUIRES_DECEMBER_ELIGIBILITY",
+            DiagnosticSeverity.WARNING,
+            "IRC 223(b)(8)(A) applies only to an individual who is an eligible individual during the last month of the taxable year. December is not an eligible month here, so the ordinary month-by-month limitation is used instead.",
+            `persons.${ownerId}`,
+            "IRC 223(b)(8)(A)",
+          ),
+        );
+      } else {
+        lastMonthRuleApplied = true;
+        const decemberAnnualLimit = annualLimitFor(decemberTier);
+        appliedAnnualLimitByMonth = HSA_ALL_MONTHS.map(() => decemberAnnualLimit);
+        proratedApplied = roundMoney(decemberAnnualLimit);
+        catchUpApplied = catchUpEligible ? roundMoney(parameters.additionalContributionAmountAge55) : 0;
+      }
+    }
+
+    amountsByOwner.set(ownerId, {
+      proratedApplied,
+      proratedWithoutLastMonthRule,
+      catchUpApplied,
+      catchUpWithoutLastMonthRule,
+      appliedAnnualLimitByMonth,
+      eligibleMonthCount,
+      lastMonthRuleApplied,
+      diagnostics,
+      indeterminate,
+    });
+  }
+
+  const sharedFamilyLimit = familySharingApplies
+    ? roundMoney(
+        Math.max(
+          ...coupleMembersWithAccounts.map((personId) => amountsByOwner.get(personId)?.proratedApplied ?? 0),
+        ),
+      )
+    : null;
+  const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
+
+  const explicitShareHolders = coupleMembersWithAccounts.filter(
+    (personId) => facts.get(personId)?.rules?.familyLimitShare !== undefined,
+  );
+  const shareByOwner = new Map<string, number>();
+  const sharingDiagnostics: Diagnostic[] = [];
+  if (familySharingApplies) {
+    if (explicitShareHolders.length > 0) {
+      if (explicitShareHolders.length !== coupleMembersWithAccounts.length) {
+        sharingDiagnostics.push(
+          diagnostic(
+            "HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES",
+            DiagnosticSeverity.ERROR,
+            "When one spouse supplies planRules.hsa.familyLimitShare, every spouse with a health savings account must supply one, so that the agreed division of the single IRC 223(b)(5) family limit is complete.",
+            "accounts",
+            "IRC 223(b)(5)(B)(ii)",
+          ),
+        );
+      }
+      let total = 0;
+      for (const personId of coupleMembersWithAccounts) {
+        const share = facts.get(personId)?.rules?.familyLimitShare ?? 0;
+        shareByOwner.set(personId, share);
+        total += share;
+      }
+      if (total > 1 + 1e-9) {
+        sharingDiagnostics.push(
+          diagnostic(
+            "HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE",
+            DiagnosticSeverity.ERROR,
+            `The supplied family-limit shares total ${total}. IRC 223(b)(5)(B)(ii) divides one family limit between the spouses, so the shares cannot exceed 1.`,
+            "accounts",
+            "IRC 223(b)(5)(B)(ii)",
+          ),
+        );
+      }
+    } else if (coupleMembersWithAccounts.length > 1) {
+      for (const personId of coupleMembersWithAccounts) {
+        shareByOwner.set(personId, 1 / coupleMembersWithAccounts.length);
+      }
+      sharingDiagnostics.push(
+        diagnostic(
+          "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
+          DiagnosticSeverity.INFO,
+          "IRC 223(b)(5)(B)(ii) divides the single family contribution limit equally between the spouses unless they agree on a different division. Supply planRules.hsa.familyLimitShare on each spouse's HSA to record a different agreement.",
+          "accounts",
+          "IRC 223(b)(5)(B)(ii)",
+        ),
+      );
+    } else {
+      for (const personId of coupleMembersWithAccounts) shareByOwner.set(personId, 1);
+      sharingDiagnostics.push(
+        diagnostic(
+          "HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT",
+          DiagnosticSeverity.INFO,
+          "Only one spouse has a health savings account, so the whole IRC 223(b)(5) family limit is allocated to it. That is the division the spouses are assumed to have agreed on; the statutory default absent an agreement is an equal division.",
+          "accounts",
+          "IRC 223(b)(5)(B)(ii)",
+        ),
+      );
+    }
+    if (couple && familyPoolKey) {
+      context.hsaFamilyPools.set(familyPoolKey, {
+        id: `hsa223b5:${familyPoolKey}`,
+        legalLimit: "IRC 223(b)(5) single family contribution limit shared by spouses",
+        limit: sharedFamilyLimit,
+        used: 0,
+      });
+    }
+  }
+
+  for (const ownerId of ownerIds) {
+    const amounts = amountsByOwner.get(ownerId)!;
+    const isSharingMember = familySharingApplies && coupleMembersWithAccounts.includes(ownerId);
+    const share = isSharingMember ? (shareByOwner.get(ownerId) ?? 1) : null;
+    const diagnostics = [...amounts.diagnostics];
+    if (isSharingMember) {
+      diagnostics.push(...sharingDiagnostics);
+      if (recharacterized.has(ownerId)) {
+        diagnostics.push(
+          diagnostic(
+            "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
+            DiagnosticSeverity.INFO,
+            "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so self-only months were recharacterized as family months.",
+            `persons.${ownerId}`,
+            "IRC 223(b)(5)(A)",
+          ),
+        );
+      }
+    }
+
+    const indeterminate =
+      amounts.indeterminate || diagnostics.some((entry) => entry.severity === DiagnosticSeverity.ERROR);
+
+    const cap = (value: Money): Money =>
+      share === null || sharedFamilyLimit === null
+        ? value
+        : roundMoney(minMoney(value, share * sharedFamilyLimit));
+    const baseLimit = indeterminate ? null : cap(amounts.proratedApplied);
+    const baseLimitWithoutLastMonthRule = indeterminate ? null : cap(amounts.proratedWithoutLastMonthRule);
+
+    context.hsaBasePools.set(ownerId, {
+      id: `hsa223b1:${ownerId}`,
+      legalLimit: "IRC 223(b)(1) annual HSA contribution limit",
+      limit: baseLimit,
+      used: 0,
+    });
+    context.hsaCatchUpPools.set(ownerId, {
+      id: `hsa223b3:${ownerId}`,
+      legalLimit: "IRC 223(b)(3) age 55 additional contribution amount",
+      limit: indeterminate ? null : amounts.catchUpApplied,
+      used: 0,
+    });
+
+    if (!indeterminate && amounts.catchUpApplied > 0 && couple !== null) {
+      diagnostics.push(
+        diagnostic(
+          "HSA_AGE_55_ADDITIONAL_CONTRIBUTION_IS_PER_SPOUSE",
+          DiagnosticSeverity.INFO,
+          "The IRC 223(b)(3) additional contribution amount belongs to the individual, is excluded from the IRC 223(b)(5) family division, and must be contributed to that spouse's own HSA. Two spouses aged 55 or older therefore have two of them.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(3); IRC 223(b)(5)(B)",
+        ),
+      );
+    }
+
+    let status = indeterminate ? CalculationStatus.INDETERMINATE : CalculationStatus.DETERMINATE;
+    let testingPeriod: HsaTestingPeriodObligation | null = null;
+    const attributable =
+      indeterminate || baseLimit === null || baseLimitWithoutLastMonthRule === null
+        ? 0
+        : nonnegative(
+            roundMoney(
+              baseLimit + amounts.catchUpApplied - baseLimitWithoutLastMonthRule - amounts.catchUpWithoutLastMonthRule,
+            ),
+          );
+
+    if (amounts.lastMonthRuleApplied && !indeterminate) {
+      const rules = facts.get(ownerId)!.rules!;
+      const months = parameters.testingPeriodMonths ?? 13;
+      let testingStatus: HsaTestingPeriodStatus;
+      if (rules.testingPeriodSatisfied === true) {
+        testingStatus = "satisfied";
+      } else if (rules.testingPeriodSatisfied === false) {
+        testingStatus = rules.testingPeriodFailureByDeathOrDisability === true
+          ? "failed_exception_applies"
+          : "failed";
+      } else {
+        testingStatus = "unresolved";
+      }
+      const exposed = testingStatus === "failed" || testingStatus === "unresolved" ? attributable : 0;
+      testingPeriod = {
+        months,
+        startMonth: `${context.taxYear}-12`,
+        endMonth: `${context.taxYear + 1}-12`,
+        status: testingStatus,
+        grossIncomeInclusionIfFailed: exposed,
+        additionalTaxIfFailed: roundMoney(exposed * 0.1),
+        inclusionTaxYear: context.taxYear + 1,
+      };
+      if (testingStatus === "unresolved") {
+        status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+        diagnostics.push(
+          diagnostic(
+            "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED",
+            DiagnosticSeverity.WARNING,
+            `The IRC 223(b)(8) last-month rule was elected, so $${attributable.toLocaleString()} of the calculated ceiling exists only because of IRC 223(b)(8)(A). Whether the ${months}-month testing period ending ${context.taxYear + 1}-12 is satisfied was not supplied, so compliance is not assumed. Failing it includes that amount in gross income for ${context.taxYear + 1} and adds a 10 percent tax under IRC 223(b)(8)(B)(i).`,
+            `persons.${ownerId}`,
+            "IRC 223(b)(8)(B)",
+          ),
+        );
+      } else if (testingStatus === "failed") {
+        diagnostics.push(
+          diagnostic(
+            "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED",
+            DiagnosticSeverity.WARNING,
+            `The IRC 223(b)(8)(B)(iii) testing period is not satisfied. Under IRC 223(b)(8)(B)(i), $${exposed.toLocaleString()} is included in gross income for tax year ${context.taxYear + 1} and an additional tax of 10 percent applies. The inclusion falls in the year of the failure, not the contribution year, so it is not reflected in this year's federal tax effects.`,
+            `persons.${ownerId}`,
+            "IRC 223(b)(8)(B)(i)",
+          ),
+        );
+      } else if (testingStatus === "failed_exception_applies") {
+        diagnostics.push(
+          diagnostic(
+            "HSA_TESTING_PERIOD_FAILURE_EXCEPTED",
+            DiagnosticSeverity.INFO,
+            "The testing period was failed, but IRC 223(b)(8)(B)(ii) excepts a failure caused by the individual's death or disability, so there is no income inclusion and no additional tax.",
+            `persons.${ownerId}`,
+            "IRC 223(b)(8)(B)(ii)",
+          ),
+        );
+      }
+    }
+
+    diagnostics.push(
+      diagnostic(
+        "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        DiagnosticSeverity.INFO,
+        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) reduction for Archer MSA contributions.",
+        `persons.${ownerId}`,
+        "IRC 223",
+      ),
+    );
+
+    const detail: HsaAccountDetail = {
+      coverageTierByMonth: facts.get(ownerId)!.months ?? HSA_ALL_MONTHS.map(() => null),
+      eligibleMonthCount: amounts.eligibleMonthCount,
+      appliedAnnualLimitByMonth: amounts.appliedAnnualLimitByMonth,
+      proratedContributionLimit: amounts.proratedApplied,
+      contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
+      additionalContributionAmount: amounts.catchUpApplied,
+      familyLimitShare: share,
+      sharedFamilyContributionLimit: isSharingMember ? sharedFamilyLimit : null,
+      lastMonthRuleApplied: amounts.lastMonthRuleApplied,
+      amountAttributableToLastMonthRule: attributable,
+      testingPeriod,
+    };
+
+    context.hsaPlans.set(ownerId, {
+      status: accountStatusFromDiagnostics(status, diagnostics),
+      diagnostics,
+      statutoryMaximum:
+        baseLimit === null || amounts.catchUpApplied === null
+          ? null
+          : roundMoney(baseLimit + amounts.catchUpApplied),
+      detail,
+      familyPoolKey: isSharingMember ? familyPoolKey : null,
+    });
+  }
+
+  // Existing contributions consume the base limit first and then the IRC
+  // 223(b)(3) increase, which is the only ordering that never reports capacity
+  // the statute does not allow.
+  for (const account of hsaAccounts) {
+    const existing = roundMoney(
+      account.existingContributions.hsaDeductible + account.existingContributions.hsaEmployerOrCafeteria,
+    );
+    if (existing <= 0) continue;
+    const basePool = context.hsaBasePools.get(account.ownerId);
+    const catchUpPool = context.hsaCatchUpPools.get(account.ownerId);
+    if (!basePool || !catchUpPool || basePool.limit === null) continue;
+    const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));
+    basePool.used = roundMoney(basePool.used + toBase);
+    catchUpPool.used = roundMoney(catchUpPool.used + existing - toBase);
+    const poolKey = context.hsaPlans.get(account.ownerId)?.familyPoolKey;
+    if (poolKey) {
+      const familyPool = context.hsaFamilyPools.get(poolKey);
+      if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
+    }
+  }
+}
+
+function allocateHsa(context: CalculationContext, account: NormalizedAccount): AllocationOutcome {
+  const plan = context.hsaPlans.get(account.ownerId)!;
+  const annual = cloneComponentsFromComponents(account.existingContributions);
+  const additional = zeroComponents();
+  const sharedLimits: SharedLimitUse[] = [];
+  const diagnostics = [...plan.diagnostics];
+  const basePool = context.hsaBasePools.get(account.ownerId);
+  const catchUpPool = context.hsaCatchUpPools.get(account.ownerId);
+  const familyPool = plan.familyPoolKey ? context.hsaFamilyPools.get(plan.familyPoolKey) : undefined;
+
+  if (plan.status === CalculationStatus.UNAVAILABLE || !basePool || !catchUpPool) {
+    return {
+      status: CalculationStatus.UNAVAILABLE,
+      statutoryMaximum: 0,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+      ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+    };
+  }
+
+  if (plan.status === CalculationStatus.INDETERMINATE) {
+    reportPoolWithoutConsuming(basePool, sharedLimits);
+    if (familyPool) reportPoolWithoutConsuming(familyPool, sharedLimits);
+    reportPoolWithoutConsuming(catchUpPool, sharedLimits);
+    return {
+      status: CalculationStatus.INDETERMINATE,
+      statutoryMaximum: plan.statutoryMaximum,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+      ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+    };
+  }
+
+  const basePools = familyPool ? [basePool, familyPool] : [basePool];
+  const baseAmount = takeAcrossPools(
+    basePools,
+    minMoney(...basePools.map((pool) => poolRemaining(pool))),
+    sharedLimits,
+  );
+  const catchUpAmount = takeFromPool(catchUpPool, poolRemaining(catchUpPool) ?? 0, sharedLimits);
+  const total = roundMoney(baseAmount + catchUpAmount);
+
+  // IRC 106(d) employer and cafeteria-plan contributions are excluded from
+  // income rather than deducted, and IRC 223(b)(4)(B) makes them reduce the
+  // IRC 223(a) deduction, so they are filled first out of the same ceiling.
+  const employerTarget = money(
+    account.planRules.expectedEmployerContribution,
+    `accounts.${account.id}.planRules.expectedEmployerContribution`,
+  );
+  const employerRemaining = nonnegative(employerTarget - annual.hsaEmployerOrCafeteria);
+  const toEmployer = minMoney(total, employerRemaining);
+  const toDeductible = roundMoney(total - toEmployer);
+
+  additional.hsaEmployerOrCafeteria = toEmployer;
+  additional.hsaDeductible = toDeductible;
+  annual.hsaEmployerOrCafeteria = roundMoney(annual.hsaEmployerOrCafeteria + toEmployer);
+  annual.hsaDeductible = roundMoney(annual.hsaDeductible + toDeductible);
+
+  return {
+    status: accountStatusFromDiagnostics(plan.status, diagnostics),
+    statutoryMaximum: plan.statutoryMaximum,
+    annualComponents: annual,
+    additionalComponents: additional,
+    planTermDependentCapacity: 0,
+    sharedLimits,
+    diagnostics,
+    ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+  };
+}
+
 function regularIraContributionAmount(components: ContributionComponents): Money {
   return roundMoney(
     components.deductibleIra + components.nondeductibleIra + components.rothIra + components.unclassifiedIra,
@@ -7096,6 +8666,8 @@ function allocateAccount(context: CalculationContext, account: NormalizedAccount
       return allocateDefinedBenefit(account);
     case "section457f":
       return allocateSection457f(account);
+    case "hsa":
+      return allocateHsa(context, account);
   }
 }
 
@@ -8756,6 +10328,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const scenarioDiagnostics: Diagnostic[] = [];
   const taxYear = input.taxYear;
   const parameters = getParametersForYear(taxYear);
+  const hsaParameters = hsaParametersForYear(taxYear);
   const filingStatus = parseFilingStatus(input.filingStatus, scenarioDiagnostics);
   const persons = normalizePersons(input.persons);
   const accounts = normalizeAccounts(input.accounts ?? [], persons);
@@ -8766,6 +10339,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     taxYear,
     filingStatus,
     parameters,
+    hsaParameters,
     persons,
     accounts,
     scenarioDiagnostics,
@@ -8830,6 +10404,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       planTermDependentCapacity: outcome.planTermDependentCapacity,
       federalTaxEffects: contributionTaxEffects(outcome.annualComponents, traits, account.planRules),
       sharedLimits: outcome.sharedLimits,
+      ...(outcome.hsaDetail ? { hsa: outcome.hsaDetail } : {}),
       diagnostics,
     };
     accountResultById.set(account.id, result);
@@ -8850,6 +10425,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     taxYear,
     filingStatus,
     parameters,
+    hsaParameters,
     accounts: accountResults,
     conversions: conversionResults,
     totals: calculateScenarioTotals(accountResults, conversionResults),
@@ -8870,6 +10446,7 @@ function calculateScenarioTotals(
     employerRothContribution: 0,
     deductibleIraContribution: 0,
     nondeductibleIraContribution: 0,
+    hsaContribution: 0,
     federalAgiReduction: 0,
     federalAgiIncrease: 0,
     taxableRothConversions: 0,
@@ -8912,6 +10489,9 @@ function calculateScenarioTotals(
     );
     totals.nondeductibleIraContribution = roundMoney(
       totals.nondeductibleIraContribution + components.nondeductibleIra + components.unclassifiedIra,
+    );
+    totals.hsaContribution = roundMoney(
+      totals.hsaContribution + components.hsaDeductible + components.hsaEmployerOrCafeteria,
     );
     totals.federalAgiReduction = roundMoney(
       totals.federalAgiReduction + account.federalTaxEffects.federalAgiReduction,
@@ -9168,6 +10748,47 @@ export class AccountBuilder {
     return this;
   }
 
+  /** IRC 223 coverage tier, with an optional list of eligible months (1-12). */
+  public hsaCoverage(tier: HsaCoverageTier, eligibleMonths?: number[]): this {
+    const hsa = ((this.value.planRules ??= {}).hsa ??= {});
+    hsa.coverageTier = tier;
+    if (eligibleMonths !== undefined) hsa.eligibleMonths = [...eligibleMonths];
+    return this;
+  }
+
+  /** IRC 223(b)(2) per-month coverage, for a year in which the tier changes. */
+  public hsaMonthlyCoverage(coverage: HsaMonthlyCoverageInput[]): this {
+    const hsa = ((this.value.planRules ??= {}).hsa ??= {});
+    hsa.monthlyCoverage = coverage.map((entry) => ({ ...entry }));
+    return this;
+  }
+
+  /** Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by the deductible. */
+  public hsaHdhpAnnualDeductible(amount: Money): this {
+    ((this.value.planRules ??= {}).hsa ??= {}).hdhpAnnualDeductible = amount;
+    return this;
+  }
+
+  /** Elect the IRC 223(b)(8) last-month rule. Omit the argument to leave the testing period unresolved. */
+  public hsaLastMonthRule(testingPeriodSatisfied?: boolean): this {
+    const hsa = ((this.value.planRules ??= {}).hsa ??= {});
+    hsa.useLastMonthRule = true;
+    if (testingPeriodSatisfied !== undefined) hsa.testingPeriodSatisfied = testingPeriodSatisfied;
+    return this;
+  }
+
+  /** IRC 223(b)(8)(B)(ii): the testing period was failed because of death or disability. */
+  public hsaTestingPeriodFailureByDeathOrDisability(failed = true): this {
+    ((this.value.planRules ??= {}).hsa ??= {}).testingPeriodFailureByDeathOrDisability = failed;
+    return this;
+  }
+
+  /** IRC 223(b)(5)(B)(ii) agreed share of the single family limit, 0 through 1. */
+  public hsaFamilyLimitShare(share: number): this {
+    ((this.value.planRules ??= {}).hsa ??= {}).familyLimitShare = share;
+    return this;
+  }
+
   public grandfatheredSarsep(grandfathered = true): this {
     (this.value.planRules ??= {}).grandfatheredSarsep = grandfathered;
     return this;
@@ -9357,6 +10978,22 @@ export class USTaxAdvantagedParams {
 
   public static sourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_PARAMETERS.sources);
+  }
+
+  /** IRC 223 parameters, or null for a year with no encoded revenue procedure. */
+  public static hsaParametersForYear(taxYear: number): HsaYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return hsaParametersForYear(taxYear);
+  }
+
+  public static supportedHsaTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_HSA_PARAMETERS.supportedTaxYears };
+  }
+
+  public static hsaSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_HSA_PARAMETERS.sources);
   }
 }
 

@@ -1,0 +1,383 @@
+{
+  "_comment": "IRC 223 Health Savings Account dollar amounts taken verbatim from the annual IRS revenue procedures (and, for 2004, Notice 2004-2) in sources/, plus the statutory IRC 223(b)(3)(B) catch-up table. Verified 2026-08-30. Amounts are dollars. See README.md for method.",
+  "_sources": {
+    "n-04-02": "IRS Notice 2004-2, Health Savings Accounts (Q&A guidance stating the 2004 statutory amounts and the s.223(b)(3) catch-up schedule)",
+    "rp-04-71": "Rev. Proc. 2004-71, 2005 inflation adjusted items, section 3.22 (Health Savings Accounts)",
+    "rp-05-70": "Rev. Proc. 2005-70, 2006 inflation adjusted items, section 3.22 (Health Savings Accounts)",
+    "rp-06-53": "Rev. Proc. 2006-53, 2007 inflation adjusted items, section 3.24 (Health Savings Accounts)",
+    "rp-07-36": "Rev. Proc. 2007-36, 2007 (restated after the Tax Relief and Health Care Act of 2006) and 2008 HSA inflation adjusted amounts",
+    "rp-08-29": "Rev. Proc. 2008-29, 2009 HSA inflation adjusted amounts",
+    "rp-09-29": "Rev. Proc. 2009-29, 2010 HSA inflation adjusted amounts",
+    "rp-10-22": "Rev. Proc. 2010-22, 2011 HSA inflation adjusted amounts",
+    "rp-11-32": "Rev. Proc. 2011-32, 2012 HSA inflation adjusted amounts",
+    "rp-12-26": "Rev. Proc. 2012-26, 2013 HSA inflation adjusted amounts",
+    "rp-13-25": "Rev. Proc. 2013-25, 2014 HSA inflation adjusted amounts",
+    "rp-14-30": "Rev. Proc. 2014-30, 2015 HSA inflation adjusted amounts",
+    "rp-15-30": "Rev. Proc. 2015-30, 2016 HSA inflation adjusted amounts",
+    "rp-16-28": "Rev. Proc. 2016-28, 2017 HSA inflation adjusted amounts",
+    "rp-17-37": "Rev. Proc. 2017-37, 2018 HSA inflation adjusted amounts (original 2018 announcement)",
+    "irb18-10": "Internal Revenue Bulletin 2018-10, carrying Rev. Proc. 2018-18, which briefly reduced the 2018 family limit to $6,850",
+    "rp-18-27": "Rev. Proc. 2018-27, restoring $6,900 as the 2018 family limit under s.223(b)(2)(B)",
+    "rp-18-30": "Rev. Proc. 2018-30, 2019 HSA inflation adjusted amounts",
+    "irb19-22": "Internal Revenue Bulletin 2019-22, carrying Rev. Proc. 2019-25, 2020 HSA inflation adjusted amounts",
+    "rp-20-32": "Rev. Proc. 2020-32, 2021 HSA inflation adjusted amounts",
+    "rp-21-25": "Rev. Proc. 2021-25, 2022 HSA inflation adjusted amounts",
+    "rp-22-24": "Rev. Proc. 2022-24, 2023 HSA inflation adjusted amounts",
+    "rp-23-23": "Rev. Proc. 2023-23, 2024 HSA inflation adjusted amounts",
+    "rp-24-25": "Rev. Proc. 2024-25, 2025 HSA inflation adjusted amounts",
+    "rp-25-19": "Rev. Proc. 2025-19, 2026 HSA inflation adjusted amounts",
+    "usc-26-223": "26 U.S.C. s.223 (U.S. Government Publishing Office, 2023 edition of the United States Code)"
+  },
+  "planYears": {
+    "2004": {
+      "source": "n-04-02",
+      "annualContributionLimitSelfOnly_223b2A": 2600,
+      "annualContributionLimitFamily_223b2B": 5150,
+      "additionalContributionAmount55_223b3B": 500,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1000,
+        "family": 2000
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5000,
+        "family": 10000
+      },
+      "annualContributionLimit_note": "For this year IRC 223(b)(2) capped the monthly limitation at 1/12 of the lesser of the plan's annual deductible and the dollar amount above. The Tax Relief and Health Care Act of 2006 s.303 removed the deductible cap for taxable years beginning after 2006."
+    },
+    "2005": {
+      "source": "rp-04-71",
+      "annualContributionLimitSelfOnly_223b2A": 2650,
+      "annualContributionLimitFamily_223b2B": 5250,
+      "additionalContributionAmount55_223b3B": 600,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1000,
+        "family": 2000
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5100,
+        "family": 10200
+      },
+      "annualContributionLimit_note": "For this year IRC 223(b)(2) capped the monthly limitation at 1/12 of the lesser of the plan's annual deductible and the dollar amount above. The Tax Relief and Health Care Act of 2006 s.303 removed the deductible cap for taxable years beginning after 2006."
+    },
+    "2006": {
+      "source": "rp-05-70",
+      "annualContributionLimitSelfOnly_223b2A": 2700,
+      "annualContributionLimitFamily_223b2B": 5450,
+      "additionalContributionAmount55_223b3B": 700,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1050,
+        "family": 2100
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5250,
+        "family": 10500
+      },
+      "annualContributionLimit_note": "For this year IRC 223(b)(2) capped the monthly limitation at 1/12 of the lesser of the plan's annual deductible and the dollar amount above. The Tax Relief and Health Care Act of 2006 s.303 removed the deductible cap for taxable years beginning after 2006."
+    },
+    "2007": {
+      "source": "rp-07-36",
+      "annualContributionLimitSelfOnly_223b2A": 2850,
+      "annualContributionLimitFamily_223b2B": 5650,
+      "additionalContributionAmount55_223b3B": 800,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1100,
+        "family": 2200
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5500,
+        "family": 11000
+      },
+      "hdhpFigures_source": "rp-06-53 (Rev. Proc. 2006-53 section 3.24) states the 2007 HDHP deductible and out-of-pocket figures; rp-07-36 restates the 2007 contribution limits after the Tax Relief and Health Care Act of 2006 removed the deductible cap."
+    },
+    "2008": {
+      "source": "rp-07-36",
+      "annualContributionLimitSelfOnly_223b2A": 2900,
+      "annualContributionLimitFamily_223b2B": 5800,
+      "additionalContributionAmount55_223b3B": 900,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1100,
+        "family": 2200
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5600,
+        "family": 11200
+      }
+    },
+    "2009": {
+      "source": "rp-08-29",
+      "annualContributionLimitSelfOnly_223b2A": 3000,
+      "annualContributionLimitFamily_223b2B": 5950,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1150,
+        "family": 2300
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5800,
+        "family": 11600
+      }
+    },
+    "2010": {
+      "source": "rp-09-29",
+      "annualContributionLimitSelfOnly_223b2A": 3050,
+      "annualContributionLimitFamily_223b2B": 6150,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1200,
+        "family": 2400
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5950,
+        "family": 11900
+      }
+    },
+    "2011": {
+      "source": "rp-10-22",
+      "annualContributionLimitSelfOnly_223b2A": 3050,
+      "annualContributionLimitFamily_223b2B": 6150,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1200,
+        "family": 2400
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 5950,
+        "family": 11900
+      }
+    },
+    "2012": {
+      "source": "rp-11-32",
+      "annualContributionLimitSelfOnly_223b2A": 3100,
+      "annualContributionLimitFamily_223b2B": 6250,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1200,
+        "family": 2400
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6050,
+        "family": 12100
+      }
+    },
+    "2013": {
+      "source": "rp-12-26",
+      "annualContributionLimitSelfOnly_223b2A": 3250,
+      "annualContributionLimitFamily_223b2B": 6450,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1250,
+        "family": 2500
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6250,
+        "family": 12500
+      }
+    },
+    "2014": {
+      "source": "rp-13-25",
+      "annualContributionLimitSelfOnly_223b2A": 3300,
+      "annualContributionLimitFamily_223b2B": 6550,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1250,
+        "family": 2500
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6350,
+        "family": 12700
+      }
+    },
+    "2015": {
+      "source": "rp-14-30",
+      "annualContributionLimitSelfOnly_223b2A": 3350,
+      "annualContributionLimitFamily_223b2B": 6650,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1300,
+        "family": 2600
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6450,
+        "family": 12900
+      }
+    },
+    "2016": {
+      "source": "rp-15-30",
+      "annualContributionLimitSelfOnly_223b2A": 3350,
+      "annualContributionLimitFamily_223b2B": 6750,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1300,
+        "family": 2600
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6550,
+        "family": 13100
+      }
+    },
+    "2017": {
+      "source": "rp-16-28",
+      "annualContributionLimitSelfOnly_223b2A": 3400,
+      "annualContributionLimitFamily_223b2B": 6750,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1300,
+        "family": 2600
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6550,
+        "family": 13100
+      }
+    },
+    "2018": {
+      "source": "rp-18-27",
+      "annualContributionLimitSelfOnly_223b2A": 3450,
+      "annualContributionLimitFamily_223b2B": 6900,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1350,
+        "family": 2700
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6650,
+        "family": 13300
+      },
+      "annualContributionLimitFamily_note": "Rev. Proc. 2017-37 announced $6,900. Rev. Proc. 2018-18 (see irb18-10) briefly reduced it to $6,850 following the TCJA chained-CPI change. Rev. Proc. 2018-27 restored $6,900 as the operative 2018 limit, which is the figure recorded here."
+    },
+    "2019": {
+      "source": "rp-18-30",
+      "annualContributionLimitSelfOnly_223b2A": 3500,
+      "annualContributionLimitFamily_223b2B": 7000,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1350,
+        "family": 2700
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6750,
+        "family": 13500
+      }
+    },
+    "2020": {
+      "source": "irb19-22",
+      "annualContributionLimitSelfOnly_223b2A": 3550,
+      "annualContributionLimitFamily_223b2B": 7100,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1400,
+        "family": 2800
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 6900,
+        "family": 13800
+      }
+    },
+    "2021": {
+      "source": "rp-20-32",
+      "annualContributionLimitSelfOnly_223b2A": 3600,
+      "annualContributionLimitFamily_223b2B": 7200,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1400,
+        "family": 2800
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 7000,
+        "family": 14000
+      }
+    },
+    "2022": {
+      "source": "rp-21-25",
+      "annualContributionLimitSelfOnly_223b2A": 3650,
+      "annualContributionLimitFamily_223b2B": 7300,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1400,
+        "family": 2800
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 7050,
+        "family": 14100
+      }
+    },
+    "2023": {
+      "source": "rp-22-24",
+      "annualContributionLimitSelfOnly_223b2A": 3850,
+      "annualContributionLimitFamily_223b2B": 7750,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1500,
+        "family": 3000
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 7500,
+        "family": 15000
+      }
+    },
+    "2024": {
+      "source": "rp-23-23",
+      "annualContributionLimitSelfOnly_223b2A": 4150,
+      "annualContributionLimitFamily_223b2B": 8300,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1600,
+        "family": 3200
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 8050,
+        "family": 16100
+      }
+    },
+    "2025": {
+      "source": "rp-24-25",
+      "annualContributionLimitSelfOnly_223b2A": 4300,
+      "annualContributionLimitFamily_223b2B": 8550,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1650,
+        "family": 3300
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 8300,
+        "family": 16600
+      }
+    },
+    "2026": {
+      "source": "rp-25-19",
+      "annualContributionLimitSelfOnly_223b2A": 4400,
+      "annualContributionLimitFamily_223b2B": 8750,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1700,
+        "family": 3400
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 8500,
+        "family": 17000
+      }
+    }
+  }
+}
