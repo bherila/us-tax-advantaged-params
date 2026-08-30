@@ -19,11 +19,13 @@
       "default": "./dist/esm/USTaxAdvantagedParams.js"
     },
     "./data/retirement-parameters.json": "./data/retirement-parameters.json",
+    "./data/hsa-parameters.json": "./data/hsa-parameters.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "data/retirement-parameters.json",
+    "data/hsa-parameters.json",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
