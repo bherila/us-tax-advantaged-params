@@ -7196,7 +7196,16 @@ final class Engine
 
     private static function roundMoney(float $value): float
     {
-        return round($value + PHP_FLOAT_EPSILON, 2);
+        /*
+         * Mirrors the TypeScript Math.round((value + Number.EPSILON) * 100) / 100
+         * exactly. PHP's round($value, 2) rounds the decimal value of the double
+         * and diverges from the JavaScript expression on third-decimal ties
+         * (for example 14643.575), so the scaling and the round-half-up toward
+         * positive infinity are reproduced operation for operation.
+         */
+        $scaled = ($value + PHP_FLOAT_EPSILON) * 100;
+        $floor = floor($scaled);
+        return ($scaled - $floor >= 0.5 ? $floor + 1.0 : $floor) / 100;
     }
 
     private static function floorMoney(float $value): float
