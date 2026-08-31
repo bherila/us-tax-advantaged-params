@@ -4357,7 +4357,7 @@
     },
     {
       "name": "a health FSA election above the IRC 125(i) limit is reported, not truncated",
-      "description": "IRC 125(i) makes a health FSA a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit, and Notice 2012-40 section III holds that a plan failing to comply is not a section 125 cafeteria plan at all, so the value of the taxable benefits the employee could have elected is includible regardless of the benefit elected. A 4000 election for 2026 against the 3400 limit from Rev. Proc. 2025-32 section 3.15 is therefore an error carrying a plan-qualification consequence, and truncating it to 3400 would report a smaller consequence than the statute produces. The 600 excess is reported and nothing further is allocated.",
+      "description": "IRC 125(i) makes a health FSA a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit, and Notice 2012-40 section III holds that a plan failing to comply is not a section 125 cafeteria plan at all, so the value of the taxable benefits the employee could have elected is includible regardless of the benefit elected. A 4000 election for 2026 against the 3400 limit from Rev. Proc. 2025-32 section 3.15 is therefore an error carrying a plan-qualification consequence, and truncating it to 3400 would report a smaller consequence than the statute produces. The 600 excess is reported and nothing further is allocated. Notice 2012-40 section III costs the plan its IRC 125 status entirely rather than only as to the excess, so the IRC 125(a) exclusion fails for the whole 4000: the election stays in contributionComponents as a fact, and no wage exclusion is reported for it.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -4389,7 +4389,81 @@
         "accounts.0.excessContribution": 600,
         "accounts.0.contributionComponents.healthFsaSalaryReduction": 4000,
         "accounts.0.healthFsa.electedSalaryReduction": 4000,
-        "accounts.0.diagnostics.0.code": "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT"
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 0
+      }
+    },
+    {
+      "name": "an account type that did not exist for the tax year reports no exclusion",
+      "description": "IRC 223 was added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201 for taxable years beginning after December 31, 2003, so there is no health savings account for 2003. A cafeteria-plan contribution supplied against one is still recorded, because the scenario said it happened, but it cannot carry the IRC 106(d) exclusion of an account type that did not exist: no reduction of Form W-2 box 1 wages and none of social security and medicare wages is reported.",
+      "input": {
+        "taxYear": 2003,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 2000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaEmployerOrCafeteria": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.contributionComponents.hsaEmployerOrCafeteria": 1000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 0
+      }
+    },
+    {
+      "name": "a pre-2013 health FSA still excludes its salary reduction under IRC 125(a)",
+      "description": "IRC 125(i) was added by the Patient Protection and Affordable Care Act section 9005 for taxable years beginning after December 31, 2012, so 2012 has no statutory salary reduction ceiling to report and the account is indeterminate. The arrangement existed, though, and IRC 125(a) excluded its salary reduction from gross income exactly as it does now. An indeterminate limit is not a reason to withhold the exclusion: the 3000 elected is outside Form W-2 box 1 and outside social security and medicare wages. This is the deliberate contrast with an unavailable account type and with an IRC 125(i) qualification failure, where the exclusion genuinely does not apply.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 3000
+            },
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 3000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3000
       }
     },
     {

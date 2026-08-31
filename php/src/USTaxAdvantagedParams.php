@@ -7792,10 +7792,11 @@ final class Engine
                 'excessContribution' => $excessContribution,
                 'contributionComponents' => $outcome['annualComponents'],
                 'planTermDependentCapacity' => $outcome['planTermDependentCapacity'],
-                'federalTaxEffects' => self::contributionTaxEffects(
-                    $outcome['annualComponents'],
+                'federalTaxEffects' => self::accountTaxEffects(
+                    $outcome,
                     $traits,
                     $account['planRules'],
+                    $diagnostics,
                 ),
                 'sharedLimits' => $outcome['sharedLimits'],
                 'diagnostics' => $diagnostics,
@@ -8474,6 +8475,66 @@ final class Engine
      *  @param array<string,mixed> $planRules
      *  @return array<string,mixed>
      */
+    /**
+     * The components record what the scenario supplied, which is a fact even
+     * when the account cannot be sized. The tax treatment of those amounts is
+     * not always a fact, and two cases are settled enough to report rather than
+     * assume.
+     *
+     * An `unavailable` account is one whose type did not exist for the tax
+     * year, so a contribution to it cannot carry that type's exclusion or
+     * deduction. IRC 223 was added for taxable years beginning after 2003, so a
+     * 2003 cafeteria-plan HSA contribution is not an IRC 106(d) exclusion no
+     * matter what it is called.
+     *
+     * An election above the IRC 125(i) limit costs the plan its IRC 125 status
+     * entirely under Notice 2012-40 section III, not merely as to the excess,
+     * so the IRC 125(a) exclusion fails for the whole health FSA salary
+     * reduction.
+     *
+     * `indeterminate` on its own is deliberately not in this list. An unknown
+     * IRC 415(c) limit does not undo a pre-tax deferral's effect on AGI, and a
+     * pre-2013 health FSA excluded salary reductions under IRC 125(a) perfectly
+     * well while having no IRC 125(i) ceiling to report.
+     */
+    private static function accountTaxEffects(
+        array $outcome,
+        array $traits,
+        array $planRules,
+        array $diagnostics,
+    ): array {
+        if ($outcome['status'] === CalculationStatus::UNAVAILABLE->value) {
+            $suppressed = self::zeroTaxEffects();
+            $suppressed['notes'][] = 'This account type did not exist for the tax year, so no exclusion or '
+                . 'deduction of its kind is reported for the amounts supplied. The amounts themselves remain '
+                . 'in contributionComponents.';
+
+            return $suppressed;
+        }
+        $section125QualificationFailed = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === 'HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT') {
+                $section125QualificationFailed = true;
+                break;
+            }
+        }
+        if (!$section125QualificationFailed) {
+            return self::contributionTaxEffects($outcome['annualComponents'], $traits, $planRules);
+        }
+        $withoutHealthFsa = $outcome['annualComponents'];
+        $withoutHealthFsa['healthFsaSalaryReduction'] = 0.0;
+        $effects = self::contributionTaxEffects($withoutHealthFsa, $traits, $planRules);
+        $effects['notes'][] = 'IRC 125(i) makes a health flexible spending arrangement a qualified benefit only '
+            . 'if the plan provides that an employee may not elect salary reduction contributions above the '
+            . 'limit. Notice 2012-40 section III holds that a plan failing to comply is not an IRC 125 cafeteria '
+            . 'plan at all, so the IRC 125(a) exclusion fails for the entire salary reduction rather than for the '
+            . 'excess alone. No wage exclusion is reported for it. The election remains in contributionComponents, '
+            . 'and this engine does not extend the consequence to other arrangements that may be under the same '
+            . 'cafeteria plan.';
+
+        return $effects;
+    }
+
     private static function contributionTaxEffects(array $components, array $traits, array $planRules): array
     {
         $result = self::zeroTaxEffects();

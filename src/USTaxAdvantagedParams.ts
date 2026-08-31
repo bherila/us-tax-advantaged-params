@@ -8241,6 +8241,55 @@ function zeroTaxEffects(): FederalTaxEffects {
   };
 }
 
+/**
+ * The components record what the scenario supplied, which is a fact even when
+ * the account cannot be sized. The tax treatment of those amounts is not always
+ * a fact, and two cases are settled enough to report rather than assume:
+ *
+ * An `unavailable` account is one whose type did not exist for the tax year, so
+ * a contribution to it cannot carry that type's exclusion or deduction. IRC 223
+ * was added for taxable years beginning after 2003, so a 2003 cafeteria-plan
+ * HSA contribution is not an IRC 106(d) exclusion no matter what it is called.
+ *
+ * An election above the IRC 125(i) limit costs the plan its IRC 125 status
+ * entirely under Notice 2012-40 section III, not merely as to the excess, so
+ * the IRC 125(a) exclusion fails for the whole health FSA salary reduction.
+ *
+ * `indeterminate` on its own is deliberately not in this list. An unknown
+ * IRC 415(c) limit does not undo a pre-tax deferral's effect on AGI, and a
+ * pre-2013 health FSA excluded salary reductions under IRC 125(a) perfectly
+ * well while having no IRC 125(i) ceiling to report.
+ */
+function accountTaxEffects(
+  outcome: AllocationOutcome,
+  traits: AccountTraits,
+  planRules: PlanRulesInput,
+  diagnostics: Diagnostic[],
+): FederalTaxEffects {
+  if (outcome.status === CalculationStatus.UNAVAILABLE) {
+    const suppressed = zeroTaxEffects();
+    suppressed.notes.push(
+      "This account type did not exist for the tax year, so no exclusion or deduction of its kind is reported for the amounts supplied. The amounts themselves remain in contributionComponents.",
+    );
+    return suppressed;
+  }
+  const section125QualificationFailed = diagnostics.some(
+    (entry) => entry.code === "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
+  );
+  if (!section125QualificationFailed) {
+    return contributionTaxEffects(outcome.annualComponents, traits, planRules);
+  }
+  const withoutHealthFsa: ContributionComponents = {
+    ...outcome.annualComponents,
+    healthFsaSalaryReduction: 0,
+  };
+  const effects = contributionTaxEffects(withoutHealthFsa, traits, planRules);
+  effects.notes.push(
+    "IRC 125(i) makes a health flexible spending arrangement a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit. Notice 2012-40 section III holds that a plan failing to comply is not an IRC 125 cafeteria plan at all, so the IRC 125(a) exclusion fails for the entire salary reduction rather than for the excess alone. No wage exclusion is reported for it. The election remains in contributionComponents, and this engine does not extend the consequence to other arrangements that may be under the same cafeteria plan.",
+  );
+  return effects;
+}
+
 function contributionTaxEffects(
   components: ContributionComponents,
   traits: AccountTraits,
@@ -13090,7 +13139,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       excessContribution,
       contributionComponents: outcome.annualComponents,
       planTermDependentCapacity: outcome.planTermDependentCapacity,
-      federalTaxEffects: contributionTaxEffects(outcome.annualComponents, traits, account.planRules),
+      federalTaxEffects: accountTaxEffects(outcome, traits, account.planRules, diagnostics),
       sharedLimits: outcome.sharedLimits,
       ...(outcome.hsaDetail ? { hsa: outcome.hsaDetail } : {}),
       ...(outcome.healthFsaDetail ? { healthFsa: outcome.healthFsaDetail } : {}),
