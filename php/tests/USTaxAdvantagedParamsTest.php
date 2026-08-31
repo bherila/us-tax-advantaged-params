@@ -741,7 +741,10 @@ test('the dependent care builder reaches the IRC 129(b) earned income facts', fu
         ->calculate();
     $dc = accountResult($result, 'd');
     assertSameValue(CalculationStatus::DETERMINATE->value, $dc['status']);
-    assertSameValue(4000.0, $dc['statutoryMaximumAnnualContribution']);
+    // The statutory maximum is the IRC 129(a)(2)(A) amount; what the supplied
+    // earned income allows within it is the input-based maximum.
+    assertSameValue(7500.0, $dc['statutoryMaximumAnnualContribution']);
+    assertSameValue(4000.0, $dc['maximumAnnualContributionBasedOnInputs']);
     assertSameValue(7500.0, $dc['dependentCareFsa']['statutoryExclusion']);
     assertSameValue(4000.0, $dc['dependentCareFsa']['earnedIncomeLimitation']);
     assertSameValue(0.0, $dc['federalTaxEffects']['federalAgiReduction']);

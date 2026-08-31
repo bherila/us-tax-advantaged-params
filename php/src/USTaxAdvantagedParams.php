@@ -10484,6 +10484,7 @@ final class Engine
             $status = CalculationStatus::DETERMINATE->value;
             $indeterminate = false;
             $unavailable = false;
+            $earnedIncomeFactsMissing = false;
 
             $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
 
@@ -10528,10 +10529,16 @@ final class Engine
                     ? self::minMoney($employeeEarnedIncome, $spouseEarnedIncome)
                     : $employeeEarnedIncome;
             } elseif (!$indeterminate) {
-                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                // IRC 129(b)(1) is a mandatory ceiling, not an optional
+                // refinement. Reporting the IRC 129(a)(2)(A) amount as the
+                // maximum the inputs support would assume earned income of at
+                // least that amount, which the statute never permits. The
+                // statutory figure is still reported separately, so failing
+                // closed withholds an assumption rather than information.
+                $earnedIncomeFactsMissing = true;
                 $diagnostics[] = self::diagnostic(
                     'DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED',
-                    DiagnosticSeverity::WARNING,
+                    DiagnosticSeverity::ERROR,
                     $married
                         ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned "
                             . 'income for the taxable year. Both are caller-supplied facts and at least one was not '
@@ -10582,7 +10589,7 @@ final class Engine
                 ? self::money($rules['planDocumentLimit'], "{$path}.planRules.dependentCareFsa.planDocumentLimit")
                 : null;
             $applicableLimit = null;
-            if (!$indeterminate && $statutoryExclusion !== null) {
+            if (!$indeterminate && $statutoryExclusion !== null && !$earnedIncomeFactsMissing) {
                 $applicableCandidates = [$statutoryExclusion];
                 if ($earnedIncomeLimitation !== null) {
                     $applicableCandidates[] = $earnedIncomeLimitation;
@@ -10647,7 +10654,11 @@ final class Engine
             $context['dependentCarePlans'][(string) $account['id']] = [
                 'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
                 'diagnostics' => $diagnostics,
-                'statutoryMaximum' => $applicableLimit,
+                // The IRC 129(a)(2)(A) figure itself. What the supplied facts
+                // allow within it is the applicable limit, reported separately,
+                // exactly as the health FSA path separates the IRC 125(i)
+                // ceiling from a plan document.
+                'statutoryMaximum' => $indeterminate ? null : $statutoryExclusion,
                 'detail' => $detail,
                 'poolKey' => $poolKey,
                 'earnedIncomeLimitation' => $earnedIncomeLimitation,

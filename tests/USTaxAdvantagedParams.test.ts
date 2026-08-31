@@ -726,7 +726,10 @@ test("the dependent care builder reaches the IRC 129(b) earned income facts", ()
     .calculate();
   const dc = account(result, "d");
   assert.equal(dc.status, CalculationStatus.DETERMINATE);
-  assert.equal(dc.statutoryMaximumAnnualContribution, 4_000);
+  // The statutory maximum is the IRC 129(a)(2)(A) amount; what the supplied
+  // earned income allows within it is the input-based maximum.
+  assert.equal(dc.statutoryMaximumAnnualContribution, 7_500);
+  assert.equal(dc.maximumAnnualContributionBasedOnInputs, 4_000);
   assert.equal(dc.dependentCareFsa?.statutoryExclusion, 7_500);
   assert.equal(dc.dependentCareFsa?.earnedIncomeLimitation, 4_000);
   assert.equal(dc.federalTaxEffects.federalAgiReduction, 0);

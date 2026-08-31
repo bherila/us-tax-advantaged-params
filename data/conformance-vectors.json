@@ -5238,7 +5238,7 @@
     },
     {
       "name": "the IRC 129(b)(1) earned income limitation binds below the statutory amount",
-      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income.",
+      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income. The two ceilings are reported separately: statutoryMaximumAnnualContribution is the IRC 129(a)(2)(A) amount and maximumAnnualContributionBasedOnInputs is what the supplied earned income allows within it.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -5271,7 +5271,7 @@
       },
       "expect": {
         "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
         "accounts.0.maximumAnnualContributionBasedOnInputs": 3000,
         "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
@@ -5280,7 +5280,7 @@
     },
     {
       "name": "the IRC 129(b)(1) limitation is asked for when the earned income facts are absent",
-      "description": "IRC 129(b)(1) is a hard ceiling, not an optional refinement, so leaving it out cannot be silent. Nothing is assumed about the employee's income: the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate the exclusion, and the status records the assumption. Married employees need both figures under IRC 129(b)(1)(B), so supplying only the employee's is still incomplete.",
+      "description": "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned income, and on a joint return both are needed. Only the employee's is supplied here. The ceiling is mandatory rather than an optional refinement, so reporting the IRC 129(a)(2)(A) amount as what the inputs support would assume the missing spouse's earned income is at least 7500 -- an assumption the statute never permits. The result fails closed: the statutory amount is still reported, the amount the inputs support is null, and the diagnostic names the missing fact.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -5311,16 +5311,17 @@
         ]
       },
       "expect": {
-        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": null,
-        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
         "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED"
       }
     },
     {
       "name": "the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled",
-      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in.",
+      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in. Both earned income figures are supplied, so the result stays determinate with assumptions rather than failing closed; what is disclosed is that the supplied 500 is used exactly as stated rather than derived from the IRC 21(d)(2) schedule.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -5354,9 +5355,10 @@
       },
       "expect": {
         "accounts.0.status": "determinate_with_assumptions",
-        "accounts.0.statutoryMaximumAnnualContribution": 500,
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": 500,
-        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED"
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 500
       }
     },
     {

@@ -9905,6 +9905,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     let status = CalculationStatus.DETERMINATE;
     let indeterminate = false;
     let unavailable = false;
+    let earnedIncomeFactsMissing = false;
 
     const elected = account.existingContributions.dependentCareSalaryReduction;
 
@@ -9947,11 +9948,16 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         ? minMoney(employeeEarnedIncome, spouseEarnedIncome)
         : employeeEarnedIncome;
     } else if (!indeterminate) {
-      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      // IRC 129(b)(1) is a mandatory ceiling, not an optional refinement.
+      // Reporting the IRC 129(a)(2)(A) amount as the maximum the inputs support
+      // would assume earned income of at least that amount, which the statute
+      // never permits. The statutory figure is still reported separately, so
+      // failing closed here withholds an assumption rather than information.
+      earnedIncomeFactsMissing = true;
       diagnostics.push(
         diagnostic(
           "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED",
-          DiagnosticSeverity.WARNING,
+          DiagnosticSeverity.ERROR,
           married
             ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned income for the taxable year. Both are caller-supplied facts and at least one was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it."
             : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. That is a caller-supplied fact and was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it.",
@@ -9990,7 +9996,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         ? null
         : money(rules.planDocumentLimit, `${path}.planRules.dependentCareFsa.planDocumentLimit`);
     const applicableLimit =
-      indeterminate || statutoryExclusion === null
+      indeterminate || statutoryExclusion === null || earnedIncomeFactsMissing
         ? null
         : minMoney(
             statutoryExclusion,
@@ -10045,7 +10051,10 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     context.dependentCarePlans.set(account.id, {
       status: accountStatusFromDiagnostics(status, diagnostics),
       diagnostics,
-      statutoryMaximum: applicableLimit,
+      // The IRC 129(a)(2)(A) figure itself. What the supplied facts allow
+      // within it is the applicable limit, reported separately, exactly as the
+      // health FSA path separates the IRC 125(i) ceiling from a plan document.
+      statutoryMaximum: indeterminate ? null : statutoryExclusion,
       detail,
       poolKey,
       earnedIncomeLimitation,
