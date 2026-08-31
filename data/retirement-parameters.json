@@ -93,6 +93,12 @@
       "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
       "authority": "U.S. Congress"
+    },
+    {
+      "id": "usc-26-402A",
+      "title": "26 U.S.C. § 402A(e), pension-linked emergency savings accounts, including the § 402A(e)(3)(A)(i) limitation and its post-2024 adjustment rule",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -119,6 +125,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -165,7 +172,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -201,6 +209,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -247,7 +256,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -283,6 +293,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -329,7 +340,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -365,6 +377,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -411,7 +424,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -447,6 +461,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -493,7 +508,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -529,6 +545,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -575,7 +592,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -611,6 +629,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -657,7 +676,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -693,6 +713,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -739,7 +760,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -775,6 +797,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -821,7 +844,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -857,6 +881,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -903,7 +928,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -939,6 +965,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -985,7 +1012,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1021,6 +1049,7 @@
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1067,7 +1096,8 @@
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1103,6 +1133,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1149,7 +1180,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1207,6 +1239,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1253,7 +1286,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1311,6 +1345,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1357,7 +1392,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1415,6 +1451,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1461,7 +1498,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1519,6 +1557,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1565,7 +1604,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1623,6 +1663,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1669,7 +1710,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1727,6 +1769,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1773,7 +1816,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1831,6 +1875,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1877,7 +1922,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -1935,6 +1981,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1981,7 +2028,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2039,6 +2087,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2085,7 +2134,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2143,6 +2193,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2189,7 +2240,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2247,6 +2299,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2293,7 +2346,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2364,6 +2418,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2410,7 +2465,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2481,6 +2537,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2527,7 +2584,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2598,6 +2656,7 @@
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2644,7 +2703,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2715,6 +2775,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -2761,7 +2822,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2832,6 +2894,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -2878,7 +2941,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2949,6 +3013,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -2995,7 +3060,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3066,6 +3132,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3112,7 +3179,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3183,6 +3251,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3229,7 +3298,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3300,6 +3370,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3346,7 +3417,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3417,6 +3489,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3463,7 +3536,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3534,6 +3608,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3580,7 +3655,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3651,6 +3727,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3697,7 +3774,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3768,6 +3846,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3814,7 +3893,8 @@
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3885,6 +3965,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3931,7 +4012,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4002,6 +4084,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
       "definedBenefitAnnualBenefit415b": 205000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4048,7 +4131,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4119,6 +4203,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4165,7 +4250,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4236,6 +4322,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4282,7 +4369,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4353,6 +4441,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4399,7 +4488,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4470,6 +4560,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
       "definedBenefitAnnualBenefit415b": 215000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4516,7 +4607,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4587,6 +4679,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
       "definedBenefitAnnualBenefit415b": 220000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4633,7 +4726,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4704,6 +4798,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
       "definedBenefitAnnualBenefit415b": 225000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4750,7 +4845,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4821,6 +4917,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4867,7 +4964,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4938,6 +5036,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4984,7 +5083,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5055,6 +5155,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
       "definedBenefitAnnualBenefit415b": 245000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5101,7 +5202,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5172,6 +5274,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
       "definedBenefitAnnualBenefit415b": 265000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5218,7 +5321,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5289,6 +5393,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
       "definedBenefitAnnualBenefit415b": 275000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5335,7 +5440,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5406,6 +5512,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
       "definedBenefitAnnualBenefit415b": 280000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5452,7 +5559,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5523,6 +5631,7 @@
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
       "definedBenefitAnnualBenefit415b": 290000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5569,7 +5678,8 @@
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {

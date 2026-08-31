@@ -42,6 +42,13 @@ enum AccountType: string
     case SIMPLE_401K = 'simple_401k';
     case ROTH_SIMPLE_401K = 'roth_simple_401k';
     case STARTER_401K = 'starter_401k';
+    /**
+     * IRC 402A(e) pension-linked emergency savings account, as included in a
+     * qualified trust under IRC 401(a) or a plan under IRC 403(b). Modeled as the
+     * designated Roth account IRC 402A(e)(1)(A)(i) says it is treated as, so its
+     * contributions run against IRC 402(g) and IRC 415(c).
+     */
+    case PENSION_LINKED_EMERGENCY_SAVINGS = 'pension_linked_emergency_savings';
     case TRADITIONAL_403B = 'traditional_403b';
     case ROTH_403B = 'roth_403b';
     case SAFE_HARBOR_403B_DEFERRAL_ONLY = 'safe_harbor_403b_deferral_only';
@@ -374,6 +381,17 @@ final class AccountBuilder
     public function planDocumentAnnualAdditionsLimit(float|int $amount): self
     {
         $this->value['planRules']['planDocumentAnnualAdditionsLimit'] = $amount;
+        return $this;
+    }
+
+    /**
+     * Portion of an IRC 402A(e) pension-linked emergency savings account balance
+     * already attributable to participant contributions. Required for a
+     * `pension_linked_emergency_savings` account; pass 0 for a new one.
+     */
+    public function pensionLinkedEmergencySavingsBalance(float|int $amount): self
+    {
+        $this->value['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] = $amount;
         return $this;
     }
 
@@ -912,6 +930,12 @@ private const PARAMETER_JSON = <<<'JSON'
       "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
       "authority": "U.S. Congress"
+    },
+    {
+      "id": "usc-26-402A",
+      "title": "26 U.S.C. § 402A(e), pension-linked emergency savings accounts, including the § 402A(e)(3)(A)(i) limitation and its post-2024 adjustment rule",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -938,6 +962,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -984,7 +1009,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1020,6 +1046,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1066,7 +1093,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1102,6 +1130,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1148,7 +1177,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1184,6 +1214,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1230,7 +1261,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1266,6 +1298,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1312,7 +1345,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1348,6 +1382,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1394,7 +1429,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1430,6 +1466,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1476,7 +1513,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1512,6 +1550,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1558,7 +1597,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1594,6 +1634,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1640,7 +1681,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1676,6 +1718,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1722,7 +1765,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1758,6 +1802,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1804,7 +1849,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1840,6 +1886,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1886,7 +1933,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1922,6 +1970,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1968,7 +2017,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2026,6 +2076,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2072,7 +2123,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2130,6 +2182,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2176,7 +2229,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2234,6 +2288,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2280,7 +2335,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2338,6 +2394,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2384,7 +2441,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2442,6 +2500,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2488,7 +2547,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2546,6 +2606,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2592,7 +2653,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2650,6 +2712,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2696,7 +2759,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2754,6 +2818,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2800,7 +2865,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2858,6 +2924,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2904,7 +2971,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2962,6 +3030,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3008,7 +3077,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3066,6 +3136,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3112,7 +3183,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3183,6 +3255,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3229,7 +3302,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3300,6 +3374,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3346,7 +3421,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3417,6 +3493,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3463,7 +3540,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3534,6 +3612,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3580,7 +3659,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3651,6 +3731,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3697,7 +3778,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3768,6 +3850,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3814,7 +3897,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3885,6 +3969,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3931,7 +4016,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4002,6 +4088,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4048,7 +4135,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4119,6 +4207,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4165,7 +4254,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4236,6 +4326,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4282,7 +4373,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4353,6 +4445,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4399,7 +4492,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4470,6 +4564,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4516,7 +4611,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4587,6 +4683,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4633,7 +4730,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4704,6 +4802,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4750,7 +4849,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4821,6 +4921,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
       "definedBenefitAnnualBenefit415b": 205000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4867,7 +4968,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4938,6 +5040,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4984,7 +5087,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5055,6 +5159,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5101,7 +5206,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5172,6 +5278,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5218,7 +5325,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5289,6 +5397,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
       "definedBenefitAnnualBenefit415b": 215000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5335,7 +5444,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5406,6 +5516,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
       "definedBenefitAnnualBenefit415b": 220000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5452,7 +5563,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5523,6 +5635,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
       "definedBenefitAnnualBenefit415b": 225000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5569,7 +5682,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5640,6 +5754,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5686,7 +5801,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5757,6 +5873,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5803,7 +5920,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5874,6 +5992,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
       "definedBenefitAnnualBenefit415b": 245000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5920,7 +6039,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5991,6 +6111,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
       "definedBenefitAnnualBenefit415b": 265000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6037,7 +6158,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6108,6 +6230,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
       "definedBenefitAnnualBenefit415b": 275000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6154,7 +6277,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6225,6 +6349,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
       "definedBenefitAnnualBenefit415b": 280000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6271,7 +6396,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6342,6 +6468,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
       "definedBenefitAnnualBenefit415b": 290000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6388,7 +6515,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -8322,6 +8450,9 @@ final class Engine
             'SIMPLE_401K' => AccountType::SIMPLE_401K->value,
             'ROTH_SIMPLE_401K' => AccountType::ROTH_SIMPLE_401K->value,
             'STARTER_401K' => AccountType::STARTER_401K->value,
+            'PLESA' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
+            'PENSION_LINKED_EMERGENCY_SAVINGS' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
+            'PENSION_LINKED_EMERGENCY_SAVINGS_ACCOUNT' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
             '403B' => AccountType::TRADITIONAL_403B->value,
             'TRADITIONAL_403B' => AccountType::TRADITIONAL_403B->value,
             'ROTH_403B' => AccountType::ROTH_403B->value,
@@ -8519,6 +8650,7 @@ final class Engine
             'governmental457' => false,
             'is403b' => false,
             'isStarter' => false,
+            'isPlesa' => false,
             'isSimple' => false,
             'isSarsep' => false,
             'employerOnly' => false,
@@ -8616,6 +8748,24 @@ final class Engine
                 'permitsAgeCatchUpByStatute' => true,
                 'isStarter' => true,
                 'is403b' => $type === AccountType::SAFE_HARBOR_403B_DEFERRAL_ONLY->value,
+            ]);
+        }
+        // IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account as
+        // a designated Roth account for purposes of this title, so its contributions
+        // are elective deferrals sharing the IRC 402(g) limit — IRC 402A(e)(9)
+        // confirms it by ordering excess deferrals distributed under IRC 402(g)(2)(A)
+        // out of the emergency account first — and annual additions under IRC 415(c).
+        // No age-based catch-up attaches: IRC 414(v) lets a participant exceed an
+        // applicable limit on elective deferrals, while IRC 402A(e)(3)(A) forbids any
+        // contribution that would push the account balance past its cap.
+        if ($type === AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value) {
+            return array_replace($base, [
+                'family' => 'qualified_elective',
+                'availabilityKey' => 'pensionLinkedEmergencySavings',
+                'designatedRoth' => true,
+                'shares402g' => true,
+                'uses415c' => true,
+                'isPlesa' => true,
             ]);
         }
         if (in_array($type, [AccountType::GOVERNMENTAL_457B->value, AccountType::ROTH_GOVERNMENTAL_457B->value, AccountType::NONGOVERNMENTAL_457B->value], true)) {
@@ -9173,6 +9323,7 @@ final class Engine
                 'simpleCustomEmployerContribution',
                 'netEarningsFromSelfEmploymentAfterHalfSETax',
                 'simpleAdditionalNonelectiveContribution',
+                'pensionLinkedEmergencySavingsParticipantContributionBalance',
             ] as $key
         ) {
             if (array_key_exists($key, $rules)) {
@@ -13026,12 +13177,45 @@ final class Engine
         return self::workplaceCatchUpLimit($context['parameters'], $person, $traits);
     }
 
+    /**
+     * Room left under IRC 402A(e)(3)(A) for a pension-linked emergency savings
+     * account, or null for a year with no encoded limitation. The statute caps the
+     * portion of the *account balance* attributable to participant contributions at
+     * the lesser of the published figure and any lower amount the plan sponsor sets,
+     * so what a participant may still contribute is the figure less the balance
+     * already attributable to their contributions. The sponsor's lower amount is
+     * supplied as `planDocumentEmployeeDeferralLimit` and applied with the other
+     * plan-document ceilings.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     */
+    private static function pensionLinkedEmergencySavingsRoom(array $context, array $account): ?float
+    {
+        $cap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
+        if ($cap === null) {
+            return null;
+        }
+        return self::nonnegative((float) $cap - self::money(
+            $account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null,
+            "{$account['id']}.pensionLinkedEmergencySavingsParticipantContributionBalance",
+        ));
+    }
+
     /** @param array<string,mixed> $context
      *  @param array<string,mixed> $account
      *  @param array<string,mixed> $traits
      */
     private static function baseDeferralLimitForAccount(array $context, array $account, array $traits): ?float
     {
+        if (!empty($traits['isPlesa'])) {
+            $room = self::pensionLinkedEmergencySavingsRoom($context, $account);
+            $statutory = $context['parameters']['electiveDeferral402g'];
+            if ($room === null || $statutory === null) {
+                return null;
+            }
+            return self::minMoney((float) $statutory, $room);
+        }
         if (!empty($traits['isStarter'])) {
             return $context['parameters']['starterDeferralOnly']['baseDeferralLimit'] === null
                 ? null
@@ -13189,7 +13373,11 @@ final class Engine
             (float) $context['parameters']['generalAge50CatchUp'] > 0
             || (float) $context['parameters']['simple']['generalAge50CatchUp'] > 0
             || (float) $context['parameters']['starterDeferralOnly']['age50CatchUp'] > 0;
-        if ($age === null && $anyCatchUpAvailable) {
+        // Only an account that can take an age-based catch-up needs an age. Every
+        // family that reaches this function permits one by statute except the
+        // pension-linked emergency savings account, where IRC 402A(e)(3)(A) forbids a
+        // contribution past the balance cap outright and IRC 414(v) adds nothing.
+        if ($age === null && $anyCatchUpAvailable && !empty($traits['permitsAgeCatchUpByStatute'])) {
             $diagnostics[] = self::diagnostic(
                 'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP',
                 DiagnosticSeverity::ERROR,
@@ -13591,6 +13779,56 @@ final class Engine
                 'diagnostics' => $diagnostics,
             ];
         }
+        // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
+        // participant contributions, not the contributions of any one year, and
+        // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
+        // room back. What may still be contributed therefore depends on a balance no
+        // other supplied fact expresses, and assuming an empty account would state a
+        // ceiling the statute may not allow.
+        if (!empty($traits['isPlesa'])) {
+            if (!array_key_exists('pensionLinkedEmergencySavingsParticipantContributionBalance', $account['planRules'])) {
+                $diagnostics[] = self::diagnostic(
+                    'PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 402A(e)(3)(A) caps the portion of a pension-linked emergency savings account balance attributable to participant contributions rather than the contributions of a single year, so the balance already attributable to them is required. Supply planRules.pensionLinkedEmergencySavingsParticipantContributionBalance, using 0 for a newly established account.',
+                    "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
+                    'IRC 402A(e)(3)(A)',
+                );
+                self::reportPoolWithoutConsuming($context['annualAdditionsPools'][$groupId], $sharedLimits);
+
+                return [
+                    'status' => CalculationStatus::INDETERMINATE->value,
+                    'statutoryMaximum' => null,
+                    'annualComponents' => $annual,
+                    'additionalComponents' => $additional,
+                    'planTermDependentCapacity' => 0.0,
+                    'sharedLimits' => $sharedLimits,
+                    'diagnostics' => $diagnostics,
+                ];
+            }
+            $cap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
+            $room = self::pensionLinkedEmergencySavingsRoom($context, $account);
+            if ($cap !== null && $room !== null) {
+                $suppliedBalance = self::money(
+                    $account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'],
+                    "accounts.{$account['id']}",
+                );
+                $diagnostics[] = self::diagnostic(
+                    'PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED',
+                    DiagnosticSeverity::INFO,
+                    '$' . self::localeNumber((float) $cap)
+                        . ' is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $'
+                        . self::localeNumber($suppliedBalance)
+                        . ' was supplied as already attributable to them, leaving $'
+                        . self::localeNumber($room)
+                        . '. Contributions are Roth by IRC 402A(e)(1)(A)(i), count against IRC 402(g) and IRC 415(c), and take no age-based catch-up.'
+                        . ' Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7),'
+                        . " and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.",
+                    "accounts.{$account['id']}",
+                    'IRC 402A(e)(3)(A)(i)',
+                );
+            }
+        }
         $deferral = self::allocateBaseAndCatchUp(
             $context,
             $account,
@@ -13618,11 +13856,17 @@ final class Engine
             $account['planRules']['planDocumentAnnualAdditionsLimit'] ?? $annualGroupLimit,
         );
         $employeeBase = self::baseDeferrals($annual);
-        $employerKnown = !empty($traits['isStarter']);
+        // Starter 401(k) and deferral-only safe-harbor 403(b) plans take no employer
+        // contribution by plan type; a pension-linked emergency savings account takes
+        // none because IRC 402A(e)(6)(A) directs any match earned on its contributions
+        // to the participant's other account under the plan, and IRC 402A(e)(8)(B)
+        // forbids transfers into it from another account.
+        $deferralOnly = !empty($traits['isStarter']) || !empty($traits['isPlesa']);
+        $employerKnown = $deferralOnly;
         $employerDesired = 0.0;
         $statutoryEmployerPotential = 0.0;
-        if (!empty($traits['isStarter'])) {
-            // Deferral-only by statute/plan type.
+        if ($deferralOnly) {
+            // No employer contribution is allocated to this account.
         } elseif (!empty($traits['isSimple'])) {
             $simpleEmployer = self::simpleEmployerContribution(
                 $context,
@@ -13665,7 +13909,7 @@ final class Engine
         if ($employerAdded > 0.0) {
             self::addEmployerContribution($account, $traits, $annual, $additional, $employerAdded);
         }
-        if (!empty($account['planRules']['permitsAfterTaxEmployeeContributions']) && empty($traits['isStarter'])) {
+        if (!empty($account['planRules']['permitsAfterTaxEmployeeContributions']) && !$deferralOnly) {
             $afterTaxCapacity = self::minMoney(
                 self::poolRemaining($context['annualAdditionsPools'][$groupId]),
                 self::nonnegative($accountAnnualLimit - self::annualAdditions($annual)),
@@ -13684,7 +13928,7 @@ final class Engine
         }
         $planTermDependentCapacity = 0.0;
         if (
-            empty($traits['isStarter'])
+            !$deferralOnly
             && !$employerKnown
             && empty($account['planRules']['permitsAfterTaxEmployeeContributions'])
         ) {
@@ -13703,7 +13947,7 @@ final class Engine
             }
         }
         $planCatchUp = self::accountPlanCatchUpLimit($context, $account, $traits);
-        $statutoryMaximum = !empty($traits['isStarter'])
+        $statutoryMaximum = $deferralOnly
             ? self::roundMoney((self::baseDeferralLimitForAccount($context, $account, $traits) ?? 0.0) + $planCatchUp)
             : self::roundMoney(
                 $accountAnnualLimit
