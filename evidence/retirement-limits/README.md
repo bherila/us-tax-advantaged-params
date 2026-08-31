@@ -16,7 +16,7 @@ npm run validate:evidence               # every corpus under evidence/
 npm run validate:evidence:retirement    # this corpus alone
 ```
 
-**350 comparisons over 2013–2026, 0 mismatches.**
+**402 comparisons over 2009–2026, 0 mismatches.**
 
 ## What is compared
 
@@ -25,18 +25,37 @@ Per plan year: §415(c)(1)(A) annual additions, §402(g)(1) elective deferral,
 catch-up, §414(v)(7)(A) Roth catch-up wage threshold, §401(a)(17) compensation,
 §219(b)(5)(A) IRA contribution, and §219(b)(5)(B)(ii) IRA catch-up.
 
+The 2009 and 2010 blocks additionally record three figures their notices publish
+and the package models: §408(p)(2)(E) SIMPLE salary reduction, §414(v)(2)(B)(ii)
+SIMPLE catch-up, and §408(k)(2)(C) SEP compensation. The 2013–2026 notices
+publish them too and those blocks do not yet record them — backfilling is a
+coverage gain, not a correction.
+
 All six IRA phase-out bands, **both ends of each**: §219(g)(3) covered,
 §219(g)(7)(A) spouse-covered, and §408A(c)(3) Roth. A band's width is a
 convention rather than a published figure, so inferring the end from the start
 would verify an assumption instead of the notice.
 
+That holds from 2013 on, where the notice prints the range itself. Notice
+2008-102 and Notice 2009-94 print only the applicable dollar amount — the band
+start. For those two years the start is transcribed from the notice and the end
+is the start plus the width the Code fixes: $10,000, or $20,000 on a joint
+return, under §219(g)(2)(A)(ii); $10,000 in the spouse-covered case under
+§219(g)(7)(B); $15,000, or $10,000 on a joint or separate return, under
+§408A(c)(3)(A)(ii). The married-filing-separately start is the zero applicable
+dollar amount at §219(g)(3)(B)(iii) and §408A(c)(3)(B)(ii)(III), which no notice
+prints either. Each year block records which half came from where, and the
+statute text is committed as `usc-26-219.pdf` and `usc-26-408A.pdf`.
+
 The §402(g)/§457(e)(15) elective series is compared for every year it records.
 
 ## Sources
 
-Nineteen documents: IRS COLA notices from 2008 through 2025, the IR-series
-releases that carried the figures before the notice format, and SSA Federal
-Register wage-base determinations. Every file is fixed by `SHA256SUMS.txt`:
+Twenty-one documents: IRS COLA notices from 2008 through 2025, the
+IR-series releases that carried the figures before the notice format, SSA
+Federal Register wage-base determinations, and the text of 26 U.S.C. §219 and
+§408A for the phase-out widths and zero applicable dollar amounts the notices
+never print. Every file is fixed by `SHA256SUMS.txt`:
 
 ```
 cd sources && shasum -a 256 -c ../SHA256SUMS.txt

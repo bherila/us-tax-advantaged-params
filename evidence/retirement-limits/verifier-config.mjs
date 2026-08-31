@@ -28,6 +28,9 @@ export default {
     ["compensationLimit_401a17", ["annualCompensation401a17"], "IRC 401(a)(17)"],
     ["iraContribution_219b5A", ["ira", "baseContributionLimit"], "IRC 219(b)(5)(A)"],
     ["iraCatchUp50_219b5Bii", ["ira", "age50CatchUp"], "IRC 219(b)(5)(B)(ii)"],
+    ["simpleSalaryReduction_408p2E", ["simple", "salaryReductionLimit"], "IRC 408(p)(2)(E)"],
+    ["simpleCatchUp50_414v2Bii", ["simple", "generalAge50CatchUp"], "IRC 414(v)(2)(B)(ii)"],
+    ["sepCompensation_408k2C", ["sep", "minimumEligibleCompensation"], "IRC 408(k)(2)(C)"],
   ],
 
   /**
