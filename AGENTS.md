@@ -52,9 +52,11 @@ years 1975 onward:
    by loosening the gate is worse than a red one.
 7. **Derive expected values from the statute or the primary source, never from
    engine output.** A vector or test written from the implementation proves only
-   that the implementation does what it does. Record the derivation in the
-   vector's `description`. When a vector and an engine disagree, work out which
-   is wrong before changing either, and say which it was.
+   that the implementation does what it does. Every new conformance vector must
+   include a `description` that derives each asserted value from the statute or
+   primary authority (and explains input-contract assertions for validation
+   errors). When a vector and an engine disagree, work out which is wrong before
+   changing either, and say which it was.
 8. **Prove a regression test fails without its fix.** Stash the source change,
    re-run the test, quote the failure, restore. A test that would have passed
    without the fix is not a regression test.

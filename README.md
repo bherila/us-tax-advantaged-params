@@ -405,6 +405,7 @@ ownership, so it is a caller-supplied fact rather than something inferred from t
 | `maximumAnnualContributionBasedOnInputs` | Maximum supported by law and supplied plan capabilities/formulas |
 | `maximumAdditionalContributionBasedOnInputs` | Remaining supported amount after existing contributions |
 | `existingAnnualContribution` | Existing contribution components supplied by the caller |
+| `excessContribution` | Supplied amount above the account's determinable statutory ceiling; `null` when that ceiling is indeterminate |
 | `planTermDependentCapacity` | Potential space that cannot be allocated without additional plan/employer facts |
 | `contributionComponents` | Pretax, Roth, after-tax, employer, IRA, and catch-up components |
 | `federalTaxEffects` | Federal AGI, taxable-income, W-2 box 1, nondeductible, after-tax/Roth, and conversion effects |

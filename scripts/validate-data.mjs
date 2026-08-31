@@ -111,12 +111,21 @@ if (parameters) {
     if (row && row.annualAdditions415c !== null && row.annualAdditions415c <= 0) {
       fail(`Year ${year} has an invalid annualAdditions415c value.`);
     }
+    for (const [field, value] of Object.entries(row?.special403b15YearCatchUp ?? {})) {
+      requirePositiveAmount(value, `Year ${year} special403b15YearCatchUp.${field}`);
+    }
+    for (const field of ["annualLimit", "lifetimeLimit", "serviceLimitPerYear"]) {
+      if (!(field in (row?.special403b15YearCatchUp ?? {}))) {
+        fail(`Year ${year} special403b15YearCatchUp.${field} is required.`);
+      }
+    }
   }
 
   validateSources(parameters.sources, "data/retirement-parameters.json", [
     "irs-notice-2001-56",
     "irs-employee-plans-news-fall-2009",
     "irs-pub-535-2001",
+    "usc-26-402",
   ]);
 
   const row1997 = parameters.years?.["1997"];
@@ -125,6 +134,14 @@ if (parameters) {
   }
   if (row1997?.sep?.maximumEmployerContributionRate !== 0.15) {
     fail("The 1997 SEP employer-rate regression fixture must be 0.15.");
+  }
+  const row2026 = parameters.years?.["2026"];
+  if (
+    row2026?.special403b15YearCatchUp?.annualLimit !== 3000 ||
+    row2026?.special403b15YearCatchUp?.lifetimeLimit !== 15000 ||
+    row2026?.special403b15YearCatchUp?.serviceLimitPerYear !== 5000
+  ) {
+    fail("The 2026 IRC 402(g)(7) special 403(b) catch-up regression fixture must carry the statutory limits.");
   }
 }
 

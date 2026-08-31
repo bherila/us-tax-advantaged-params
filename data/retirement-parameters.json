@@ -75,6 +75,12 @@
       "title": "SARSEP Fix-It Guide: contribution-limit and compensation rules",
       "url": "https://www.irs.gov/retirement-plans/sarsep-fix-it-guide-total-contributions-employee-elective-deferrals-and-nonelective-employer-contributions-exceeded-the-maximum-legal-limits",
       "authority": "IRS"
+    },
+    {
+      "id": "usc-26-402",
+      "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -151,6 +157,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1976": {
@@ -226,6 +237,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1977": {
@@ -301,6 +317,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1978": {
@@ -376,6 +397,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1979": {
@@ -451,6 +477,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1980": {
@@ -526,6 +557,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1981": {
@@ -601,6 +637,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1982": {
@@ -676,6 +717,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1983": {
@@ -751,6 +797,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1984": {
@@ -826,6 +877,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1985": {
@@ -901,6 +957,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1986": {
@@ -976,6 +1037,11 @@
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1987": {
@@ -1073,6 +1139,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1988": {
@@ -1170,6 +1241,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1989": {
@@ -1267,6 +1343,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1990": {
@@ -1364,6 +1445,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1991": {
@@ -1461,6 +1547,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1992": {
@@ -1558,6 +1649,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1993": {
@@ -1655,6 +1751,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1994": {
@@ -1752,6 +1853,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1995": {
@@ -1849,6 +1955,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1996": {
@@ -1946,6 +2057,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1997": {
@@ -1973,7 +2089,7 @@
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2043,6 +2159,11 @@
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1998": {
@@ -2070,7 +2191,7 @@
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2153,6 +2274,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1999": {
@@ -2180,7 +2306,7 @@
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2263,6 +2389,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2000": {
@@ -2373,6 +2504,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2001": {
@@ -2483,6 +2619,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2002": {
@@ -2593,6 +2734,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2003": {
@@ -2703,6 +2849,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2004": {
@@ -2813,6 +2964,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2005": {
@@ -2923,6 +3079,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2006": {
@@ -3033,6 +3194,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2007": {
@@ -3143,6 +3309,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2008": {
@@ -3253,6 +3424,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2009": {
@@ -3363,6 +3539,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2010": {
@@ -3473,6 +3654,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2011": {
@@ -3583,6 +3769,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2012": {
@@ -3693,6 +3884,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2013": {
@@ -3803,6 +3999,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2014": {
@@ -3913,6 +4114,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2015": {
@@ -4023,6 +4229,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2016": {
@@ -4133,6 +4344,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2017": {
@@ -4243,6 +4459,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2018": {
@@ -4353,6 +4574,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2019": {
@@ -4463,6 +4689,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2020": {
@@ -4573,6 +4804,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2021": {
@@ -4683,6 +4919,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2022": {
@@ -4793,6 +5034,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2023": {
@@ -4903,6 +5149,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2024": {
@@ -5013,6 +5264,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2025": {
@@ -5123,6 +5379,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2026": {
@@ -5233,6 +5494,11 @@
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     }
   }

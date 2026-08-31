@@ -1,6 +1,35 @@
 {
   "_comment": "Retirement plan and IRA dollar limits taken verbatim from IRS COLA notices and SSA Federal Register determinations. Verified 2026-08-30. Amounts are dollars. See findings.md for the reconciliation and README.md for method.",
   "_sources": {
+    "pl-93-406": "Employee Retirement Income Security Act of 1974, Pub. L. 93-406, 88 Stat. 829 (IRA enactment and 1975 effective date)",
+    "pl-94-455": "Tax Reform Act of 1976, Pub. L. 94-455, 90 Stat. 1520 (spousal IRA rule effective for 1977)",
+    "pl-95-600": "Revenue Act of 1978, Pub. L. 95-600, 92 Stat. 2763 (sections 401(k), 408(k), and 457 enactment and effective dates)",
+    "pl-97-34": "Economic Recovery Tax Act of 1981, Pub. L. 97-34, 95 Stat. 172 (1982 IRA limits and eligibility)",
+    "irs-soi-ira-1983": "IRS Statistics of Income Bulletin, Publication 1136 (Rev. 7-83), Individual Income Tax Returns: 1982 Taxpayer Usage Study",
+    "n-96-55": "IRS Notice 96-55, 1997 Pension Plan Limitations, in Internal Revenue Bulletin 1996-47",
+    "irs-codas-2002": "IRS Internal Revenue Manual 4.72.2, Cash or Deferred Arrangements (CODAs), annual statutory limits table",
+    "irs-sep-sarsep-audit-2003": "IRS SEP/SARSEP Audit Techniques, Chapter 13",
+    "p590-1995": "IRS Publication 590 (Rev. 1995), Individual Retirement Arrangements (IRAs)",
+    "p590-1996": "IRS Publication 590 (Rev. 1996), Individual Retirement Arrangements (IRAs)",
+    "p590-1997": "IRS Publication 590 (Rev. 1997), Individual Retirement Arrangements (IRAs)",
+    "p590-1998": "IRS Publication 590 (Rev. 1998), Individual Retirement Arrangements (IRAs), including Roth IRAs",
+    "p590-1999": "IRS Publication 590 (Rev. 1999), Individual Retirement Arrangements (IRAs), including Roth IRAs",
+    "p590-2000": "IRS Publication 590 (Rev. 2000), Individual Retirement Arrangements (IRAs), including Roth IRAs",
+    "n-97-58": "IRS Notice 97-58, 1998 Pension Plan Limitations, in Internal Revenue Bulletin 1997-45",
+    "n-98-53": "IRS Notice 98-53, 1999 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 1998-46",
+    "n-99-55": "IRS Notice 99-55, 2000 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 1999-49",
+    "ir-01-115": "IRS News Release IR-2001-115, Pension Plan Limitations for Tax Year 2002",
+    "pl-107-16": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38",
+    "p590-2002": "IRS Publication 590 (Rev. 2002), Individual Retirement Arrangements (IRAs)",
+    "n-00-66": "IRS Notice 2000-66, 2001 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2000-52",
+    "n-02-71": "IRS Notice 2002-71, 2003 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2002-45",
+    "n-03-73": "IRS Notice 2003-73, 2004 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2003-45",
+    "n-04-72": "IRS Notice 2004-72, 2005 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2004-46",
+    "n-05-75": "IRS Notice 2005-75, 2006 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2005-45",
+    "n-06-98": "IRS Notice 2006-98, 2007 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2006-46",
+    "n-07-87": "IRS Notice 2007-87, 2008 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2007-45",
+    "n-11-90": "IRS Notice 2011-90, 2012 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2011-47",
+    "n-10-78": "IRS Notice 2010-78, 2011 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2010-49",
     "n-25-67": "IRS Notice 2025-67, 2026 Amounts Relating to Retirement Plans and IRAs, as Adjusted for Changes in Cost-of-Living",
     "n-24-80": "IRS Notice 2024-80, 2025 Amounts Relating to Retirement Plans and IRAs, as Adjusted for Changes in Cost-of-Living",
     "n-23-75": "IRS Notice 2023-75, 2024 Limitations Adjusted as Provided in Section 415(d), etc.",
@@ -21,9 +50,619 @@
     "n-09-94": "IRS Notice 2009-94, 2010 Limitations Adjusted as Provided in Section 415(d), etc.",
     "n-08-102": "IRS Notice 2008-102, 2009 Limitations Adjusted as Provided in Section 415(d), etc.",
     "usc-26-219": "26 U.S.C. 219, Retirement savings (2023 edition of the United States Code), for the statutory phase-out widths at 219(g)(2)(A)(ii) and 219(g)(7)(B) and the zero applicable dollar amount at 219(g)(3)(B)(iii)",
-    "usc-26-408A": "26 U.S.C. 408A, Roth IRAs (2023 edition of the United States Code), for the statutory phase-out width at 408A(c)(3)(A)(ii) and the zero applicable dollar amount at 408A(c)(3)(B)(ii)(III)"
+    "usc-26-401": "26 U.S.C. 401, qualified pension, profit-sharing, and stock bonus plans (2024 preliminary edition), including starter 401(k) deferral-only arrangements",
+    "usc-26-403": "26 U.S.C. 403, taxability of beneficiary under annuity plan (2024 preliminary edition), including safe-harbor deferral-only 403(b) plans",
+    "usc-26-408": "26 U.S.C. 408(o), definitions and rules relating to nondeductible contributions to individual retirement plans",
+    "usc-26-408A": "26 U.S.C. 408A, Roth IRAs (2023 edition of the United States Code), for the statutory phase-out width at 408A(c)(3)(A)(ii) and the zero applicable dollar amount at 408A(c)(3)(B)(ii)(III)",
+    "usc-26-402": "26 U.S.C. 402(g)(7), special rule for certain organizations, for the statutory 403(b) 15-year catch-up limits",
+    "usc-26-457": "26 U.S.C. 457, deferred compensation plans of State and local governments and tax-exempt organizations (2024 preliminary edition)",
+    "usc-5-8432": "5 U.S.C. 8432, contributions to Thrift Savings Fund (2024 preliminary edition), including 1987 implementation notes",
+    "fr-2012-05-04": "Federal Retirement Thrift Investment Board, Roth Feature to the Thrift Savings Plan, 77 FR 26417 (May 4, 2012)"
   },
   "planYears": {
+    "1975": {
+      "source": "pl-93-406",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "availabilityTraditional403b_403": true,
+      "availabilityTraditional403b_source": "usc-26-403"
+    },
+    "1976": {
+      "source": "pl-93-406",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true
+    },
+    "1977": {
+      "source": "pl-94-455",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_220": true,
+      "iraOneEarnerHouseholdCombinedLimit_220b1C": 1750,
+      "iraPolicy_source": "The $1,500-or-15-percent rule, exclusion of active participants, and age-70½ restriction remain the ERISA rules. The 1976 Act added the $1,750 joint spousal deduction for taxable years beginning after December 31, 1976."
+    },
+    "1978": {
+      "source": "pl-94-455",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_220": true,
+      "iraOneEarnerHouseholdCombinedLimit_220b1C": 1750
+    },
+    "1979": {
+      "source": "pl-95-600",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_220": true,
+      "iraOneEarnerHouseholdCombinedLimit_220b1C": 1750,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": false,
+      "availabilitySepIra_408k": true,
+      "availabilityGovernmental457b_457": true,
+      "availabilityNongovernmental457b_457": true,
+      "availability_source": "usc-26-457"
+    },
+    "1980": {
+      "source": "pl-95-600",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219b2": false,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_220": true,
+      "iraOneEarnerHouseholdCombinedLimit_220b1C": 1750,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1981": {
+      "source": "irs-soi-ira-1983",
+      "iraContribution_219b1": 1500,
+      "iraCompensationFraction_219b1": 0.15,
+      "iraUniversalEligibility_219Historical": false,
+      "iraSpousalIraAvailable_219cHistorical": true,
+      "iraTraditionalContributionAge70HalfRestriction_219b3": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c": 1750,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true,
+      "iraPolicy_source": "The IRS Bulletin records that 1981-and-earlier IRA deductions were limited to $1,500 or 15 percent of earned income, while one-earner married couples had a combined IRA limit; it contrasts the 1982 universal-eligibility change for participants covered by an employer plan. The unchanged SEP, §457, and §401(k) fields are the statutory rules enacted by Pub. L. 95-600."
+    },
+    "1982": {
+      "source": "pl-97-34",
+      "iraContribution_219b1": 2000,
+      "iraCompensationFraction_219b1": 1,
+      "iraUniversalEligibility_219": true,
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_219c": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c2Ai": 2250,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1983": {
+      "source": "pl-97-34",
+      "iraContribution_219b1": 2000,
+      "iraCompensationFraction_219b1": 1,
+      "iraUniversalEligibility_219": true,
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_219c": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c2Ai": 2250,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1984": {
+      "source": "pl-97-34",
+      "iraContribution_219b1": 2000,
+      "iraCompensationFraction_219b1": 1,
+      "iraUniversalEligibility_219": true,
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_219c": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c2Ai": 2250,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1985": {
+      "source": "pl-97-34",
+      "iraContribution_219b1": 2000,
+      "iraCompensationFraction_219b1": 1,
+      "iraUniversalEligibility_219": true,
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_219c": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c2Ai": 2250,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1986": {
+      "source": "pl-97-34",
+      "iraContribution_219b1": 2000,
+      "iraCompensationFraction_219b1": 1,
+      "iraUniversalEligibility_219": true,
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "traditionalIraAvailable_219And408": true,
+      "iraSpousalIraAvailable_219c": true,
+      "iraOneEarnerHouseholdCombinedLimit_219c2Ai": 2250,
+      "sepAvailable_408k": true,
+      "sepMaximumEmployerContributionRate_404h1C": 0.15,
+      "section457bAvailable_457": true,
+      "section457b_457b2A": 7500,
+      "section457bIncludibleCompensationFraction_457b2B": 0.3333333333333333,
+      "section457bSpecialLastThreeYearsMaximum_457b3A": 15000,
+      "traditional401kAvailable_401k": true
+    },
+    "1987": {
+      "source": "irs-codas-2002",
+      "availabilityTraditionalTsp_5usc8432": true,
+      "availabilityTraditionalTsp_source": "usc-5-8432",
+      "electiveDeferral_402g1": 7000,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "iraNondeductibleContributionAvailable_408o": true,
+      "iraNondeductibleContributionAvailable_source": "usc-26-408"
+    },
+    "1988": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 7313,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": null,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1989": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 7627,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 200000,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1990": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 7979,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 209200,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1991": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 8475,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 222220,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1992": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 8728,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 228860,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1993": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 8994,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 235840,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1994": {
+      "source": "irs-codas-2002",
+      "electiveDeferral_402g1": 9240,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 150000,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15
+    },
+    "1995": {
+      "source": "p590-1995",
+      "planLimits_source": "irs-codas-2002",
+      "iraContribution_219b5A": 2000,
+      "iraNonworkingSpouseIndividualLimit_219c": 250,
+      "iraOneEarnerHouseholdCombinedLimit_219c": 2250,
+      "electiveDeferral_402g1": 9240,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 150000,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 25000, "end": 35000 },
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "1996": {
+      "source": "p590-1996",
+      "planLimits_source": "irs-codas-2002",
+      "iraContribution_219b5A": 2000,
+      "iraNonworkingSpouseIndividualLimit_219c": 250,
+      "iraOneEarnerHouseholdCombinedLimit_219c": 2250,
+      "electiveDeferral_402g1": 9500,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 150000,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 25000, "end": 35000 },
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "1997": {
+      "source": "p590-1997",
+      "planLimits_source": "n-96-55",
+      "iraContribution_219b5A": 2000,
+      "electiveDeferral_402g1": 9500,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 160000,
+      "simpleSalaryReduction_408p2A": 6000,
+      "availabilitySimpleIra_408p": true,
+      "availabilitySimpleIra_source": "usc-26-408",
+      "section457b_457b2AndC1": 7500,
+      "sepCompensation_408k2C": 400,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "newSarsepMayBeEstablished_408k6A": false,
+      "grandfatheredSarsepMayOperate_408k6A": true,
+      "iraNonworkingSpouseIndividualLimit_219c": null,
+      "iraOneEarnerHouseholdCombinedLimit_219c": null,
+      "iraRothAvailable_408A": false,
+      "iraPolicy_source": "Section 408A applies to taxable years beginning after December 31, 1997; the 1997 data therefore has no Roth IRA and no pre-1997 fixed nonworking-spouse or one-earner cap.",
+      "sarsep_source": "IRS SEP/SARSEP Audit Techniques states that SBJPA prohibited new SARSEPs after December 31, 1996 while pre-1997 SARSEPs could continue.",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 25000, "end": 35000 },
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 40000, "end": 50000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "1998": {
+      "source": "p590-1998",
+      "planLimits_source": "n-97-58",
+      "iraContribution_219b5A": 2000,
+      "iraRothAvailable_408A": true,
+      "availabilityRothIra_408A": true,
+      "availabilityRothIra_source": "usc-26-408A",
+      "electiveDeferral_402g1": 10000,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 160000,
+      "simpleSalaryReduction_408p2A": 6000,
+      "section457b_457b2AndC1": 8000,
+      "sepCompensation_408k2C": 400,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 30000, "end": 40000 },
+        "marriedFilingJointly": { "start": 50000, "end": 60000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": { "start": 95000, "end": 110000 },
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "1999": {
+      "source": "p590-1999",
+      "planLimits_source": "n-98-53",
+      "iraContribution_219b5A": 2000,
+      "iraRothAvailable_408A": true,
+      "electiveDeferral_402g1": 10000,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 160000,
+      "simpleSalaryReduction_408p2A": 6000,
+      "section457b_457b2AndC1": 8000,
+      "sepCompensation_408k2C": 400,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 31000, "end": 41000 },
+        "marriedFilingJointly": { "start": 51000, "end": 61000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": { "start": 95000, "end": 110000 },
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "2000": {
+      "source": "p590-2000",
+      "planLimits_source": "n-99-55",
+      "iraContribution_219b5A": 2000,
+      "iraRothAvailable_408A": true,
+      "electiveDeferral_402g1": 10500,
+      "annualAdditions_415c1A": 30000,
+      "annualAdditionsCompensationFraction_415c1B": 0.25,
+      "compensationLimit_401a17": 170000,
+      "simpleSalaryReduction_408p2A": 6000,
+      "section457b_457b2AndC1": 8000,
+      "sepCompensation_408k2C": 450,
+      "sepMaximumEmployerContributionRate_preEgtrra": 0.15,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": { "start": 32000, "end": 42000 },
+        "marriedFilingJointly": { "start": 52000, "end": 62000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": { "start": 95000, "end": 110000 },
+        "marriedFilingJointly": { "start": 150000, "end": 160000 },
+        "marriedFilingSeparately": { "start": 0, "end": 10000 }
+      }
+    },
+    "2001": {
+      "source": "n-00-66",
+      "annualAdditions_415c1A": 35000,
+      "electiveDeferral_402g1": 10500,
+      "section457b_457e15": 8500,
+      "compensationLimit_401a17": 170000,
+      "simpleSalaryReduction_408p2E": 6500,
+      "sepCompensation_408k2C": 450
+    },
+    "2002": {
+      "source": "ir-01-115",
+      "statutoryLimits_source": "pl-107-16",
+      "iraLimits_source": "p590-2002",
+      "annualAdditions_415c1A": 40000,
+      "annualAdditionsCompensationFraction_415c1B": 1,
+      "electiveDeferral_402g1": 11000,
+      "section457b_457e15": 11000,
+      "section457bIncludibleCompensationFraction_457b2B": 1,
+      "catchUp50_414v2Bi": 1000,
+      "compensationLimit_401a17": 200000,
+      "iraContribution_219b5A": 3000,
+      "iraCatchUp50_219b5Bii": 500,
+      "simpleSalaryReduction_408p2E": 7000,
+      "simpleCatchUp50_414v2Bii": 500,
+      "sepCompensation_408k2C": 450,
+      "sepMaximumEmployerContributionRate": 0.25,
+      "special403bAnnualCatchUp_402g7Ai": 3000,
+      "special403bLifetimeCatchUp_402g7Aii": 15000,
+      "special403bServiceLimit_402g7Aiii": 5000,
+      "special403bCatchUp_source": "usc-26-402",
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 34000,
+          "end": 44000
+        },
+        "marriedFilingJointly": {
+          "start": 54000,
+          "end": 64000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 150000,
+          "end": 160000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 95000,
+          "end": 110000
+        },
+        "marriedFilingJointly": {
+          "start": 150000,
+          "end": 160000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      }
+    },
+    "2003": {
+      "source": "n-02-71",
+      "iraLimits_source": "pl-107-16",
+      "annualAdditions_415c1A": 40000,
+      "electiveDeferral_402g1": 12000,
+      "section457b_457e15": 12000,
+      "catchUp50_414v2Bi": 2000,
+      "compensationLimit_401a17": 200000,
+      "iraContribution_219b5A": 3000,
+      "iraCatchUp50_219b5Bii": 500,
+      "simpleSalaryReduction_408p2E": 8000,
+      "simpleCatchUp50_414v2Bii": 1000,
+      "sepCompensation_408k2C": 450
+    },
+    "2004": {
+      "source": "n-03-73",
+      "iraLimits_source": "pl-107-16",
+      "annualAdditions_415c1A": 41000,
+      "electiveDeferral_402g1": 13000,
+      "section457b_457e15": 13000,
+      "catchUp50_414v2Bi": 3000,
+      "compensationLimit_401a17": 205000,
+      "iraContribution_219b5A": 3000,
+      "iraCatchUp50_219b5Bii": 500,
+      "simpleSalaryReduction_408p2E": 9000,
+      "simpleCatchUp50_414v2Bii": 1500,
+      "sepCompensation_408k2C": 450
+    },
+    "2005": {
+      "source": "n-04-72",
+      "iraLimits_source": "pl-107-16",
+      "annualAdditions_415c1A": 42000,
+      "electiveDeferral_402g1": 14000,
+      "section457b_457e15": 14000,
+      "catchUp50_414v2Bi": 4000,
+      "compensationLimit_401a17": 210000,
+      "iraContribution_219b5A": 4000,
+      "iraCatchUp50_219b5Bii": 500,
+      "simpleSalaryReduction_408p2E": 10000,
+      "simpleCatchUp50_414v2Bii": 2000,
+      "sepCompensation_408k2C": 450
+    },
+    "2006": {
+      "source": "n-05-75",
+      "iraLimits_source": "pl-107-16",
+      "availabilityDesignatedRoth401k_402A": true,
+      "availabilityDesignatedRoth403b_402A": true,
+      "availabilityDesignatedRoth_source": "pl-107-16",
+      "annualAdditions_415c1A": 44000,
+      "electiveDeferral_402g1": 15000,
+      "section457b_457e15": 15000,
+      "catchUp50_414v2Bi": 5000,
+      "compensationLimit_401a17": 220000,
+      "iraContribution_219b5A": 4000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "simpleSalaryReduction_408p2E": 10000,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 450
+    },
+    "2007": {
+      "source": "n-06-98",
+      "iraLimits_source": "pl-107-16",
+      "annualAdditions_415c1A": 45000,
+      "electiveDeferral_402g1": 15500,
+      "section457b_457e15": 15500,
+      "catchUp50_414v2Bi": 5000,
+      "compensationLimit_401a17": 225000,
+      "iraContribution_219b5A": 4000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "simpleSalaryReduction_408p2E": 10500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 500
+    },
+    "2008": {
+      "source": "n-07-87",
+      "iraLimits_source": "pl-107-16",
+      "annualAdditions_415c1A": 46000,
+      "electiveDeferral_402g1": 15500,
+      "section457b_457e15": 15500,
+      "catchUp50_414v2Bi": 5000,
+      "compensationLimit_401a17": 230000,
+      "iraContribution_219b5A": 5000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "simpleSalaryReduction_408p2E": 10500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 500,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 53000,
+          "end": 63000
+        },
+        "marriedFilingJointly": {
+          "start": 85000,
+          "end": 105000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalCoveredPhaseout_source": "Notice 2007-87 publishes the applicable dollar amounts under §219(g)(3)(B)(i) and (ii); each end is the start plus the statutory width in §219(g)(2)(A)(ii), while the married-filing-separately start is the zero amount in §219(g)(3)(B)(iii). See usc-26-219.",
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 159000,
+          "end": 169000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_source": "Notice 2007-87 publishes the joint applicable dollar amount under §219(g)(7)(A); §219(g)(7)(B) supplies the $10,000 width, and a married individual filing separately keeps the zero applicable amount in §219(g)(3)(B)(iii). See usc-26-219.",
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 101000,
+          "end": 116000
+        },
+        "marriedFilingJointly": {
+          "start": 159000,
+          "end": 169000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "rothPhaseout_source": "Notice 2007-87 publishes the applicable dollar amounts under §408A(c)(3)(C)(ii); each end is the start plus the statutory width in §408A(c)(3)(A)(ii), and the married-filing-separately start is zero under §408A(c)(3)(C)(ii)(III). See usc-26-408A."
+    },
     "2009": {
       "source": "n-08-102",
       "annualAdditions_415c1A": 49000,
@@ -142,12 +781,33 @@
       },
       "rothPhaseout_source": "Starts from Notice 2009-94, which cites them as \u00a7408A(c)(3)(C)(ii)(I) and (II); the same limits are \u00a7408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by \u00a7408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under \u00a7408A(c)(3)(B)(ii)(III). See usc-26-408A."
     },
+    "2011": {
+      "source": "n-10-78",
+      "electiveDeferral_402g1": 16500,
+      "section457b_457e15": 16500,
+      "simpleSalaryReduction_408p2E": 11500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550
+    },
+    "2012": {
+      "source": "n-11-90",
+      "availabilityRothTsp_5usc8432d": true,
+      "availabilityRothTsp_source": "fr-2012-05-04",
+      "electiveDeferral_402g1": 17000,
+      "section457b_457e15": 17000,
+      "simpleSalaryReduction_408p2E": 11500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550
+    },
     "2013": {
       "source": "ir-12-077",
       "annualAdditions_415c1A": 51000,
       "electiveDeferral_402g1": 17500,
       "section457b_457e15": 17500,
       "catchUp50_414v2Bi": 5500,
+      "simpleSalaryReduction_408p2E": 12000,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -202,6 +862,9 @@
       "electiveDeferral_402g1": 17500,
       "section457b_457e15": 17500,
       "catchUp50_414v2Bi": 5500,
+      "simpleSalaryReduction_408p2E": 12000,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -256,6 +919,9 @@
       "electiveDeferral_402g1": 18000,
       "section457b_457e15": 18000,
       "catchUp50_414v2Bi": 6000,
+      "simpleSalaryReduction_408p2E": 12500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -310,6 +976,9 @@
       "electiveDeferral_402g1": 18000,
       "section457b_457e15": 18000,
       "catchUp50_414v2Bi": 6000,
+      "simpleSalaryReduction_408p2E": 12500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -364,6 +1033,9 @@
       "electiveDeferral_402g1": 18000,
       "section457b_457e15": 18000,
       "catchUp50_414v2Bi": 6000,
+      "simpleSalaryReduction_408p2E": 12500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -418,6 +1090,9 @@
       "electiveDeferral_402g1": 18500,
       "section457b_457e15": 18500,
       "catchUp50_414v2Bi": 6000,
+      "simpleSalaryReduction_408p2E": 12500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -468,10 +1143,15 @@
     },
     "2019": {
       "source": "n-18-83",
+      "iraTraditionalContributionAge70HalfRestriction_219d1": true,
+      "iraTraditionalContributionAge70HalfRestriction_source": "Section 219(d)(1) was repealed by Pub. L. 116-94 for taxable years beginning after December 31, 2019, so the former age-70½ restriction still applied in 2019.",
       "annualAdditions_415c1A": 56000,
       "electiveDeferral_402g1": 19000,
       "section457b_457e15": 19000,
       "catchUp50_414v2Bi": 6000,
+      "simpleSalaryReduction_408p2E": 13000,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -526,6 +1206,9 @@
       "electiveDeferral_402g1": 19500,
       "section457b_457e15": 19500,
       "catchUp50_414v2Bi": 6500,
+      "simpleSalaryReduction_408p2E": 13500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 600,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -580,6 +1263,9 @@
       "electiveDeferral_402g1": 19500,
       "section457b_457e15": 19500,
       "catchUp50_414v2Bi": 6500,
+      "simpleSalaryReduction_408p2E": 13500,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 650,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -634,6 +1320,9 @@
       "electiveDeferral_402g1": 20500,
       "section457b_457e15": 20500,
       "catchUp50_414v2Bi": 6500,
+      "simpleSalaryReduction_408p2E": 14000,
+      "simpleCatchUp50_414v2Bii": 3000,
+      "sepCompensation_408k2C": 650,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -684,10 +1373,15 @@
     },
     "2023": {
       "source": "n-22-55",
+      "availabilityRothSimpleOrSep_408k7And408p12": true,
+      "availabilityRothSimpleOrSep_source": "usc-26-408",
       "annualAdditions_415c1A": 66000,
       "electiveDeferral_402g1": 22500,
       "section457b_457e15": 22500,
       "catchUp50_414v2Bi": 7500,
+      "simpleSalaryReduction_408p2E": 15500,
+      "simpleCatchUp50_414v2Bii": 3500,
+      "sepCompensation_408k2C": 750,
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": null,
       "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
@@ -738,10 +1432,21 @@
     },
     "2024": {
       "source": "n-23-75",
+      "availabilityStarter401kOrSafeHarbor403b_401k16And403b16": true,
+      "availabilityStarter401kOrSafeHarbor403b_source": "usc-26-401 and usc-26-403",
       "annualAdditions_415c1A": 69000,
       "electiveDeferral_402g1": 23000,
       "section457b_457e15": 23000,
       "catchUp50_414v2Bi": 7500,
+      "simpleSalaryReduction_408p2E": 16000,
+      "simpleCatchUp50_414v2Bii": 3500,
+      "simpleCertainPlanEnhancedSalaryReduction_408p2EiIorII": 17600,
+      "simpleCertainPlanAge50CatchUp_414v2Biii": 3850,
+      "simpleAdditionalNonelectiveContributionCap_408p2Aiv": 5000,
+      "sepCompensation_408k2C": 750,
+      "starterDeferralOnlyBase_401k16DiII_403b16DiII": 6000,
+      "starterDeferralOnlyAge50CatchUp": 1000,
+      "starterDeferralOnly_source": "Notice 2024-80 states that the 2025 amounts remain $6,000 and $1,000, confirming the initial 2024 statutory amounts.",
       "catchUp60To63_414v2Ei": null,
       "rothCatchUpWageThreshold_414v7A": 145000,
       "rothCatchUpWageThreshold_source": "statutory; not stated in Notice 2023-75",
@@ -797,6 +1502,14 @@
       "electiveDeferral_402g1": 23500,
       "section457b_457e15": 23500,
       "catchUp50_414v2Bi": 7500,
+      "simpleSalaryReduction_408p2E": 16500,
+      "simpleCatchUp50_414v2Bii": 3500,
+      "simpleCertainPlanEnhancedSalaryReduction_408p2EiIorII": 17600,
+      "simpleCertainPlanAge50CatchUp_414v2Biii": 3850,
+      "simpleAdditionalNonelectiveContributionCap_408p2Aiv": 5100,
+      "sepCompensation_408k2C": 750,
+      "starterDeferralOnlyBase_401k16DiII_403b16DiII": 6000,
+      "starterDeferralOnlyAge50CatchUp": 1000,
       "catchUp60To63_414v2Ei": 11250,
       "rothCatchUpWageThreshold_414v7A": 145000,
       "rothCatchUpWageThreshold_note": "Notice 2024-80 calls this 'the Roth catch-up wage threshold for 2024', applied to 2024 wages to determine whether 2025 catch-up contributions must be Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
@@ -852,9 +1565,21 @@
       "electiveDeferral_402g1": 24500,
       "section457b_457e15": 24500,
       "catchUp50_414v2Bi": 8000,
+      "simpleSalaryReduction_408p2E": 17000,
+      "simpleCatchUp50_414v2Bii": 4000,
+      "simpleCertainPlanEnhancedSalaryReduction_408p2EiIorII": 18100,
+      "simpleCertainPlanAge50CatchUp_414v2Biii": 3850,
+      "simpleAdditionalNonelectiveContributionCap_408p2Aiv": 5300,
+      "sepCompensation_408k2C": 800,
+      "starterDeferralOnlyBase_401k16DiII_403b16DiII": 6000,
+      "starterDeferralOnlyAge50CatchUp": 1100,
       "catchUp60To63_414v2Ei": 11250,
       "rothCatchUpWageThreshold_414v7A": 150000,
       "rothCatchUpWageThreshold_note": "Notice 2025-67 calls this 'the Roth catch-up wage threshold for 2025', applied to 2025 wages to determine whether 2026 catch-up contributions must be Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
+      "special403bAnnualCatchUp_402g7Ai": 3000,
+      "special403bLifetimeCatchUp_402g7Aii": 15000,
+      "special403bServiceLimit_402g7Aiii": 5000,
+      "special403bCatchUp_source": "usc-26-402",
       "compensationLimit_401a17": 360000,
       "dbAnnualBenefit_415b1A": 290000,
       "iraContribution_219b5A": 7500,

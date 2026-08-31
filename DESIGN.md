@@ -158,7 +158,7 @@ Statuses are:
 - `unavailable`
 - `ineligible`
 
-`planTermDependentCapacity` preserves unused statutory space when employer contribution or after-tax capability is unknown. Diagnostics explain assumptions, missing facts, unavailable provisions, and legal references.
+`planTermDependentCapacity` preserves unused statutory space when employer contribution or after-tax capability is unknown. `excessContribution` reports the supplied amount above an account's determinable statutory ceiling; it is `null` when that ceiling is indeterminate. Diagnostics explain assumptions, missing facts, unavailable provisions, and legal references.
 
 ## 11. Federal tax effects
 

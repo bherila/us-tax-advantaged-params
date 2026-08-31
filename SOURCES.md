@@ -26,6 +26,9 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
 - **U.S. Department of Labor 401(k) history** — contextual history of 401(k) plans and their development.  
   `https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/faqs/401k-plans`
 
+- **26 U.S.C. §402(g)(7)** — statutory annual, lifetime, and service-based limits for the special 403(b) 15-year catch-up.
+  `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim`
+
 ## Health savings account sources (IRC §223)
 
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement

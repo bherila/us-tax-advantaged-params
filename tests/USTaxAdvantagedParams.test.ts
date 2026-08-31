@@ -21,6 +21,11 @@ test("supports the first general IRA year through the generated year without ext
   assert.deepEqual(U.supportedTaxYears(), { minimum: 1975, maximum: 2026 });
   assert.equal(U.parametersForYear(1975).ira.baseContributionLimit, 1_500);
   assert.equal(U.parametersForYear(2026).ira.baseContributionLimit, 7_500);
+  assert.deepEqual(U.parametersForYear(2026).special403b15YearCatchUp, {
+    annualLimit: 3_000,
+    lifetimeLimit: 15_000,
+    serviceLimitPerYear: 5_000,
+  });
   assert.throws(() => U.parametersForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
 });
 
@@ -133,6 +138,29 @@ test("traditional and Roth IRAs share one owner-level contribution pool", () => 
   assert.equal(account(result, "roth").contributionComponents.rothIra, 5_000);
   assert.equal(account(result, "traditional").contributionComponents.deductibleIra, 2_500);
   assert.equal(result.totals.deductibleIraContribution + account(result, "roth").contributionComponents.rothIra, 7_500);
+});
+
+test("reports the quantified amount of an existing contribution above an account ceiling", () => {
+  const result = U.calculate({
+    taxYear: 2026,
+    filingStatus: "S",
+    persons: [{
+      id: "t",
+      birthYear: 1980,
+      compensation: { iraCompensation: 50_000 },
+      coveredByEmployerRetirementPlan: false,
+      magi: { traditionalIraDeduction: 50_000, rothIra: 50_000 },
+    }],
+    accounts: [{
+      id: "ira",
+      ownerId: "t",
+      type: "traditional_ira",
+      existingContributions: { deductibleIra: 20_000 },
+    }],
+  });
+  const ira = account(result, "ira");
+  // IRC 219(b)(5)(A)'s 2026 $7,500 limit leaves $12,500 excessive.
+  assert.equal(ira.excessContribution, 12_500);
 });
 
 test("401(k) and 457(b) employee limits are separate", () => {
