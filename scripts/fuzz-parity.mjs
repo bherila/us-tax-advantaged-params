@@ -70,6 +70,8 @@ const ACCOUNT_TYPES = [
   "section_401a", "profit_sharing_plan", "money_purchase_plan", "keogh_plan", "esop",
   "defined_benefit_plan", "cash_balance_plan",
   "hsa",
+  "health_fsa",
+  "dependent_care_fsa",
 ];
 const FILING_STATUSES = [
   "single", "married_filing_jointly", "married_filing_separately",
@@ -81,10 +83,12 @@ const CONTRIBUTION_PREFERENCES = ["account_type", "pretax_first", "roth_first"];
 const EMPLOYER_TAX_TREATMENTS = ["pretax", "roth"];
 const SIMPLE_METHODS = ["match_3_percent", "nonelective_2_percent", "custom"];
 const COVERAGE_TIERS = ["self_only", "family"];
+const HEALTH_FSA_PURPOSES = ["general_purpose", "limited_purpose", "post_deductible"];
 const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
   "employeeAfterTax", "employerPreTax", "employerRoth", "deductibleIra", "nondeductibleIra",
   "rothIra", "special403bCatchUp", "special457CatchUp", "hsaDeductible", "hsaEmployerOrCafeteria",
+  "healthFsaSalaryReduction", "dependentCareSalaryReduction",
 ];
 
 /**
@@ -129,6 +133,48 @@ function randomHsaRules() {
   return rules;
 }
 
+/**
+ * IRC 125(i) plan facts. The carryover and grace-period flags are generated
+ * independently and at a high rate so the Notice 2013-71 mutually-exclusive
+ * combination, and every incomplete supply of the pair, are all reached.
+ */
+function randomHealthFsaRules() {
+  const rules = {};
+  if (chance(0.7)) rules.purpose = chance(0.05) ? junk() : pick(HEALTH_FSA_PURPOSES);
+  if (chance(0.5)) rules.offersCarryover = chance(0.05) ? junk() : chance(0.6);
+  if (chance(0.4)) rules.offersGracePeriod = chance(0.05) ? junk() : chance(0.5);
+  // Straddles the carryover caps ($500 fixed, then 20 percent of the limit) so
+  // the lesser-of and the forfeiture both bind and both fall away.
+  if (chance(0.5)) rules.priorYearUnusedAmount = pick([0, 0.01, 100, 500, 550, 570, 660, 680, 5000, money()]);
+  if (chance(0.35)) rules.employerFlexCredit = pick([0, 1, 500, 2750, 3400, 10000, money()]);
+  if (chance(0.6)) rules.flexCreditElectableAsCash = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.25)) rules.planDocumentLimit = pick([0, 1, 500, 2500, 3400, 100000, money()]);
+  if (chance(0.25)) rules.planYearIsCalendarYear = chance(0.05) ? junk() : chance(0.6);
+  if (chance(0.04)) {
+    rules[pick(["purpose", "offersCarryover", "priorYearUnusedAmount", "employerFlexCredit", "planDocumentLimit"])] = junk();
+  }
+  return rules;
+}
+
+/**
+ * IRC 129 facts. Earned income is generated below, at, and above the
+ * IRC 129(a)(2)(A) amounts for every encoded year so the IRC 129(b)(1)
+ * limitation binds and falls away, and each of the employee-only, spouse-only
+ * and neither-supplied shapes is reached.
+ */
+function randomDependentCareRules() {
+  const rules = {};
+  if (chance(0.65)) {
+    rules.employeeEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  }
+  if (chance(0.55)) {
+    rules.spouseEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  }
+  if (chance(0.3)) rules.spouseIsStudentOrIncapableOfSelfCare = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.04)) rules[pick(["employeeEarnedIncome", "spouseEarnedIncome", "spouseIsStudentOrIncapableOfSelfCare"])] = junk();
+  return rules;
+}
+
 function randomPlanRules(type) {
   const rules = {};
   if (chance(0.8)) rules.planCompensation = money();
@@ -165,6 +211,8 @@ function randomPlanRules(type) {
   if (chance(0.1)) rules.grandfatheredSarsep = chance(0.5);
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
+  if (type === "health_fsa" || chance(0.05)) rules.healthFsa = randomHealthFsaRules();
+  if (type === "dependent_care_fsa" || chance(0.05)) rules.dependentCareFsa = randomDependentCareRules();
   if (chance(0.04)) {
     rules[pick([
       "planCompensation", "employerMatchRate", "employerNonelectiveRate",
@@ -222,9 +270,12 @@ function randomPerson(id, role, taxYear) {
 
 function randomScenario() {
   const hsaHeavy = chance(0.35);
+  const fsaHeavy = chance(0.3);
   const taxYear = hsaHeavy
     ? integer(2002, 2028)
-    : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
+    : fsaHeavy
+      ? pick([integer(1979, 1990), integer(2009, 2028)])
+      : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
   const filingStatus = pick(FILING_STATUSES);
   const personCount = chance(0.55) ? 2 : 1;
   const persons = [randomPerson("t", "taxpayer", taxYear)];
@@ -233,7 +284,11 @@ function randomScenario() {
   const accounts = [];
   const accountCount = integer(0, 3);
   for (let index = 0; index < accountCount; index += 1) {
-    const type = hsaHeavy && chance(0.7) ? "hsa" : pick(ACCOUNT_TYPES);
+    const type = hsaHeavy && chance(0.7)
+      ? "hsa"
+      : fsaHeavy && chance(0.8)
+        ? pick(["health_fsa", "dependent_care_fsa", "dependent_care_fsa", "hsa"])
+        : pick(ACCOUNT_TYPES);
     const account = {
       id: `a${index}`,
       ownerId: chance(0.03) ? "ghost" : pick(persons).id,

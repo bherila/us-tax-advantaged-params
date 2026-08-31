@@ -56,6 +56,81 @@ One caution specific to these documents: **Rev. Proc. 2018-18 was superseded mid
 set the 2018 family limit at $6,850; Rev. Proc. 2018-27 restored $6,900. The encoded value is
 $6,900, and both documents are committed so the sequence is auditable.
 
+## Flexible spending arrangement sources (IRC §125 and IRC §129)
+
+Two statutes with two different publication habits. The §125(i) health FSA
+salary-reduction limit is indexed and published in the **general annual
+inflation-adjustment Revenue Procedure** — the one carrying the standard
+deduction, the rate schedules, §132(f) and dozens of other parameters, not an
+FSA-specific document. The §129 dependent care exclusion is a fixed statutory
+amount that appears in **no** Revenue Procedure at all. Every document is
+committed under `evidence/fsa-limits/sources/` and fixed by `SHA256SUMS.txt`;
+each year is cited individually in `evidence/fsa-limits/primary-values.json`.
+
+- **IRC §125(i)**, added by the Patient Protection and Affordable Care Act,
+  Pub. L. 111-148 §9005, as amended by §10902 of that Act and by §1403(b) of the
+  Health Care and Education Reconciliation Act of 2010, Pub. L. 111-152. The
+  statutory amount is $2,500, indexed under §125(i)(2) for taxable years
+  beginning after December 31, 2013 and rounded down to the next lowest multiple
+  of $50.
+
+- **Notice 2012-40** — the first-year $2,500 limit. It also holds that the term
+  "taxable year" in §125(i) refers to the **plan year** of the cafeteria plan,
+  that the limit applies employee-by-employee, that employers aggregated under
+  §414(b), (c) or (m) count as one employer under §125(g)(4) while unrelated
+  employers each carry their own limit, and that non-elective employer flex
+  credits fall outside the limit unless the employee could elect them as cash or
+  another taxable benefit. **There is no Revenue Procedure figure for 2013**:
+  Rev. Proc. 2012-41 lists the 2013 adjusted items and has no Cafeteria Plans
+  entry, which is consistent with §125(i)(2) indexing only from 2014.
+
+- **Notice 2013-71** — created the carryover as a plan option, capped at $500 of
+  unused amounts from a plan year, and held that a plan may offer a carryover or
+  a §1.125-1(e) grace period but not both. The carryover does not count against
+  the receiving year's §125(i) limit.
+
+- **Notice 2020-33** — raised the carryover to 20 percent of the §125(i) limit
+  for that plan year and indexed it with that limit, stating $550 for a plan
+  year starting in 2020. Rev. Proc. 2013-35 through Rev. Proc. 2019-44 state the
+  §125(i) limit and **no** carryover figure; Rev. Proc. 2020-45 is the first
+  annual procedure in this sequence to state one itself.
+
+- **Rev. Proc. 2025-32 §3.15** — the 2026 figures, $3,400 and a $680 carryover.
+  Earlier years are cited per-year, and the section number moves between
+  procedures (§3.15, §3.16, §3.17), so it is recorded per year rather than
+  assumed.
+
+- **IRC §129(a)(2)(A)** — the $5,000 exclusion, $2,500 on a separate return by a
+  married individual, added by the Tax Reform Act of 1986, Pub. L. 99-514
+  §1163(a), applicable to taxable years beginning after December 31, 1986
+  (§1163(c)). It is **not** inflation-adjusted, which is why the annual Rev.
+  Procs are silent on it and it is cited to the Code. The parameter table
+  therefore starts at 1987.
+
+- **American Rescue Plan Act of 2021, Pub. L. 117-2 §9632** — added
+  §129(a)(2)(D), applying $10,500 (half that amount on a married separate
+  return) to taxable years beginning after December 31, 2020 and before January
+  1, 2022. It was enacted in March 2021, so Rev. Proc. 2020-45 could not and does
+  not carry it; the 2021 §125(i) and §129 figures come from different documents.
+
+- **Pub. L. 119-21 §70404** — struck `$5,000 ($2,500` from §129(a)(2)(A) and
+  inserted `$7,500 ($3,750`, applicable to taxable years beginning after
+  December 31, 2025. A fixed-dollar substitution that adds no indexing
+  mechanism. `usc-26-129.pdf` is the 2024 edition of the Code and still prints
+  the old figures, so 2026 must be read out of the enrolled act.
+
+- **Rev. Rul. 2004-45** — a general-purpose health FSA is disqualifying coverage
+  under §223(c)(1)(A)(ii), including one sponsored by the *spouse's* employer,
+  while a limited-purpose (vision, dental, preventive) or post-deductible FSA is
+  not. **Notice 2005-86** extends the disqualification through a grace period.
+
+Two cautions specific to these documents. **`rp-18-18.pdf` does not exist on
+irs.gov**; Rev. Proc. 2018-18 is committed in its official bulletin form,
+`irb18-10.pdf`. And that procedure **did not touch the health FSA limit**: its
+§3 and §5 enumerate the sections of Rev. Proc. 2017-58 it modifies and
+supersedes, and the list runs `3.14, 3.15, 3.18` — §3.16, Cafeteria Plans, is
+absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,650.
+
 ## Section 401(a)(17) employer-formula authorities
 
 - **IRS Notice 2001-56** states that §401(a)(17) limits annual compensation used to determine allocations under a defined-contribution plan and discusses the effective date of the EGTRRA compensation-limit increase.  

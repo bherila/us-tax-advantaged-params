@@ -619,3 +619,116 @@ test("1997 self-employed qualified-plan formula applies both reduced-rate and re
   assert.equal(plan.statutoryMaximumAnnualContribution, 30_000);
   assert.equal(plan.contributionComponents.employerPreTax, 24_000);
 });
+
+test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it", () => {
+  assert.deepEqual(U.supportedFsaTaxYears(), { minimum: 1987, maximum: 2026 });
+  assert.equal(U.fsaParametersForYear(2026)?.healthFsa?.salaryReductionLimit, 3_400);
+  assert.equal(U.fsaParametersForYear(2026)?.dependentCare.exclusionLimit, 7_500);
+  assert.equal(U.fsaParametersForYear(2012)?.healthFsa, null);
+  assert.equal(U.fsaParametersForYear(1986), null);
+  assert.ok(U.fsaSourceMetadata().some((source) => source.id === "pl-119-21"));
+  assert.throws(() => U.fsaParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
+test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
+  assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
+  assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);
+  assert.throws(
+    () => U.normalizeAccountType("FSA"),
+    (error: unknown) =>
+      error instanceof ParameterError &&
+      error.code === "INVALID_ACCOUNT_TYPE" &&
+      error.message.includes("health_fsa") &&
+      error.message.includes("dependent_care_fsa"),
+  );
+});
+
+test("validates health FSA plan facts before calculating anything", () => {
+  const build = (healthFsa: Record<string, unknown>) => () =>
+    U.calculate({
+      taxYear: 2026,
+      filingStatus: "S",
+      persons: [{ id: "t", birthYear: 1980 }],
+      accounts: [{ id: "f", ownerId: "t", type: "health_fsa", planRules: { healthFsa } }],
+    });
+  const codeIs = (code: string) => (error: unknown) =>
+    error instanceof ParameterError && error.code === code;
+
+  assert.throws(build({ purpose: "general" }), codeIs("INVALID_HEALTH_FSA_PURPOSE"));
+  assert.throws(build({ offersCarryover: "yes" }), codeIs("INVALID_BOOLEAN"));
+  assert.throws(build({ planYearIsCalendarYear: 1 }), codeIs("INVALID_BOOLEAN"));
+  assert.throws(build({ priorYearUnusedAmount: -1 }), codeIs("INVALID_MONEY"));
+  assert.throws(build({ employerFlexCredit: "500" }), codeIs("INVALID_MONEY"));
+  assert.throws(
+    () =>
+      U.calculate({
+        taxYear: 2026,
+        filingStatus: "S",
+        persons: [{ id: "t", birthYear: 1980 }],
+        accounts: [
+          { id: "f", ownerId: "t", type: "health_fsa", planRules: { healthFsa: 3_400 as never } },
+        ],
+      }),
+    codeIs("INVALID_INPUT_OBJECT"),
+  );
+});
+
+test("the health FSA builder reaches every IRC 125(i) plan fact", () => {
+  const result = U.forTaxYear(2026)
+    .taxpayer("t", (person) => person.bornIn(1985).w2Compensation(150_000))
+    .account("f", "t", AccountType.HEALTH_FSA, (plan) =>
+      plan
+        .employer("e")
+        .healthFsaPurpose("post_deductible")
+        .healthFsaCarryover(true, 700)
+        .healthFsaEmployerFlexCredit(250, false)
+        .healthFsaCalendarPlanYear(),
+    )
+    .calculate();
+  const fsa = account(result, "f");
+  assert.equal(fsa.status, CalculationStatus.DETERMINATE);
+  assert.equal(fsa.statutoryMaximumAnnualContribution, 3_400);
+  assert.equal(fsa.healthFsa?.purpose, "post_deductible");
+  assert.equal(fsa.healthFsa?.disqualifiesHsaEligibility, false);
+  assert.equal(fsa.healthFsa?.carryoverFromPriorYear, 660);
+  assert.equal(fsa.healthFsa?.forfeitedAmount, 40);
+  assert.equal(fsa.healthFsa?.employerFlexCreditCountedAgainstLimit, 0);
+});
+
+test("validates IRC 129 earned income facts before calculating anything", () => {
+  const build = (dependentCareFsa: Record<string, unknown>) => () =>
+    U.calculate({
+      taxYear: 2026,
+      filingStatus: "S",
+      persons: [{ id: "t", birthYear: 1985 }],
+      accounts: [
+        { id: "d", ownerId: "t", type: "dependent_care_fsa", planRules: { dependentCareFsa } },
+      ],
+    });
+  const codeIs = (code: string) => (error: unknown) =>
+    error instanceof ParameterError && error.code === code;
+
+  assert.throws(build({ employeeEarnedIncome: -1 }), codeIs("INVALID_MONEY"));
+  assert.throws(build({ spouseEarnedIncome: "60000" }), codeIs("INVALID_MONEY"));
+  assert.throws(build({ spouseIsStudentOrIncapableOfSelfCare: "yes" }), codeIs("INVALID_BOOLEAN"));
+  assert.equal(U.normalizeAccountType("DCAP"), AccountType.DEPENDENT_CARE_FSA);
+  assert.equal(U.normalizeAccountType("dependent care assistance"), AccountType.DEPENDENT_CARE_FSA);
+});
+
+test("the dependent care builder reaches the IRC 129(b) earned income facts", () => {
+  const result = U.forTaxYear(2026)
+    .filingStatus(FilingStatus.MARRIED_FILING_JOINTLY)
+    .taxpayer("t", (person) => person.bornIn(1985))
+    .spouse("s", (person) => person.bornIn(1986))
+    .account("d", "t", AccountType.DEPENDENT_CARE_FSA, (plan) =>
+      plan.employer("e").dependentCareEarnedIncome(90_000, 4_000),
+    )
+    .calculate();
+  const dc = account(result, "d");
+  assert.equal(dc.status, CalculationStatus.DETERMINATE);
+  assert.equal(dc.statutoryMaximumAnnualContribution, 4_000);
+  assert.equal(dc.dependentCareFsa?.statutoryExclusion, 7_500);
+  assert.equal(dc.dependentCareFsa?.earnedIncomeLimitation, 4_000);
+  assert.equal(dc.federalTaxEffects.federalAgiReduction, 0);
+  assert.equal(dc.federalTaxEffects.ficaWageReduction, 4_000);
+});

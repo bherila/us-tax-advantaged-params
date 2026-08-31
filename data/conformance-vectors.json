@@ -3876,6 +3876,2313 @@
         "accounts.1.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         "totals.hsaContribution": 0
       }
+    },
+    {
+      "name": "2026 flexible spending arrangement parameters are published in the result",
+      "description": "Rev. Proc. 2025-32 section 3.15 sets the 2026 IRC 125(i) dollar limitation on health FSA salary reduction contributions at 3400 and states that where the cafeteria plan permits a carryover the maximum carryover amount is 680, which is 20 percent of 3400 under Notice 2020-33. Pub. L. 119-21 section 70404 struck \"$5,000 ($2,500\" from IRC 129(a)(2)(A) and inserted \"$7,500 ($3,750\" for taxable years beginning after December 31, 2025, so the 2026 dependent care exclusion is 7500 and 3750 on a married separate return. The scenario result carries these alongside hsaParameters whether or not the scenario holds any flexible spending arrangement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters.year": 2026,
+        "fsaParameters.healthFsa.salaryReductionLimit": 3400,
+        "fsaParameters.healthFsa.carryoverLimit": 680,
+        "fsaParameters.dependentCare.exclusionLimit": 7500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    },
+    {
+      "name": "2012 carries no IRC 125(i) health FSA parameters",
+      "description": "IRC 125(i) was added by Pub. L. 111-148 section 9005 and Notice 2012-40 section III reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary-reduction ceiling existed for 2012 and healthFsa is null rather than a carried-back 2500. The IRC 129(a)(2)(A) exclusion is statutory and unindexed and was 5000, or 2500 on a married separate return, from the taxable year beginning in 1987 under Pub. L. 99-514 section 1163, so it is present for 2012 even though the health FSA block is not. Paired with the 2026 vector, this pins the effective date rather than merely the current figures.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters.year": 2012,
+        "fsaParameters.healthFsa": null,
+        "fsaParameters.dependentCare.exclusionLimit": 5000,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    {
+      "name": "1986 predates the IRC 129 dependent care exclusion limitation",
+      "description": "Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The 1986 amendment note in the Code quotes the prior text of subsection (a), which carried no dollar cap. The FSA parameter table therefore starts at 1987 and 1986 returns null rather than a back-projected 5000, while the retirement parameters for the year are unaffected.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters": null,
+        "parameters.year": 1986
+      }
+    },
+    {
+      "name": "2026 health FSA election at the IRC 125(i) limit",
+      "description": "Rev. Proc. 2025-32 section 3.15 sets the 2026 dollar limitation under IRC 125(i) on voluntary employee salary reductions for contributions to health flexible spending arrangements at 3400, so an employee electing the maximum elects 3400. IRC 125(a) keeps the salary reduction out of gross income, so the whole 3400 comes out of Form W-2 box 1 and out of social security and medicare wages under IRC 3121(a)(5)(G) and none of it appears in federalAgiReduction, which reports above-the-line deductions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": 3400,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 680,
+        "accounts.0.healthFsa.disqualifiesHsaEligibility": false,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3400,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3400,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 0,
+        "totals.healthFsaSalaryReduction": 3400,
+        "totals.federalAgiReduction": 0
+      }
+    },
+    {
+      "name": "2013 is the first year IRC 125(i) limits a health FSA election",
+      "description": "IRC 125(i)(1) fixes the limit at 2500 and IRC 125(i)(2) begins indexing only for taxable years beginning after December 31, 2013, so 2013 carries the raw statutory amount. No annual revenue procedure states it: Rev. Proc. 2012-41's list of 2013 adjusted items has no Cafeteria Plans entry, and Notice 2012-40 is the operative authority. Paired with the 2012 vector, this pins the effective date rather than the figure alone.",
+      "input": {
+        "taxYear": 2013,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.healthFsa.salaryReductionLimit": 2500,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 500,
+        "accounts.0.healthFsa.purpose": null,
+        "accounts.0.healthFsa.disqualifiesHsaEligibility": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "2012 health FSA has no statutory salary-reduction ceiling",
+      "description": "IRC 125(i) was added by Pub. L. 111-148 section 9005 and Notice 2012-40 section II records that before its effective date plan sponsors imposed their own limits but there was no statutory limit. Notice 2012-40 section III reads the effective date as reaching plan years beginning after December 31, 2012. A health FSA therefore existed in 2012 and could receive salary reductions; what did not exist is a ceiling. The result is indeterminate with a null statutory maximum rather than unavailable with a zero, which is what the account type not existing would produce, and rather than a 2500 borrowed from the following year.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.healthFsa.salaryReductionLimit": null,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": null,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013"
+      }
+    },
+    {
+      "name": "2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited",
+      "description": "Notice 2020-33 section III.A sets the carryover at 20 percent of the IRC 125(i) limit for the plan year the amounts are carried FROM, and Rev. Proc. 2024-40 section 3.16 states 660 for a plan year beginning in 2025, which is 20 percent of that year's 3300 limit. Notice 2013-71 section III makes the carried amount the lesser of the unused amount and the cap, and forfeits the rest: 900 unused gives 660 carried and 240 forfeited. The receiving year's cap of 680 is a different figure and does not govern this carryover, which is the error a receiving-year reading would make.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.healthFsa.carryoverFromPriorYear": 660,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": 660,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 680,
+        "accounts.0.healthFsa.forfeitedAmount": 240,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_DOES_NOT_REDUCE_THE_LIMIT"
+      }
+    },
+    {
+      "name": "2026 health FSA carryover sits on top of the IRC 125(i) limit",
+      "description": "Notice 2013-71 section III holds that in addition to the carried-over amount the plan may permit the individual to elect up to the maximum allowed salary reduction, so the carryover \"does not count against or otherwise affect\" the IRC 125(i) limit. A 400 carryover out of the 2025 plan year, below that year's 660 cap so nothing is forfeited, therefore leaves the 2026 ceiling at the full 3400 from Rev. Proc. 2025-32 section 3.15, and 3800 is available to pay claims incurred in 2026. Implementing the carryover as a reduction would give 3000 here, which is why this needs its own vector.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 400,
+        "accounts.0.healthFsa.forfeitedAmount": 0
+      }
+    },
+    {
+      "name": "a health FSA grace period precludes a carryover",
+      "description": "Notice 2013-71 section IV holds that a plan providing for a carryover may not also provide a grace period, and conversely a plan that offers the Prop. Treas. Reg. 1.125-1(e) grace period carries nothing over. Nothing is carried in, and no forfeiture figure is produced because how much of the prior year's balance survives depends on expenses incurred during the two-month-and-15-day grace period, which is not a tax parameter. Paired with the carryover vector on the same 900 unused amount, this shows the plan option and not the amount is what decides.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersGracePeriod": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_GRACE_PERIOD_PRECLUDES_CARRYOVER"
+      }
+    },
+    {
+      "name": "a health FSA offering neither carryover nor grace period forfeits the whole unused amount",
+      "description": "Prop. Treas. Reg. 1.125-5(c) requires unused benefits or contributions remaining at the end of the plan year to be forfeited, which Notice 2013-71 calls the use-or-lose rule. A plan that offers no carryover forfeits all 900, not the 240 excess above the 660 cap that a carryover plan would forfeit. The forfeiture is reported rather than silently dropped.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": false,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.forfeitedAmount": 900,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_UNUSED_AMOUNTS_FORFEITED"
+      }
+    },
+    {
+      "name": "a health FSA carryover and grace period asserted together are refused",
+      "description": "Notice 2013-71 section IV: a section 125 cafeteria plan that incorporates a carryover provision may not also provide for a grace period in the plan year to which unused amounts may be carried over. Asserting both describes a plan that cannot exist, so a determinate carryover figure computed from either fact would assert something the guidance forbids. The result is indeterminate with no statutory maximum and no carryover cap, following the treatment of shares that do not divide the IRC 223(b)(5) family limitation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "offersGracePeriod": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_AND_GRACE_PERIOD_ARE_MUTUALLY_EXCLUSIVE"
+      }
+    },
+    {
+      "name": "nothing may be carried into 2013, the first year the carryover existed",
+      "description": "Notice 2013-71 section IV permits a plan to adopt the carryover for a plan year beginning in 2013, so 2013 is the first plan year amounts may be carried FROM and 2014 the first year they may land in. There is consequently no 2012 cap, and a 2013 scenario asserting a carryover of a prior-year unused amount cannot be answered: the cap that governs belongs to the source year. Reporting zero carried would be indistinguishable from a plan that forfeited, so the result is indeterminate.",
+      "input": {
+        "taxYear": 2013,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PRIOR_YEAR_CARRYOVER_LIMIT_NOT_ESTABLISHED"
+      }
+    },
+    {
+      "name": "a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled",
+      "description": "Rev. Proc. 2019-44 section 3.17 sets the 2020 IRC 125(i) limit at 2750 and Notice 2020-33 section III.A states 550 as the maximum unused amount from a plan year starting in 2020, being 20 percent of 2750. Section 214 of Pub. L. 116-260, implemented by Notice 2021-15 section III.A, separately permitted a plan to carry over ALL unused amounts from a plan year ending in 2020 to the plan year ending in 2021. Adopting that was entirely a plan option, so the ordinary cap is applied and the divergence is disclosed rather than left silent: 900 unused gives 550 carried under the ordinary cap and would give 900 under section 214 relief.",
+      "input": {
+        "taxYear": 2021,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 2750,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 550,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": 550,
+        "accounts.0.healthFsa.forfeitedAmount": 350,
+        "accounts.0.diagnostics.1.code": "HEALTH_FSA_SECTION_214_RELIEF_NOT_MODELLED"
+      }
+    },
+    {
+      "name": "a prior-year unused amount without a stated plan option asks for the fact",
+      "description": "Notice 2013-71 makes the carryover and the grace period plan options that a plan may adopt, may adopt one of, or may adopt neither, and they are mutually exclusive. An unused amount alone therefore does not determine what happens to it. Assuming a carryover would report 660 carried and assuming forfeiture would report 900 forfeited, so the engine reports neither, asks for the fact, and marks the result determinate with assumptions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_FACT_REQUIRED"
+      }
+    },
+    {
+      "name": "a health FSA election above the IRC 125(i) limit is reported, not truncated",
+      "description": "IRC 125(i) makes a health FSA a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit, and Notice 2012-40 section III holds that a plan failing to comply is not a section 125 cafeteria plan at all, so the value of the taxable benefits the employee could have elected is includible regardless of the benefit elected. A 4000 election for 2026 against the 3400 limit from Rev. Proc. 2025-32 section 3.15 is therefore an error carrying a plan-qualification consequence, and truncating it to 3400 would report a smaller consequence than the statute produces. The 600 excess is reported and nothing further is allocated. Notice 2012-40 section III costs the plan its IRC 125 status entirely rather than only as to the excess, so the IRC 125(a) exclusion fails for the whole 4000: the election stays in contributionComponents as a fact, and no wage exclusion is reported for it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.existingAnnualContribution": 4000,
+        "accounts.0.excessContribution": 600,
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 4000,
+        "accounts.0.healthFsa.electedSalaryReduction": 4000,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 0
+      }
+    },
+    {
+      "name": "an account type that did not exist for the tax year reports no exclusion",
+      "description": "IRC 223 was added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201 for taxable years beginning after December 31, 2003, so there is no health savings account for 2003. A cafeteria-plan contribution supplied against one is still recorded, because the scenario said it happened, but it cannot carry the IRC 106(d) exclusion of an account type that did not exist: no reduction of Form W-2 box 1 wages and none of social security and medicare wages is reported.",
+      "input": {
+        "taxYear": 2003,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 2000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaEmployerOrCafeteria": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.contributionComponents.hsaEmployerOrCafeteria": 1000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 0
+      }
+    },
+    {
+      "name": "a pre-2013 health FSA still excludes its salary reduction under IRC 125(a)",
+      "description": "IRC 125(i) was added by the Patient Protection and Affordable Care Act section 9005 for taxable years beginning after December 31, 2012, so 2012 has no statutory salary reduction ceiling to report and the account is indeterminate. The arrangement existed, though, and IRC 125(a) excluded its salary reduction from gross income exactly as it does now. An indeterminate limit is not a reason to withhold the exclusion: the 3000 elected is outside Form W-2 box 1 and outside social security and medicare wages. This is the deliberate contrast with an unavailable account type and with an IRC 125(i) qualification failure, where the exclusion genuinely does not apply.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 3000
+            },
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 3000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3000
+      }
+    },
+    {
+      "name": "two unrelated employers each carry a full health FSA limit",
+      "description": "Notice 2012-40 section III: an employee employed by two or more employers that are not members of the same controlled group may elect up to the indexed limit under each employer's health FSA. For 2026 that is 3400 under each of two unrelated employers and 6800 in total, which is the answer a single per-person limit would get wrong.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e2"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 3400,
+        "totals.healthFsaSalaryReduction": 6800
+      }
+    },
+    {
+      "name": "two health FSAs of one employer share a single IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: all employers treated as a single employer under IRC 414(b), (c) or (m) are treated as one for the limit, and an employee participating in multiple cafeteria plans of that group is limited to the indexed amount in total under IRC 125(g)(4). Two arrangements carrying the same employerId therefore draw on one 3400 pool for 2026, not two, so the first exhausts it and the second has nothing left. Paired with the two-unrelated-employers vector, this pins that employerId is what separates the limits.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.0.remainingAfterAccount": 0,
+        "totals.healthFsaSalaryReduction": 3400
+      }
+    },
+    {
+      "name": "spouses filing jointly each carry a full health FSA limit",
+      "description": "Notice 2012-40 section III: the limit applies on an employee-by-employee basis, so if each of two spouses is eligible to elect salary reduction contributions each may elect up to the indexed amount, even in the same health FSA sponsored by the same employer. For 2026 that is 3400 each and 6800 in total. This is the deliberate contrast with IRC 129(a)(2)(A), which is a per-return household amount.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1982
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "health_fsa",
+            "employerId": "e1"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 3400,
+        "totals.healthFsaSalaryReduction": 6800
+      }
+    },
+    {
+      "name": "non-elective employer flex credits stay outside the IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: the limit applies only to salary reduction contributions and not to employer non-elective contributions, sometimes called flex credits, and its worked example is an employer contributing a 500 flex credit to each employee's health FSA for the plan year, after which each employee may still elect the full indexed amount. For 2026 the employee therefore still elects 3400 alongside a 500 non-elective credit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500,
+                "flexCreditElectableAsCash": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 0,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_OUTSIDE_LIMIT"
+      }
+    },
+    {
+      "name": "flex credits electable as cash consume the IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: if an employer provides flex credits that employees may elect to receive as cash or as a taxable benefit, those flex credits are treated as salary reduction contributions for purposes of IRC 125(i). A 500 cashable credit against the 3400 limit from Rev. Proc. 2025-32 section 3.15 therefore leaves 2900 of election room. Paired with the non-elective vector at the same 500, this pins that the cash election and not the credit is what matters.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500,
+                "flexCreditElectableAsCash": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2900,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2900,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 500,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_COUNTS_AGAINST_LIMIT"
+      }
+    },
+    {
+      "name": "flex credits without a stated cash election ask for the fact",
+      "description": "Notice 2012-40 makes the answer turn entirely on whether the employee could have elected the credit as cash or another taxable benefit, and that is a plan-design fact this engine cannot read. The ordinary case under Prop. Treas. Reg. 1.125-5(b) is a non-elective credit, so the full 3400 is reported, but the assumption is stated rather than silent and the status records it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 0,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_CASH_ELECTION_FACT_REQUIRED"
+      }
+    },
+    {
+      "name": "a lower plan-document health FSA limit binds",
+      "description": "Notice 2013-71 section III records that a plan may specify a lower amount than the statutory maximum, and Notice 2012-40 section II notes that before IRC 125(i) plan sponsors imposed their own limits. A plan capping elections at 2000 for 2026 therefore binds below the 3400 statutory ceiling. The two are reported separately rather than merged: statutoryMaximumAnnualContribution is what IRC 125(i) sets, and maximumAnnualContributionBasedOnInputs is what the supplied plan document allows within it. Reporting 2000 as the statutory maximum would attribute the plan sponsor's own term to the statute.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "planDocumentLimit": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": 2000,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000
+      }
+    },
+    {
+      "name": "a lower plan-document limit caps its own arrangement, not the employer group",
+      "description": "IRC 125(g)(4) treats employers under IRC 414(b), (c) or (m) as one employer, which Notice 2012-40 applies to aggregate elections across their cafeteria plans against the one statutory ceiling. It aggregates to the statutory amount; it does not turn one plan's own lower term into an employer-wide ceiling. A plan document capping elections at 2000 binds elections under that plan and gives it no power over a different plan of the same group, so for 2026 the first arrangement reaches 2000, the second reaches the 1400 left of the shared 3400, and the group total is 3400 rather than 2000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 2000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 3400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000,
+        "accounts.0.sharedLimits.0.limit": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 1400,
+        "accounts.1.sharedLimits.0.limit": 3400,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 2000
+      }
+    },
+    {
+      "name": "exceeding a plan-document limit is not the IRC 125(i) qualification failure",
+      "description": "Notice 2012-40 section III holds that a cafeteria plan permitting an election above the IRC 125(i) limit is not an IRC 125 cafeteria plan at all, which is why an election above the statutory ceiling reports no IRC 125(a) exclusion. That holding addresses the statutory limit. An election of 3000 against a plan document allowing 2000 stays within the 3400 IRC 125(i) ceiling for 2026, so it is a plan-operation question rather than a statutory qualification failure: it is reported, but the exclusion is not withdrawn, and the 3000 remains outside Form W-2 box 1 and outside social security and medicare wages.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 3000
+            },
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 3000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3000
+      }
+    },
+    {
+      "name": "a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate",
+      "description": "Notice 2012-40 section III holds that \"taxable year\" in IRC 125(i) refers to the plan year of the cafeteria plan, so the limit runs on a plan-year basis and a short plan year is prorated by its months, while every annual revenue procedure publishes the figure for taxable years beginning in a calendar year and this package is keyed by tax year. The two agree exactly for a calendar-year plan. For any other plan year the governing figure depends on the plan year start date, which is not an input, so the result is indeterminate rather than the calendar-year figure assumed.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "planYearIsCalendarYear": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_NON_CALENDAR_PLAN_YEAR_INDETERMINATE"
+      }
+    },
+    {
+      "name": "a bare FSA account type is rejected as ambiguous",
+      "description": "Input-contract assertion rather than a computed amount. \"FSA\" names an IRC 125(i) health flexible spending arrangement and an IRC 129 dependent care assistance program equally well, and the two carry different limits, different authorities, and different household aggregation - IRC 125(i) is per employee per employer while IRC 129(a)(2)(A) is per return. Aliasing the bare string would silently pick one of them, so it is rejected and the message names both spellings.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "FSA"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNT_TYPE"
+      }
+    },
+    {
+      "name": "an unrecognised health FSA purpose is rejected",
+      "description": "Input-contract assertion rather than a computed amount. Rev. Rul. 2004-45 classifies a health FSA as general-purpose, limited-purpose, or post-deductible, and the three lead to different IRC 223(c)(1)(A)(ii) answers. A fourth spelling is not a fourth classification, so it is rejected rather than treated as unstated, which would silently downgrade a stated fact into the diagnose-and-ask path.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited"
+              }
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_HEALTH_FSA_PURPOSE"
+      }
+    },
+    {
+      "name": "2025 dependent care assistance exclusion on a single return",
+      "description": "IRC 129(a)(2)(A) sets the amount excludable for dependent care services provided during a taxable year at 5000, and the amount is not inflation adjusted, so no revenue procedure states it and 2025 carries the same figure the Tax Reform Act of 1986 put there. IRC 129(a)(1) excludes it from gross income, so it comes out of Form W-2 box 1 and out of social security and medicare wages under IRC 3121(a)(18) and contributes nothing to federalAgiReduction. The employee's 60000 of earned income does not bind under IRC 129(b)(1)(A).",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 60000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 5000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 5000,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 60000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 5000,
+        "accounts.0.dependentCareFsa.excludableAmount": 5000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 5000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 5000,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 0,
+        "totals.dependentCareAssistanceExclusion": 5000,
+        "totals.dependentCareIncludibleInIncome": 0
+      }
+    },
+    {
+      "name": "2025 dependent care exclusion is halved on a married separate return",
+      "description": "The IRC 129(a)(2)(A) parenthetical sets the amount at 2500 in the case of a separate return by a married individual. Married separate spouses file separate returns, so each carries their own 2500 rather than dividing one 5000, which is why the amount is halved rather than shared. IRC 129(b)(1)(B) needs both spouses' earned income; 60000 and 55000 leave the statutory amount binding. IRC 129(a)(2)(C) takes marital status from IRC 21(e)(3) and (4) rather than from the filing status alone, and the IRC 21(e)(4) facts are not derivable from anything supplied, so the halved amount is applied and the undetermined status is reported rather than assumed away.",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000,
+                "spouseEarnedIncome": 55000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 2500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 55000,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE"
+      }
+    },
+    {
+      "name": "an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount",
+      "description": "IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4). IRC 21(e)(4) treats a married individual filing separately as not married when they maintained a household that was a qualifying individual's principal place of abode for more than half the taxable year, furnished over half the cost of maintaining it, and their spouse was not a member of it during the last six months. Such a taxpayer is not married for IRC 129, so for 2026 they take the undivided 7500 rather than the halved 3750, and the IRC 129(b)(1)(A) limitation is their own 90000 earned income rather than the IRC 129(b)(1)(B) lesser of the two spouses' 3000. Both halves of the rule move together: applying one without the other reproduces neither the married nor the unmarried treatment.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "treatedAsUnmarriedUnderSection21e4": true,
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 90000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500
+      }
+    },
+    {
+      "name": "a separate return that states it is still married keeps the halved amount",
+      "description": "The contrast with the vector above. Stating treatedAsUnmarriedUnderSection21e4 as false is the IRC 21(e)(4) determination made and answered in the negative, so the halved 3750 and the IRC 129(b)(1)(B) lesser-of rule apply exactly as they do without the fact -- but the result is determinate rather than carrying the undetermined-status warning, because the caller has answered the question.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "treatedAsUnmarriedUnderSection21e4": false,
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.dependentCareFsa.statutoryExclusion": 3750,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 3000
+      }
+    },
+    {
+      "name": "2021 only, the ARPA dependent care exclusion is 10500",
+      "description": "IRC 129(a)(2)(D), added by the American Rescue Plan Act of 2021, Pub. L. 117-2 section 9632(a), applies subparagraph (A) for a taxable year beginning after December 31, 2020 and before January 1, 2022 by substituting \"$10,500 (half such dollar amount\" for \"$5,000 ($2,500\". The statute writes the separate-return amount as half rather than as a number, and half of 10500 is 5250. Enacted in March 2021, so Rev. Proc. 2020-45 could not carry it; the authority is the act.",
+      "input": {
+        "taxYear": 2021,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 70000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 10500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 10500,
+        "fsaParameters.dependentCare.exclusionLimit": 10500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 5250
+      }
+    },
+    {
+      "name": "2022 reverts to the pre-ARPA dependent care exclusion",
+      "description": "IRC 129(a)(2)(D) reaches only a taxable year beginning before January 1, 2022, so the substitution lapses and subparagraph (A) applies unmodified from 2022: 5000, or 2500 on a married separate return. A 2021-only vector passes even if the reversion is missing entirely, which is why the pair is needed rather than the single year.",
+      "input": {
+        "taxYear": 2022,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 70000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 5000,
+        "fsaParameters.dependentCare.exclusionLimit": 5000,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    {
+      "name": "2026 dependent care exclusion rises to 7500 under Pub. L. 119-21",
+      "description": "Pub. L. 119-21 section 70404(a) amends IRC 129(a)(2)(A) by striking \"$5,000 ($2,500\" and inserting \"$7,500 ($3,750\", and section 70404(b) applies the amendment to taxable years beginning after December 31, 2025. It is a fixed-dollar substitution that adds no indexing mechanism. Paired with the 2025 vector this pins the effective date; the 2024 edition of the Code still prints the old figures, so a year block generated from the Code text alone would be wrong here.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 60000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) earned income limitation binds below the statutory amount",
+      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 3000
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) limitation is asked for when the earned income facts are absent",
+      "description": "IRC 129(b)(1) is a hard ceiling, not an optional refinement, so leaving it out cannot be silent. Nothing is assumed about the employee's income: the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate the exclusion, and the status records the assumption. Married employees need both figures under IRC 129(b)(1)(B), so supplying only the employee's is still incomplete.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED"
+      }
+    },
+    {
+      "name": "the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled",
+      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 500,
+                "spouseIsStudentOrIncapableOfSelfCare": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 500,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED"
+      }
+    },
+    {
+      "name": "spouses filing jointly share one IRC 129 household exclusion",
+      "description": "IRC 129(a)(2)(A) limits the amount which may be excluded for dependent care services provided during a taxable year, and IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4); it is a per-return figure, not a per-person one. Two spouses electing 5000 each for 2026 against the 7500 household amount therefore exclude 7500 in total, not 15000, and IRC 129(a)(2)(B) includes the remaining 2500 in gross income for the taxable year the services were provided. This is the deliberate contrast with IRC 125(i), which is per employee and gives each spouse a full limit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 80000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 80000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.excludableAmount": 5000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": true,
+        "accounts.0.sharedLimits.0.limit": 7500,
+        "accounts.1.dependentCareFsa.excludableAmount": 2500,
+        "accounts.1.dependentCareFsa.includibleInIncome": 2500,
+        "accounts.1.dependentCareFsa.householdExclusionShared": true,
+        "accounts.1.federalTaxEffects.formW2Box1WageReduction": 2500,
+        "accounts.1.federalTaxEffects.ficaWageReduction": 2500,
+        "accounts.1.diagnostics.0.code": "DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME",
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.dependentCareIncludibleInIncome": 2500
+      }
+    },
+    {
+      "name": "married separate spouses do not share one IRC 129 exclusion",
+      "description": "IRC 129(a)(2)(A) is per return and married separate spouses file two returns, so each carries their own halved 3750 amount for 2026 rather than dividing a single 7500. Two 3750 elections are therefore both wholly excludable and nothing is includible, which pooling them would get wrong by including 3750. Paired with the joint vector on the same two elections, this pins that filing status and not marriage decides the pooling.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3750
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 80000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3750
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 80000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.statutoryExclusion": 3750,
+        "accounts.0.dependentCareFsa.excludableAmount": 3750,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.1.dependentCareFsa.excludableAmount": 3750,
+        "accounts.1.dependentCareFsa.includibleInIncome": 0,
+        "accounts.1.dependentCareFsa.householdExclusionShared": false,
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.dependentCareIncludibleInIncome": 0
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs",
+      "description": "IRC 129(b)(1) caps \"the amount excluded from the income of an employee under subsection (a) for any taxable year\", which is that year's aggregate rather than a per-plan figure, and Form 2441 Part III computes one excluded-benefits amount for the return as the smallest of the benefits received, the employee's earned income, the spouse's earned income, and the IRC 129(a)(2)(A) amount. A spouse earning 3000 therefore caps the whole return at 3000, not at 3000 for each dependent care FSA it holds: of the 10000 elected across two arrangements, 3000 is excluded and IRC 129(a)(2)(B) includes the remaining 7000 in gross income. Applied per account the same facts would exclude 6000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 3000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.excludableAmount": 3000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 2000,
+        "accounts.1.dependentCareFsa.excludableAmount": 0,
+        "accounts.1.dependentCareFsa.includibleInIncome": 5000,
+        "totals.dependentCareAssistanceExclusion": 3000,
+        "totals.dependentCareIncludibleInIncome": 7000
+      }
+    },
+    {
+      "name": "a dependent care plan document below the IRC 129 amount binds this arrangement",
+      "description": "Form 2441's dependent care benefit computation takes the maximum permitted under the employer's plan into account when it is below the Code amount. A plan allowing 4000 for 2026 therefore binds below the 7500 IRC 129(a)(2)(A) amount, and the statutory figure is still reported separately so the source of the constraint is visible rather than merged into one number.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null,
+                "planDocumentLimit": 4000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.planDocumentLimit": 4000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 4000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4000
+      }
+    },
+    {
+      "name": "a dependent care plan document caps its own arrangement, not the household amount",
+      "description": "The IRC 129(a)(2)(A) amount is the return's and a plan document is one plan's own term, so the two constrain different things. For 2026 an arrangement allowing 2000 reaches 2000, and a second arrangement with no such term still reaches the remaining 5500 of the 7500 household amount. A plan document that lowered the household figure would forfeit 5500 of capacity the Code allows.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null,
+                "planDocumentLimit": 2000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 5500,
+        "totals.dependentCareAssistanceExclusion": 7500
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) ceiling does not pool across married separate returns",
+      "description": "IRC 129(a)(2)(A) gives a married individual filing separately half the amount, and the two spouses file two returns rather than one, so each draws on its own 3750 for 2026. The IRC 129(b)(1) ceiling follows the same scope: it caps the exclusion on each return, so a lesser earned income of 3000 binds each return at 3000 rather than binding 3000 across both. Each spouse electing 3500 therefore excludes 3000 and includes 500, and the pair excludes 6000 in total. This is the deliberate contrast with the joint-return vector above, where one ceiling covers both arrangements.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3500
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3500
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 3000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.excludableAmount": 3000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 500,
+        "accounts.1.dependentCareFsa.excludableAmount": 3000,
+        "accounts.1.dependentCareFsa.includibleInIncome": 500,
+        "totals.dependentCareAssistanceExclusion": 6000,
+        "totals.dependentCareIncludibleInIncome": 1000
+      }
+    },
+    {
+      "name": "dependent care FSAs sharing one exclusion may not report different IRC 129(b)(1) ceilings",
+      "description": "The IRC 129(b)(1) ceiling is one figure for the return, so two dependent care FSAs drawing on the same IRC 129(a)(2)(A) amount cannot each be right about it. Here one reports a spouse earning 3000 and the other a spouse earning 5000. Resolving the disagreement by taking either figure, or the lesser of them, would invent a fact the caller did not supply, so the contradiction is reported and no exclusion is computed for either arrangement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "totals.dependentCareAssistanceExclusion": 0
+      }
+    },
+    {
+      "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
+      "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dcap",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 40000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987"
+      }
+    },
+    {
+      "name": "1981 predates IRC 129 entirely",
+      "description": "The effective-date note to IRC 129 makes the section applicable to taxable years beginning after December 31, 1981, under section 124(f) of the Economic Recovery Tax Act of 1981, Pub. L. 97-34. For 1981 there was no dependent care assistance exclusion at all, which is a different fact from the 1982 through 1986 years where the exclusion existed without a ceiling. The two therefore report differently: unavailable with a zero here, indeterminate with a null there.",
+      "input": {
+        "taxYear": 1981,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dcap",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 40000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR"
+      }
+    },
+    {
+      "name": "a health FSA and a dependent care FSA carry independent limits",
+      "description": "IRC 125(i) limits salary reduction contributions to a health flexible spending arrangement and Notice 2012-40 section III states expressly that it does not limit employee salary reduction contributions to an FSA for dependent care assistance, which IRC 129(a)(2)(A) governs separately. For 2026 an employee may therefore elect 3400 under Rev. Proc. 2025-32 section 3.15 and 7500 under IRC 129(a)(2)(A) as amended by Pub. L. 119-21 section 70404, and the two figures never draw on one another.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          },
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 120000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 7500,
+        "totals.healthFsaSalaryReduction": 3400,
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.federalAgiReduction": 0
+      }
+    },
+    {
+      "name": "a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures",
+      "description": "Rev. Rul. 2004-45 Situation 1 holds that an individual covered by an HDHP and by a health FSA paying or reimbursing section 213(d) medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible individual not be covered by a plan that is not an HDHP and that provides coverage for a benefit the HDHP covers. The conflict is reported and not enforced: eligible-individual status is a caller-supplied fact everywhere in this engine and no rule overrides one, so the caller who has already accounted for it still gets the answer their months imply. Rev. Proc. 2025-19 sets the 2026 IRC 223(b)(2)(A) self-only limitation at 4400, and that figure and the amount the inputs support must both survive untouched - asserting them is the whole point, since a rule that zeroed or reduced the limit would still pass a vector that only checked the diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4400,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.contributionComponents.hsaDeductible": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": true,
+        "totals.hsaContribution": 4400
+      }
+    },
+    {
+      "name": "a limited-purpose health FSA raises no IRC 223 conflict",
+      "description": "Rev. Rul. 2004-45 Situation 2 holds that where the medical expenses paid or reimbursed include only vision and dental benefits, which are permitted coverage, and preventive care, the individual is an eligible individual. No conflict diagnostic is emitted and the account stays determinate, which is what separates this from the general-purpose case on otherwise identical inputs.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": false
+      }
+    },
+    {
+      "name": "a post-deductible health FSA raises no IRC 223 conflict",
+      "description": "Rev. Rul. 2004-45 Situation 4 holds that where the health FSA pays or reimburses medical expenses only after the HDHP's minimum annual deductible has been satisfied, including coinsurance the HDHP does not cover, the individual is an eligible individual. The third of the three Rev. Rul. 2004-45 classifications, encoded because it produces the opposite answer from the first on the same account type.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "post_deductible"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": false
+      }
+    },
+    {
+      "name": "a health FSA of unstated purpose makes the IRC 223 limitation indeterminate",
+      "description": "The three Rev. Rul. 2004-45 classifications give two opposite IRC 223(c)(1)(A)(ii) answers, and which applies is a plan-design fact this engine cannot read. Unlike the general-purpose case, where the conflict is known and the caller's own figures are returned, here nothing about IRC 223 is known, so a confident 4400 would be the defect rather than the diagnostic. The limitation is refused and the purpose is asked for. The health FSA's own disqualifiesHsaEligibility is null for the same reason.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": null,
+        "totals.hsaContribution": 0
+      }
+    },
+    {
+      "name": "a spouse's general-purpose health FSA disqualifies the other spouse's HSA",
+      "description": "Rev. Rul. 2004-45 states expressly, after the Situation 1 holding, that the result is the same if the individual is covered by a health FSA sponsored by the employer of the individual's spouse, because such an arrangement can reimburse this individual's own section 213(d) medical expenses. The conflict is household-level, not per-person. The diagnostic lands on the HSA owner's account even though the arrangement belongs to the other spouse, and the IRC 223(b) figures are unchanged for the same reason they are in the individual case. The spouse's empty persons[].hsaCoverage records that they held no HDHP coverage, which is what IRC 223(b)(5)(A) needs to know.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "s",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4400,
+        "accounts.0.diagnostics.0.code": "SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "a general-purpose health FSA carryover disqualifies the whole receiving plan year",
+      "description": "Notice 2013-71 makes the carried-over amount available to pay medical expenses incurred during the entire plan year to which it is carried. Carried-over general-purpose funds are therefore general-purpose coverage for that whole year, not just until they are spent, so the Rev. Rul. 2004-45 disqualification reaches the receiving year rather than a part of it. Rev. Proc. 2024-40 section 3.16 caps the carryover out of 2025 at 660, and the diagnostic says so; the IRC 223 figures are unchanged as in every other branch of this interaction.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.1.healthFsa.carryoverFromPriorYear": 660
+      }
+    },
+    {
+      "name": "a general-purpose health FSA grace period extends the IRC 223 disqualification",
+      "description": "Notice 2005-86 holds that an individual participating in a health FSA who is covered by the grace period is generally not eligible to contribute to an HSA until the first day of the first month following the end of that grace period, even where the participant's health FSA has no unused benefits at the end of the prior plan year. The grace-period months fall in the following plan year, which this year's eligible-month input cannot express, so the extension is reported as information alongside the disqualification rather than folded into the month list.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "offersGracePeriod": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION",
+        "accounts.0.diagnostics.2.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "a dependent care FSA raises no IRC 223 conflict at all",
+      "description": "IRC 223(c)(1)(A)(ii) reaches coverage providing a benefit the high deductible health plan covers, and an IRC 129 dependent care assistance program reimburses dependent care expenses rather than section 213(d) medical expenses, so Rev. Rul. 2004-45 has nothing to say about it. A dependent care FSA alongside an HSA is therefore an ordinary determinate scenario, which is worth pinning because the two account types were added together and a purpose check written against the wrong family would fire here.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.statutoryMaximumAnnualContribution": 7500,
+        "totals.hsaContribution": 4400,
+        "totals.dependentCareAssistanceExclusion": 7500
+      }
     }
   ]
 }

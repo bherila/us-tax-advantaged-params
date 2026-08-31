@@ -59,6 +59,8 @@ enum AccountType: string
     case DEFINED_BENEFIT_PLAN = 'defined_benefit_plan';
     case CASH_BALANCE_PLAN = 'cash_balance_plan';
     case HSA = 'hsa';
+    case HEALTH_FSA = 'health_fsa';
+    case DEPENDENT_CARE_FSA = 'dependent_care_fsa';
 }
 
 enum ConversionType: string
@@ -513,6 +515,82 @@ final class AccountBuilder
         return $this;
     }
 
+    /** Rev. Rul. 2004-45 classification of a health FSA. */
+    public function healthFsaPurpose(string $purpose): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['purpose'] = $purpose;
+        return $this;
+    }
+
+    /** Notice 2013-71 carryover. Mutually exclusive with healthFsaGracePeriod(). */
+    public function healthFsaCarryover(bool $offers, float|int|null $priorYearUnusedAmount = null): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['offersCarryover'] = $offers;
+        if ($priorYearUnusedAmount !== null) {
+            $this->value['planRules']['healthFsa']['priorYearUnusedAmount'] = (float) $priorYearUnusedAmount;
+        }
+        return $this;
+    }
+
+    /** Prop. Treas. Reg. 1.125-1(e) grace period. Mutually exclusive with healthFsaCarryover(). */
+    public function healthFsaGracePeriod(bool $offers = true, float|int|null $priorYearUnusedAmount = null): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['offersGracePeriod'] = $offers;
+        if ($priorYearUnusedAmount !== null) {
+            $this->value['planRules']['healthFsa']['priorYearUnusedAmount'] = (float) $priorYearUnusedAmount;
+        }
+        return $this;
+    }
+
+    /** Non-elective employer flex credits, and whether they could be elected as cash. */
+    public function healthFsaEmployerFlexCredit(float|int $amount, ?bool $electableAsCash = null): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['employerFlexCredit'] = (float) $amount;
+        if ($electableAsCash !== null) {
+            $this->value['planRules']['healthFsa']['flexCreditElectableAsCash'] = $electableAsCash;
+        }
+        return $this;
+    }
+
+    /** A limit the plan document imposes below the IRC 125(i) ceiling. */
+    public function healthFsaPlanDocumentLimit(float|int $amount): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['planDocumentLimit'] = (float) $amount;
+        return $this;
+    }
+
+    /** Whether the cafeteria plan year is the calendar year; false makes the IRC 125(i) figure indeterminate. */
+    public function healthFsaCalendarPlanYear(bool $isCalendarYear = true): self
+    {
+        $this->value['planRules']['healthFsa'] ??= [];
+        $this->value['planRules']['healthFsa']['planYearIsCalendarYear'] = $isCalendarYear;
+        return $this;
+    }
+
+    /** IRC 129(b)(1) earned income. The spouse's amount is required whenever the employee is married. */
+    public function dependentCareEarnedIncome(float|int $employee, float|int|null $spouse = null): self
+    {
+        $this->value['planRules']['dependentCareFsa'] ??= [];
+        $this->value['planRules']['dependentCareFsa']['employeeEarnedIncome'] = (float) $employee;
+        if ($spouse !== null) {
+            $this->value['planRules']['dependentCareFsa']['spouseEarnedIncome'] = (float) $spouse;
+        }
+        return $this;
+    }
+
+    /** IRC 129(b)(2): the spouse is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
+    public function dependentCareSpouseIsStudentOrIncapableOfSelfCare(bool $applies = true): self
+    {
+        $this->value['planRules']['dependentCareFsa'] ??= [];
+        $this->value['planRules']['dependentCareFsa']['spouseIsStudentOrIncapableOfSelfCare'] = $applies;
+        return $this;
+    }
+
     public function grandfatheredSarsep(bool $grandfathered = true): self
     {
         $this->value['planRules']['grandfatheredSarsep'] = $grandfathered;
@@ -730,6 +808,9 @@ final class USTaxAdvantagedParams
 
     /** @var array<string,mixed>|null */
     private static ?array $hsaParameters = null;
+
+    /** @var array<string,mixed>|null */
+    private static ?array $fsaParameters = null;
 
     /* <generated-parameters> */
 private const PARAMETER_JSON = <<<'JSON'
@@ -6908,6 +6989,563 @@ private const HSA_PARAMETER_JSON = <<<'JSON'
 JSON;
 /* </generated-hsa-parameters> */
 
+    /* <generated-fsa-parameters> */
+private const FSA_PARAMETER_JSON = <<<'JSON'
+{
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1987,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "IRC 129(a)(2)(A) fixes the dependent care assistance exclusion, and IRC 125(i) fixes the health flexible spending arrangement salary-reduction limit. The table starts at 1987, the first taxable year for which Pub. L. 99-514 section 1163 supplied a dependent care dollar limitation, and is never extrapolated forward: a tax year with no published figure returns an unavailable or indeterminate status and a diagnostic rather than a projected amount.",
+    "healthFsaFirstYear": "IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, amended by section 10902 of that Act and by section 1403(b) of the Health Care and Education Reconciliation Act of 2010, Pub. L. 111-152. Notice 2012-40 reads its effective date as applying to plan years beginning after December 31, 2012. Before that there was no statutory salary-reduction ceiling at all, only whatever the plan document imposed, so healthFsa is null for 1987 through 2012 and the engine returns an indeterminate result rather than a fabricated ceiling.",
+    "planYearVersusTaxYear": "Notice 2012-40 section III holds that the term \"taxable year\" in IRC 125(i) refers to the plan year of the cafeteria plan, so the statutory limit runs on a plan-year basis. Every annual revenue procedure nonetheless publishes the figure \"for taxable years beginning in\" the year, and this package is keyed by tax year throughout. Rows are therefore keyed by tax year and are exact for a calendar-year plan. For a non-calendar plan year the applicable figure depends on the plan year start date, which is a fact this engine does not hold, so it diagnoses rather than assuming.",
+    "healthFsaCarryoverBelongsToSourceYear": "Notice 2013-71 section III created the carryover as a plan option at a fixed $500, and Notice 2020-33 section III.A raised it to 20 percent of the IRC 125(i) limit for the plan year and indexed it with that limit. Both phrase it as the maximum unused amount FROM a plan year carried to the immediately following plan year, so carryoverLimit belongs to the year the funds came from and never to the year they land in. Notice 2013-71 also holds that the carryover does not count against or otherwise affect the IRC 125(i) limit of the receiving year, and that a plan may offer a carryover or a grace period but not both.",
+    "section214ReliefNotModelled": "Section 214 of the Consolidated Appropriations Act, 2021, Pub. L. 116-260, implemented by Notice 2021-15, permitted a plan to carry over ALL unused amounts from plan years ending in 2020 and in 2021, and permitted a dependent care carryover that is otherwise forbidden. It is entirely a plan option that the engine cannot read, so it is not modelled; a carryover computed out of a 2020 or 2021 plan year carries a diagnostic saying so rather than silently applying the ordinary cap.",
+    "dependentCareNotIndexed": "The IRC 129(a)(2)(A) amounts are statutory and carry no inflation adjustment, which is why they never appear in the annual revenue procedures. They changed twice: Pub. L. 117-2 section 9632 substituted $10,500 (half that for a married separate return) for taxable years beginning after December 31, 2020 and before January 1, 2022, and Pub. L. 119-21 section 70404 substituted $7,500 ($3,750) for taxable years beginning after December 31, 2025. Each year is encoded as its own row so the 2021 increase and its reversion are both data rather than a rule."
+  },
+  "sources": [
+    {
+      "id": "usc-26-125",
+      "title": "26 U.S.C. 125, Cafeteria plans (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec125.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "usc-26-129",
+      "title": "26 U.S.C. 129, Dependent care assistance programs (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec129.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-117-2",
+      "title": "American Rescue Plan Act of 2021, Pub. L. 117-2, section 9632 (2021-only dependent care exclusion)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-117publ2/pdf/PLAW-117publ2.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70404 (dependent care exclusion raised for taxable years beginning after 2025)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2012-40",
+      "title": "Notice 2012-40, the $2,500 IRC 125(i) limit, its plan-year basis, and the per-employer rule",
+      "url": "https://www.irs.gov/pub/irs-drop/n-12-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2013-71",
+      "title": "Notice 2013-71, modification of the use-or-lose rule to permit a $500 health FSA carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/n-13-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2020-33",
+      "title": "Notice 2020-33, carryover indexed at 20 percent of the IRC 125(i) limit",
+      "url": "https://www.irs.gov/pub/irs-drop/n-20-33.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-42",
+      "title": "Notice 2005-42, the grace period of up to two months and 15 days",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-42.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-86",
+      "title": "Notice 2005-86, health savings account eligibility during a cafeteria plan grace period",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-86.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-15",
+      "title": "Notice 2021-15, the Consolidated Appropriations Act, 2021 section 214 temporary carryover relief",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-15.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-26",
+      "title": "Notice 2021-26, the ARPA section 9632 dependent care increase and its interaction with section 214 carryovers",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-rul-2004-45",
+      "title": "Rev. Rul. 2004-45, general-purpose, limited-purpose, and post-deductible health FSAs under IRC 223(c)(1)(A)(ii)",
+      "url": "https://www.irs.gov/pub/irs-drop/rr-04-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "fr-72-43938",
+      "title": "72 Fed. Reg. 43938 (Aug. 6, 2007), proposed regulations under IRC 125, including Prop. Treas. Reg. 1.125-1(e) and 1.125-5(b)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2007-08-06/pdf/E7-14827.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-rev-proc-2012-41",
+      "title": "Internal Revenue Bulletin 2012-45, carrying Rev. Proc. 2012-41, whose 2013 adjusted items contain no Cafeteria Plans entry",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb12-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-35",
+      "title": "Rev. Proc. 2013-35, section 3.15, 2014 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61, section 3.16, 2015 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53, section 3.16, 2016 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55, section 3.16, 2017 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58, section 3.16, 2018 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Internal Revenue Bulletin 2018-10, carrying Rev. Proc. 2018-18, which reissued 2018 figures after the Tax Cuts and Jobs Act without touching section 3.16",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57, section 3.17, 2019 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44, section 3.17, 2020 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45, section 3.17, 2021 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45, section 3.16, 2022 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38, section 3.16, 2023 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34, section 3.16, 2024 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40, section 3.16, 2025 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32, section 3.15, 2026 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1987": {
+      "year": 1987,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1988": {
+      "year": 1988,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1989": {
+      "year": 1989,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1990": {
+      "year": 1990,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1991": {
+      "year": 1991,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1992": {
+      "year": 1992,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1993": {
+      "year": 1993,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1994": {
+      "year": 1994,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1995": {
+      "year": 1995,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1996": {
+      "year": 1996,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1997": {
+      "year": 1997,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "healthFsa": {
+        "salaryReductionLimit": 2600,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "healthFsa": {
+        "salaryReductionLimit": 2650,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "healthFsa": {
+        "salaryReductionLimit": 2700,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 10500,
+        "marriedFilingSeparatelyExclusionLimit": 5250
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "healthFsa": {
+        "salaryReductionLimit": 2850,
+        "carryoverLimit": 570
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "healthFsa": {
+        "salaryReductionLimit": 3050,
+        "carryoverLimit": 610
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "healthFsa": {
+        "salaryReductionLimit": 3200,
+        "carryoverLimit": 640
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "healthFsa": {
+        "salaryReductionLimit": 3300,
+        "carryoverLimit": 660
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "healthFsa": {
+        "salaryReductionLimit": 3400,
+        "carryoverLimit": 680
+      },
+      "dependentCare": {
+        "exclusionLimit": 7500,
+        "marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    }
+  }
+}
+JSON;
+/* </generated-fsa-parameters> */
+
     public static function forTaxYear(int $taxYear): ScenarioBuilder
     {
         return ScenarioBuilder::forTaxYear($taxYear);
@@ -6918,7 +7556,7 @@ JSON;
      */
     public static function calculate(array $input): array
     {
-        return Engine::calculate($input, self::data(), self::hsaData());
+        return Engine::calculate($input, self::data(), self::hsaData(), self::fsaData());
     }
 
     /** @return array<string,mixed> */
@@ -6983,6 +7621,27 @@ JSON;
         return Engine::copy(self::hsaData()['sources']);
     }
 
+    /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures.
+     *  @return array<string,mixed>|null
+     */
+    public static function fsaParametersForYear(int $taxYear): ?array
+    {
+        return Engine::fsaParametersForYear(self::fsaData(), $taxYear);
+    }
+
+    /** @return array{minimum:int,maximum:int} */
+    public static function supportedFsaTaxYears(): array
+    {
+        $supported = self::fsaData()['supportedTaxYears'];
+        return ['minimum' => (int) $supported['minimum'], 'maximum' => (int) $supported['maximum']];
+    }
+
+    /** @return list<array<string,string>> */
+    public static function fsaSourceMetadata(): array
+    {
+        return Engine::copy(self::fsaData()['sources']);
+    }
+
     /** @return array<string,mixed> */
     private static function data(): array
     {
@@ -7008,6 +7667,19 @@ JSON;
         }
         return self::$hsaParameters;
     }
+
+    /** @return array<string,mixed> */
+    private static function fsaData(): array
+    {
+        if (self::$fsaParameters === null) {
+            try {
+                self::$fsaParameters = json_decode(self::FSA_PARAMETER_JSON, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $exception) {
+                throw new RuntimeException('Embedded flexible spending arrangement parameter JSON is invalid.', 0, $exception);
+            }
+        }
+        return self::$fsaParameters;
+    }
 }
 
 /** @internal */
@@ -7017,7 +7689,7 @@ final class Engine
      *  @param array<string,mixed> $data
      *  @return array<string,mixed>
      */
-    public static function calculate(array $input, array $data, array $hsaData): array
+    public static function calculate(array $input, array $data, array $hsaData, array $fsaData): array
     {
         $scenarioDiagnostics = [];
         $rawTaxYear = $input['taxYear'] ?? null;
@@ -7032,23 +7704,31 @@ final class Engine
         }
         $parameters = self::copy($data['years'][(string) $taxYear]);
         $hsaParameters = self::hsaParametersForYear($hsaData, $taxYear);
+        $fsaParameters = self::fsaParametersForYear($fsaData, $taxYear);
         $filingStatus = self::parseFilingStatus(
             $input['filingStatus'] ?? null,
             $scenarioDiagnostics,
             array_key_exists('filingStatus', $input),
         );
+        self::booleanFlag($input, 'treatedAsUnmarriedUnderSection21e4', 'treatedAsUnmarriedUnderSection21e4');
+        $treatedAsUnmarriedUnderSection21e4 = array_key_exists('treatedAsUnmarriedUnderSection21e4', $input)
+            ? ($input['treatedAsUnmarriedUnderSection21e4'] === true)
+            : null;
         $persons = self::normalizePersons($input['persons'] ?? null);
         $accounts = self::normalizeAccounts($input['accounts'] ?? null, $persons);
         $context = self::createContext(
             $taxYear,
             $filingStatus,
+            $treatedAsUnmarriedUnderSection21e4,
             $parameters,
             $hsaParameters,
+            $fsaParameters,
             $persons,
             $accounts,
             $scenarioDiagnostics,
             $data,
             $hsaData,
+            $fsaData,
         );
 
         $allocationOrder = $accounts;
@@ -7117,10 +7797,11 @@ final class Engine
                 'excessContribution' => $excessContribution,
                 'contributionComponents' => $outcome['annualComponents'],
                 'planTermDependentCapacity' => $outcome['planTermDependentCapacity'],
-                'federalTaxEffects' => self::contributionTaxEffects(
-                    $outcome['annualComponents'],
+                'federalTaxEffects' => self::accountTaxEffects(
+                    $outcome,
                     $traits,
                     $account['planRules'],
+                    $diagnostics,
                 ),
                 'sharedLimits' => $outcome['sharedLimits'],
                 'diagnostics' => $diagnostics,
@@ -7130,6 +7811,12 @@ final class Engine
             }
             if (isset($outcome['hsaDetail'])) {
                 $result['hsa'] = $outcome['hsaDetail'];
+            }
+            if (isset($outcome['healthFsaDetail'])) {
+                $result['healthFsa'] = $outcome['healthFsaDetail'];
+            }
+            if (isset($outcome['dependentCareDetail'])) {
+                $result['dependentCareFsa'] = $outcome['dependentCareDetail'];
             }
             $byId[$account['id']] = $result;
         }
@@ -7155,6 +7842,7 @@ final class Engine
             'filingStatus' => $filingStatus,
             'parameters' => $parameters,
             'hsaParameters' => $hsaParameters,
+            'fsaParameters' => $fsaParameters,
             'accounts' => $accountResults,
             'conversions' => $conversionResults,
             'totals' => self::totals($accountResults, $conversionResults),
@@ -7302,9 +7990,39 @@ final class Engine
             'HSA' => AccountType::HSA->value,
             'HEALTH_SAVINGS_ACCOUNT' => AccountType::HSA->value,
             'SECTION_223' => AccountType::HSA->value,
+            // A bare "FSA" is deliberately absent. It names a health FSA and a
+            // dependent care FSA equally well, and the two are different
+            // accounts under different Code sections with different limits and
+            // different household aggregation, so aliasing it would silently
+            // pick one. It falls through to INVALID_ACCOUNT_TYPE, which names
+            // both spellings in the message.
+            'HEALTH_FSA' => AccountType::HEALTH_FSA->value,
+            'HEALTHCARE_FSA' => AccountType::HEALTH_FSA->value,
+            'HEALTH_CARE_FSA' => AccountType::HEALTH_FSA->value,
+            'MEDICAL_FSA' => AccountType::HEALTH_FSA->value,
+            'HEALTH_FLEXIBLE_SPENDING_ARRANGEMENT' => AccountType::HEALTH_FSA->value,
+            'SECTION_125_HEALTH_FSA' => AccountType::HEALTH_FSA->value,
+            'DEPENDENT_CARE_FSA' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ACCOUNT' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ASSISTANCE' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ASSISTANCE_PROGRAM' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DCAP' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DCFSA' => AccountType::DEPENDENT_CARE_FSA->value,
+            'SECTION_129' => AccountType::DEPENDENT_CARE_FSA->value,
         ];
         $token = self::normalizeToken($value);
         if (!isset($aliases[$token])) {
+            // "FSA" alone is ambiguous rather than unknown: it names a health
+            // FSA under IRC 125(i) and a dependent care FSA under IRC 129
+            // equally well, and those carry different limits and different
+            // household aggregation.
+            if (in_array($token, ['FSA', 'FLEXIBLE_SPENDING_ARRANGEMENT', 'FLEXIBLE_SPENDING_ACCOUNT'], true)) {
+                throw new ParameterException(
+                    'INVALID_ACCOUNT_TYPE',
+                    "Ambiguous account type: {$value}. Use \"health_fsa\" for an IRC 125(i) health flexible spending "
+                        . 'arrangement or "dependent_care_fsa" for an IRC 129 dependent care assistance program.',
+                );
+            }
             throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$value}");
         }
         return $aliases[$token];
@@ -7564,6 +8282,12 @@ final class Engine
         if ($type === AccountType::HSA->value) {
             return array_replace($base, ['family' => 'hsa']);
         }
+        if ($type === AccountType::HEALTH_FSA->value) {
+            return array_replace($base, ['family' => 'health_fsa']);
+        }
+        if ($type === AccountType::DEPENDENT_CARE_FSA->value) {
+            return array_replace($base, ['family' => 'dependent_care_fsa']);
+        }
         throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$type}");
     }
 
@@ -7680,6 +8404,9 @@ final class Engine
             'unclassifiedIra' => 0.0,
             'hsaDeductible' => 0.0,
             'hsaEmployerOrCafeteria' => 0.0,
+            'healthFsaSalaryReduction' => 0.0,
+            'dependentCareSalaryReduction' => 0.0,
+            'dependentCareIncludibleInIncome' => 0.0,
         ];
     }
 
@@ -7690,7 +8417,9 @@ final class Engine
     {
         $result = self::zeroComponents();
         foreach (array_keys($result) as $key) {
-            if ($key === 'unclassifiedIra') {
+            // Both are derived splits computed by the engine rather than
+            // supplied inputs, in the same way unclassifiedIra is.
+            if ($key === 'unclassifiedIra' || $key === 'dependentCareIncludibleInIncome') {
                 continue;
             }
             $result[$key] = self::money($source[$key] ?? null, "existing.{$key}");
@@ -7751,6 +8480,66 @@ final class Engine
      *  @param array<string,mixed> $planRules
      *  @return array<string,mixed>
      */
+    /**
+     * The components record what the scenario supplied, which is a fact even
+     * when the account cannot be sized. The tax treatment of those amounts is
+     * not always a fact, and two cases are settled enough to report rather than
+     * assume.
+     *
+     * An `unavailable` account is one whose type did not exist for the tax
+     * year, so a contribution to it cannot carry that type's exclusion or
+     * deduction. IRC 223 was added for taxable years beginning after 2003, so a
+     * 2003 cafeteria-plan HSA contribution is not an IRC 106(d) exclusion no
+     * matter what it is called.
+     *
+     * An election above the IRC 125(i) limit costs the plan its IRC 125 status
+     * entirely under Notice 2012-40 section III, not merely as to the excess,
+     * so the IRC 125(a) exclusion fails for the whole health FSA salary
+     * reduction.
+     *
+     * `indeterminate` on its own is deliberately not in this list. An unknown
+     * IRC 415(c) limit does not undo a pre-tax deferral's effect on AGI, and a
+     * pre-2013 health FSA excluded salary reductions under IRC 125(a) perfectly
+     * well while having no IRC 125(i) ceiling to report.
+     */
+    private static function accountTaxEffects(
+        array $outcome,
+        array $traits,
+        array $planRules,
+        array $diagnostics,
+    ): array {
+        if ($outcome['status'] === CalculationStatus::UNAVAILABLE->value) {
+            $suppressed = self::zeroTaxEffects();
+            $suppressed['notes'][] = 'This account type did not exist for the tax year, so no exclusion or '
+                . 'deduction of its kind is reported for the amounts supplied. The amounts themselves remain '
+                . 'in contributionComponents.';
+
+            return $suppressed;
+        }
+        $section125QualificationFailed = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === 'HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT') {
+                $section125QualificationFailed = true;
+                break;
+            }
+        }
+        if (!$section125QualificationFailed) {
+            return self::contributionTaxEffects($outcome['annualComponents'], $traits, $planRules);
+        }
+        $withoutHealthFsa = $outcome['annualComponents'];
+        $withoutHealthFsa['healthFsaSalaryReduction'] = 0.0;
+        $effects = self::contributionTaxEffects($withoutHealthFsa, $traits, $planRules);
+        $effects['notes'][] = 'IRC 125(i) makes a health flexible spending arrangement a qualified benefit only '
+            . 'if the plan provides that an employee may not elect salary reduction contributions above the '
+            . 'limit. Notice 2012-40 section III holds that a plan failing to comply is not an IRC 125 cafeteria '
+            . 'plan at all, so the IRC 125(a) exclusion fails for the entire salary reduction rather than for the '
+            . 'excess alone. No wage exclusion is reported for it. The election remains in contributionComponents, '
+            . 'and this engine does not extend the consequence to other arrangements that may be under the same '
+            . 'cafeteria plan.';
+
+        return $effects;
+    }
+
     private static function contributionTaxEffects(array $components, array $traits, array $planRules): array
     {
         $result = self::zeroTaxEffects();
@@ -7767,15 +8556,24 @@ final class Engine
         $selfEmployedEmployer = !empty($planRules['isSelfEmployedOwner']) ? $components['employerPreTax'] : 0.0;
         $hsaDeduction = $components['hsaDeductible'];
         $hsaExclusion = $components['hsaEmployerOrCafeteria'];
+        // IRC 125(a) keeps a salary reduction contribution out of gross income
+        // entirely, so it is an exclusion and never an above-the-line
+        // deduction. It therefore follows the IRC 106(d) path exactly: out of
+        // Form W-2 box 1 and out of social security and medicare wages, and
+        // absent from federalAgiReduction, because the money was never included
+        // rather than reduced.
+        $cafeteriaExclusion = self::roundMoney(
+            $components['healthFsaSalaryReduction'] + $components['dependentCareSalaryReduction'],
+        );
         $result['formW2Box1WageReduction'] = self::roundMoney(
-            (!empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee) + $hsaExclusion,
+            (!empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee) + $hsaExclusion + $cafeteriaExclusion,
         );
         $result['selfEmployedRetirementDeduction'] = $selfEmployedPlanDeduction;
         $result['federalAgiReduction'] = self::roundMoney(
             $pretaxEmployee + $selfEmployedEmployer + $deductibleIra + $hsaDeduction,
         );
         $result['federalTaxableIncomeReduction'] = $result['federalAgiReduction'];
-        $result['ficaWageReduction'] = $hsaExclusion;
+        $result['ficaWageReduction'] = self::roundMoney($hsaExclusion + $cafeteriaExclusion);
         $result['nondeductibleContribution'] = self::roundMoney(
             $components['nondeductibleIra'] + $components['unclassifiedIra'],
         );
@@ -7806,6 +8604,23 @@ final class Engine
             $result['notes'][] = 'Employer and cafeteria-plan HSA contributions are excluded from gross income under IRC 106(d) '
                 . 'and are outside Form W-2 box 1 and Social Security and Medicare wages (Notice 2004-2 A-19). They were never '
                 . 'included rather than reduced, and they reduce the IRC 223(a) deduction under IRC 223(b)(4)(B).';
+        }
+        if ($components['healthFsaSalaryReduction'] > 0) {
+            $result['notes'][] = 'Health flexible spending arrangement salary reduction contributions are excluded from '
+                . 'gross income under IRC 125(a) and are outside Form W-2 box 1 and Social Security and Medicare wages '
+                . '(IRC 3121(a)(5)(G)). They are an exclusion rather than a deduction - the money never entered gross '
+                . 'income - so they do not appear in federalAgiReduction.';
+        }
+        if ($components['dependentCareSalaryReduction'] > 0) {
+            $result['notes'][] = 'Dependent care assistance within the IRC 129(a)(2) limitation is excluded from gross '
+                . 'income under IRC 129(a)(1) and is outside Form W-2 box 1 and Social Security and Medicare wages '
+                . '(IRC 3121(a)(18)); it is reported in Form W-2 box 10. It is an exclusion rather than a deduction, '
+                . 'so it does not appear in federalAgiReduction.';
+        }
+        if ($components['dependentCareIncludibleInIncome'] > 0) {
+            $result['notes'][] = 'Dependent care assistance above the IRC 129(a)(2) limitation is included in gross '
+                . 'income under IRC 129(a)(2)(B) in the taxable year the services were provided, so only the '
+                . 'excludable part reduces Form W-2 box 1 and Social Security and Medicare wages.';
         }
         return $result;
     }
@@ -8015,6 +8830,8 @@ final class Engine
         self::requireInputObject($rules, 'special403bCatchUp', "{$path}.special403bCatchUp");
         self::requireInputObject($rules, 'section457SpecialCatchUp', "{$path}.section457SpecialCatchUp");
         self::requireInputObject($rules, 'hsa', "{$path}.hsa");
+        self::requireInputObject($rules, 'healthFsa', "{$path}.healthFsa");
+        self::requireInputObject($rules, 'dependentCareFsa', "{$path}.dependentCareFsa");
         if (array_key_exists('simpleEmployerContributionMethod', $rules) && !in_array(
             $rules['simpleEmployerContributionMethod'],
             ['match_3_percent', 'nonelective_2_percent', 'custom'],
@@ -8072,6 +8889,46 @@ final class Engine
         if (isset($rules['hsa']) && is_array($rules['hsa'])) {
             self::validateHsaRules($rules['hsa'], "{$path}.hsa");
         }
+        if (isset($rules['healthFsa']) && is_array($rules['healthFsa'])) {
+            self::validateHealthFsaRules($rules['healthFsa'], "{$path}.healthFsa");
+        }
+        if (isset($rules['dependentCareFsa']) && is_array($rules['dependentCareFsa'])) {
+            self::validateDependentCareFsaRules($rules['dependentCareFsa'], "{$path}.dependentCareFsa");
+        }
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateDependentCareFsaRules(array $rules, string $path): void
+    {
+        self::money($rules['employeeEarnedIncome'] ?? null, "{$path}.employeeEarnedIncome");
+        self::money($rules['spouseEarnedIncome'] ?? null, "{$path}.spouseEarnedIncome");
+        self::booleanFlag(
+            $rules,
+            'spouseIsStudentOrIncapableOfSelfCare',
+            "{$path}.spouseIsStudentOrIncapableOfSelfCare",
+        );
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateHealthFsaRules(array $rules, string $path): void
+    {
+        if (array_key_exists('purpose', $rules) && !in_array(
+            $rules['purpose'],
+            ['general_purpose', 'limited_purpose', 'post_deductible'],
+            true,
+        )) {
+            throw new ParameterException(
+                'INVALID_HEALTH_FSA_PURPOSE',
+                "{$path}.purpose must be \"general_purpose\", \"limited_purpose\", or \"post_deductible\".",
+            );
+        }
+        self::booleanFlag($rules, 'offersCarryover', "{$path}.offersCarryover");
+        self::booleanFlag($rules, 'offersGracePeriod', "{$path}.offersGracePeriod");
+        self::booleanFlag($rules, 'flexCreditElectableAsCash', "{$path}.flexCreditElectableAsCash");
+        self::booleanFlag($rules, 'planYearIsCalendarYear', "{$path}.planYearIsCalendarYear");
+        self::money($rules['priorYearUnusedAmount'] ?? null, "{$path}.priorYearUnusedAmount");
+        self::money($rules['employerFlexCredit'] ?? null, "{$path}.employerFlexCredit");
+        self::money($rules['planDocumentLimit'] ?? null, "{$path}.planDocumentLimit");
     }
 
     private static function parseHsaCoverageTier(mixed $value, string $path): string
@@ -8514,13 +9371,16 @@ final class Engine
     private static function createContext(
         int $taxYear,
         string $filingStatus,
+        ?bool $treatedAsUnmarriedUnderSection21e4,
         array $parameters,
         ?array $hsaParameters,
+        ?array $fsaParameters,
         array $persons,
         array $accounts,
         array &$scenarioDiagnostics,
         array $data,
         array $hsaData,
+        array $fsaData,
     ): array {
         $accountsById = [];
         foreach ($accounts as $account) {
@@ -8529,9 +9389,13 @@ final class Engine
         $context = [
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
+            'treatedAsUnmarriedUnderSection21e4' => $treatedAsUnmarriedUnderSection21e4,
             'parameters' => $parameters,
             'hsaParameters' => $hsaParameters,
             'hsaSupportedTaxYears' => $hsaData['supportedTaxYears'],
+            'fsaParameters' => $fsaParameters,
+            'fsaSupportedTaxYears' => $fsaData['supportedTaxYears'],
+            'fsaData' => $fsaData,
             'persons' => $persons,
             'accountsById' => $accountsById,
             'scenarioDiagnostics' => &$scenarioDiagnostics,
@@ -8551,11 +9415,21 @@ final class Engine
             'hsaCatchUpPools' => [],
             'hsaFamilyPools' => [],
             'hsaPlans' => [],
+            'healthFsaPools' => [],
+            'healthFsaPlans' => [],
+            'dependentCarePools' => [],
+            'dependentCarePlans' => [],
+            'dependentCareEarnedIncomeCeilings' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
         self::initializeAnnualAdditionsPools($context, $accounts);
         self::initializeSection457Pools($context, $accounts);
+        // Health FSA facts are read by the IRC 223 interaction, so the
+        // arrangements must be resolved before the health savings accounts that
+        // consult them.
+        self::initializeHealthFsaPools($context, $accounts);
+        self::initializeDependentCarePools($context, $accounts);
         self::initializeHsaPools($context, $accounts);
         return $context;
     }
@@ -8867,6 +9741,15 @@ final class Engine
         return is_array($row) ? self::copy($row) : null;
     }
 
+    /** @param array<string,mixed> $fsaData
+     *  @return array<string,mixed>|null
+     */
+    public static function fsaParametersForYear(array $fsaData, int $taxYear): ?array
+    {
+        $row = $fsaData['years'][(string) $taxYear] ?? null;
+        return is_array($row) ? self::copy($row) : null;
+    }
+
     /**
      * Mirrors JavaScript Number.prototype.toLocaleString for a money amount.
      * The default JavaScript formatter carries zero to three fraction digits,
@@ -8997,6 +9880,1026 @@ final class Engine
         ];
     }
 
+    /**
+     * IRC 125(i) applies employee-by-employee and employer-by-employer. Notice
+     * 2012-40 aggregates employers treated as one under IRC 414(b), (c) or (m)
+     * through IRC 125(g)(4), and lets an employee of two unrelated employers
+     * elect the full amount under each. `employerId` is what expresses that
+     * grouping, so two arrangements sharing one carry one limit and two without
+     * an employer carry their own.
+     *
+     * @param array<string,mixed> $account
+     */
+    private static function healthFsaPoolKey(array $account): string
+    {
+        $employer = isset($account['employerId'])
+            ? (string) $account['employerId']
+            : 'account:' . (string) $account['id'];
+        return (string) $account['ownerId'] . '::' . $employer;
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     */
+    private static function initializeHealthFsaPools(array &$context, array $accounts): void
+    {
+        $fsaAccounts = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] === 'health_fsa') {
+                $fsaAccounts[] = $account;
+            }
+        }
+        if ($fsaAccounts === []) {
+            return;
+        }
+
+        $taxYear = (int) $context['taxYear'];
+        $yearParameters = $context['fsaParameters']['healthFsa'] ?? null;
+        $priorYear = self::fsaParametersForYear($context['fsaData'], $taxYear - 1);
+        $priorYearParameters = $priorYear['healthFsa'] ?? null;
+
+        foreach ($fsaAccounts as $account) {
+            $rules = $account['planRules']['healthFsa'] ?? [];
+            if (!is_array($rules)) {
+                $rules = [];
+            }
+            $path = "accounts.{$account['id']}";
+            $diagnostics = [];
+            $status = CalculationStatus::DETERMINATE->value;
+            $indeterminate = false;
+
+            $purpose = isset($rules['purpose']) ? (string) $rules['purpose'] : null;
+            $elected = (float) $account['existingContributions']['healthFsaSalaryReduction'];
+            $priorYearUnused = self::money(
+                $rules['priorYearUnusedAmount'] ?? null,
+                "{$path}.planRules.healthFsa.priorYearUnusedAmount",
+            );
+            $flexCredit = self::money(
+                $rules['employerFlexCredit'] ?? null,
+                "{$path}.planRules.healthFsa.employerFlexCredit",
+            );
+
+            // Notice 2012-40: flex credits are outside IRC 125(i) because the
+            // section reaches salary reduction contributions alone, unless the
+            // employee could have taken them as cash or another taxable
+            // benefit, in which case they are treated as salary reduction
+            // contributions.
+            $flexCreditCounted = 0.0;
+            if ($flexCredit > 0) {
+                $electable = $rules['flexCreditElectableAsCash'] ?? null;
+                if ($electable === true) {
+                    $flexCreditCounted = $flexCredit;
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_FLEX_CREDIT_COUNTS_AGAINST_LIMIT',
+                        DiagnosticSeverity::INFO,
+                        'Employer flex credits of $' . self::localeNumber($flexCredit) . ' could be elected as cash or '
+                            . 'another taxable benefit, so Notice 2012-40 treats them as salary reduction contributions '
+                            . 'for IRC 125(i) and they consume the limit.',
+                        "{$path}.planRules.healthFsa.employerFlexCredit",
+                        'IRC 125(i); Notice 2012-40',
+                    );
+                } elseif ($electable === false) {
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_FLEX_CREDIT_OUTSIDE_LIMIT',
+                        DiagnosticSeverity::INFO,
+                        'IRC 125(i) limits salary reduction contributions alone, so the $'
+                            . self::localeNumber($flexCredit) . ' of non-elective employer flex credits does not '
+                            . 'consume the limit (Notice 2012-40; Prop. Treas. Reg. 1.125-5(b)).',
+                        "{$path}.planRules.healthFsa.employerFlexCredit",
+                        'IRC 125(i); Notice 2012-40',
+                    );
+                } else {
+                    $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_FLEX_CREDIT_CASH_ELECTION_FACT_REQUIRED',
+                        DiagnosticSeverity::WARNING,
+                        'Employer flex credits of $' . self::localeNumber($flexCredit) . ' were supplied without '
+                            . 'stating whether the employee could elect them as cash or another taxable benefit. '
+                            . 'Notice 2012-40 keeps non-elective flex credits outside IRC 125(i) and treats electable '
+                            . 'ones as salary reduction contributions, so they are assumed non-elective here. Supply '
+                            . 'planRules.healthFsa.flexCreditElectableAsCash to settle it.',
+                        "{$path}.planRules.healthFsa.flexCreditElectableAsCash",
+                        'IRC 125(i); Notice 2012-40',
+                    );
+                }
+            }
+
+            // Notice 2012-40 reads "taxable year" in IRC 125(i) as the plan year
+            // of the cafeteria plan, while every annual revenue procedure
+            // publishes the figure for taxable years beginning in a calendar
+            // year. The two agree exactly for a calendar-year plan; for any
+            // other plan year the governing figure depends on the plan year
+            // start date, which is not an input here.
+            if (($rules['planYearIsCalendarYear'] ?? null) === false) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_NON_CALENDAR_PLAN_YEAR_INDETERMINATE',
+                    DiagnosticSeverity::ERROR,
+                    'Notice 2012-40 section III holds that "taxable year" in IRC 125(i) means the plan year of the '
+                        . 'cafeteria plan, so a non-calendar plan year is governed by the figure for the calendar year '
+                        . 'in which that plan year begins, and a short plan year is prorated by its months. This '
+                        . 'package is keyed by tax year and does not hold the plan year start date, so the applicable '
+                        . 'limit cannot be determined. Key the scenario to the tax year in which the plan year begins, '
+                        . 'or supply the arrangement as a calendar-year plan.',
+                    "{$path}.planRules.healthFsa.planYearIsCalendarYear",
+                    'IRC 125(i); Notice 2012-40',
+                );
+            }
+
+            $salaryReductionLimit = $yearParameters === null
+                ? null
+                : (float) $yearParameters['salaryReductionLimit'];
+            $carryoverLimitForThisYear = $yearParameters === null
+                ? null
+                : (float) $yearParameters['carryoverLimit'];
+            if ($yearParameters === null) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148 section '
+                        . '9005, and Notice 2012-40 reads its effective date as reaching plan years beginning after '
+                        . "December 31, 2012, so no statutory salary reduction ceiling existed for tax year {$taxYear}. "
+                        . 'Health flexible spending arrangements did exist; what did not exist is a statutory limit, '
+                        . 'so the ceiling was whatever the plan document imposed and none is reported.',
+                    'taxYear',
+                    'IRC 125(i); Notice 2012-40',
+                );
+            }
+
+            $planDocumentLimit = array_key_exists('planDocumentLimit', $rules)
+                ? self::money($rules['planDocumentLimit'], "{$path}.planRules.healthFsa.planDocumentLimit")
+                : null;
+            $appliedLimit = $salaryReductionLimit;
+            if ($appliedLimit !== null && $planDocumentLimit !== null && $planDocumentLimit < $appliedLimit) {
+                $appliedLimit = $planDocumentLimit;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED',
+                    DiagnosticSeverity::INFO,
+                    'The plan document limits salary reduction contributions to $'
+                        . self::localeNumber($planDocumentLimit) . ', below the IRC 125(i) ceiling of $'
+                        . self::localeNumber($salaryReductionLimit ?? 0.0)
+                        . '. Notice 2013-71 confirms a plan may specify a lower amount.',
+                    "{$path}.planRules.healthFsa.planDocumentLimit",
+                    'IRC 125(i)',
+                );
+            }
+
+            // Notice 2013-71: a plan may offer a carryover or a Prop. Treas.
+            // Reg. 1.125-1(e) grace period for the same health FSA, or neither,
+            // but never both. Asserting both describes a plan that cannot exist,
+            // so the result is refused rather than computed from one of the two
+            // facts.
+            $carryoverFromPriorYear = 0.0;
+            $carryoverLimitForPriorYear = $priorYearParameters === null
+                ? null
+                : (float) $priorYearParameters['carryoverLimit'];
+            $forfeitedAmount = null;
+            $offersCarryover = $rules['offersCarryover'] ?? null;
+            $offersGracePeriod = $rules['offersGracePeriod'] ?? null;
+            if ($offersCarryover === true && $offersGracePeriod === true) {
+                $indeterminate = true;
+                $carryoverLimitForPriorYear = null;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_CARRYOVER_AND_GRACE_PERIOD_ARE_MUTUALLY_EXCLUSIVE',
+                    DiagnosticSeverity::ERROR,
+                    'Notice 2013-71 section IV holds that a section 125 cafeteria plan incorporating a carryover may '
+                        . 'not also provide a grace period in the plan year to which unused amounts are carried. Both '
+                        . 'were asserted, which describes a plan that cannot exist, so no carryover figure is produced.',
+                    "{$path}.planRules.healthFsa",
+                    'Notice 2013-71',
+                );
+            } elseif ($offersCarryover === true) {
+                if ($carryoverLimitForPriorYear === null) {
+                    $indeterminate = true;
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_PRIOR_YEAR_CARRYOVER_LIMIT_NOT_ESTABLISHED',
+                        DiagnosticSeverity::ERROR,
+                        'The carryover cap belongs to the plan year the unused amount is carried FROM, and no cap is '
+                            . 'encoded for ' . ($taxYear - 1) . '. Notice 2013-71 created the carryover for plan years '
+                            . "beginning in 2013, so nothing could be carried into {$taxYear}.",
+                        "{$path}.planRules.healthFsa.offersCarryover",
+                        'Notice 2013-71',
+                    );
+                } else {
+                    $carryoverFromPriorYear = self::minMoney($priorYearUnused, $carryoverLimitForPriorYear);
+                    $forfeitedAmount = self::nonnegative($priorYearUnused - $carryoverFromPriorYear);
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_CARRYOVER_DOES_NOT_REDUCE_THE_LIMIT',
+                        DiagnosticSeverity::INFO,
+                        'Of $' . self::localeNumber($priorYearUnused) . ' unused at the end of the ' . ($taxYear - 1)
+                            . ' plan year, $' . self::localeNumber($carryoverFromPriorYear) . ' carries over, being '
+                            . 'the lesser of that amount and the $' . self::localeNumber($carryoverLimitForPriorYear)
+                            . ' cap for that year; $' . self::localeNumber($forfeitedAmount ?? 0.0)
+                            . ' is forfeited. Notice 2013-71 holds that the carryover "does not count against or '
+                            . 'otherwise affect" the IRC 125(i) salary reduction limit, so it sits on top of this '
+                            . "year's ceiling rather than reducing it.",
+                        "{$path}.planRules.healthFsa.priorYearUnusedAmount",
+                        'Notice 2013-71; Notice 2020-33',
+                    );
+                    if ($taxYear - 1 === 2020 || $taxYear - 1 === 2021) {
+                        $diagnostics[] = self::diagnostic(
+                            'HEALTH_FSA_SECTION_214_RELIEF_NOT_MODELLED',
+                            DiagnosticSeverity::WARNING,
+                            'Section 214 of the Consolidated Appropriations Act, 2021, Pub. L. 116-260, implemented by '
+                                . 'Notice 2021-15, permitted a plan to carry over ALL unused amounts from a plan year '
+                                . 'ending in ' . ($taxYear - 1) . ', without the ordinary cap. Adopting it was '
+                                . 'entirely a plan option that this engine cannot read, so the ordinary $'
+                                . self::localeNumber($carryoverLimitForPriorYear) . ' cap has been applied. If the '
+                                . 'plan adopted section 214 relief, the carried amount is the full unused amount and '
+                                . 'this figure is too low.',
+                            "{$path}.planRules.healthFsa.priorYearUnusedAmount",
+                            'Pub. L. 116-260 s.214; Notice 2021-15',
+                        );
+                    }
+                }
+            } elseif ($offersGracePeriod === true) {
+                $carryoverLimitForPriorYear = null;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_GRACE_PERIOD_PRECLUDES_CARRYOVER',
+                    DiagnosticSeverity::INFO,
+                    'The plan offers a Prop. Treas. Reg. 1.125-1(e) grace period of up to two months and 15 days, so '
+                        . 'under Notice 2013-71 it may not also carry unused amounts over and nothing is carried in. '
+                        . "How much of the prior year's unused amount survives depends on expenses incurred during the "
+                        . 'grace period, which is not a tax parameter, so no forfeiture figure is produced.',
+                    "{$path}.planRules.healthFsa.offersGracePeriod",
+                    'Notice 2005-42; Notice 2013-71',
+                );
+            } elseif ($offersCarryover === false) {
+                $carryoverLimitForPriorYear = null;
+                $forfeitedAmount = $priorYearUnused;
+                if ($priorYearUnused > 0) {
+                    $diagnostics[] = self::diagnostic(
+                        'HEALTH_FSA_UNUSED_AMOUNTS_FORFEITED',
+                        DiagnosticSeverity::INFO,
+                        'The plan offers neither a carryover nor a grace period, so the use-or-lose rule forfeits the '
+                            . 'whole $' . self::localeNumber($priorYearUnused) . ' unused at the end of the '
+                            . ($taxYear - 1) . ' plan year.',
+                        "{$path}.planRules.healthFsa.priorYearUnusedAmount",
+                        'Prop. Treas. Reg. 1.125-5(c); Notice 2013-71',
+                    );
+                }
+            } elseif ($priorYearUnused > 0) {
+                $carryoverLimitForPriorYear = null;
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_CARRYOVER_FACT_REQUIRED',
+                    DiagnosticSeverity::WARNING,
+                    'A prior-year unused amount of $' . self::localeNumber($priorYearUnused) . ' was supplied without '
+                        . 'stating whether the plan offers the Notice 2013-71 carryover or a grace period. Both are '
+                        . 'plan options this engine cannot read and they are mutually exclusive, so nothing is carried '
+                        . 'in and no forfeiture figure is produced. Supply planRules.healthFsa.offersCarryover or '
+                        . 'offersGracePeriod.',
+                    "{$path}.planRules.healthFsa.offersCarryover",
+                    'Notice 2013-71',
+                );
+            }
+
+            $statutoryMaximum = $indeterminate || $salaryReductionLimit === null
+                ? null
+                : self::nonnegative(self::roundMoney((float) $salaryReductionLimit - $flexCreditCounted));
+            $appliedMaximum = $indeterminate || $appliedLimit === null
+                ? null
+                : self::nonnegative(self::roundMoney($appliedLimit - $flexCreditCounted));
+
+            // IRC 125(i) is a plan-qualification condition rather than a cap the
+            // plan may exceed and then correct: Notice 2012-40 holds that a
+            // cafeteria plan failing to comply is not a section 125 cafeteria
+            // plan at all, and the value of the taxable benefits the employee
+            // could have elected is includible regardless of what was elected.
+            // Truncating the election to the limit would report the wrong
+            // consequence.
+            $electedWithCredits = self::roundMoney($elected + $flexCreditCounted);
+            // Exceeding the statutory ceiling and exceeding a lower
+            // plan-document ceiling are different failures. Notice 2012-40
+            // section III attaches its loss-of-IRC-125-status consequence to
+            // the IRC 125(i) limit, so only the statutory breach carries it; a
+            // plan-document breach is reported without asserting that the whole
+            // exclusion fails.
+            if ($appliedMaximum !== null
+                && $salaryReductionLimit !== null
+                && $electedWithCredits > (float) $salaryReductionLimit + 0.009
+            ) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Salary reduction contributions of $'
+                        . self::localeNumber(self::roundMoney($elected + $flexCreditCounted)) . ' exceed the $'
+                        . self::localeNumber((float) $appliedLimit) . ' limit that applies. Notice 2012-40 holds that '
+                        . 'a cafeteria plan permitting an election above IRC 125(i) is not a section 125 cafeteria '
+                        . 'plan, so the value of the taxable benefits the employee could have elected becomes '
+                        . 'includible in gross income regardless of the benefit elected. The excess is not truncated '
+                        . 'here because truncation would report a smaller consequence than the statute produces.',
+                    "{$path}.existingContributions.healthFsaSalaryReduction",
+                    'IRC 125(i); IRC 125(d)(1)(B); Notice 2012-40',
+                );
+            } elseif ($appliedMaximum !== null
+                && $appliedLimit !== null
+                && $electedWithCredits > (float) $appliedLimit + 0.009
+            ) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_ELECTION_EXCEEDS_PLAN_DOCUMENT_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Salary reduction contributions of $' . self::localeNumber($electedWithCredits)
+                        . ' exceed the $' . self::localeNumber((float) $appliedLimit) . ' the plan document allows, '
+                        . 'though they remain within the $' . self::localeNumber((float) $salaryReductionLimit)
+                        . ' IRC 125(i) ceiling. Notice 2013-71 confirms a plan may specify a lower amount, and an '
+                        . "election above the plan's own term is a plan-operation question this engine does not "
+                        . 'resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, '
+                        . 'because that holding addresses the IRC 125(i) limit rather than a lower plan term.',
+                    "{$path}.existingContributions.healthFsaSalaryReduction",
+                    'IRC 125(d)(1)(B); Notice 2013-71',
+                );
+            }
+
+            $diagnostics[] = self::diagnostic(
+                'HEALTH_FSA_FACTS_SUPPLIED_BY_CALLER',
+                DiagnosticSeverity::INFO,
+                'This calculation applies IRC 125(i) to the plan facts supplied. Plan design is not inferred: whether '
+                    . 'the plan offers a carryover or a grace period, whether flex credits could be elected as cash, '
+                    . "the arrangement's Rev. Rul. 2004-45 purpose, and any lower plan-document limit are all "
+                    . 'caller-supplied. It does not test cafeteria plan qualification under IRC 125(b) through (d), '
+                    . 'nondiscrimination, the IRC 414(b), (c) and (m) controlled-group aggregation that IRC 125(g)(4) '
+                    . 'applies to the limit, the Notice 2012-40 proration of a short plan year, or the '
+                    . 'uniform-coverage and run-out-period mechanics.',
+                $path,
+                'IRC 125(i)',
+            );
+
+            $detail = [
+                'purpose' => $purpose,
+                'salaryReductionLimit' => $salaryReductionLimit,
+                'appliedSalaryReductionLimit' => $indeterminate ? null : $appliedLimit,
+                'electedSalaryReduction' => $elected,
+                'employerFlexCreditCountedAgainstLimit' => $flexCreditCounted,
+                'carryoverFromPriorYear' => $carryoverFromPriorYear,
+                'carryoverLimitForPriorYear' => $carryoverLimitForPriorYear,
+                'carryoverLimitForThisYear' => $carryoverLimitForThisYear,
+                'forfeitedAmount' => $forfeitedAmount,
+                'disqualifiesHsaEligibility' => $purpose === null ? null : $purpose === 'general_purpose',
+            ];
+
+            if ($indeterminate) {
+                $context['healthFsaPlans'][(string) $account['id']] = [
+                    'status' => CalculationStatus::INDETERMINATE->value,
+                    'diagnostics' => $diagnostics,
+                    'statutoryMaximum' => null,
+                    'appliedMaximum' => null,
+                    'detail' => $detail,
+                    'poolKey' => null,
+                ];
+                continue;
+            }
+
+            $poolKey = self::healthFsaPoolKey($account);
+            if (!isset($context['healthFsaPools'][$poolKey])) {
+                $context['healthFsaPools'][$poolKey] = [
+                    'id' => "irc-125i:{$poolKey}",
+                    'legalLimit' => 'IRC 125(i) health FSA salary reduction limit, per employee per employer',
+                    // The pool is the statutory ceiling the employers treated
+                    // as one under IRC 125(g)(4) share. A lower limit in one
+                    // plan document is a term of that plan and binds elections
+                    // under it; it gives that plan no power over elections
+                    // under a different plan of the same group, so it caps the
+                    // account rather than the pool.
+                    'limit' => $statutoryMaximum === null ? null : $salaryReductionLimit,
+                    'used' => 0.0,
+                ];
+            }
+            $context['healthFsaPools'][$poolKey]['used'] = self::roundMoney(
+                (float) $context['healthFsaPools'][$poolKey]['used'] + $flexCreditCounted + $elected,
+            );
+
+            $context['healthFsaPlans'][(string) $account['id']] = [
+                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'diagnostics' => $diagnostics,
+                'statutoryMaximum' => $statutoryMaximum,
+                'appliedMaximum' => $appliedMaximum,
+                'detail' => $detail,
+                'poolKey' => $poolKey,
+            ];
+        }
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param array<string,mixed> $account
+     *  @return array<string,mixed>
+     */
+    private static function allocateHealthFsa(array &$context, array $account): array
+    {
+        $plan = $context['healthFsaPlans'][(string) $account['id']];
+        $annual = $account['existingContributions'];
+        $additional = self::zeroComponents();
+        $sharedLimits = [];
+        $diagnostics = $plan['diagnostics'];
+        $poolKey = $plan['poolKey'];
+        $hasPool = $poolKey !== null && isset($context['healthFsaPools'][$poolKey]);
+
+        if ($plan['status'] === CalculationStatus::INDETERMINATE->value || !$hasPool) {
+            if ($hasPool) {
+                self::reportPoolWithoutConsuming($context['healthFsaPools'][$poolKey], $sharedLimits);
+            }
+            return [
+                'status' => CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => $plan['statutoryMaximum'],
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+                'healthFsaDetail' => $plan['detail'],
+            ];
+        }
+
+        // The pool offers the employer group's statutory room; this account may
+        // only reach its own plan document's ceiling within it.
+        $localHeadroom = ($plan['appliedMaximum'] ?? null) === null
+            ? (self::poolRemaining($context['healthFsaPools'][$poolKey]) ?? 0.0)
+            : self::nonnegative(self::roundMoney(
+                (float) $plan['appliedMaximum'] - (float) $account['existingContributions']['healthFsaSalaryReduction'],
+            ));
+        $taken = self::takeFromPool($context['healthFsaPools'][$poolKey], $localHeadroom, $sharedLimits);
+        $additional['healthFsaSalaryReduction'] = $taken;
+        $annual['healthFsaSalaryReduction'] = self::roundMoney($annual['healthFsaSalaryReduction'] + $taken);
+
+        return [
+            'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
+            'statutoryMaximum' => $plan['statutoryMaximum'],
+            'annualComponents' => $annual,
+            'additionalComponents' => $additional,
+            'planTermDependentCapacity' => 0.0,
+            'sharedLimits' => $sharedLimits,
+            'diagnostics' => $diagnostics,
+            'healthFsaDetail' => $plan['detail'],
+        ];
+    }
+
+    /**
+     * IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L.
+     * 97-34, and the effective-date note to the section makes it applicable to
+     * taxable years beginning after December 31, 1981. Before that the section
+     * did not exist; from 1982 through 1986 it existed with no dollar
+     * limitation, which the Tax Reform Act of 1986 Pub. L. 99-514 s.1163 added
+     * for taxable years beginning after December 31, 1986. The three states
+     * report differently.
+     */
+    private const DEPENDENT_CARE_FIRST_TAX_YEAR = 1982;
+
+    /**
+     * IRC 129(a)(2)(A) is a per-return amount, not a per-person one, and only a
+     * joint return puts two people on one return. Spouses filing jointly
+     * therefore share one pool; everybody else, including each spouse of a
+     * married-separate pair filing their own return at the halved amount,
+     * carries their own.
+     *
+     * @param array<string,mixed> $context
+     */
+    private static function dependentCarePoolKey(array $context, string $ownerId): string
+    {
+        if ($context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value) {
+            $role = $context['persons'][$ownerId]['role'] ?? null;
+            if ($role === 'taxpayer' || $role === 'spouse') {
+                return 'return';
+            }
+        }
+        return "return:{$ownerId}";
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     */
+    private static function initializeDependentCarePools(array &$context, array $accounts): void
+    {
+        // The IRC 129(a)(2)(A) amount is one figure for the return, so which
+        // account draws on it first decides which employee's assistance is
+        // includible. That must follow the same deterministic order the
+        // allocation uses.
+        $dcAccounts = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] === 'dependent_care_fsa') {
+                $dcAccounts[] = $account;
+            }
+        }
+        if ($dcAccounts === []) {
+            return;
+        }
+        usort(
+            $dcAccounts,
+            static fn (array $left, array $right): int =>
+                (($left['priority'] ?? 100) <=> ($right['priority'] ?? 100))
+                ?: ($left['inputIndex'] <=> $right['inputIndex']),
+        );
+
+        $taxYear = (int) $context['taxYear'];
+        $yearParameters = $context['fsaParameters']['dependentCare'] ?? null;
+        // IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4),
+        // so the halved amount and the lesser-of earned income rule do not
+        // follow from the filing status alone. IRC 21(e)(4) treats a
+        // married-separate taxpayer as not married when they maintained a
+        // qualifying individual's principal place of abode for more than half
+        // the year, furnished over half its cost, and their spouse was not a
+        // member of the household for the last six months.
+        $separateReturn = $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+        $treatedAsUnmarried = $separateReturn
+            && ($context['treatedAsUnmarriedUnderSection21e4'] ?? null) === true;
+        $married = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
+            || ($separateReturn && !$treatedAsUnmarried);
+        $statutoryExclusion = null;
+        if ($yearParameters !== null) {
+            $statutoryExclusion = $separateReturn && !$treatedAsUnmarried
+                ? (float) $yearParameters['marriedFilingSeparatelyExclusionLimit']
+                : (float) $yearParameters['exclusionLimit'];
+        }
+        $section21e4Undetermined = $separateReturn
+            && ($context['treatedAsUnmarriedUnderSection21e4'] ?? null) === null;
+
+        foreach ($dcAccounts as $account) {
+            $rules = $account['planRules']['dependentCareFsa'] ?? [];
+            if (!is_array($rules)) {
+                $rules = [];
+            }
+            $path = "accounts.{$account['id']}";
+            $diagnostics = [];
+            $status = CalculationStatus::DETERMINATE->value;
+            $indeterminate = false;
+            $unavailable = false;
+
+            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+
+            if ($yearParameters === null) {
+                $indeterminate = true;
+                $unavailable = $taxYear < self::DEPENDENT_CARE_FIRST_TAX_YEAR;
+                $diagnostics[] = $unavailable
+                    ? self::diagnostic(
+                        'DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR',
+                        DiagnosticSeverity::ERROR,
+                        'IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34, applicable to '
+                            . 'taxable years beginning after December 31, 1981, so no dependent care assistance '
+                            . "exclusion existed for tax year {$taxYear}.",
+                        'taxYear',
+                        'IRC 129; Pub. L. 97-34 s.124(f)',
+                    )
+                    : self::diagnostic(
+                        'DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987',
+                        DiagnosticSeverity::ERROR,
+                        'The IRC 129(a)(2)(A) limitation of exclusion was added by the Tax Reform Act of 1986, Pub. L. '
+                            . '99-514 section 1163(a), applicable to taxable years beginning after December 31, 1986. '
+                            . "For tax year {$taxYear} IRC 129 existed and excluded employer-provided dependent care "
+                            . 'assistance, but carried no dollar ceiling on the exclusion, so none is reported.',
+                        'taxYear',
+                        'IRC 129(a)(2)(A); Pub. L. 99-514 s.1163',
+                    );
+            }
+
+            // IRC 129(b)(1): the exclusion cannot exceed the employee's earned
+            // income, or, for a married employee, the lesser of the employee's
+            // and the spouse's. Both figures are caller-supplied; this package
+            // does not derive income.
+            $employeeEarnedIncome = array_key_exists('employeeEarnedIncome', $rules)
+                ? self::money($rules['employeeEarnedIncome'], "{$path}.planRules.dependentCareFsa.employeeEarnedIncome")
+                : null;
+            $spouseEarnedIncome = array_key_exists('spouseEarnedIncome', $rules)
+                ? self::money($rules['spouseEarnedIncome'], "{$path}.planRules.dependentCareFsa.spouseEarnedIncome")
+                : null;
+            $earnedIncomeLimitation = null;
+            if ($employeeEarnedIncome !== null && (!$married || $spouseEarnedIncome !== null)) {
+                $earnedIncomeLimitation = $married
+                    ? self::minMoney($employeeEarnedIncome, $spouseEarnedIncome)
+                    : $employeeEarnedIncome;
+            } elseif (!$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED',
+                    DiagnosticSeverity::WARNING,
+                    $married
+                        ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned "
+                            . 'income for the taxable year. Both are caller-supplied facts and at least one was not '
+                            . 'supplied, so the limitation has not been applied and the reported ceiling is the IRC '
+                            . '129(a)(2)(A) amount alone, which may overstate it.'
+                        : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. "
+                            . 'That is a caller-supplied fact and was not supplied, so the limitation has not been '
+                            . 'applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may '
+                            . 'overstate it.',
+                    "{$path}.planRules.dependentCareFsa.employeeEarnedIncome",
+                    'IRC 129(b)(1)',
+                );
+            }
+            if ($section21e4Undetermined && !$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE',
+                    DiagnosticSeverity::WARNING,
+                    'IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and IRC 21(e)(4) treats '
+                        . 'a married individual filing separately as not married when they maintained a household '
+                        . "that was a qualifying individual's principal place of abode for more than half the "
+                        . 'taxable year, furnished over half the cost of maintaining it, and their spouse was not a '
+                        . 'member of it during the last six months of the year. Those facts are not derivable from '
+                        . 'anything supplied here and treatedAsUnmarriedUnderSection21e4 was not stated, so the '
+                        . 'return has been treated as married: the halved IRC 129(a)(2)(A) amount and the '
+                        . 'IRC 129(b)(1)(B) lesser-of-earned-income rule are applied. A taxpayer who meets '
+                        . 'IRC 21(e)(4) takes the undivided amount and their own earned income instead.',
+                    'treatedAsUnmarriedUnderSection21e4',
+                    'IRC 129(a)(2)(C); IRC 21(e)(4)',
+                );
+            }
+            if (($rules['spouseIsStudentOrIncapableOfSelfCare'] ?? null) === true && !$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED',
+                    DiagnosticSeverity::WARNING,
+                    'IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or '
+                        . 'incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, '
+                        . "because no primary source for it is committed to this package's evidence corpus and an "
+                        . 'unattested figure is never encoded. Any spouseEarnedIncome supplied is used exactly as '
+                        . 'stated, so supply the deemed amount if the deeming applies.',
+                    "{$path}.planRules.dependentCareFsa.spouseIsStudentOrIncapableOfSelfCare",
+                    'IRC 129(b)(2); IRC 21(d)(2)',
+                );
+            }
+
+            $planDocumentLimit = array_key_exists('planDocumentLimit', $rules)
+                ? self::money($rules['planDocumentLimit'], "{$path}.planRules.dependentCareFsa.planDocumentLimit")
+                : null;
+            $applicableLimit = null;
+            if (!$indeterminate && $statutoryExclusion !== null) {
+                $applicableCandidates = [$statutoryExclusion];
+                if ($earnedIncomeLimitation !== null) {
+                    $applicableCandidates[] = $earnedIncomeLimitation;
+                }
+                if ($planDocumentLimit !== null) {
+                    $applicableCandidates[] = $planDocumentLimit;
+                }
+                $applicableLimit = self::minMoney(...$applicableCandidates);
+            }
+
+            $diagnostics[] = self::diagnostic(
+                'DEPENDENT_CARE_FACTS_SUPPLIED_BY_CALLER',
+                DiagnosticSeverity::INFO,
+                'This calculation applies IRC 129(a)(2) and, where the earned income facts are supplied, IRC '
+                    . '129(b)(1). It does not test whether the program meets the IRC 129(d) written-plan '
+                    . 'requirements, the IRC 129(d)(2) through (8) nondiscrimination rules, the IRC 129(c) denial for '
+                    . 'amounts paid to a related individual, or whether the individuals cared for qualify. It does not '
+                    . "model the IRC 21 dependent care credit or the IRC 21(c) reduction of that credit's expense "
+                    . 'base. A dependent care program may not offer a carryover at all except under section 214 of the '
+                    . 'Consolidated Appropriations Act, 2021, which is a plan option this engine cannot read, so no '
+                    . 'dependent care carryover is modelled.',
+                $path,
+                'IRC 129',
+            );
+
+            $detail = [
+                'statutoryExclusion' => $indeterminate ? null : $statutoryExclusion,
+                'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                'planDocumentLimit' => $planDocumentLimit,
+                'applicableExclusionLimit' => $applicableLimit,
+                'electedSalaryReduction' => $elected,
+                'excludableAmount' => 0.0,
+                'includibleInIncome' => 0.0,
+                'householdExclusionShared' => false,
+            ];
+
+            if ($indeterminate) {
+                $context['dependentCarePlans'][(string) $account['id']] = [
+                    'status' => $unavailable
+                        ? CalculationStatus::UNAVAILABLE->value
+                        : CalculationStatus::INDETERMINATE->value,
+                    'diagnostics' => $diagnostics,
+                    'statutoryMaximum' => $unavailable ? 0.0 : null,
+                    'detail' => $detail,
+                    'poolKey' => null,
+                    'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                    'planDocumentLimit' => $planDocumentLimit,
+                ];
+                continue;
+            }
+
+            $poolKey = self::dependentCarePoolKey($context, (string) $account['ownerId']);
+            if (!isset($context['dependentCarePools'][$poolKey])) {
+                $context['dependentCarePools'][$poolKey] = [
+                    'id' => "irc-129:{$poolKey}",
+                    'legalLimit' => 'IRC 129(a)(2)(A) dependent care assistance exclusion, per return',
+                    'limit' => $statutoryExclusion,
+                    'used' => 0.0,
+                ];
+            }
+
+            $context['dependentCarePlans'][(string) $account['id']] = [
+                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'diagnostics' => $diagnostics,
+                'statutoryMaximum' => $applicableLimit,
+                'detail' => $detail,
+                'poolKey' => $poolKey,
+                'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                'planDocumentLimit' => $planDocumentLimit,
+            ];
+        }
+
+        // A pool serving more than one account is a household figure two
+        // employees draw on, which IRC 129(a)(2)(A) makes visible rather than
+        // doubling.
+        $accountsByPool = [];
+        foreach ($context['dependentCarePlans'] as $plan) {
+            if ($plan['poolKey'] === null) {
+                continue;
+            }
+            $accountsByPool[$plan['poolKey']] = ($accountsByPool[$plan['poolKey']] ?? 0) + 1;
+        }
+        foreach ($context['dependentCarePlans'] as $accountId => $plan) {
+            if ($plan['poolKey'] !== null && ($accountsByPool[$plan['poolKey']] ?? 0) > 1) {
+                $context['dependentCarePlans'][$accountId]['detail']['householdExclusionShared'] = true;
+            }
+        }
+
+        // IRC 129(b)(1) caps "the amount excluded from the income of an employee
+        // under subsection (a) for any taxable year", which is that year's
+        // aggregate rather than a per-plan figure, and Form 2441 Part III
+        // computes a single excluded-benefits amount for the return from the
+        // smaller of the benefits, the earned incomes, and the IRC 129(a)(2)(A)
+        // amount. The ceiling therefore belongs to the pool the accounts share.
+        // Applied per account it would let a return exclude the limitation once
+        // for every dependent care FSA it holds.
+        $earnedIncomeCeilingsByPool = [];
+        foreach ($context['dependentCarePlans'] as $plan) {
+            if ($plan['poolKey'] === null || $plan['earnedIncomeLimitation'] === null) {
+                continue;
+            }
+            $poolKey = $plan['poolKey'];
+            $value = (float) $plan['earnedIncomeLimitation'];
+            if (!isset($earnedIncomeCeilingsByPool[$poolKey])) {
+                $earnedIncomeCeilingsByPool[$poolKey] = [];
+            }
+            if (!in_array($value, $earnedIncomeCeilingsByPool[$poolKey], true)) {
+                $earnedIncomeCeilingsByPool[$poolKey][] = $value;
+            }
+        }
+        foreach ($earnedIncomeCeilingsByPool as $poolKey => $ceilings) {
+            if (count($ceilings) === 1) {
+                $context['dependentCareEarnedIncomeCeilings'][$poolKey] = $ceilings[0];
+                continue;
+            }
+            // The earned income facts describe one return, so accounts sharing
+            // an IRC 129(a)(2)(A) amount reporting different ceilings is a
+            // contradiction in the supplied facts. Choosing one of them would
+            // invent a fact, so no exclusion is computed for any account
+            // drawing on that amount.
+            $sorted = $ceilings;
+            sort($sorted);
+            $reported = implode(', ', array_map(
+                static fn (float $value): string => '$' . self::localeNumber($value),
+                $sorted,
+            ));
+            foreach ($context['dependentCarePlans'] as $accountId => $plan) {
+                if ($plan['poolKey'] !== $poolKey) {
+                    continue;
+                }
+                $context['dependentCarePlans'][$accountId]['diagnostics'][] = self::diagnostic(
+                    'DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 129(b)(1) caps the amount excluded for the taxable year at the employee\'s earned income, '
+                        . 'or for a married employee at the lesser of the employee\'s and the spouse\'s. That is one '
+                        . 'figure for the return, but the dependent care flexible spending arrangements sharing this '
+                        . 'IRC 129(a)(2)(A) amount report different ceilings (' . $reported . '). The contradiction is '
+                        . 'in the supplied facts rather than in the statute, and resolving it by choosing one of them '
+                        . 'would invent a fact, so no exclusion is computed.',
+                    'accounts.' . $accountId . '.planRules.dependentCareFsa.employeeEarnedIncome',
+                    'IRC 129(b)(1)',
+                );
+                $context['dependentCarePlans'][$accountId]['status'] = CalculationStatus::INDETERMINATE->value;
+                $context['dependentCarePlans'][$accountId]['statutoryMaximum'] = null;
+                $context['dependentCarePlans'][$accountId]['detail']['applicableExclusionLimit'] = null;
+                // Detaching from the pool keeps the contradiction from consuming
+                // the household amount, matching how every other indeterminate
+                // plan behaves.
+                $context['dependentCarePlans'][$accountId]['poolKey'] = null;
+            }
+        }
+
+        // Assistance actually supplied draws on the household amount before any
+        // remaining capacity is offered, so what IRC 129(a)(2)(B) includes in
+        // income is measured against the amounts supplied rather than against
+        // capacity the scenario merely reports as available.
+        foreach ($dcAccounts as $account) {
+            $accountId = (string) $account['id'];
+            if (!isset($context['dependentCarePlans'][$accountId])) {
+                continue;
+            }
+            $plan = $context['dependentCarePlans'][$accountId];
+            if ($plan['poolKey'] === null || !isset($context['dependentCarePools'][$plan['poolKey']])) {
+                continue;
+            }
+            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+            if ($elected <= 0) {
+                continue;
+            }
+            $householdRemaining = self::poolRemaining($context['dependentCarePools'][$plan['poolKey']]) ?? 0.0;
+            $earnedIncomeCeiling = $context['dependentCareEarnedIncomeCeilings'][$plan['poolKey']] ?? null;
+            // Measured against what the pool has already excluded, not against
+            // this account alone: the IRC 129(b)(1) ceiling is the return's for
+            // the year.
+            $ceilingCandidates = [$householdRemaining];
+            if ($earnedIncomeCeiling !== null) {
+                $ceilingCandidates[] = self::nonnegative(self::roundMoney(
+                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['used'],
+                ));
+            }
+            if (($plan['planDocumentLimit'] ?? null) !== null) {
+                $ceilingCandidates[] = (float) $plan['planDocumentLimit'];
+            }
+            $ceiling = self::minMoney(...$ceilingCandidates);
+            $excludable = self::minMoney($elected, $ceiling);
+            $includible = self::roundMoney($elected - $excludable);
+            $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
+                (float) $context['dependentCarePools'][$plan['poolKey']]['used'] + $excludable,
+            );
+            $context['dependentCarePlans'][$accountId]['detail']['excludableAmount'] = $excludable;
+            $context['dependentCarePlans'][$accountId]['detail']['includibleInIncome'] = $includible;
+            if ($includible > 0) {
+                array_unshift(
+                    $context['dependentCarePlans'][$accountId]['diagnostics'],
+                    self::diagnostic(
+                        'DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME',
+                        DiagnosticSeverity::WARNING,
+                        '$' . self::localeNumber($includible) . ' of the $' . self::localeNumber($elected)
+                            . ' of dependent care assistance supplied exceeds the limitation that applies to this '
+                            . 'employee, so IRC 129(a)(2)(B) includes it in gross income for the taxable year in which '
+                            . 'the dependent care services were provided. The IRC 129(a)(2)(A) amount is a per-return '
+                            . 'figure rather than a per-person one, so two employees on one return draw on a single '
+                            . 'amount rather than one each.',
+                        "accounts.{$account['id']}.existingContributions.dependentCareSalaryReduction",
+                        'IRC 129(a)(2)(B)',
+                    ),
+                );
+                $context['dependentCarePlans'][$accountId]['status'] = self::accountStatusFromDiagnostics(
+                    $context['dependentCarePlans'][$accountId]['status'],
+                    $context['dependentCarePlans'][$accountId]['diagnostics'],
+                );
+            }
+        }
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param array<string,mixed> $account
+     *  @return array<string,mixed>
+     */
+    private static function allocateDependentCareFsa(array &$context, array $account): array
+    {
+        $plan = $context['dependentCarePlans'][(string) $account['id']];
+        $annual = $account['existingContributions'];
+        $additional = self::zeroComponents();
+        $sharedLimits = [];
+        $diagnostics = $plan['diagnostics'];
+        $detail = $plan['detail'];
+        $poolKey = $plan['poolKey'];
+        $hasPool = $poolKey !== null && isset($context['dependentCarePools'][$poolKey]);
+
+        if ($plan['status'] === CalculationStatus::UNAVAILABLE->value
+            || $plan['status'] === CalculationStatus::INDETERMINATE->value
+            || !$hasPool
+        ) {
+            if ($hasPool) {
+                self::reportPoolWithoutConsuming($context['dependentCarePools'][$poolKey], $sharedLimits);
+            }
+            // The components clone what the scenario supplied, so an elected
+            // salary reduction would otherwise be reported as excluded by a
+            // plan that has just said it cannot determine the exclusion. No
+            // amount is substantiated here, and the detail already carries
+            // zero for both halves.
+            $annual['dependentCareSalaryReduction'] = 0.0;
+            $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
+            return [
+                'status' => $plan['status'] === CalculationStatus::UNAVAILABLE->value
+                    ? CalculationStatus::UNAVAILABLE->value
+                    : CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => $plan['statutoryMaximum'],
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+                'dependentCareDetail' => $detail,
+            ];
+        }
+
+        // The supplied assistance already drew on the household IRC 129(a)(2)(A)
+        // amount, so what is left is the further exclusion this employee could
+        // reach. The IRC 129(b)(1) ceiling is measured against everything the
+        // pool has excluded rather than against this account alone, because it
+        // caps the return's exclusion for the taxable year.
+        $alreadyExcluded = (float) $detail['excludableAmount'];
+        $earnedIncomeCeiling = $context['dependentCareEarnedIncomeCeilings'][$poolKey] ?? null;
+        $headroomCandidates = [self::poolRemaining($context['dependentCarePools'][$poolKey]) ?? 0.0];
+        if ($earnedIncomeCeiling !== null) {
+            $headroomCandidates[] = self::nonnegative(self::roundMoney(
+                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['used'],
+            ));
+        }
+        if (($plan['planDocumentLimit'] ?? null) !== null) {
+            $headroomCandidates[] = self::nonnegative(self::roundMoney(
+                (float) $plan['planDocumentLimit'] - $alreadyExcluded,
+            ));
+        }
+        $headroom = self::minMoney(...$headroomCandidates);
+        $additionalExcludable = self::takeFromPool(
+            $context['dependentCarePools'][$poolKey],
+            $headroom,
+            $sharedLimits,
+        );
+
+        $annual['dependentCareSalaryReduction'] = self::roundMoney($alreadyExcluded + $additionalExcludable);
+        $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
+        $additional['dependentCareSalaryReduction'] = $additionalExcludable;
+        $detail['excludableAmount'] = $annual['dependentCareSalaryReduction'];
+
+        return [
+            'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
+            'statutoryMaximum' => $plan['statutoryMaximum'],
+            'annualComponents' => $annual,
+            'additionalComponents' => $additional,
+            'planTermDependentCapacity' => 0.0,
+            'sharedLimits' => $sharedLimits,
+            'diagnostics' => $diagnostics,
+            'dependentCareDetail' => $detail,
+        ];
+    }
+
+    /**
+     * What the health flexible spending arrangements in a scenario mean for IRC
+     * 223 eligibility, collected per person.
+     *
+     * Rev. Rul. 2004-45 turns the answer entirely on what the arrangement may
+     * reimburse: a general-purpose health FSA that pays section 213(d) medical
+     * expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is
+     * satisfied is coverage that is not a high deductible health plan and that
+     * provides a benefit the HDHP covers, so IRC 223(c)(1)(A)(ii) is failed; a
+     * limited-purpose arrangement reimbursing only vision, dental and
+     * preventive care, or a post-deductible one reimbursing only after the
+     * deductible is met, is not.
+     *
+     * @return array{generalPurpose:bool,purposeUnstated:bool,hsaCompatible:bool,generalPurposeCarryover:bool,generalPurposeGracePeriod:bool}
+     */
+    private static function emptyHealthFsaSection223Facts(): array
+    {
+        return [
+            'generalPurpose' => false,
+            'purposeUnstated' => false,
+            'hsaCompatible' => false,
+            'generalPurposeCarryover' => false,
+            'generalPurposeGracePeriod' => false,
+        ];
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     *  @return array<string,array<string,bool>>
+     */
+    private static function healthFsaSection223FactsByOwner(array $context, array $accounts): array
+    {
+        $byOwner = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] !== 'health_fsa') {
+                continue;
+            }
+            $detail = $context['healthFsaPlans'][(string) $account['id']]['detail'] ?? null;
+            if ($detail === null) {
+                continue;
+            }
+            $ownerId = (string) $account['ownerId'];
+            $byOwner[$ownerId] ??= self::emptyHealthFsaSection223Facts();
+            $purpose = $detail['purpose'];
+            if ($purpose === null) {
+                $byOwner[$ownerId]['purposeUnstated'] = true;
+            } elseif ($purpose === 'general_purpose') {
+                $byOwner[$ownerId]['generalPurpose'] = true;
+                if ((float) $detail['carryoverFromPriorYear'] > 0) {
+                    $byOwner[$ownerId]['generalPurposeCarryover'] = true;
+                }
+                if (($account['planRules']['healthFsa']['offersGracePeriod'] ?? null) === true) {
+                    $byOwner[$ownerId]['generalPurposeGracePeriod'] = true;
+                }
+            } else {
+                $byOwner[$ownerId]['hsaCompatible'] = true;
+            }
+        }
+        return $byOwner;
+    }
+
+    /** @param array<string,string>|null $couple
+     *  @return string|null
+     */
+    private static function hsaSpouseIdOf(?array $couple, string $ownerId): ?string
+    {
+        if ($couple === null) {
+            return null;
+        }
+        if ($couple[0] === $ownerId) {
+            return $couple[1];
+        }
+        if ($couple[1] === $ownerId) {
+            return $couple[0];
+        }
+        return null;
+    }
+
     /** @param array<string,mixed> $context
      *  @param list<array<string,mixed>> $accounts
      */
@@ -9082,6 +10985,7 @@ final class Engine
         }
 
         $couple = self::hsaMarriedCouple($context);
+        $section223FsaFacts = self::healthFsaSection223FactsByOwner($context, $accounts);
         $coupleMembersWithAccounts = [];
         foreach ($couple ?? [] as $personId) {
             if (isset($accountsByOwner[$personId])) {
@@ -9374,6 +11278,39 @@ final class Engine
                         ? self::roundMoney((float) $parameters['additionalContributionAmountAge55'])
                         : 0.0;
                 }
+            }
+
+            // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
+            // the IRC 223 answer unknown rather than merely unusual:
+            // general-purpose coverage is disqualifying and limited-purpose or
+            // post-deductible coverage is not, and the engine cannot read a plan
+            // document to tell which this is. A confident ceiling computed from a
+            // fact nobody supplied would be the bug, so this is the one part of
+            // the interaction that refuses to compute.
+            $spouseId = self::hsaSpouseIdOf($couple, $ownerId);
+            $ownFsa = $section223FsaFacts[$ownerId] ?? self::emptyHealthFsaSection223Facts();
+            $spouseFsa = $spouseId === null
+                ? self::emptyHealthFsaSection223Facts()
+                : ($section223FsaFacts[$spouseId] ?? self::emptyHealthFsaSection223Facts());
+            if ($ownFsa['purposeUnstated'] || $spouseFsa['purposeUnstated']) {
+                // Belt and braces: the ERROR severity below already forces the
+                // result indeterminate through the ordinary rule, and the flag
+                // keeps the refusal if that severity is ever softened. They are
+                // redundant on purpose, so no mutation distinguishes them
+                // individually.
+                $indeterminate = true;
+                $whose = $ownFsa['purposeUnstated'] ? 'held by this individual' : "held by this individual's spouse";
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION',
+                    DiagnosticSeverity::ERROR,
+                    "A health flexible spending arrangement {$whose} states no Rev. Rul. 2004-45 purpose. A "
+                        . 'general-purpose arrangement is coverage that fails IRC 223(c)(1)(A)(ii) and a '
+                        . 'limited-purpose or post-deductible one is not, so the IRC 223 answer turns on a plan-design '
+                        . 'fact this engine cannot read and no limitation is reported. Supply '
+                        . 'planRules.healthFsa.purpose.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
             }
 
             $amountsByOwner[$ownerId] = [
@@ -9856,6 +11793,91 @@ final class Engine
                 );
             }
 
+            // The IRC 125 / IRC 223 conflict is diagnosed and never enforced,
+            // so the plan status is fixed before these diagnostics are attached.
+            // Eligible-individual status is a caller-supplied fact everywhere
+            // else in this engine and no rule here overrides one; a caller who
+            // has already accounted for the conflict, by ending the arrangement
+            // mid-year and supplying the correct eligible months, must still get
+            // the answer their facts imply. Every IRC 223(b) figure therefore
+            // survives intact and only the account's reported status reflects
+            // the ERROR, through the ordinary rule that an error makes a result
+            // indeterminate.
+            $planStatus = self::accountStatusFromDiagnostics($status, $diagnostics);
+            $spouseId = self::hsaSpouseIdOf($couple, $ownerId);
+            $ownFsa = $section223FsaFacts[$ownerId] ?? self::emptyHealthFsaSection223Facts();
+            $spouseFsa = $spouseId === null
+                ? self::emptyHealthFsaSection223Facts()
+                : ($section223FsaFacts[$spouseId] ?? self::emptyHealthFsaSection223Facts());
+            if ($ownFsa['generalPurpose']) {
+                $carryoverSentence = $ownFsa['generalPurposeCarryover']
+                    ? ' Amounts carried over from the preceding plan year are general-purpose funds in the year they '
+                        . 'land, so the disqualification reaches that whole plan year.'
+                    : '';
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY',
+                    DiagnosticSeverity::ERROR,
+                    'This individual holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 '
+                        . 'holds that an individual covered by a health FSA paying or reimbursing section 213(d) '
+                        . 'medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is '
+                        . 'not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible '
+                        . 'individual not be covered by a health plan that is not a high deductible health plan and '
+                        . 'that provides coverage for a benefit the HDHP covers.' . $carryoverSentence
+                        . ' The IRC 223(b) figures reported here are unchanged: eligible-individual status is supplied '
+                        . 'by the caller and is never overridden, so this reports the conflict rather than enforcing '
+                        . 'it.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+            if ($spouseFsa['generalPurpose']) {
+                $diagnostics[] = self::diagnostic(
+                    'SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY',
+                    DiagnosticSeverity::ERROR,
+                    "This individual's spouse holds a general-purpose health flexible spending arrangement. Rev. Rul. "
+                        . '2004-45 states that the result is the same where the individual is covered by a health FSA '
+                        . "sponsored by the employer of the individual's spouse, because such an arrangement can "
+                        . "reimburse this individual's own section 213(d) medical expenses, so it is disqualifying "
+                        . 'coverage under IRC 223(c)(1)(A)(ii) for both of them. As with an individual\'s own '
+                        . 'arrangement, the IRC 223(b) figures are unchanged and the conflict is reported rather than '
+                        . 'enforced.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+            if ($ownFsa['generalPurposeGracePeriod'] || $spouseFsa['generalPurposeGracePeriod']) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION',
+                    DiagnosticSeverity::INFO,
+                    'The disqualifying arrangement offers a Prop. Treas. Reg. 1.125-1(e) grace period. Notice 2005-86 '
+                        . 'holds that an individual covered by a general-purpose health FSA during a grace period is '
+                        . 'generally not eligible to contribute to a health savings account until the first day of the '
+                        . 'month following the end of that grace period, even where the arrangement has no unused '
+                        . 'benefits left. The grace-period months of the following plan year are therefore affected as '
+                        . "well, which this year's eligible-month input cannot express.",
+                    "persons.{$ownerId}",
+                    'Notice 2005-86',
+                );
+            }
+            if (!$ownFsa['generalPurpose']
+                && !$spouseFsa['generalPurpose']
+                && !$ownFsa['purposeUnstated']
+                && !$spouseFsa['purposeUnstated']
+                && ($ownFsa['hsaCompatible'] || $spouseFsa['hsaCompatible'])
+            ) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE',
+                    DiagnosticSeverity::INFO,
+                    'Every health flexible spending arrangement in this scenario is limited-purpose or '
+                        . 'post-deductible. Rev. Rul. 2004-45 holds that an arrangement reimbursing only vision and '
+                        . 'dental benefits, which are permitted coverage, and preventive care, or reimbursing only '
+                        . 'expenses incurred after the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied, '
+                        . 'leaves the individual an eligible individual, so IRC 223(c)(1)(A)(ii) is not failed.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+
             $diagnostics[] = self::diagnostic(
                 'HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER',
                 DiagnosticSeverity::INFO,
@@ -9868,7 +11890,9 @@ final class Engine
                     . 'The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied '
                     . 'on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC '
                     . '408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are '
-                    . 'not tested.',
+                    . 'not tested. Where the scenario also holds a health flexible spending arrangement, the IRC '
+                    . '223(c)(1)(A)(ii) consequence of its Rev. Rul. 2004-45 purpose is reported and never enforced: '
+                    . 'the figures here are the ones the supplied months and coverage produce.',
                 "persons.{$ownerId}",
                 'IRC 223',
             );
@@ -9899,7 +11923,7 @@ final class Engine
             ];
 
             $context['hsaPlans'][$ownerId] = [
-                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'status' => $planStatus,
                 'diagnostics' => $diagnostics,
                 'statutoryMaximum' => $baseLimit === null
                     ? null
@@ -10251,6 +12275,8 @@ final class Engine
             'defined_benefit' => self::allocateDefinedBenefit($account),
             'section457f' => self::allocateSection457f($account),
             'hsa' => self::allocateHsa($context, $account),
+            'health_fsa' => self::allocateHealthFsa($context, $account),
+            'dependent_care_fsa' => self::allocateDependentCareFsa($context, $account),
             default => throw new ParameterException(
                 'UNSUPPORTED_ACCOUNT_FAMILY',
                 "Unsupported account family {$traits['family']}.",
@@ -12165,6 +14191,9 @@ final class Engine
             'deductibleIraContribution' => 0.0,
             'nondeductibleIraContribution' => 0.0,
             'hsaContribution' => 0.0,
+            'healthFsaSalaryReduction' => 0.0,
+            'dependentCareAssistanceExclusion' => 0.0,
+            'dependentCareIncludibleInIncome' => 0.0,
             'federalAgiReduction' => 0.0,
             'federalAgiIncrease' => 0.0,
             'taxableRothConversions' => 0.0,
@@ -12213,6 +14242,15 @@ final class Engine
                 $totals['hsaContribution']
                 + $components['hsaDeductible']
                 + $components['hsaEmployerOrCafeteria'],
+            );
+            $totals['healthFsaSalaryReduction'] = self::roundMoney(
+                $totals['healthFsaSalaryReduction'] + $components['healthFsaSalaryReduction'],
+            );
+            $totals['dependentCareAssistanceExclusion'] = self::roundMoney(
+                $totals['dependentCareAssistanceExclusion'] + $components['dependentCareSalaryReduction'],
+            );
+            $totals['dependentCareIncludibleInIncome'] = self::roundMoney(
+                $totals['dependentCareIncludibleInIncome'] + $components['dependentCareIncludibleInIncome'],
             );
             $totals['federalAgiReduction'] = self::roundMoney(
                 $totals['federalAgiReduction'] + $account['federalTaxEffects']['federalAgiReduction'],

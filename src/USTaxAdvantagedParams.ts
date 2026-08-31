@@ -78,6 +78,9 @@ export enum AccountType {
   CASH_BALANCE_PLAN = "cash_balance_plan",
 
   HSA = "hsa",
+
+  HEALTH_FSA = "health_fsa",
+  DEPENDENT_CARE_FSA = "dependent_care_fsa",
 }
 
 export enum ConversionType {
@@ -205,6 +208,10 @@ export interface ExistingContributionInput {
   hsaDeductible?: Money;
   /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
   hsaEmployerOrCafeteria?: Money;
+  /** IRC 125 salary reduction contributions elected to a health flexible spending arrangement. */
+  healthFsaSalaryReduction?: Money;
+  /** Dependent care assistance provided for the year through an IRC 129 program. */
+  dependentCareSalaryReduction?: Money;
 }
 
 export interface Special403bCatchUpInput {
@@ -266,6 +273,134 @@ export interface HsaRulesInput extends HsaCoverageInput {
   testingPeriodFailureByDeathOrDisability?: boolean;
   /** IRC 223(b)(5)(B)(ii) agreed share of the one family limit, 0 through 1. */
   familyLimitShare?: number;
+}
+
+/**
+ * Rev. Rul. 2004-45 classification of a health FSA, which decides whether it is
+ * disqualifying coverage under IRC 223(c)(1)(A)(ii).
+ */
+export type HealthFsaPurpose = "general_purpose" | "limited_purpose" | "post_deductible";
+
+/**
+ * IRC 125(i) health flexible spending arrangement facts. Only read for
+ * `health_fsa` accounts.
+ *
+ * Every field is a plan-design fact. This engine does not read plan documents,
+ * so none of them is inferred: an absent carryover fact produces a diagnostic
+ * rather than an assumed answer, exactly as absent HSA coverage does.
+ */
+export interface HealthFsaRulesInput {
+  /**
+   * Rev. Rul. 2004-45 classification. Absent means unknown, and the engine
+   * diagnoses rather than assuming either value, because the two answers differ
+   * on whether the arrangement blocks IRC 223 eligibility.
+   */
+  purpose?: HealthFsaPurpose;
+  /** Whether the plan offers the Notice 2013-71 carryover. Mutually exclusive with `offersGracePeriod`. */
+  offersCarryover?: boolean;
+  /** Whether the plan offers the Prop. Treas. Reg. 1.125-1(e) grace period. Mutually exclusive with `offersCarryover`. */
+  offersGracePeriod?: boolean;
+  /** Unused amount from the immediately preceding plan year, after the run-out period. */
+  priorYearUnusedAmount?: Money;
+  /** Non-elective employer flex credits contributed to the arrangement. */
+  employerFlexCredit?: Money;
+  /**
+   * Whether the employee could have elected the flex credit as cash or another
+   * taxable benefit. Notice 2012-40 keeps flex credits outside IRC 125(i)
+   * unless they could, in which case they are treated as salary reduction
+   * contributions and consume the limit.
+   */
+  flexCreditElectableAsCash?: boolean;
+  /** Lower limit imposed by the plan document, if any. */
+  planDocumentLimit?: Money;
+  /**
+   * Whether the cafeteria plan's plan year is the calendar year. Notice 2012-40
+   * holds that "taxable year" in IRC 125(i) means the plan year, while every
+   * annual revenue procedure publishes the figure for taxable years beginning
+   * in a calendar year and this package is keyed by tax year throughout. The
+   * two agree exactly for a calendar-year plan. Stating `false` makes the
+   * answer depend on the plan year start date, which this engine does not hold,
+   * so it returns an indeterminate result rather than assuming.
+   */
+  planYearIsCalendarYear?: boolean;
+}
+
+export interface HealthFsaAccountDetail {
+  /** Rev. Rul. 2004-45 classification supplied by the caller, or null when unstated. */
+  purpose: HealthFsaPurpose | null;
+  /** IRC 125(i) dollar limitation for the year, before any lower plan-document limit. Null where none exists. */
+  salaryReductionLimit: Money | null;
+  /** The ceiling actually applied: the IRC 125(i) limit, or a lower plan-document limit. */
+  appliedSalaryReductionLimit: Money | null;
+  /** Salary reduction contributions supplied on this account. */
+  electedSalaryReduction: Money;
+  /**
+   * Flex credits treated as salary reduction contributions under Notice
+   * 2012-40 because the employee could have elected them as cash or another
+   * taxable benefit. Flex credits that could not are outside IRC 125(i) and are
+   * zero here.
+   */
+  employerFlexCreditCountedAgainstLimit: Money;
+  /** Amount carried in from the immediately preceding plan year: the lesser of the unused amount and that year's cap. */
+  carryoverFromPriorYear: Money;
+  /** The preceding year's carryover cap, which is the one that governs. Null where that year has no encoded cap. */
+  carryoverLimitForPriorYear: Money | null;
+  /** The cap on what may be carried out of *this* year into the next. Null where none exists. */
+  carryoverLimitForThisYear: Money | null;
+  /** Unused prior-year amount lost under the use-or-lose rule, or null when the facts do not determine it. */
+  forfeitedAmount: Money | null;
+  /** Whether the arrangement is disqualifying coverage under IRC 223(c)(1)(A)(ii); null when the purpose is unstated. */
+  disqualifiesHsaEligibility: boolean | null;
+}
+
+/**
+ * IRC 129 dependent care assistance facts. Only read for `dependent_care_fsa`
+ * accounts.
+ *
+ * Earned income is caller-supplied. This package does not derive income, but
+ * IRC 129(b)(1) is a hard statutory ceiling on the exclusion, so a supplied
+ * figure is applied and an absent one is diagnosed rather than ignored.
+ */
+export interface DependentCareFsaRulesInput {
+  /** IRC 129(b)(1)(A) or (B)(i) earned income of the employee for the taxable year. */
+  employeeEarnedIncome?: Money;
+  /** IRC 129(b)(1)(B)(ii) earned income of the employee's spouse; needed whenever the employee is married. */
+  spouseEarnedIncome?: Money;
+  /**
+   * IRC 129(b)(2): the spouse is a student or incapable of caring for himself,
+   * so IRC 21(d)(2) deems an amount of earned income. The IRC 21(d)(2) schedule
+   * is not encoded — no primary source for it is in this package's evidence
+   * corpus — so asserting this only records that any `spouseEarnedIncome`
+   * supplied is a deemed figure, and produces a diagnostic saying so.
+   */
+  spouseIsStudentOrIncapableOfSelfCare?: boolean;
+  /**
+   * A lower maximum the employer's plan itself allows. Form 2441's dependent
+   * care benefit computation takes the plan's maximum into account when it is
+   * below the Code amount. Like a health FSA plan-document limit, it is a term
+   * of this plan: it caps this arrangement and is not an employer-group or
+   * return-level ceiling.
+   */
+  planDocumentLimit?: Money;
+}
+
+export interface DependentCareFsaAccountDetail {
+  /** IRC 129(a)(2)(A) amount for the return, or null for a year with no statutory limitation. */
+  statutoryExclusion: Money | null;
+  /** IRC 129(b)(1) earned income ceiling, or null when the earned income facts were not supplied. */
+  earnedIncomeLimitation: Money | null;
+  /** A lower maximum the plan itself allows, or null when none was supplied. */
+  planDocumentLimit: Money | null;
+  /** The least of the applicable limits, which is the ceiling actually applied to this account. */
+  applicableExclusionLimit: Money | null;
+  /** Dependent care assistance supplied on this account. */
+  electedSalaryReduction: Money;
+  /** The part of this account's total excluded from gross income under IRC 129(a)(1). */
+  excludableAmount: Money;
+  /** The part included in gross income under IRC 129(a)(2)(B) because it exceeds the limitation. */
+  includibleInIncome: Money;
+  /** True when the IRC 129(a)(2)(A) amount is one household figure shared with another account on the same return. */
+  householdExclusionShared: boolean;
 }
 
 export type HsaTestingPeriodStatus = "satisfied" | "failed" | "failed_exception_applies" | "unresolved";
@@ -410,6 +545,10 @@ export interface PlanRulesInput {
   section457SpecialCatchUp?: Section457SpecialCatchUpInput;
   /** IRC 223 health savings account facts. Only read for `hsa` accounts. */
   hsa?: HsaRulesInput;
+  /** IRC 125(i) health flexible spending arrangement facts. Only read for `health_fsa` accounts. */
+  healthFsa?: HealthFsaRulesInput;
+  /** IRC 129 dependent care assistance facts. Only read for `dependent_care_fsa` accounts. */
+  dependentCareFsa?: DependentCareFsaRulesInput;
 
   /** Grandfathered SARSEP established before 1997. */
   grandfatheredSarsep?: boolean;
@@ -449,6 +588,21 @@ export interface ScenarioInput {
   persons: PersonInput[];
   accounts: AccountInput[];
   conversions?: RothConversionInput[];
+  /**
+   * IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and
+   * IRC 21(e)(4) treats a married individual filing separately as **not**
+   * married when they maintained a household that was a qualifying
+   * individual's principal place of abode for more than half the year,
+   * furnished over half its cost, and their spouse was not a member of it
+   * during the last six months. Such a taxpayer takes the undivided
+   * IRC 129(a)(2)(A) amount and the IRC 129(b)(1)(A) own-earned-income
+   * limitation rather than the halved amount and the lesser-of rule.
+   *
+   * The three underlying facts are not derivable from anything else supplied,
+   * so this is the determination itself rather than the facts behind it. Absent
+   * on a married-separate return, the determination is reported as not made.
+   */
+  treatedAsUnmarriedUnderSection21e4?: boolean;
 }
 
 export interface ContributionComponents {
@@ -470,6 +624,16 @@ export interface ContributionComponents {
   hsaDeductible: Money;
   /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
   hsaEmployerOrCafeteria: Money;
+  /** IRC 125 salary reduction contributions elected to a health flexible spending arrangement. */
+  healthFsaSalaryReduction: Money;
+  /** Dependent care assistance excluded from gross income under IRC 129(a)(1). */
+  dependentCareSalaryReduction: Money;
+  /**
+   * Dependent care assistance included in gross income under IRC 129(a)(2)(B)
+   * because it exceeds the limitation. It is a derived split of the supplied
+   * amount rather than an input of its own.
+   */
+  dependentCareIncludibleInIncome: Money;
 }
 
 export interface FederalTaxEffects {
@@ -515,6 +679,10 @@ export interface AccountCalculationResult {
   sharedLimits: SharedLimitUse[];
   /** IRC 223 detail; present only for `hsa` accounts. */
   hsa?: HsaAccountDetail;
+  /** IRC 125(i) detail; present only for `health_fsa` accounts. */
+  healthFsa?: HealthFsaAccountDetail;
+  /** IRC 129 detail; present only for `dependent_care_fsa` accounts. */
+  dependentCareFsa?: DependentCareFsaAccountDetail;
   diagnostics: Diagnostic[];
 }
 
@@ -542,6 +710,12 @@ export interface ScenarioTotals {
   nondeductibleIraContribution: Money;
   /** IRC 223 contributions, deducted and excluded together. */
   hsaContribution: Money;
+  /** IRC 125 health flexible spending arrangement salary reduction contributions. */
+  healthFsaSalaryReduction: Money;
+  /** IRC 129(a)(1) dependent care assistance excluded from gross income. */
+  dependentCareAssistanceExclusion: Money;
+  /** IRC 129(a)(2)(B) dependent care assistance included in gross income. */
+  dependentCareIncludibleInIncome: Money;
   federalAgiReduction: Money;
   federalAgiIncrease: Money;
   taxableRothConversions: Money;
@@ -555,6 +729,8 @@ export interface ScenarioResult {
   parameters: YearParameters;
   /** IRC 223 parameters for the year, or null when HSAs did not exist or no revenue procedure is encoded. */
   hsaParameters: HsaYearParameters | null;
+  /** IRC 125 and IRC 129 flexible spending arrangement parameters, or null for a year with no encoded figures. */
+  fsaParameters: FsaYearParameters | null;
   accounts: AccountCalculationResult[];
   conversions: ConversionCalculationResult[];
   totals: ScenarioTotals;
@@ -681,6 +857,46 @@ interface HsaParameterData {
   historicalCoveragePolicy: Record<string, string>;
   sources: Array<Record<string, string>>;
   years: Record<string, HsaYearParameters>;
+}
+
+/** IRC 125(i) health flexible spending arrangement amounts for one year. */
+export interface HealthFsaYearParameters {
+  /** IRC 125(i)(1) dollar limitation on salary reduction contributions, as indexed under IRC 125(i)(2). */
+  salaryReductionLimit: Money;
+  /**
+   * The maximum unused amount from *this* year that a plan permitting a
+   * carryover may carry into the immediately following year. Notice 2013-71
+   * fixed it at $500; Notice 2020-33 raised it to 20 percent of that year's
+   * IRC 125(i) limit. Both are phrased as the amount carried *from* a plan
+   * year, so it belongs to the source year and never to the receiving one.
+   */
+  carryoverLimit: Money;
+}
+
+/** IRC 129(a)(2)(A) dependent care assistance exclusion amounts for one year. */
+export interface DependentCareYearParameters {
+  /** IRC 129(a)(2)(A) exclusion for a return other than a married separate one. */
+  exclusionLimit: Money;
+  /** IRC 129(a)(2)(A) parenthetical amount for a separate return by a married individual. */
+  marriedFilingSeparatelyExclusionLimit: Money;
+}
+
+export interface FsaYearParameters {
+  year: number;
+  /** Null for a year before IRC 125(i) existed, when no statutory salary-reduction ceiling applied. */
+  healthFsa: HealthFsaYearParameters | null;
+  dependentCare: DependentCareYearParameters;
+}
+
+interface FsaParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, FsaYearParameters>;
 }
 
 /* <generated-parameters> */
@@ -6856,6 +7072,561 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
 } as HsaParameterData;
 /* </generated-hsa-parameters> */
 
+/* <generated-fsa-parameters> */
+const RAW_FSA_PARAMETERS: FsaParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1987,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "IRC 129(a)(2)(A) fixes the dependent care assistance exclusion, and IRC 125(i) fixes the health flexible spending arrangement salary-reduction limit. The table starts at 1987, the first taxable year for which Pub. L. 99-514 section 1163 supplied a dependent care dollar limitation, and is never extrapolated forward: a tax year with no published figure returns an unavailable or indeterminate status and a diagnostic rather than a projected amount.",
+    "healthFsaFirstYear": "IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, amended by section 10902 of that Act and by section 1403(b) of the Health Care and Education Reconciliation Act of 2010, Pub. L. 111-152. Notice 2012-40 reads its effective date as applying to plan years beginning after December 31, 2012. Before that there was no statutory salary-reduction ceiling at all, only whatever the plan document imposed, so healthFsa is null for 1987 through 2012 and the engine returns an indeterminate result rather than a fabricated ceiling.",
+    "planYearVersusTaxYear": "Notice 2012-40 section III holds that the term \"taxable year\" in IRC 125(i) refers to the plan year of the cafeteria plan, so the statutory limit runs on a plan-year basis. Every annual revenue procedure nonetheless publishes the figure \"for taxable years beginning in\" the year, and this package is keyed by tax year throughout. Rows are therefore keyed by tax year and are exact for a calendar-year plan. For a non-calendar plan year the applicable figure depends on the plan year start date, which is a fact this engine does not hold, so it diagnoses rather than assuming.",
+    "healthFsaCarryoverBelongsToSourceYear": "Notice 2013-71 section III created the carryover as a plan option at a fixed $500, and Notice 2020-33 section III.A raised it to 20 percent of the IRC 125(i) limit for the plan year and indexed it with that limit. Both phrase it as the maximum unused amount FROM a plan year carried to the immediately following plan year, so carryoverLimit belongs to the year the funds came from and never to the year they land in. Notice 2013-71 also holds that the carryover does not count against or otherwise affect the IRC 125(i) limit of the receiving year, and that a plan may offer a carryover or a grace period but not both.",
+    "section214ReliefNotModelled": "Section 214 of the Consolidated Appropriations Act, 2021, Pub. L. 116-260, implemented by Notice 2021-15, permitted a plan to carry over ALL unused amounts from plan years ending in 2020 and in 2021, and permitted a dependent care carryover that is otherwise forbidden. It is entirely a plan option that the engine cannot read, so it is not modelled; a carryover computed out of a 2020 or 2021 plan year carries a diagnostic saying so rather than silently applying the ordinary cap.",
+    "dependentCareNotIndexed": "The IRC 129(a)(2)(A) amounts are statutory and carry no inflation adjustment, which is why they never appear in the annual revenue procedures. They changed twice: Pub. L. 117-2 section 9632 substituted $10,500 (half that for a married separate return) for taxable years beginning after December 31, 2020 and before January 1, 2022, and Pub. L. 119-21 section 70404 substituted $7,500 ($3,750) for taxable years beginning after December 31, 2025. Each year is encoded as its own row so the 2021 increase and its reversion are both data rather than a rule."
+  },
+  "sources": [
+    {
+      "id": "usc-26-125",
+      "title": "26 U.S.C. 125, Cafeteria plans (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec125.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "usc-26-129",
+      "title": "26 U.S.C. 129, Dependent care assistance programs (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec129.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-117-2",
+      "title": "American Rescue Plan Act of 2021, Pub. L. 117-2, section 9632 (2021-only dependent care exclusion)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-117publ2/pdf/PLAW-117publ2.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70404 (dependent care exclusion raised for taxable years beginning after 2025)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2012-40",
+      "title": "Notice 2012-40, the $2,500 IRC 125(i) limit, its plan-year basis, and the per-employer rule",
+      "url": "https://www.irs.gov/pub/irs-drop/n-12-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2013-71",
+      "title": "Notice 2013-71, modification of the use-or-lose rule to permit a $500 health FSA carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/n-13-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2020-33",
+      "title": "Notice 2020-33, carryover indexed at 20 percent of the IRC 125(i) limit",
+      "url": "https://www.irs.gov/pub/irs-drop/n-20-33.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-42",
+      "title": "Notice 2005-42, the grace period of up to two months and 15 days",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-42.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-86",
+      "title": "Notice 2005-86, health savings account eligibility during a cafeteria plan grace period",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-86.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-15",
+      "title": "Notice 2021-15, the Consolidated Appropriations Act, 2021 section 214 temporary carryover relief",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-15.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-26",
+      "title": "Notice 2021-26, the ARPA section 9632 dependent care increase and its interaction with section 214 carryovers",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-rul-2004-45",
+      "title": "Rev. Rul. 2004-45, general-purpose, limited-purpose, and post-deductible health FSAs under IRC 223(c)(1)(A)(ii)",
+      "url": "https://www.irs.gov/pub/irs-drop/rr-04-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "fr-72-43938",
+      "title": "72 Fed. Reg. 43938 (Aug. 6, 2007), proposed regulations under IRC 125, including Prop. Treas. Reg. 1.125-1(e) and 1.125-5(b)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2007-08-06/pdf/E7-14827.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-rev-proc-2012-41",
+      "title": "Internal Revenue Bulletin 2012-45, carrying Rev. Proc. 2012-41, whose 2013 adjusted items contain no Cafeteria Plans entry",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb12-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-35",
+      "title": "Rev. Proc. 2013-35, section 3.15, 2014 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61, section 3.16, 2015 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53, section 3.16, 2016 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55, section 3.16, 2017 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58, section 3.16, 2018 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Internal Revenue Bulletin 2018-10, carrying Rev. Proc. 2018-18, which reissued 2018 figures after the Tax Cuts and Jobs Act without touching section 3.16",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57, section 3.17, 2019 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44, section 3.17, 2020 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45, section 3.17, 2021 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45, section 3.16, 2022 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38, section 3.16, 2023 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34, section 3.16, 2024 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40, section 3.16, 2025 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32, section 3.15, 2026 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1987": {
+      "year": 1987,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1988": {
+      "year": 1988,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1989": {
+      "year": 1989,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1990": {
+      "year": 1990,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1991": {
+      "year": 1991,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1992": {
+      "year": 1992,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1993": {
+      "year": 1993,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1994": {
+      "year": 1994,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1995": {
+      "year": 1995,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1996": {
+      "year": 1996,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1997": {
+      "year": 1997,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "healthFsa": {
+        "salaryReductionLimit": 2600,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "healthFsa": {
+        "salaryReductionLimit": 2650,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "healthFsa": {
+        "salaryReductionLimit": 2700,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 10500,
+        "marriedFilingSeparatelyExclusionLimit": 5250
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "healthFsa": {
+        "salaryReductionLimit": 2850,
+        "carryoverLimit": 570
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "healthFsa": {
+        "salaryReductionLimit": 3050,
+        "carryoverLimit": 610
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "healthFsa": {
+        "salaryReductionLimit": 3200,
+        "carryoverLimit": 640
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "healthFsa": {
+        "salaryReductionLimit": 3300,
+        "carryoverLimit": 660
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "healthFsa": {
+        "salaryReductionLimit": 3400,
+        "carryoverLimit": 680
+      },
+      "dependentCare": {
+        "exclusionLimit": 7500,
+        "marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    }
+  }
+} as FsaParameterData;
+/* </generated-fsa-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -6888,7 +7659,9 @@ interface AccountTraits {
     | "annual_additions_only"
     | "defined_benefit"
     | "section457f"
-    | "hsa";
+    | "hsa"
+    | "health_fsa"
+    | "dependent_care_fsa";
   availabilityKey?: string;
   designatedRoth: boolean;
   shares402g: boolean;
@@ -6948,6 +7721,9 @@ const ACCOUNT_TRAITS: Record<AccountType, AccountTraits> = {
   [AccountType.CASH_BALANCE_PLAN]: definedBenefitTraits(),
 
   [AccountType.HSA]: hsaTraits(),
+
+  [AccountType.HEALTH_FSA]: healthFsaTraits(),
+  [AccountType.DEPENDENT_CARE_FSA]: dependentCareFsaTraits(),
 };
 
 function baseTraits(
@@ -7081,6 +7857,14 @@ function hsaTraits(): AccountTraits {
   return baseTraits("hsa");
 }
 
+function healthFsaTraits(): AccountTraits {
+  return baseTraits("health_fsa");
+}
+
+function dependentCareFsaTraits(): AccountTraits {
+  return baseTraits("dependent_care_fsa");
+}
+
 function definedBenefitTraits(): AccountTraits {
   return baseTraits("defined_benefit", { employerOnly: true });
 }
@@ -7169,6 +7953,24 @@ const ACCOUNT_TYPE_ALIASES: Record<string, AccountType> = {
   HSA: AccountType.HSA,
   HEALTH_SAVINGS_ACCOUNT: AccountType.HSA,
   SECTION_223: AccountType.HSA,
+  // A bare "FSA" is deliberately absent. It names a health FSA and a dependent
+  // care FSA equally well, and the two are different accounts under different
+  // Code sections with different limits and different household aggregation, so
+  // aliasing it would silently pick one. It falls through to
+  // INVALID_ACCOUNT_TYPE, which names both spellings in the message.
+  HEALTH_FSA: AccountType.HEALTH_FSA,
+  HEALTHCARE_FSA: AccountType.HEALTH_FSA,
+  HEALTH_CARE_FSA: AccountType.HEALTH_FSA,
+  MEDICAL_FSA: AccountType.HEALTH_FSA,
+  HEALTH_FLEXIBLE_SPENDING_ARRANGEMENT: AccountType.HEALTH_FSA,
+  SECTION_125_HEALTH_FSA: AccountType.HEALTH_FSA,
+  DEPENDENT_CARE_FSA: AccountType.DEPENDENT_CARE_FSA,
+  DEPENDENT_CARE_ACCOUNT: AccountType.DEPENDENT_CARE_FSA,
+  DEPENDENT_CARE_ASSISTANCE: AccountType.DEPENDENT_CARE_FSA,
+  DEPENDENT_CARE_ASSISTANCE_PROGRAM: AccountType.DEPENDENT_CARE_FSA,
+  DCAP: AccountType.DEPENDENT_CARE_FSA,
+  DCFSA: AccountType.DEPENDENT_CARE_FSA,
+  SECTION_129: AccountType.DEPENDENT_CARE_FSA,
 };
 
 const CONVERSION_TYPE_ALIASES: Record<string, ConversionType> = {
@@ -7291,8 +8093,18 @@ function parseAccountType(value: AccountType | string | unknown, present = true)
       `Account type must be a string, but received ${describeInputValue(value, present)}.`,
     );
   }
-  const parsed = ACCOUNT_TYPE_ALIASES[normalizeToken(value)];
+  const token = normalizeToken(value);
+  const parsed = ACCOUNT_TYPE_ALIASES[token];
   if (!parsed) {
+    // "FSA" alone is ambiguous rather than unknown: it names a health FSA under
+    // IRC 125(i) and a dependent care FSA under IRC 129 equally well, and those
+    // carry different limits and different household aggregation.
+    if (token === "FSA" || token === "FLEXIBLE_SPENDING_ARRANGEMENT" || token === "FLEXIBLE_SPENDING_ACCOUNT") {
+      throw new ParameterError(
+        "INVALID_ACCOUNT_TYPE",
+        `Ambiguous account type: ${value}. Use "health_fsa" for an IRC 125(i) health flexible spending arrangement or "dependent_care_fsa" for an IRC 129 dependent care assistance program.`,
+      );
+    }
     throw new ParameterError("INVALID_ACCOUNT_TYPE", `Unsupported retirement account type: ${value}`);
   }
   return parsed;
@@ -7375,6 +8187,9 @@ function zeroComponents(): ContributionComponents {
     unclassifiedIra: 0,
     hsaDeductible: 0,
     hsaEmployerOrCafeteria: 0,
+    healthFsaSalaryReduction: 0,
+    dependentCareSalaryReduction: 0,
+    dependentCareIncludibleInIncome: 0,
   };
 }
 
@@ -7395,6 +8210,14 @@ function cloneComponents(source?: ExistingContributionInput): ContributionCompon
   result.special457CatchUp = money(source.special457CatchUp, "existing.special457CatchUp");
   result.hsaDeductible = money(source.hsaDeductible, "existing.hsaDeductible");
   result.hsaEmployerOrCafeteria = money(source.hsaEmployerOrCafeteria, "existing.hsaEmployerOrCafeteria");
+  result.healthFsaSalaryReduction = money(source.healthFsaSalaryReduction, "existing.healthFsaSalaryReduction");
+  // dependentCareIncludibleInIncome is deliberately not read from the input: it
+  // is the IRC 129(a)(2)(B) split of the supplied amount, computed here, in the
+  // same way unclassifiedIra is derived rather than supplied.
+  result.dependentCareSalaryReduction = money(
+    source.dependentCareSalaryReduction,
+    "existing.dependentCareSalaryReduction",
+  );
   return result;
 }
 
@@ -7443,6 +8266,55 @@ function zeroTaxEffects(): FederalTaxEffects {
   };
 }
 
+/**
+ * The components record what the scenario supplied, which is a fact even when
+ * the account cannot be sized. The tax treatment of those amounts is not always
+ * a fact, and two cases are settled enough to report rather than assume:
+ *
+ * An `unavailable` account is one whose type did not exist for the tax year, so
+ * a contribution to it cannot carry that type's exclusion or deduction. IRC 223
+ * was added for taxable years beginning after 2003, so a 2003 cafeteria-plan
+ * HSA contribution is not an IRC 106(d) exclusion no matter what it is called.
+ *
+ * An election above the IRC 125(i) limit costs the plan its IRC 125 status
+ * entirely under Notice 2012-40 section III, not merely as to the excess, so
+ * the IRC 125(a) exclusion fails for the whole health FSA salary reduction.
+ *
+ * `indeterminate` on its own is deliberately not in this list. An unknown
+ * IRC 415(c) limit does not undo a pre-tax deferral's effect on AGI, and a
+ * pre-2013 health FSA excluded salary reductions under IRC 125(a) perfectly
+ * well while having no IRC 125(i) ceiling to report.
+ */
+function accountTaxEffects(
+  outcome: AllocationOutcome,
+  traits: AccountTraits,
+  planRules: PlanRulesInput,
+  diagnostics: Diagnostic[],
+): FederalTaxEffects {
+  if (outcome.status === CalculationStatus.UNAVAILABLE) {
+    const suppressed = zeroTaxEffects();
+    suppressed.notes.push(
+      "This account type did not exist for the tax year, so no exclusion or deduction of its kind is reported for the amounts supplied. The amounts themselves remain in contributionComponents.",
+    );
+    return suppressed;
+  }
+  const section125QualificationFailed = diagnostics.some(
+    (entry) => entry.code === "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
+  );
+  if (!section125QualificationFailed) {
+    return contributionTaxEffects(outcome.annualComponents, traits, planRules);
+  }
+  const withoutHealthFsa: ContributionComponents = {
+    ...outcome.annualComponents,
+    healthFsaSalaryReduction: 0,
+  };
+  const effects = contributionTaxEffects(withoutHealthFsa, traits, planRules);
+  effects.notes.push(
+    "IRC 125(i) makes a health flexible spending arrangement a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit. Notice 2012-40 section III holds that a plan failing to comply is not an IRC 125 cafeteria plan at all, so the IRC 125(a) exclusion fails for the entire salary reduction rather than for the excess alone. No wage exclusion is reported for it. The election remains in contributionComponents, and this engine does not extend the consequence to other arrangements that may be under the same cafeteria plan.",
+  );
+  return effects;
+}
+
 function contributionTaxEffects(
   components: ContributionComponents,
   traits: AccountTraits,
@@ -7460,16 +8332,24 @@ function contributionTaxEffects(
 
   const hsaDeduction = components.hsaDeductible;
   const hsaExclusion = components.hsaEmployerOrCafeteria;
+  // IRC 125(a) keeps a salary reduction contribution out of gross income
+  // entirely, so it is an exclusion and never an above-the-line deduction. It
+  // therefore follows the IRC 106(d) path exactly: out of Form W-2 box 1 and out
+  // of social security and medicare wages, and absent from federalAgiReduction,
+  // because the money was never included rather than reduced.
+  const cafeteriaExclusion = roundMoney(
+    components.healthFsaSalaryReduction + components.dependentCareSalaryReduction,
+  );
 
   result.formW2Box1WageReduction = roundMoney(
-    (planRules.isSelfEmployedOwner ? 0 : pretaxEmployee) + hsaExclusion,
+    (planRules.isSelfEmployedOwner ? 0 : pretaxEmployee) + hsaExclusion + cafeteriaExclusion,
   );
   result.selfEmployedRetirementDeduction = selfEmployedPlanDeduction;
   result.federalAgiReduction = roundMoney(
     pretaxEmployee + selfEmployedEmployer + deductibleIra + hsaDeduction,
   );
   result.federalTaxableIncomeReduction = result.federalAgiReduction;
-  result.ficaWageReduction = hsaExclusion;
+  result.ficaWageReduction = roundMoney(hsaExclusion + cafeteriaExclusion);
   result.nondeductibleContribution = roundMoney(components.nondeductibleIra + components.unclassifiedIra);
   result.afterTaxOrRothContribution = roundMoney(
     components.employeeRothDeferral +
@@ -7498,6 +8378,21 @@ function contributionTaxEffects(
   if (hsaExclusion > 0) {
     result.notes.push(
       "Employer and cafeteria-plan HSA contributions are excluded from gross income under IRC 106(d) and are outside Form W-2 box 1 and Social Security and Medicare wages (Notice 2004-2 A-19). They were never included rather than reduced, and they reduce the IRC 223(a) deduction under IRC 223(b)(4)(B).",
+    );
+  }
+  if (components.healthFsaSalaryReduction > 0) {
+    result.notes.push(
+      "Health flexible spending arrangement salary reduction contributions are excluded from gross income under IRC 125(a) and are outside Form W-2 box 1 and Social Security and Medicare wages (IRC 3121(a)(5)(G)). They are an exclusion rather than a deduction - the money never entered gross income - so they do not appear in federalAgiReduction.",
+    );
+  }
+  if (components.dependentCareSalaryReduction > 0) {
+    result.notes.push(
+      "Dependent care assistance within the IRC 129(a)(2) limitation is excluded from gross income under IRC 129(a)(1) and is outside Form W-2 box 1 and Social Security and Medicare wages (IRC 3121(a)(18)); it is reported in Form W-2 box 10. It is an exclusion rather than a deduction, so it does not appear in federalAgiReduction.",
+    );
+  }
+  if (components.dependentCareIncludibleInIncome > 0) {
+    result.notes.push(
+      "Dependent care assistance above the IRC 129(a)(2) limitation is included in gross income under IRC 129(a)(2)(B) in the taxable year the services were provided, so only the excludable part reduces Form W-2 box 1 and Social Security and Medicare wages.",
     );
   }
   return result;
@@ -7553,8 +8448,11 @@ interface AnnualAdditionsPool extends LimitPool {
 interface CalculationContext {
   taxYear: number;
   filingStatus: FilingStatus;
+  /** The IRC 21(e)(4) determination, or null when it was not supplied. */
+  treatedAsUnmarriedUnderSection21e4: boolean | null;
   parameters: YearParameters;
   hsaParameters: HsaYearParameters | null;
+  fsaParameters: FsaYearParameters | null;
   persons: Map<string, NormalizedPerson>;
   accountsById: Map<string, NormalizedAccount>;
   scenarioDiagnostics: Diagnostic[];
@@ -7573,6 +8471,17 @@ interface CalculationContext {
   hsaCatchUpPools: Map<string, LimitPool>;
   hsaFamilyPools: Map<string, LimitPool>;
   hsaPlans: Map<string, HsaOwnerPlan>;
+  healthFsaPools: Map<string, LimitPool>;
+  healthFsaPlans: Map<string, HealthFsaAccountPlan>;
+  dependentCarePools: Map<string, LimitPool>;
+  dependentCarePlans: Map<string, DependentCareAccountPlan>;
+  /**
+   * The IRC 129(b)(1) ceiling resolved for each IRC 129(a)(2)(A) pool. The
+   * limitation caps the amount excluded for the taxable year, which is the
+   * return's aggregate rather than a per-account figure, so it belongs to the
+   * pool the accounts share.
+   */
+  dependentCareEarnedIncomeCeilings: Map<string, Money>;
 }
 
 interface AllocationOutcome {
@@ -7584,6 +8493,8 @@ interface AllocationOutcome {
   sharedLimits: SharedLimitUse[];
   diagnostics: Diagnostic[];
   hsaDetail?: HsaAccountDetail;
+  healthFsaDetail?: HealthFsaAccountDetail;
+  dependentCareDetail?: DependentCareFsaAccountDetail;
 }
 
 function getParametersForYear(year: number): YearParameters {
@@ -7764,6 +8675,8 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   requireInputObject(rules.special403bCatchUp, `${path}.special403bCatchUp`);
   requireInputObject(rules.section457SpecialCatchUp, `${path}.section457SpecialCatchUp`);
   requireInputObject(rules.hsa, `${path}.hsa`);
+  requireInputObject(rules.healthFsa, `${path}.healthFsa`);
+  requireInputObject(rules.dependentCareFsa, `${path}.dependentCareFsa`);
   if (
     rules.simpleEmployerContributionMethod !== undefined &&
     !SIMPLE_EMPLOYER_CONTRIBUTION_METHODS.includes(rules.simpleEmployerContributionMethod)
@@ -7805,6 +8718,10 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
     );
   }
   if (rules.hsa) validateHsaRules(rules.hsa, `${path}.hsa`);
+  if (rules.healthFsa) validateHealthFsaRules(rules.healthFsa, `${path}.healthFsa`);
+  if (rules.dependentCareFsa) {
+    validateDependentCareFsaRules(rules.dependentCareFsa, `${path}.dependentCareFsa`);
+  }
 }
 
 const SIMPLE_EMPLOYER_CONTRIBUTION_METHODS: SimpleEmployerContributionMethod[] = [
@@ -7899,6 +8816,40 @@ function validateHsaRules(rules: HsaRulesInput, path: string): void {
   if (rules.familyLimitShare !== undefined) {
     rate(rules.familyLimitShare, `${path}.familyLimitShare`);
   }
+}
+
+const HEALTH_FSA_PURPOSES: HealthFsaPurpose[] = [
+  "general_purpose",
+  "limited_purpose",
+  "post_deductible",
+];
+
+function validateHealthFsaRules(rules: HealthFsaRulesInput, path: string): void {
+  if (
+    rules.purpose !== undefined &&
+    !HEALTH_FSA_PURPOSES.includes(rules.purpose as HealthFsaPurpose)
+  ) {
+    throw new ParameterError(
+      "INVALID_HEALTH_FSA_PURPOSE",
+      `${path}.purpose must be "general_purpose", "limited_purpose", or "post_deductible".`,
+    );
+  }
+  booleanFlag(rules.offersCarryover, `${path}.offersCarryover`);
+  booleanFlag(rules.offersGracePeriod, `${path}.offersGracePeriod`);
+  booleanFlag(rules.flexCreditElectableAsCash, `${path}.flexCreditElectableAsCash`);
+  booleanFlag(rules.planYearIsCalendarYear, `${path}.planYearIsCalendarYear`);
+  money(rules.priorYearUnusedAmount, `${path}.priorYearUnusedAmount`);
+  money(rules.employerFlexCredit, `${path}.employerFlexCredit`);
+  money(rules.planDocumentLimit, `${path}.planDocumentLimit`);
+}
+
+function validateDependentCareFsaRules(rules: DependentCareFsaRulesInput, path: string): void {
+  money(rules.employeeEarnedIncome, `${path}.employeeEarnedIncome`);
+  money(rules.spouseEarnedIncome, `${path}.spouseEarnedIncome`);
+  booleanFlag(
+    rules.spouseIsStudentOrIncapableOfSelfCare,
+    `${path}.spouseIsStudentOrIncapableOfSelfCare`,
+  );
 }
 
 function validateIsoDate(value: string, path: string): void {
@@ -8120,8 +9071,10 @@ function traditionalIraDeductionLimit(
 function createCalculationContext(
   taxYear: number,
   filingStatus: FilingStatus,
+  treatedAsUnmarriedUnderSection21e4: boolean | null,
   parameters: YearParameters,
   hsaParameters: HsaYearParameters | null,
+  fsaParameters: FsaYearParameters | null,
   persons: Map<string, NormalizedPerson>,
   accounts: NormalizedAccount[],
   scenarioDiagnostics: Diagnostic[],
@@ -8129,8 +9082,10 @@ function createCalculationContext(
   const context: CalculationContext = {
     taxYear,
     filingStatus,
+    treatedAsUnmarriedUnderSection21e4,
     parameters,
     hsaParameters,
+    fsaParameters,
     persons,
     accountsById: new Map(accounts.map((account) => [account.id, account])),
     scenarioDiagnostics,
@@ -8149,12 +9104,21 @@ function createCalculationContext(
     hsaCatchUpPools: new Map(),
     hsaFamilyPools: new Map(),
     hsaPlans: new Map(),
+    healthFsaPools: new Map(),
+    healthFsaPlans: new Map(),
+    dependentCarePools: new Map(),
+    dependentCarePlans: new Map(),
+    dependentCareEarnedIncomeCeilings: new Map(),
   };
 
   initializeIraPools(context, accounts);
   initializeElectiveDeferralPools(context, accounts);
   initializeAnnualAdditionsPools(context, accounts);
   initializeSection457Pools(context, accounts);
+  // Health FSA facts are read by the IRC 223 interaction, so the arrangements
+  // must be resolved before the health savings accounts that consult them.
+  initializeHealthFsaPools(context, accounts);
+  initializeDependentCarePools(context, accounts);
   initializeHsaPools(context, accounts);
   return context;
 }
@@ -8402,6 +9366,847 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
   }
 }
 
+
+interface HealthFsaAccountPlan {
+  status: CalculationStatus;
+  diagnostics: Diagnostic[];
+  /** The IRC 125(i) ceiling itself, net of counted flex credits. */
+  statutoryMaximum: Money | null;
+  /**
+   * The same figure after any lower plan-document limit. A plan document binds
+   * elections under that plan only; it is not an employer-group ceiling, so it
+   * caps this account rather than the IRC 125(g)(4) pool.
+   */
+  appliedMaximum: Money | null;
+  detail: HealthFsaAccountDetail;
+  poolKey: string | null;
+}
+
+/**
+ * IRC 125(i) applies employee-by-employee and employer-by-employer. Notice
+ * 2012-40 aggregates employers treated as one under IRC 414(b), (c) or (m)
+ * through IRC 125(g)(4), and lets an employee of two unrelated employers elect
+ * the full amount under each. `employerId` is what expresses that grouping, so
+ * two arrangements sharing one carry one limit and two without an employer
+ * carry their own.
+ */
+function healthFsaPoolKey(account: NormalizedAccount): string {
+  return `${account.ownerId}::${account.employerId ?? `account:${account.id}`}`;
+}
+
+function initializeHealthFsaPools(context: CalculationContext, accounts: NormalizedAccount[]): void {
+  const fsaAccounts = accounts.filter(
+    (account) => ACCOUNT_TRAITS[account.type].family === "health_fsa",
+  );
+  if (fsaAccounts.length === 0) return;
+
+  const yearParameters = context.fsaParameters?.healthFsa ?? null;
+  const priorYearParameters = fsaParametersForYear(context.taxYear - 1)?.healthFsa ?? null;
+
+  for (const account of fsaAccounts) {
+    const rules: HealthFsaRulesInput = account.planRules.healthFsa ?? {};
+    const path = `accounts.${account.id}`;
+    const diagnostics: Diagnostic[] = [];
+    let status = CalculationStatus.DETERMINATE;
+    let indeterminate = false;
+
+    const purpose = rules.purpose ?? null;
+    const elected = account.existingContributions.healthFsaSalaryReduction;
+    const priorYearUnused = money(
+      rules.priorYearUnusedAmount,
+      `${path}.planRules.healthFsa.priorYearUnusedAmount`,
+    );
+    const flexCredit = money(
+      rules.employerFlexCredit,
+      `${path}.planRules.healthFsa.employerFlexCredit`,
+    );
+
+    // Notice 2012-40: flex credits are outside IRC 125(i) because the section
+    // reaches salary reduction contributions alone, unless the employee could
+    // have taken them as cash or another taxable benefit, in which case they are
+    // treated as salary reduction contributions.
+    let flexCreditCounted = 0;
+    if (flexCredit > 0) {
+      if (rules.flexCreditElectableAsCash === true) {
+        flexCreditCounted = flexCredit;
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_FLEX_CREDIT_COUNTS_AGAINST_LIMIT",
+            DiagnosticSeverity.INFO,
+            `Employer flex credits of $${flexCredit.toLocaleString()} could be elected as cash or another taxable benefit, so Notice 2012-40 treats them as salary reduction contributions for IRC 125(i) and they consume the limit.`,
+            `${path}.planRules.healthFsa.employerFlexCredit`,
+            "IRC 125(i); Notice 2012-40",
+          ),
+        );
+      } else if (rules.flexCreditElectableAsCash === false) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_FLEX_CREDIT_OUTSIDE_LIMIT",
+            DiagnosticSeverity.INFO,
+            `IRC 125(i) limits salary reduction contributions alone, so the $${flexCredit.toLocaleString()} of non-elective employer flex credits does not consume the limit (Notice 2012-40; Prop. Treas. Reg. 1.125-5(b)).`,
+            `${path}.planRules.healthFsa.employerFlexCredit`,
+            "IRC 125(i); Notice 2012-40",
+          ),
+        );
+      } else {
+        status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_FLEX_CREDIT_CASH_ELECTION_FACT_REQUIRED",
+            DiagnosticSeverity.WARNING,
+            `Employer flex credits of $${flexCredit.toLocaleString()} were supplied without stating whether the employee could elect them as cash or another taxable benefit. Notice 2012-40 keeps non-elective flex credits outside IRC 125(i) and treats electable ones as salary reduction contributions, so they are assumed non-elective here. Supply planRules.healthFsa.flexCreditElectableAsCash to settle it.`,
+            `${path}.planRules.healthFsa.flexCreditElectableAsCash`,
+            "IRC 125(i); Notice 2012-40",
+          ),
+        );
+      }
+    }
+
+    // Notice 2012-40 reads "taxable year" in IRC 125(i) as the plan year of the
+    // cafeteria plan, while every annual revenue procedure publishes the figure
+    // for taxable years beginning in a calendar year. The two agree exactly for
+    // a calendar-year plan; for any other plan year the governing figure depends
+    // on the plan year start date, which is not an input here.
+    if (rules.planYearIsCalendarYear === false) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_NON_CALENDAR_PLAN_YEAR_INDETERMINATE",
+          DiagnosticSeverity.ERROR,
+          "Notice 2012-40 section III holds that \"taxable year\" in IRC 125(i) means the plan year of the cafeteria plan, so a non-calendar plan year is governed by the figure for the calendar year in which that plan year begins, and a short plan year is prorated by its months. This package is keyed by tax year and does not hold the plan year start date, so the applicable limit cannot be determined. Key the scenario to the tax year in which the plan year begins, or supply the arrangement as a calendar-year plan.",
+          `${path}.planRules.healthFsa.planYearIsCalendarYear`,
+          "IRC 125(i); Notice 2012-40",
+        ),
+      );
+    }
+
+    const salaryReductionLimit = yearParameters?.salaryReductionLimit ?? null;
+    const carryoverLimitForThisYear = yearParameters?.carryoverLimit ?? null;
+    if (yearParameters === null) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013",
+          DiagnosticSeverity.ERROR,
+          `IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148 section 9005, and Notice 2012-40 reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary reduction ceiling existed for tax year ${context.taxYear}. Health flexible spending arrangements did exist; what did not exist is a statutory limit, so the ceiling was whatever the plan document imposed and none is reported.`,
+          "taxYear",
+          "IRC 125(i); Notice 2012-40",
+        ),
+      );
+    }
+
+    const planDocumentLimit =
+      rules.planDocumentLimit === undefined
+        ? null
+        : money(rules.planDocumentLimit, `${path}.planRules.healthFsa.planDocumentLimit`);
+    let appliedLimit = salaryReductionLimit;
+    if (appliedLimit !== null && planDocumentLimit !== null && planDocumentLimit < appliedLimit) {
+      appliedLimit = planDocumentLimit;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED",
+          DiagnosticSeverity.INFO,
+          `The plan document limits salary reduction contributions to $${planDocumentLimit.toLocaleString()}, below the IRC 125(i) ceiling of $${(salaryReductionLimit ?? 0).toLocaleString()}. Notice 2013-71 confirms a plan may specify a lower amount.`,
+          `${path}.planRules.healthFsa.planDocumentLimit`,
+          "IRC 125(i)",
+        ),
+      );
+    }
+
+    // Notice 2013-71: a plan may offer a carryover or a Prop. Treas. Reg.
+    // 1.125-1(e) grace period for the same health FSA, or neither, but never
+    // both. Asserting both describes a plan that cannot exist, so the result is
+    // refused rather than computed from one of the two facts.
+    let carryoverFromPriorYear = 0;
+    let carryoverLimitForPriorYear: Money | null = priorYearParameters?.carryoverLimit ?? null;
+    let forfeitedAmount: Money | null = null;
+    if (rules.offersCarryover === true && rules.offersGracePeriod === true) {
+      indeterminate = true;
+      carryoverLimitForPriorYear = null;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_CARRYOVER_AND_GRACE_PERIOD_ARE_MUTUALLY_EXCLUSIVE",
+          DiagnosticSeverity.ERROR,
+          "Notice 2013-71 section IV holds that a section 125 cafeteria plan incorporating a carryover may not also provide a grace period in the plan year to which unused amounts are carried. Both were asserted, which describes a plan that cannot exist, so no carryover figure is produced.",
+          `${path}.planRules.healthFsa`,
+          "Notice 2013-71",
+        ),
+      );
+    } else if (rules.offersCarryover === true) {
+      if (carryoverLimitForPriorYear === null) {
+        indeterminate = true;
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_PRIOR_YEAR_CARRYOVER_LIMIT_NOT_ESTABLISHED",
+            DiagnosticSeverity.ERROR,
+            `The carryover cap belongs to the plan year the unused amount is carried FROM, and no cap is encoded for ${context.taxYear - 1}. Notice 2013-71 created the carryover for plan years beginning in 2013, so nothing could be carried into ${context.taxYear}.`,
+            `${path}.planRules.healthFsa.offersCarryover`,
+            "Notice 2013-71",
+          ),
+        );
+      } else {
+        carryoverFromPriorYear = minMoney(priorYearUnused, carryoverLimitForPriorYear);
+        forfeitedAmount = nonnegative(priorYearUnused - carryoverFromPriorYear);
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_CARRYOVER_DOES_NOT_REDUCE_THE_LIMIT",
+            DiagnosticSeverity.INFO,
+            `Of $${priorYearUnused.toLocaleString()} unused at the end of the ${context.taxYear - 1} plan year, $${carryoverFromPriorYear.toLocaleString()} carries over, being the lesser of that amount and the $${carryoverLimitForPriorYear.toLocaleString()} cap for that year; $${(forfeitedAmount ?? 0).toLocaleString()} is forfeited. Notice 2013-71 holds that the carryover "does not count against or otherwise affect" the IRC 125(i) salary reduction limit, so it sits on top of this year's ceiling rather than reducing it.`,
+            `${path}.planRules.healthFsa.priorYearUnusedAmount`,
+            "Notice 2013-71; Notice 2020-33",
+          ),
+        );
+        if (context.taxYear - 1 === 2020 || context.taxYear - 1 === 2021) {
+          diagnostics.push(
+            diagnostic(
+              "HEALTH_FSA_SECTION_214_RELIEF_NOT_MODELLED",
+              DiagnosticSeverity.WARNING,
+              `Section 214 of the Consolidated Appropriations Act, 2021, Pub. L. 116-260, implemented by Notice 2021-15, permitted a plan to carry over ALL unused amounts from a plan year ending in ${context.taxYear - 1}, without the ordinary cap. Adopting it was entirely a plan option that this engine cannot read, so the ordinary $${carryoverLimitForPriorYear.toLocaleString()} cap has been applied. If the plan adopted section 214 relief, the carried amount is the full unused amount and this figure is too low.`,
+              `${path}.planRules.healthFsa.priorYearUnusedAmount`,
+              "Pub. L. 116-260 s.214; Notice 2021-15",
+            ),
+          );
+        }
+      }
+    } else if (rules.offersGracePeriod === true) {
+      carryoverLimitForPriorYear = null;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_GRACE_PERIOD_PRECLUDES_CARRYOVER",
+          DiagnosticSeverity.INFO,
+          "The plan offers a Prop. Treas. Reg. 1.125-1(e) grace period of up to two months and 15 days, so under Notice 2013-71 it may not also carry unused amounts over and nothing is carried in. How much of the prior year's unused amount survives depends on expenses incurred during the grace period, which is not a tax parameter, so no forfeiture figure is produced.",
+          `${path}.planRules.healthFsa.offersGracePeriod`,
+          "Notice 2005-42; Notice 2013-71",
+        ),
+      );
+    } else if (rules.offersCarryover === false) {
+      carryoverLimitForPriorYear = null;
+      forfeitedAmount = priorYearUnused;
+      if (priorYearUnused > 0) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_UNUSED_AMOUNTS_FORFEITED",
+            DiagnosticSeverity.INFO,
+            `The plan offers neither a carryover nor a grace period, so the use-or-lose rule forfeits the whole $${priorYearUnused.toLocaleString()} unused at the end of the ${context.taxYear - 1} plan year.`,
+            `${path}.planRules.healthFsa.priorYearUnusedAmount`,
+            "Prop. Treas. Reg. 1.125-5(c); Notice 2013-71",
+          ),
+        );
+      }
+    } else if (priorYearUnused > 0) {
+      carryoverLimitForPriorYear = null;
+      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_CARRYOVER_FACT_REQUIRED",
+          DiagnosticSeverity.WARNING,
+          `A prior-year unused amount of $${priorYearUnused.toLocaleString()} was supplied without stating whether the plan offers the Notice 2013-71 carryover or a grace period. Both are plan options this engine cannot read and they are mutually exclusive, so nothing is carried in and no forfeiture figure is produced. Supply planRules.healthFsa.offersCarryover or offersGracePeriod.`,
+          `${path}.planRules.healthFsa.offersCarryover`,
+          "Notice 2013-71",
+        ),
+      );
+    }
+
+    const statutoryMaximum =
+      indeterminate || salaryReductionLimit === null
+        ? null
+        : nonnegative(roundMoney(salaryReductionLimit - flexCreditCounted));
+    const appliedMaximum =
+      indeterminate || appliedLimit === null ? null : nonnegative(roundMoney(appliedLimit - flexCreditCounted));
+
+    // IRC 125(i) is a plan-qualification condition rather than a cap the plan
+    // may exceed and then correct: Notice 2012-40 holds that a cafeteria plan
+    // failing to comply is not a section 125 cafeteria plan at all, and the
+    // value of the taxable benefits the employee could have elected is
+    // includible regardless of what was elected. Truncating the election to the
+    // limit would report the wrong consequence.
+    const electedWithCredits = roundMoney(elected + flexCreditCounted);
+    // Exceeding the statutory ceiling and exceeding a lower plan-document
+    // ceiling are different failures. Notice 2012-40 section III attaches its
+    // loss-of-IRC-125-status consequence to the IRC 125(i) limit, so only the
+    // statutory breach carries it; a plan-document breach is reported without
+    // asserting that the whole exclusion fails.
+    if (
+      appliedMaximum !== null &&
+      salaryReductionLimit !== null &&
+      electedWithCredits > salaryReductionLimit + 0.009
+    ) {
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
+          DiagnosticSeverity.ERROR,
+          `Salary reduction contributions of $${roundMoney(elected + flexCreditCounted).toLocaleString()} exceed the $${appliedLimit!.toLocaleString()} limit that applies. Notice 2012-40 holds that a cafeteria plan permitting an election above IRC 125(i) is not a section 125 cafeteria plan, so the value of the taxable benefits the employee could have elected becomes includible in gross income regardless of the benefit elected. The excess is not truncated here because truncation would report a smaller consequence than the statute produces.`,
+          `${path}.existingContributions.healthFsaSalaryReduction`,
+          "IRC 125(i); IRC 125(d)(1)(B); Notice 2012-40",
+        ),
+      );
+    } else if (appliedMaximum !== null && appliedLimit !== null && electedWithCredits > appliedLimit + 0.009) {
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_ELECTION_EXCEEDS_PLAN_DOCUMENT_LIMIT",
+          DiagnosticSeverity.ERROR,
+          `Salary reduction contributions of $${electedWithCredits.toLocaleString()} exceed the $${appliedLimit.toLocaleString()} the plan document allows, though they remain within the $${salaryReductionLimit!.toLocaleString()} IRC 125(i) ceiling. Notice 2013-71 confirms a plan may specify a lower amount, and an election above the plan's own term is a plan-operation question this engine does not resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, because that holding addresses the IRC 125(i) limit rather than a lower plan term.`,
+          `${path}.existingContributions.healthFsaSalaryReduction`,
+          "IRC 125(d)(1)(B); Notice 2013-71",
+        ),
+      );
+    }
+
+    diagnostics.push(
+      diagnostic(
+        "HEALTH_FSA_FACTS_SUPPLIED_BY_CALLER",
+        DiagnosticSeverity.INFO,
+        "This calculation applies IRC 125(i) to the plan facts supplied. Plan design is not inferred: whether the plan offers a carryover or a grace period, whether flex credits could be elected as cash, the arrangement's Rev. Rul. 2004-45 purpose, and any lower plan-document limit are all caller-supplied. It does not test cafeteria plan qualification under IRC 125(b) through (d), nondiscrimination, the IRC 414(b), (c) and (m) controlled-group aggregation that IRC 125(g)(4) applies to the limit, the Notice 2012-40 proration of a short plan year, or the uniform-coverage and run-out-period mechanics.",
+        path,
+        "IRC 125(i)",
+      ),
+    );
+
+    const detail: HealthFsaAccountDetail = {
+      purpose,
+      salaryReductionLimit,
+      appliedSalaryReductionLimit: indeterminate ? null : appliedLimit,
+      electedSalaryReduction: elected,
+      employerFlexCreditCountedAgainstLimit: flexCreditCounted,
+      carryoverFromPriorYear,
+      carryoverLimitForPriorYear,
+      carryoverLimitForThisYear,
+      forfeitedAmount,
+      disqualifiesHsaEligibility: purpose === null ? null : purpose === "general_purpose",
+    };
+
+    if (indeterminate) {
+      context.healthFsaPlans.set(account.id, {
+        status: CalculationStatus.INDETERMINATE,
+        diagnostics,
+        statutoryMaximum: null,
+        appliedMaximum: null,
+        detail,
+        poolKey: null,
+      });
+      continue;
+    }
+
+    const poolKey = healthFsaPoolKey(account);
+    let pool = context.healthFsaPools.get(poolKey);
+    if (!pool) {
+      pool = {
+        id: `irc-125i:${poolKey}`,
+        legalLimit: "IRC 125(i) health FSA salary reduction limit, per employee per employer",
+        // The pool is the statutory ceiling the employers treated as one under
+        // IRC 125(g)(4) share. A lower limit in one plan document is a term of
+        // that plan and binds elections under it; it gives that plan no power
+        // over elections under a different plan of the same group, so it caps
+        // the account rather than the pool.
+        limit: statutoryMaximum === null ? null : salaryReductionLimit,
+        used: 0,
+      };
+      context.healthFsaPools.set(poolKey, pool);
+    }
+    pool.used = roundMoney(pool.used + flexCreditCounted + elected);
+
+    context.healthFsaPlans.set(account.id, {
+      status: accountStatusFromDiagnostics(status, diagnostics),
+      diagnostics,
+      statutoryMaximum,
+      appliedMaximum,
+      detail,
+      poolKey,
+    });
+  }
+}
+
+function allocateHealthFsa(context: CalculationContext, account: NormalizedAccount): AllocationOutcome {
+  const plan = context.healthFsaPlans.get(account.id)!;
+  const annual = cloneComponentsFromComponents(account.existingContributions);
+  const additional = zeroComponents();
+  const sharedLimits: SharedLimitUse[] = [];
+  const diagnostics = [...plan.diagnostics];
+  const pool = plan.poolKey === null ? undefined : context.healthFsaPools.get(plan.poolKey);
+
+  if (plan.status === CalculationStatus.INDETERMINATE || !pool) {
+    if (pool) reportPoolWithoutConsuming(pool, sharedLimits);
+    return {
+      status: CalculationStatus.INDETERMINATE,
+      statutoryMaximum: plan.statutoryMaximum,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+      healthFsaDetail: plan.detail,
+    };
+  }
+
+  // The pool offers the employer group's statutory room; this account may only
+  // reach its own plan document's ceiling within it.
+  const localHeadroom =
+    plan.appliedMaximum === null
+      ? (poolRemaining(pool) ?? 0)
+      : nonnegative(roundMoney(plan.appliedMaximum - account.existingContributions.healthFsaSalaryReduction));
+  const taken = takeFromPool(pool, localHeadroom, sharedLimits);
+  additional.healthFsaSalaryReduction = taken;
+  annual.healthFsaSalaryReduction = roundMoney(annual.healthFsaSalaryReduction + taken);
+
+  return {
+    status: accountStatusFromDiagnostics(plan.status, diagnostics),
+    statutoryMaximum: plan.statutoryMaximum,
+    annualComponents: annual,
+    additionalComponents: additional,
+    planTermDependentCapacity: 0,
+    sharedLimits,
+    diagnostics,
+    healthFsaDetail: plan.detail,
+  };
+}
+
+
+interface DependentCareAccountPlan {
+  status: CalculationStatus;
+  diagnostics: Diagnostic[];
+  statutoryMaximum: Money | null;
+  detail: DependentCareFsaAccountDetail;
+  poolKey: string | null;
+  /** IRC 129(b)(1) ceiling on this employee, or null when the earned income facts were not supplied. */
+  earnedIncomeLimitation: Money | null;
+  /** A lower maximum this plan allows, which caps this account alone. */
+  planDocumentLimit: Money | null;
+}
+
+/**
+ * IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34,
+ * and the effective-date note to the section makes it applicable to taxable
+ * years beginning after December 31, 1981. Before that the section did not
+ * exist; from 1982 through 1986 it existed with no dollar limitation, which the
+ * Tax Reform Act of 1986 Pub. L. 99-514 s.1163 added for taxable years
+ * beginning after December 31, 1986. The three states report differently.
+ */
+const DEPENDENT_CARE_FIRST_TAX_YEAR = 1982;
+
+/**
+ * IRC 129(a)(2)(A) is a per-return amount, not a per-person one, and only a
+ * joint return puts two people on one return. Spouses filing jointly therefore
+ * share one pool; everybody else, including each spouse of a married-separate
+ * pair filing their own return at the halved amount, carries their own.
+ */
+function dependentCarePoolKey(context: CalculationContext, ownerId: string): string {
+  if (context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY) {
+    const role = context.persons.get(ownerId)?.role;
+    if (role === "taxpayer" || role === "spouse") return "return";
+  }
+  return `return:${ownerId}`;
+}
+
+function initializeDependentCarePools(context: CalculationContext, accounts: NormalizedAccount[]): void {
+  // The IRC 129(a)(2)(A) amount is one figure for the return, so which account
+  // draws on it first decides which employee's assistance is includible. That
+  // must follow the same deterministic order the allocation uses.
+  const dcAccounts = accounts
+    .filter((account) => ACCOUNT_TRAITS[account.type].family === "dependent_care_fsa")
+    .sort((left, right) => (left.priority! - right.priority!) || (left.inputIndex - right.inputIndex));
+  if (dcAccounts.length === 0) return;
+
+  const yearParameters = context.fsaParameters?.dependentCare ?? null;
+  // IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), so
+  // the halved amount and the lesser-of earned income rule do not follow from
+  // the filing status alone. IRC 21(e)(4) treats a married-separate taxpayer as
+  // not married when they maintained a qualifying individual's principal place
+  // of abode for more than half the year, furnished over half its cost, and
+  // their spouse was not a member of the household for the last six months.
+  const separateReturn = context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY;
+  const treatedAsUnmarried = separateReturn && context.treatedAsUnmarriedUnderSection21e4 === true;
+  const married =
+    context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY || (separateReturn && !treatedAsUnmarried);
+  const statutoryExclusion =
+    yearParameters === null
+      ? null
+      : separateReturn && !treatedAsUnmarried
+        ? yearParameters.marriedFilingSeparatelyExclusionLimit
+        : yearParameters.exclusionLimit;
+  const section21e4Undetermined = separateReturn && context.treatedAsUnmarriedUnderSection21e4 === null;
+
+  for (const account of dcAccounts) {
+    const rules: DependentCareFsaRulesInput = account.planRules.dependentCareFsa ?? {};
+    const path = `accounts.${account.id}`;
+    const diagnostics: Diagnostic[] = [];
+    let status = CalculationStatus.DETERMINATE;
+    let indeterminate = false;
+    let unavailable = false;
+
+    const elected = account.existingContributions.dependentCareSalaryReduction;
+
+    if (yearParameters === null) {
+      indeterminate = true;
+      unavailable = context.taxYear < DEPENDENT_CARE_FIRST_TAX_YEAR;
+      diagnostics.push(
+        unavailable
+          ? diagnostic(
+              "DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR",
+              DiagnosticSeverity.ERROR,
+              `IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34, applicable to taxable years beginning after December 31, 1981, so no dependent care assistance exclusion existed for tax year ${context.taxYear}.`,
+              "taxYear",
+              "IRC 129; Pub. L. 97-34 s.124(f)",
+            )
+          : diagnostic(
+              "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987",
+              DiagnosticSeverity.ERROR,
+              `The IRC 129(a)(2)(A) limitation of exclusion was added by the Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), applicable to taxable years beginning after December 31, 1986. For tax year ${context.taxYear} IRC 129 existed and excluded employer-provided dependent care assistance, but carried no dollar ceiling on the exclusion, so none is reported.`,
+              "taxYear",
+              "IRC 129(a)(2)(A); Pub. L. 99-514 s.1163",
+            ),
+      );
+    }
+
+    // IRC 129(b)(1): the exclusion cannot exceed the employee's earned income,
+    // or, for a married employee, the lesser of the employee's and the spouse's.
+    // Both figures are caller-supplied; this package does not derive income.
+    const employeeEarnedIncome =
+      rules.employeeEarnedIncome === undefined
+        ? null
+        : money(rules.employeeEarnedIncome, `${path}.planRules.dependentCareFsa.employeeEarnedIncome`);
+    const spouseEarnedIncome =
+      rules.spouseEarnedIncome === undefined
+        ? null
+        : money(rules.spouseEarnedIncome, `${path}.planRules.dependentCareFsa.spouseEarnedIncome`);
+    let earnedIncomeLimitation: Money | null = null;
+    if (employeeEarnedIncome !== null && (!married || spouseEarnedIncome !== null)) {
+      earnedIncomeLimitation = married
+        ? minMoney(employeeEarnedIncome, spouseEarnedIncome)
+        : employeeEarnedIncome;
+    } else if (!indeterminate) {
+      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED",
+          DiagnosticSeverity.WARNING,
+          married
+            ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned income for the taxable year. Both are caller-supplied facts and at least one was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it."
+            : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. That is a caller-supplied fact and was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it.",
+          `${path}.planRules.dependentCareFsa.employeeEarnedIncome`,
+          "IRC 129(b)(1)",
+        ),
+      );
+    }
+    if (section21e4Undetermined && !indeterminate) {
+      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE",
+          DiagnosticSeverity.WARNING,
+          "IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and IRC 21(e)(4) treats a married individual filing separately as not married when they maintained a household that was a qualifying individual's principal place of abode for more than half the taxable year, furnished over half the cost of maintaining it, and their spouse was not a member of it during the last six months of the year. Those facts are not derivable from anything supplied here and treatedAsUnmarriedUnderSection21e4 was not stated, so the return has been treated as married: the halved IRC 129(a)(2)(A) amount and the IRC 129(b)(1)(B) lesser-of-earned-income rule are applied. A taxpayer who meets IRC 21(e)(4) takes the undivided amount and their own earned income instead.",
+          "treatedAsUnmarriedUnderSection21e4",
+          "IRC 129(a)(2)(C); IRC 21(e)(4)",
+        ),
+      );
+    }
+    if (rules.spouseIsStudentOrIncapableOfSelfCare === true && !indeterminate) {
+      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED",
+          DiagnosticSeverity.WARNING,
+          "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, because no primary source for it is committed to this package's evidence corpus and an unattested figure is never encoded. Any spouseEarnedIncome supplied is used exactly as stated, so supply the deemed amount if the deeming applies.",
+          `${path}.planRules.dependentCareFsa.spouseIsStudentOrIncapableOfSelfCare`,
+          "IRC 129(b)(2); IRC 21(d)(2)",
+        ),
+      );
+    }
+
+    const planDocumentLimit =
+      rules.planDocumentLimit === undefined
+        ? null
+        : money(rules.planDocumentLimit, `${path}.planRules.dependentCareFsa.planDocumentLimit`);
+    const applicableLimit =
+      indeterminate || statutoryExclusion === null
+        ? null
+        : minMoney(
+            statutoryExclusion,
+            ...(earnedIncomeLimitation === null ? [] : [earnedIncomeLimitation]),
+            ...(planDocumentLimit === null ? [] : [planDocumentLimit]),
+          );
+
+    diagnostics.push(
+      diagnostic(
+        "DEPENDENT_CARE_FACTS_SUPPLIED_BY_CALLER",
+        DiagnosticSeverity.INFO,
+        "This calculation applies IRC 129(a)(2) and, where the earned income facts are supplied, IRC 129(b)(1). It does not test whether the program meets the IRC 129(d) written-plan requirements, the IRC 129(d)(2) through (8) nondiscrimination rules, the IRC 129(c) denial for amounts paid to a related individual, or whether the individuals cared for qualify. It does not model the IRC 21 dependent care credit or the IRC 21(c) reduction of that credit's expense base. A dependent care program may not offer a carryover at all except under section 214 of the Consolidated Appropriations Act, 2021, which is a plan option this engine cannot read, so no dependent care carryover is modelled.",
+        path,
+        "IRC 129",
+      ),
+    );
+
+    const detail: DependentCareFsaAccountDetail = {
+      statutoryExclusion: indeterminate ? null : statutoryExclusion,
+      earnedIncomeLimitation,
+      planDocumentLimit,
+      applicableExclusionLimit: applicableLimit,
+      electedSalaryReduction: elected,
+      excludableAmount: 0,
+      includibleInIncome: 0,
+      householdExclusionShared: false,
+    };
+
+    if (indeterminate) {
+      context.dependentCarePlans.set(account.id, {
+        status: unavailable ? CalculationStatus.UNAVAILABLE : CalculationStatus.INDETERMINATE,
+        diagnostics,
+        statutoryMaximum: unavailable ? 0 : null,
+        detail,
+        poolKey: null,
+        earnedIncomeLimitation,
+        planDocumentLimit,
+      });
+      continue;
+    }
+
+    const poolKey = dependentCarePoolKey(context, account.ownerId);
+    if (!context.dependentCarePools.has(poolKey)) {
+      context.dependentCarePools.set(poolKey, {
+        id: `irc-129:${poolKey}`,
+        legalLimit: "IRC 129(a)(2)(A) dependent care assistance exclusion, per return",
+        limit: statutoryExclusion,
+        used: 0,
+      });
+    }
+
+    context.dependentCarePlans.set(account.id, {
+      status: accountStatusFromDiagnostics(status, diagnostics),
+      diagnostics,
+      statutoryMaximum: applicableLimit,
+      detail,
+      poolKey,
+      earnedIncomeLimitation,
+      planDocumentLimit,
+    });
+  }
+
+  // A pool serving more than one account is a household figure two employees
+  // draw on, which IRC 129(a)(2)(A) makes visible rather than doubling.
+  const accountsByPool = new Map<string, number>();
+  for (const plan of context.dependentCarePlans.values()) {
+    if (plan.poolKey === null) continue;
+    accountsByPool.set(plan.poolKey, (accountsByPool.get(plan.poolKey) ?? 0) + 1);
+  }
+  for (const plan of context.dependentCarePlans.values()) {
+    if (plan.poolKey !== null && (accountsByPool.get(plan.poolKey) ?? 0) > 1) {
+      plan.detail.householdExclusionShared = true;
+    }
+  }
+
+  // IRC 129(b)(1) caps "the amount excluded from the income of an employee
+  // under subsection (a) for any taxable year", which is that year's aggregate
+  // rather than a per-plan figure, and Form 2441 Part III computes a single
+  // excluded-benefits amount for the return from the smaller of the benefits,
+  // the earned incomes, and the IRC 129(a)(2)(A) amount. The ceiling therefore
+  // belongs to the pool the accounts share. Applied per account it would let a
+  // return exclude the limitation once for every dependent care FSA it holds.
+  const earnedIncomeCeilingsByPool = new Map<string, Money[]>();
+  for (const plan of context.dependentCarePlans.values()) {
+    if (plan.poolKey === null || plan.earnedIncomeLimitation === null) continue;
+    const seen = earnedIncomeCeilingsByPool.get(plan.poolKey) ?? [];
+    if (!seen.includes(plan.earnedIncomeLimitation)) seen.push(plan.earnedIncomeLimitation);
+    earnedIncomeCeilingsByPool.set(plan.poolKey, seen);
+  }
+  for (const [poolKey, ceilings] of earnedIncomeCeilingsByPool) {
+    if (ceilings.length === 1) {
+      context.dependentCareEarnedIncomeCeilings.set(poolKey, ceilings[0]);
+      continue;
+    }
+    // The earned income facts describe one return, so accounts sharing an
+    // IRC 129(a)(2)(A) amount reporting different ceilings is a contradiction
+    // in the supplied facts. Choosing one of them would invent a fact, so no
+    // exclusion is computed for any account drawing on that amount.
+    const reported = ceilings
+      .slice()
+      .sort((left, right) => left - right)
+      .map((value) => `$${value.toLocaleString()}`)
+      .join(", ");
+    for (const [accountId, plan] of context.dependentCarePlans) {
+      if (plan.poolKey !== poolKey) continue;
+      plan.diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT",
+          DiagnosticSeverity.ERROR,
+          `IRC 129(b)(1) caps the amount excluded for the taxable year at the employee's earned income, or for a married employee at the lesser of the employee's and the spouse's. That is one figure for the return, but the dependent care flexible spending arrangements sharing this IRC 129(a)(2)(A) amount report different ceilings (${reported}). The contradiction is in the supplied facts rather than in the statute, and resolving it by choosing one of them would invent a fact, so no exclusion is computed.`,
+          `accounts.${accountId}.planRules.dependentCareFsa.employeeEarnedIncome`,
+          "IRC 129(b)(1)",
+        ),
+      );
+      plan.status = CalculationStatus.INDETERMINATE;
+      plan.statutoryMaximum = null;
+      plan.detail.applicableExclusionLimit = null;
+      // Detaching from the pool keeps the contradiction from consuming the
+      // household amount, matching how every other indeterminate plan behaves.
+      plan.poolKey = null;
+    }
+  }
+
+  // Assistance actually supplied draws on the household amount before any
+  // remaining capacity is offered, so what IRC 129(a)(2)(B) includes in income
+  // is measured against the amounts supplied rather than against capacity the
+  // scenario merely reports as available.
+  for (const account of dcAccounts) {
+    const plan = context.dependentCarePlans.get(account.id);
+    if (!plan || plan.poolKey === null) continue;
+    const pool = context.dependentCarePools.get(plan.poolKey);
+    if (!pool) continue;
+    const elected = account.existingContributions.dependentCareSalaryReduction;
+    if (elected <= 0) continue;
+    const householdRemaining = poolRemaining(pool) ?? 0;
+    const earnedIncomeCeiling = context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null;
+    // Measured against what the pool has already excluded, not against this
+    // account alone: the IRC 129(b)(1) ceiling is the return's for the year.
+    const ceiling = minMoney(
+      householdRemaining,
+      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+      ...(plan.planDocumentLimit === null ? [] : [plan.planDocumentLimit]),
+    );
+    const excludable = minMoney(elected, ceiling);
+    const includible = roundMoney(elected - excludable);
+    pool.used = roundMoney(pool.used + excludable);
+    plan.detail.excludableAmount = excludable;
+    plan.detail.includibleInIncome = includible;
+    if (includible > 0) {
+      plan.diagnostics.unshift(
+        diagnostic(
+          "DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME",
+          DiagnosticSeverity.WARNING,
+          `$${includible.toLocaleString()} of the $${elected.toLocaleString()} of dependent care assistance supplied exceeds the limitation that applies to this employee, so IRC 129(a)(2)(B) includes it in gross income for the taxable year in which the dependent care services were provided. The IRC 129(a)(2)(A) amount is a per-return figure rather than a per-person one, so two employees on one return draw on a single amount rather than one each.`,
+          `accounts.${account.id}.existingContributions.dependentCareSalaryReduction`,
+          "IRC 129(a)(2)(B)",
+        ),
+      );
+      plan.status = accountStatusFromDiagnostics(plan.status, plan.diagnostics);
+    }
+  }
+}
+
+function allocateDependentCareFsa(
+  context: CalculationContext,
+  account: NormalizedAccount,
+): AllocationOutcome {
+  const plan = context.dependentCarePlans.get(account.id)!;
+  const annual = cloneComponentsFromComponents(account.existingContributions);
+  const additional = zeroComponents();
+  const sharedLimits: SharedLimitUse[] = [];
+  const diagnostics = [...plan.diagnostics];
+  const pool = plan.poolKey === null ? undefined : context.dependentCarePools.get(plan.poolKey);
+  const detail: DependentCareFsaAccountDetail = { ...plan.detail };
+
+  if (plan.status === CalculationStatus.UNAVAILABLE || plan.status === CalculationStatus.INDETERMINATE || !pool) {
+    if (pool) reportPoolWithoutConsuming(pool, sharedLimits);
+    // The components clone what the scenario supplied, so an elected salary
+    // reduction would otherwise be reported as excluded by a plan that has
+    // just said it cannot determine the exclusion. No amount is substantiated
+    // here, and the detail already carries zero for both halves.
+    annual.dependentCareSalaryReduction = 0;
+    annual.dependentCareIncludibleInIncome = detail.includibleInIncome;
+    return {
+      status: plan.status === CalculationStatus.UNAVAILABLE
+        ? CalculationStatus.UNAVAILABLE
+        : CalculationStatus.INDETERMINATE,
+      statutoryMaximum: plan.statutoryMaximum,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+      dependentCareDetail: detail,
+    };
+  }
+
+  // The supplied assistance already drew on the household IRC 129(a)(2)(A)
+  // amount, so what is left is the further exclusion this employee could
+  // reach. The IRC 129(b)(1) ceiling is measured against everything the pool
+  // has excluded rather than against this account alone, because it caps the
+  // return's exclusion for the taxable year.
+  const alreadyExcluded = detail.excludableAmount;
+  const earnedIncomeCeiling =
+    plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
+  const headroom = minMoney(
+    poolRemaining(pool) ?? 0,
+    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+    ...(plan.planDocumentLimit === null ? [] : [nonnegative(roundMoney(plan.planDocumentLimit - alreadyExcluded))]),
+  );
+  const additionalExcludable = takeFromPool(pool, headroom, sharedLimits);
+
+  annual.dependentCareSalaryReduction = roundMoney(alreadyExcluded + additionalExcludable);
+  annual.dependentCareIncludibleInIncome = detail.includibleInIncome;
+  additional.dependentCareSalaryReduction = additionalExcludable;
+  detail.excludableAmount = annual.dependentCareSalaryReduction;
+
+  return {
+    status: accountStatusFromDiagnostics(plan.status, diagnostics),
+    statutoryMaximum: plan.statutoryMaximum,
+    annualComponents: annual,
+    additionalComponents: additional,
+    planTermDependentCapacity: 0,
+    sharedLimits,
+    diagnostics,
+    dependentCareDetail: detail,
+  };
+}
+
+/**
+ * What the health flexible spending arrangements in a scenario mean for IRC 223
+ * eligibility, collected per person.
+ *
+ * Rev. Rul. 2004-45 turns the answer entirely on what the arrangement may
+ * reimburse: a general-purpose health FSA that pays section 213(d) medical
+ * expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is
+ * satisfied is coverage that is not a high deductible health plan and that
+ * provides a benefit the HDHP covers, so IRC 223(c)(1)(A)(ii) is failed; a
+ * limited-purpose arrangement reimbursing only vision, dental and preventive
+ * care, or a post-deductible one reimbursing only after the deductible is met,
+ * is not.
+ */
+interface HealthFsaSection223Facts {
+  generalPurpose: boolean;
+  purposeUnstated: boolean;
+  hsaCompatible: boolean;
+  generalPurposeCarryover: boolean;
+  generalPurposeGracePeriod: boolean;
+}
+
+function emptyHealthFsaSection223Facts(): HealthFsaSection223Facts {
+  return {
+    generalPurpose: false,
+    purposeUnstated: false,
+    hsaCompatible: false,
+    generalPurposeCarryover: false,
+    generalPurposeGracePeriod: false,
+  };
+}
+
+function healthFsaSection223FactsByOwner(
+  context: CalculationContext,
+  accounts: NormalizedAccount[],
+): Map<string, HealthFsaSection223Facts> {
+  const byOwner = new Map<string, HealthFsaSection223Facts>();
+  for (const account of accounts) {
+    if (ACCOUNT_TRAITS[account.type].family !== "health_fsa") continue;
+    const detail = context.healthFsaPlans.get(account.id)?.detail;
+    if (!detail) continue;
+    let facts = byOwner.get(account.ownerId);
+    if (!facts) {
+      facts = emptyHealthFsaSection223Facts();
+      byOwner.set(account.ownerId, facts);
+    }
+    if (detail.purpose === null) {
+      facts.purposeUnstated = true;
+    } else if (detail.purpose === "general_purpose") {
+      facts.generalPurpose = true;
+      if (detail.carryoverFromPriorYear > 0) facts.generalPurposeCarryover = true;
+      if (account.planRules.healthFsa?.offersGracePeriod === true) {
+        facts.generalPurposeGracePeriod = true;
+      }
+    } else {
+      facts.hsaCompatible = true;
+    }
+  }
+  return byOwner;
+}
+
 const HSA_MONTHS_IN_YEAR = 12;
 const HSA_ALL_MONTHS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -8432,6 +10237,11 @@ interface HsaPersonCoverage {
 
 function hsaParametersForYear(year: number): HsaYearParameters | null {
   const row = RAW_HSA_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+function fsaParametersForYear(year: number): FsaYearParameters | null {
+  const row = RAW_FSA_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
 }
 
@@ -8584,6 +10394,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   }
 
   const couple = hsaMarriedCouple(context);
+  const section223FsaFacts = healthFsaSection223FactsByOwner(context, accounts);
+  const spouseIdOf = (ownerId: string): string | null => {
+    if (couple === null) return null;
+    if (couple[0] === ownerId) return couple[1];
+    if (couple[1] === ownerId) return couple[0];
+    return null;
+  };
   const coupleMembersWithAccounts = couple
     ? couple.filter((personId) => accountsByOwner.has(personId))
     : [];
@@ -8846,6 +10663,36 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         familyPortionApplied = decemberTier === "family" ? decemberAnnualLimit : 0;
         selfPortionApplied = decemberTier === "family" ? 0 : decemberAnnualLimit;
         catchUpApplied = catchUpEligible ? roundMoney(parameters.additionalContributionAmountAge55) : 0;
+      }
+    }
+
+    // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
+    // 223 answer unknown rather than merely unusual: general-purpose coverage
+    // is disqualifying and limited-purpose or post-deductible coverage is not,
+    // and the engine cannot read a plan document to tell which this is. A
+    // confident ceiling computed from a fact nobody supplied would be the bug,
+    // so this is the one part of the interaction that refuses to compute.
+    {
+      const spouseId = spouseIdOf(ownerId);
+      const own = section223FsaFacts.get(ownerId) ?? emptyHealthFsaSection223Facts();
+      const spouse = spouseId === null
+        ? emptyHealthFsaSection223Facts()
+        : section223FsaFacts.get(spouseId) ?? emptyHealthFsaSection223Facts();
+      if (own.purposeUnstated || spouse.purposeUnstated) {
+        // Belt and braces: the ERROR severity below already forces the result
+        // indeterminate through the ordinary rule, and the flag keeps the
+        // refusal if that severity is ever softened. They are redundant on
+        // purpose, so no mutation distinguishes them individually.
+        indeterminate = true;
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
+            DiagnosticSeverity.ERROR,
+            `A health flexible spending arrangement ${own.purposeUnstated ? "held by this individual" : "held by this individual's spouse"} states no Rev. Rul. 2004-45 purpose. A general-purpose arrangement is coverage that fails IRC 223(c)(1)(A)(ii) and a limited-purpose or post-deductible one is not, so the IRC 223 answer turns on a plan-design fact this engine cannot read and no limitation is reported. Supply planRules.healthFsa.purpose.`,
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
       }
     }
 
@@ -9244,11 +11091,79 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
+    // The IRC 125 / IRC 223 conflict is diagnosed and never enforced, so the
+    // plan status is fixed before these diagnostics are attached. Eligible-
+    // individual status is a caller-supplied fact everywhere else in this
+    // engine and no rule here overrides one; a caller who has already accounted
+    // for the conflict, by ending the arrangement mid-year and supplying the
+    // correct eligible months, must still get the answer their facts imply.
+    // Every IRC 223(b) figure therefore survives intact and only the account's
+    // reported status reflects the ERROR, through the ordinary rule that an
+    // error makes a result indeterminate.
+    const planStatus = accountStatusFromDiagnostics(status, diagnostics);
+    {
+      const spouseId = spouseIdOf(ownerId);
+      const own = section223FsaFacts.get(ownerId) ?? emptyHealthFsaSection223Facts();
+      const spouse = spouseId === null
+        ? emptyHealthFsaSection223Facts()
+        : section223FsaFacts.get(spouseId) ?? emptyHealthFsaSection223Facts();
+      if (own.generalPurpose) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+            DiagnosticSeverity.ERROR,
+            `This individual holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 holds that an individual covered by a health FSA paying or reimbursing section 213(d) medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible individual not be covered by a health plan that is not a high deductible health plan and that provides coverage for a benefit the HDHP covers.${own.generalPurposeCarryover ? " Amounts carried over from the preceding plan year are general-purpose funds in the year they land, so the disqualification reaches that whole plan year." : ""} The IRC 223(b) figures reported here are unchanged: eligible-individual status is supplied by the caller and is never overridden, so this reports the conflict rather than enforcing it.`,
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+      if (spouse.generalPurpose) {
+        diagnostics.push(
+          diagnostic(
+            "SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+            DiagnosticSeverity.ERROR,
+            "This individual's spouse holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 states that the result is the same where the individual is covered by a health FSA sponsored by the employer of the individual's spouse, because such an arrangement can reimburse this individual's own section 213(d) medical expenses, so it is disqualifying coverage under IRC 223(c)(1)(A)(ii) for both of them. As with an individual's own arrangement, the IRC 223(b) figures are unchanged and the conflict is reported rather than enforced.",
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+      if (own.generalPurposeGracePeriod || spouse.generalPurposeGracePeriod) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION",
+            DiagnosticSeverity.INFO,
+            "The disqualifying arrangement offers a Prop. Treas. Reg. 1.125-1(e) grace period. Notice 2005-86 holds that an individual covered by a general-purpose health FSA during a grace period is generally not eligible to contribute to a health savings account until the first day of the month following the end of that grace period, even where the arrangement has no unused benefits left. The grace-period months of the following plan year are therefore affected as well, which this year's eligible-month input cannot express.",
+            `persons.${ownerId}`,
+            "Notice 2005-86",
+          ),
+        );
+      }
+      if (
+        !own.generalPurpose &&
+        !spouse.generalPurpose &&
+        !own.purposeUnstated &&
+        !spouse.purposeUnstated &&
+        (own.hsaCompatible || spouse.hsaCompatible)
+      ) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+            DiagnosticSeverity.INFO,
+            "Every health flexible spending arrangement in this scenario is limited-purpose or post-deductible. Rev. Rul. 2004-45 holds that an arrangement reimbursing only vision and dental benefits, which are permitted coverage, and preventive care, or reimbursing only expenses incurred after the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied, leaves the individual an eligible individual, so IRC 223(c)(1)(A)(ii) is not failed.",
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+    }
+
     diagnostics.push(
       diagnostic(
         "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         DiagnosticSeverity.INFO,
-        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not tested.",
+        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not tested. Where the scenario also holds a health flexible spending arrangement, the IRC 223(c)(1)(A)(ii) consequence of its Rev. Rul. 2004-45 purpose is reported and never enforced: the figures here are the ones the supplied months and coverage produce.",
         `persons.${ownerId}`,
         "IRC 223",
       ),
@@ -9276,7 +11191,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     };
 
     context.hsaPlans.set(ownerId, {
-      status: accountStatusFromDiagnostics(status, diagnostics),
+      status: planStatus,
       diagnostics,
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
       detail,
@@ -9559,6 +11474,10 @@ function allocateAccount(context: CalculationContext, account: NormalizedAccount
       return allocateSection457f(account);
     case "hsa":
       return allocateHsa(context, account);
+    case "health_fsa":
+      return allocateHealthFsa(context, account);
+    case "dependent_care_fsa":
+      return allocateDependentCareFsa(context, account);
   }
 }
 
@@ -11241,11 +13160,17 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const taxYear = input.taxYear;
   const parameters = getParametersForYear(taxYear);
   const hsaParameters = hsaParametersForYear(taxYear);
+  const fsaParameters = fsaParametersForYear(taxYear);
   const filingStatus = parseFilingStatus(
     input.filingStatus,
     scenarioDiagnostics,
     input.filingStatus !== undefined,
   );
+  booleanFlag(input.treatedAsUnmarriedUnderSection21e4, "treatedAsUnmarriedUnderSection21e4");
+  const treatedAsUnmarriedUnderSection21e4 =
+    input.treatedAsUnmarriedUnderSection21e4 === undefined
+      ? null
+      : input.treatedAsUnmarriedUnderSection21e4 === true;
   const persons = normalizePersons(input.persons);
   const accounts = normalizeAccounts(input.accounts, persons);
   const allocationOrder = [...accounts].sort(
@@ -11254,8 +13179,10 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const context = createCalculationContext(
     taxYear,
     filingStatus,
+    treatedAsUnmarriedUnderSection21e4,
     parameters,
     hsaParameters,
+    fsaParameters,
     persons,
     accounts,
     scenarioDiagnostics,
@@ -11322,9 +13249,11 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       excessContribution,
       contributionComponents: outcome.annualComponents,
       planTermDependentCapacity: outcome.planTermDependentCapacity,
-      federalTaxEffects: contributionTaxEffects(outcome.annualComponents, traits, account.planRules),
+      federalTaxEffects: accountTaxEffects(outcome, traits, account.planRules, diagnostics),
       sharedLimits: outcome.sharedLimits,
       ...(outcome.hsaDetail ? { hsa: outcome.hsaDetail } : {}),
+      ...(outcome.healthFsaDetail ? { healthFsa: outcome.healthFsaDetail } : {}),
+      ...(outcome.dependentCareDetail ? { dependentCareFsa: outcome.dependentCareDetail } : {}),
       diagnostics,
     };
     accountResultById.set(account.id, result);
@@ -11346,6 +13275,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     filingStatus,
     parameters,
     hsaParameters,
+    fsaParameters,
     accounts: accountResults,
     conversions: conversionResults,
     totals: calculateScenarioTotals(accountResults, conversionResults),
@@ -11367,6 +13297,9 @@ function calculateScenarioTotals(
     deductibleIraContribution: 0,
     nondeductibleIraContribution: 0,
     hsaContribution: 0,
+    healthFsaSalaryReduction: 0,
+    dependentCareAssistanceExclusion: 0,
+    dependentCareIncludibleInIncome: 0,
     federalAgiReduction: 0,
     federalAgiIncrease: 0,
     taxableRothConversions: 0,
@@ -11412,6 +13345,15 @@ function calculateScenarioTotals(
     );
     totals.hsaContribution = roundMoney(
       totals.hsaContribution + components.hsaDeductible + components.hsaEmployerOrCafeteria,
+    );
+    totals.healthFsaSalaryReduction = roundMoney(
+      totals.healthFsaSalaryReduction + components.healthFsaSalaryReduction,
+    );
+    totals.dependentCareAssistanceExclusion = roundMoney(
+      totals.dependentCareAssistanceExclusion + components.dependentCareSalaryReduction,
+    );
+    totals.dependentCareIncludibleInIncome = roundMoney(
+      totals.dependentCareIncludibleInIncome + components.dependentCareIncludibleInIncome,
     );
     totals.federalAgiReduction = roundMoney(
       totals.federalAgiReduction + account.federalTaxEffects.federalAgiReduction,
@@ -11760,6 +13702,62 @@ export class AccountBuilder {
     return this;
   }
 
+  /** Rev. Rul. 2004-45 classification of a health FSA. */
+  public healthFsaPurpose(purpose: HealthFsaPurpose): this {
+    ((this.value.planRules ??= {}).healthFsa ??= {}).purpose = purpose;
+    return this;
+  }
+
+  /** Notice 2013-71 carryover. Mutually exclusive with `healthFsaGracePeriod`. */
+  public healthFsaCarryover(offers: boolean, priorYearUnusedAmount?: Money): this {
+    const healthFsa = ((this.value.planRules ??= {}).healthFsa ??= {});
+    healthFsa.offersCarryover = offers;
+    if (priorYearUnusedAmount !== undefined) healthFsa.priorYearUnusedAmount = priorYearUnusedAmount;
+    return this;
+  }
+
+  /** Prop. Treas. Reg. 1.125-1(e) grace period. Mutually exclusive with `healthFsaCarryover`. */
+  public healthFsaGracePeriod(offers = true, priorYearUnusedAmount?: Money): this {
+    const healthFsa = ((this.value.planRules ??= {}).healthFsa ??= {});
+    healthFsa.offersGracePeriod = offers;
+    if (priorYearUnusedAmount !== undefined) healthFsa.priorYearUnusedAmount = priorYearUnusedAmount;
+    return this;
+  }
+
+  /** Non-elective employer flex credits, and whether they could be elected as cash. */
+  public healthFsaEmployerFlexCredit(amount: Money, electableAsCash?: boolean): this {
+    const healthFsa = ((this.value.planRules ??= {}).healthFsa ??= {});
+    healthFsa.employerFlexCredit = amount;
+    if (electableAsCash !== undefined) healthFsa.flexCreditElectableAsCash = electableAsCash;
+    return this;
+  }
+
+  /** A limit the plan document imposes below the IRC 125(i) ceiling. */
+  public healthFsaPlanDocumentLimit(amount: Money): this {
+    ((this.value.planRules ??= {}).healthFsa ??= {}).planDocumentLimit = amount;
+    return this;
+  }
+
+  /** Whether the cafeteria plan year is the calendar year; `false` makes the IRC 125(i) figure indeterminate. */
+  public healthFsaCalendarPlanYear(isCalendarYear = true): this {
+    ((this.value.planRules ??= {}).healthFsa ??= {}).planYearIsCalendarYear = isCalendarYear;
+    return this;
+  }
+
+  /** IRC 129(b)(1) earned income. The spouse's amount is required whenever the employee is married. */
+  public dependentCareEarnedIncome(employee: Money, spouse?: Money): this {
+    const dependentCareFsa = ((this.value.planRules ??= {}).dependentCareFsa ??= {});
+    dependentCareFsa.employeeEarnedIncome = employee;
+    if (spouse !== undefined) dependentCareFsa.spouseEarnedIncome = spouse;
+    return this;
+  }
+
+  /** IRC 129(b)(2): the spouse is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
+  public dependentCareSpouseIsStudentOrIncapableOfSelfCare(applies = true): this {
+    ((this.value.planRules ??= {}).dependentCareFsa ??= {}).spouseIsStudentOrIncapableOfSelfCare = applies;
+    return this;
+  }
+
   public grandfatheredSarsep(grandfathered = true): this {
     (this.value.planRules ??= {}).grandfatheredSarsep = grandfathered;
     return this;
@@ -11965,6 +13963,22 @@ export class USTaxAdvantagedParams {
 
   public static hsaSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_HSA_PARAMETERS.sources);
+  }
+
+  /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */
+  public static fsaParametersForYear(taxYear: number): FsaYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return fsaParametersForYear(taxYear);
+  }
+
+  public static supportedFsaTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_FSA_PARAMETERS.supportedTaxYears };
+  }
+
+  public static fsaSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_FSA_PARAMETERS.sources);
   }
 }
 

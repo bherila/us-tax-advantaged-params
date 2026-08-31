@@ -35,6 +35,20 @@ USTaxAdvantagedParams.supportedHsaTaxYears();
 // { minimum: 2004, maximum: 2026 }
 ```
 
+Flexible spending arrangements have their own range, **1987 through 2026**. It starts at
+1987 because the Tax Reform Act of 1986 §1163 added the §129(a)(2)(A) dependent care
+exclusion limitation for taxable years beginning after December 31, 1986; before that
+§129(a) carried no dollar cap. The §125(i) health FSA limit starts later, at **2013**,
+because the Affordable Care Act §9005 added it for plan years beginning after December 31,
+2012. A year between the two returns dependent care figures and a null `healthFsa`.
+
+```ts
+USTaxAdvantagedParams.supportedFsaTaxYears();
+// { minimum: 1987, maximum: 2026 }
+USTaxAdvantagedParams.fsaParametersForYear(2012)?.healthFsa;
+// null
+```
+
 ## Installation
 
 ### npm
@@ -283,7 +297,8 @@ cannot tell it apart from a JSON array, so neither engine may.
 | Federal plan | Traditional and Roth TSP |
 | Employer-only defined-contribution plans | 401(a), profit-sharing, money-purchase, Keogh, ESOP |
 | Pension arrangements | Defined-benefit and cash-balance plans |
-| Health accounts | Health savings account (HSA) |
+| Health accounts | Health savings account (HSA), health flexible spending arrangement (health FSA) |
+| Dependent care | Dependent care assistance program (dependent care FSA) |
 
 Defined-benefit and cash-balance contributions are deliberately returned as `indeterminate`; their funding requires the plan formula, census, assets, actuarial assumptions, and funding rules.
 
@@ -455,6 +470,143 @@ already the higher tier.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
+
+## Health flexible spending arrangements (IRC §125(i))
+
+The §125(i) ceiling on salary reduction contributions is calculated from caller-supplied
+plan facts. Plan design is not inferred: this engine cannot read a plan document, so
+whether the plan offers a carryover or a grace period, whether employer flex credits could
+be elected as cash, and the arrangement's Rev. Rul. 2004-45 purpose are all inputs.
+
+| Rule | Treatment |
+|---|---|
+| §125(i)(1) salary-reduction limit | The indexed dollar limitation, applied per employee per employer |
+| Years before 2013 | §125(i) did not exist, so there was **no statutory ceiling at all** — only whatever the plan document imposed. The result is `indeterminate` with a null limit, not a fabricated one and not `unavailable`: the account existed, the limit did not |
+| Notice 2013-71 carryover | The carried amount is the lesser of the prior year's unused amount and **that year's** cap. The rest is forfeited |
+| Carryover does not reduce the limit | Notice 2013-71: the carryover "does not count against or otherwise affect" the §125(i) limit, so it sits on top of the receiving year's ceiling |
+| Carryover **or** grace period, never both | Notice 2013-71 forbids the combination. Asserting both describes a plan that cannot exist, so the result is `indeterminate` with an `ERROR` |
+| Neither offered | The whole unused amount is forfeited under the use-or-lose rule, and the forfeiture is reported rather than dropped |
+| Employer flex credits | Outside §125(i), which reaches salary reduction contributions alone — **unless** the employee could have elected them as cash or another taxable benefit, in which case Notice 2012-40 treats them as salary reduction contributions and they consume the limit |
+| Election above the limit | An `ERROR`, never silent truncation. Notice 2012-40 holds that a plan permitting a higher election is not a §125 cafeteria plan at all, so truncating would report a smaller consequence than the statute produces |
+| Per employee per employer | Notice 2012-40: two unrelated employers carry two full limits; arrangements sharing an `employerId` share one, which is how §125(g)(4) controlled-group aggregation is expressed |
+| Spouses | Each spouse carries a full limit, even in the same plan of the same employer. This is the deliberate contrast with §129, which is per **return** |
+| §125(a) exclusion, not a deduction | A salary reduction never enters gross income, so it reduces W-2 box 1 and FICA wages and contributes **nothing** to `federalAgiReduction` |
+
+### The carryover cap belongs to the year the money came from
+
+Notice 2013-71 created the carryover at a fixed $500 and Notice 2020-33 raised it to 20
+percent of the §125(i) limit "for that plan year". Both phrase it as the maximum unused
+amount **from** a plan year carried to the immediately following one, so
+`carryoverLimitForPriorYear` is the figure that governs an amount arriving this year, and
+`carryoverLimitForThisYear` is what may leave at the end of it. Reading the cap off the
+receiving year is the natural mistake and gives a different number in every year the limit
+moved.
+
+### Plan year versus tax year
+
+Notice 2012-40 §III holds that "taxable year" in §125(i) means the **plan year** of the
+cafeteria plan, and prorates a short plan year by its months. Every annual Revenue
+Procedure nonetheless publishes the figure "for taxable years beginning in" the year, and
+this package is keyed by tax year throughout, so the two agree exactly for a calendar-year
+plan — which is the ordinary case and the default here.
+
+For a non-calendar plan year the governing figure depends on the plan year start date,
+which the engine does not hold. Supplying `planYearIsCalendarYear: false` therefore returns
+`indeterminate` with an `ERROR` rather than quietly applying the calendar-year figure. Key
+the scenario to the tax year in which the plan year begins if you want that year's number.
+
+### COVID-era relief is disclosed, not modelled
+
+§214 of the Consolidated Appropriations Act, 2021 (Notice 2021-15) let a plan carry over
+**all** unused amounts from plan years ending in 2020 and 2021, and let a dependent care
+program carry over at all, which it otherwise may not. Adopting it was entirely a plan
+option. The engine applies the ordinary cap and attaches
+`HEALTH_FSA_SECTION_214_RELIEF_NOT_MODELLED` whenever a carryover out of 2020 or 2021 is
+computed, so a plan that adopted the relief is visibly under-reported rather than silently
+so.
+
+### A bare `FSA` is rejected
+
+`health_fsa`, `healthcare_fsa`, `medical_fsa`, and
+`health_flexible_spending_arrangement` all resolve. `FSA` alone does not: it names a
+health FSA and a dependent care FSA equally well, and the two carry different limits and
+different household aggregation, so it raises `INVALID_ACCOUNT_TYPE` with a message naming
+both spellings rather than silently picking one.
+
+Encoded §125 and §129 parameters are verified against the documents that published them —
+see [`evidence/fsa-limits/`](evidence/fsa-limits/).
+
+## Dependent care assistance (IRC §129)
+
+§129(a)(2)(A) is a **per-return** amount, which is the single most important
+difference from §125(i). Two spouses filing jointly do not get one each.
+
+| Rule | Treatment |
+|---|---|
+| §129(a)(2)(A) exclusion | Not inflation-adjusted, so it appears in no Revenue Procedure and is cited to the Code. Each year is encoded as its own row, so the 2021 increase and its reversion are both data rather than a rule |
+| Married filing separately | The statutory parenthetical amount. Separate returns mean each spouse carries their own halved amount rather than dividing one |
+| **2021 only** | ARPA §9632 substituted "$10,500 (half such dollar amount" for taxable years beginning after 2020 and before 2022 — enacted in March 2021, so Rev. Proc. 2020-45 could not carry it |
+| **2026 onward** | Pub. L. 119-21 §70404 struck `$5,000 ($2,500` and inserted `$7,500 ($3,750` for taxable years beginning after December 31, 2025. A fixed-dollar substitution: the amount changed, the absence of indexing did not |
+| Household sharing | Spouses filing jointly draw on one pool, reported through `sharedLimits` so the constraint is visible. Assistance above it is `includibleInIncome` under §129(a)(2)(B), not silently dropped |
+| §129(b)(1) earned income | Applied whenever the caller supplies the figures: the employee's earned income, or for a married employee the lesser of theirs and their spouse's. Absent, the ceiling is the §129(a)(2)(A) amount alone and a `WARNING` says the limitation was not applied |
+| Years before 1987 | §129 existed from 1982 but carried **no dollar ceiling** until the Tax Reform Act of 1986 §1163. Those years are `indeterminate` with a null limit; 1981 and earlier, when §129 did not exist at all, are `unavailable` with a zero |
+| §129(a)(1) exclusion | Reduces W-2 box 1 and FICA wages and contributes nothing to `federalAgiReduction`, exactly as the §125 and §106(d) exclusions do |
+
+### Why the earned income limitation is here at all
+
+The package's boundary is that it does not *derive* income, not that it ignores
+supplied facts. §129(b)(1) is a hard statutory ceiling, so leaving it out
+entirely would over-report the exclusion for exactly the taxpayers it was
+written for. Both figures are caller-supplied, like every other fact here.
+
+**§129(b)(2) deeming is not modelled.** For a spouse who is a student or
+incapable of self-care, §129(b)(2) applies the §21(d)(2) monthly schedule. That
+schedule is not encoded, because no primary source for it is committed to this
+package's evidence corpus and an unattested figure is never encoded. Asserting
+`spouseIsStudentOrIncapableOfSelfCare` records that any `spouseEarnedIncome`
+supplied is the deemed amount, and emits a diagnostic saying the schedule is not
+applied for you.
+
+## The §125 / §223 interaction: diagnose, do not enforce
+
+A general-purpose health FSA and an HSA cannot both be right. The engine says
+so and **returns the §223 figures the inputs imply, unchanged**.
+
+| Health FSA `purpose` | Effect on the HSA in the same scenario |
+|---|---|
+| `general_purpose` | `ERROR` `HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY` citing §223(c)(1)(A)(ii) and Rev. Rul. 2004-45. **Every §223(b) figure is unchanged** — the limitation, the prorated amount, the components, the totals |
+| `general_purpose` held by the **spouse** | `ERROR` `SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY`. Rev. Rul. 2004-45 says the result is the same where the arrangement is sponsored by the spouse's employer, because it can reimburse this individual's expenses. Figures again unchanged |
+| `limited_purpose` or `post_deductible` | No conflict. An `INFO` records that the arrangement was treated as HSA-compatible |
+| **absent** | `ERROR` `HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION`, and the §223 limitation is **`indeterminate`** |
+
+The last row is the one that differs, and deliberately. With a stated
+`general_purpose` the conflict is *known*, and reporting the caller's own
+figures is the whole point: eligible-individual status is caller-supplied
+everywhere in this engine, so someone who ended the arrangement mid-year and
+supplied the correct eligible months must still get the answer their facts
+imply. With the purpose *unstated* nothing about §223 is known — the two
+classifications give opposite answers — so a confident number would be the
+defect rather than the diagnostic.
+
+Two consequences worth stating:
+
+- **A carryover of general-purpose funds disqualifies the whole receiving plan
+  year.** Notice 2013-71 makes the carried amount available for expenses
+  incurred during the entire plan year it is carried to, so it is
+  general-purpose coverage for that year and not merely until it is spent.
+- **A grace period extends the disqualification into the following plan year.**
+  Notice 2005-86: coverage during the grace period blocks eligibility until the
+  first day of the month after it ends, even at a zero balance. Those months
+  fall outside the year being calculated, so it is reported as `INFO` rather
+  than folded into the month list.
+
+The account's reported `status` still becomes `indeterminate` when an `ERROR` is
+attached — that is the engine's uniform rule, not an enforcement of §223. What
+"diagnose, do not enforce" means here is that **no number moves**.
+
+A dependent care FSA never raises this: §129 assistance reimburses dependent
+care rather than §213(d) medical expenses, so it is not coverage §223(c)(1)(A)(ii)
+reaches.
 
 ## Multiple employers
 
@@ -650,7 +802,14 @@ See [DESIGN.md](DESIGN.md), [SOURCES.md](SOURCES.md), and [CONTRIBUTING.md](CONT
 The package does not calculate:
 
 - State income-tax treatment.
-- Health and dependent-care FSAs, HRAs, and Archer MSAs themselves, including §125 carryover and §129 dependent care. The §220 Archer MSA limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
+- HRAs of every kind — standard, ICHRA, EBHRA, QSEHRA, suspended, retiree-only — even where they interact with §223 exactly as a health FSA does. Health FSAs under §125(i), including the carryover, *are* modelled.
+- Archer MSAs themselves. The §220 limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
+- Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
+- The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.
+- Adoption assistance under §137, commuter benefits under §132(f), and educational assistance under §127.
+- The §21 dependent care **credit**, and the §21(c) interaction whereby §129 exclusions reduce that credit's expense base. The §129 exclusion is calculated; the credit is not.
+- The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.
+- Whether a dependent care program meets the §129(d) written-plan and nondiscrimination requirements, the §129(c) denial for amounts paid to a related individual, and whether the individuals cared for qualify.
 - The §408(d)(9)(C) once-per-lifetime limitation on a qualified HSA funding distribution and the separate §408(d)(9)(D) testing period. The §223(b)(4)(C) reduction itself *is* applied, from the amount supplied as `persons[].qualifiedHsaFundingDistributions`, which is taken as stated.
 - The retirement savings contributions credit.
 - Required minimum distributions or distribution penalties.
