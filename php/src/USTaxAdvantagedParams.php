@@ -9351,6 +9351,7 @@ final class Engine
             'healthFsaPlans' => [],
             'dependentCarePools' => [],
             'dependentCarePlans' => [],
+            'dependentCareEarnedIncomeCeilings' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
@@ -10468,6 +10469,70 @@ final class Engine
             }
         }
 
+        // IRC 129(b)(1) caps "the amount excluded from the income of an employee
+        // under subsection (a) for any taxable year", which is that year's
+        // aggregate rather than a per-plan figure, and Form 2441 Part III
+        // computes a single excluded-benefits amount for the return from the
+        // smaller of the benefits, the earned incomes, and the IRC 129(a)(2)(A)
+        // amount. The ceiling therefore belongs to the pool the accounts share.
+        // Applied per account it would let a return exclude the limitation once
+        // for every dependent care FSA it holds.
+        $earnedIncomeCeilingsByPool = [];
+        foreach ($context['dependentCarePlans'] as $plan) {
+            if ($plan['poolKey'] === null || $plan['earnedIncomeLimitation'] === null) {
+                continue;
+            }
+            $poolKey = $plan['poolKey'];
+            $value = (float) $plan['earnedIncomeLimitation'];
+            if (!isset($earnedIncomeCeilingsByPool[$poolKey])) {
+                $earnedIncomeCeilingsByPool[$poolKey] = [];
+            }
+            if (!in_array($value, $earnedIncomeCeilingsByPool[$poolKey], true)) {
+                $earnedIncomeCeilingsByPool[$poolKey][] = $value;
+            }
+        }
+        foreach ($earnedIncomeCeilingsByPool as $poolKey => $ceilings) {
+            if (count($ceilings) === 1) {
+                $context['dependentCareEarnedIncomeCeilings'][$poolKey] = $ceilings[0];
+                continue;
+            }
+            // The earned income facts describe one return, so accounts sharing
+            // an IRC 129(a)(2)(A) amount reporting different ceilings is a
+            // contradiction in the supplied facts. Choosing one of them would
+            // invent a fact, so no exclusion is computed for any account
+            // drawing on that amount.
+            $sorted = $ceilings;
+            sort($sorted);
+            $reported = implode(', ', array_map(
+                static fn (float $value): string => '$' . self::localeNumber($value),
+                $sorted,
+            ));
+            foreach ($context['dependentCarePlans'] as $accountId => $plan) {
+                if ($plan['poolKey'] !== $poolKey) {
+                    continue;
+                }
+                $context['dependentCarePlans'][$accountId]['diagnostics'][] = self::diagnostic(
+                    'DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 129(b)(1) caps the amount excluded for the taxable year at the employee\'s earned income, '
+                        . 'or for a married employee at the lesser of the employee\'s and the spouse\'s. That is one '
+                        . 'figure for the return, but the dependent care flexible spending arrangements sharing this '
+                        . 'IRC 129(a)(2)(A) amount report different ceilings (' . $reported . '). The contradiction is '
+                        . 'in the supplied facts rather than in the statute, and resolving it by choosing one of them '
+                        . 'would invent a fact, so no exclusion is computed.',
+                    'accounts.' . $accountId . '.planRules.dependentCareFsa.employeeEarnedIncome',
+                    'IRC 129(b)(1)',
+                );
+                $context['dependentCarePlans'][$accountId]['status'] = CalculationStatus::INDETERMINATE->value;
+                $context['dependentCarePlans'][$accountId]['statutoryMaximum'] = null;
+                $context['dependentCarePlans'][$accountId]['detail']['applicableExclusionLimit'] = null;
+                // Detaching from the pool keeps the contradiction from consuming
+                // the household amount, matching how every other indeterminate
+                // plan behaves.
+                $context['dependentCarePlans'][$accountId]['poolKey'] = null;
+            }
+        }
+
         // Assistance actually supplied draws on the household amount before any
         // remaining capacity is offered, so what IRC 129(a)(2)(B) includes in
         // income is measured against the amounts supplied rather than against
@@ -10486,9 +10551,15 @@ final class Engine
                 continue;
             }
             $householdRemaining = self::poolRemaining($context['dependentCarePools'][$plan['poolKey']]) ?? 0.0;
-            $ceiling = $plan['earnedIncomeLimitation'] === null
+            $earnedIncomeCeiling = $context['dependentCareEarnedIncomeCeilings'][$plan['poolKey']] ?? null;
+            // Measured against what the pool has already excluded, not against
+            // this account alone: the IRC 129(b)(1) ceiling is the return's for
+            // the year.
+            $ceiling = $earnedIncomeCeiling === null
                 ? $householdRemaining
-                : self::minMoney($householdRemaining, $plan['earnedIncomeLimitation']);
+                : self::minMoney($householdRemaining, self::nonnegative(self::roundMoney(
+                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['used'],
+                )));
             $excludable = self::minMoney($elected, $ceiling);
             $includible = self::roundMoney($elected - $excludable);
             $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
@@ -10542,6 +10613,13 @@ final class Engine
             if ($hasPool) {
                 self::reportPoolWithoutConsuming($context['dependentCarePools'][$poolKey], $sharedLimits);
             }
+            // The components clone what the scenario supplied, so an elected
+            // salary reduction would otherwise be reported as excluded by a
+            // plan that has just said it cannot determine the exclusion. No
+            // amount is substantiated here, and the detail already carries
+            // zero for both halves.
+            $annual['dependentCareSalaryReduction'] = 0.0;
+            $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
             return [
                 'status' => $plan['status'] === CalculationStatus::UNAVAILABLE->value
                     ? CalculationStatus::UNAVAILABLE->value
@@ -10558,11 +10636,16 @@ final class Engine
 
         // The supplied assistance already drew on the household IRC 129(a)(2)(A)
         // amount, so what is left is the further exclusion this employee could
-        // reach, capped by their own IRC 129(b)(1) earned income ceiling.
+        // reach. The IRC 129(b)(1) ceiling is measured against everything the
+        // pool has excluded rather than against this account alone, because it
+        // caps the return's exclusion for the taxable year.
         $alreadyExcluded = (float) $detail['excludableAmount'];
-        $headroom = $plan['earnedIncomeLimitation'] === null
+        $earnedIncomeCeiling = $context['dependentCareEarnedIncomeCeilings'][$poolKey] ?? null;
+        $headroom = $earnedIncomeCeiling === null
             ? (self::poolRemaining($context['dependentCarePools'][$poolKey]) ?? 0.0)
-            : self::nonnegative(self::roundMoney((float) $plan['earnedIncomeLimitation'] - $alreadyExcluded));
+            : self::nonnegative(self::roundMoney(
+                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['used'],
+            ));
         $additionalExcludable = self::takeFromPool(
             $context['dependentCarePools'][$poolKey],
             $headroom,

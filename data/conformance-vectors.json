@@ -5203,6 +5203,188 @@
       }
     },
     {
+      "name": "the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs",
+      "description": "IRC 129(b)(1) caps \"the amount excluded from the income of an employee under subsection (a) for any taxable year\", which is that year's aggregate rather than a per-plan figure, and Form 2441 Part III computes one excluded-benefits amount for the return as the smallest of the benefits received, the employee's earned income, the spouse's earned income, and the IRC 129(a)(2)(A) amount. A spouse earning 3000 therefore caps the whole return at 3000, not at 3000 for each dependent care FSA it holds: of the 10000 elected across two arrangements, 3000 is excluded and IRC 129(a)(2)(B) includes the remaining 7000 in gross income. Applied per account the same facts would exclude 6000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 3000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.excludableAmount": 3000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 2000,
+        "accounts.1.dependentCareFsa.excludableAmount": 0,
+        "accounts.1.dependentCareFsa.includibleInIncome": 5000,
+        "totals.dependentCareAssistanceExclusion": 3000,
+        "totals.dependentCareIncludibleInIncome": 7000
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) ceiling does not pool across married separate returns",
+      "description": "IRC 129(a)(2)(A) gives a married individual filing separately half the amount, and the two spouses file two returns rather than one, so each draws on its own 3750 for 2026. The IRC 129(b)(1) ceiling follows the same scope: it caps the exclusion on each return, so a lesser earned income of 3000 binds each return at 3000 rather than binding 3000 across both. Each spouse electing 3500 therefore excludes 3000 and includes 500, and the pair excludes 6000 in total. This is the deliberate contrast with the joint-return vector above, where one ceiling covers both arrangements.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3500
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3500
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 3000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.excludableAmount": 3000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 500,
+        "accounts.1.dependentCareFsa.excludableAmount": 3000,
+        "accounts.1.dependentCareFsa.includibleInIncome": 500,
+        "totals.dependentCareAssistanceExclusion": 6000,
+        "totals.dependentCareIncludibleInIncome": 1000
+      }
+    },
+    {
+      "name": "dependent care FSAs sharing one exclusion may not report different IRC 129(b)(1) ceilings",
+      "description": "The IRC 129(b)(1) ceiling is one figure for the return, so two dependent care FSAs drawing on the same IRC 129(a)(2)(A) amount cannot each be right about it. Here one reports a spouse earning 3000 and the other a spouse earning 5000. Resolving the disagreement by taking either figure, or the lesser of them, would invent a fact the caller did not supply, so the contradiction is reported and no exclusion is computed for either arrangement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "totals.dependentCareAssistanceExclusion": 0
+      }
+    },
+    {
       "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
       "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
       "input": {

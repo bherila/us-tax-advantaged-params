@@ -8399,6 +8399,13 @@ interface CalculationContext {
   healthFsaPlans: Map<string, HealthFsaAccountPlan>;
   dependentCarePools: Map<string, LimitPool>;
   dependentCarePlans: Map<string, DependentCareAccountPlan>;
+  /**
+   * The IRC 129(b)(1) ceiling resolved for each IRC 129(a)(2)(A) pool. The
+   * limitation caps the amount excluded for the taxable year, which is the
+   * return's aggregate rather than a per-account figure, so it belongs to the
+   * pool the accounts share.
+   */
+  dependentCareEarnedIncomeCeilings: Map<string, Money>;
 }
 
 interface AllocationOutcome {
@@ -9023,6 +9030,7 @@ function createCalculationContext(
     healthFsaPlans: new Map(),
     dependentCarePools: new Map(),
     dependentCarePlans: new Map(),
+    dependentCareEarnedIncomeCeilings: new Map(),
   };
 
   initializeIraPools(context, accounts);
@@ -9836,6 +9844,54 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     }
   }
 
+  // IRC 129(b)(1) caps "the amount excluded from the income of an employee
+  // under subsection (a) for any taxable year", which is that year's aggregate
+  // rather than a per-plan figure, and Form 2441 Part III computes a single
+  // excluded-benefits amount for the return from the smaller of the benefits,
+  // the earned incomes, and the IRC 129(a)(2)(A) amount. The ceiling therefore
+  // belongs to the pool the accounts share. Applied per account it would let a
+  // return exclude the limitation once for every dependent care FSA it holds.
+  const earnedIncomeCeilingsByPool = new Map<string, Money[]>();
+  for (const plan of context.dependentCarePlans.values()) {
+    if (plan.poolKey === null || plan.earnedIncomeLimitation === null) continue;
+    const seen = earnedIncomeCeilingsByPool.get(plan.poolKey) ?? [];
+    if (!seen.includes(plan.earnedIncomeLimitation)) seen.push(plan.earnedIncomeLimitation);
+    earnedIncomeCeilingsByPool.set(plan.poolKey, seen);
+  }
+  for (const [poolKey, ceilings] of earnedIncomeCeilingsByPool) {
+    if (ceilings.length === 1) {
+      context.dependentCareEarnedIncomeCeilings.set(poolKey, ceilings[0]);
+      continue;
+    }
+    // The earned income facts describe one return, so accounts sharing an
+    // IRC 129(a)(2)(A) amount reporting different ceilings is a contradiction
+    // in the supplied facts. Choosing one of them would invent a fact, so no
+    // exclusion is computed for any account drawing on that amount.
+    const reported = ceilings
+      .slice()
+      .sort((left, right) => left - right)
+      .map((value) => `$${value.toLocaleString()}`)
+      .join(", ");
+    for (const [accountId, plan] of context.dependentCarePlans) {
+      if (plan.poolKey !== poolKey) continue;
+      plan.diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT",
+          DiagnosticSeverity.ERROR,
+          `IRC 129(b)(1) caps the amount excluded for the taxable year at the employee's earned income, or for a married employee at the lesser of the employee's and the spouse's. That is one figure for the return, but the dependent care flexible spending arrangements sharing this IRC 129(a)(2)(A) amount report different ceilings (${reported}). The contradiction is in the supplied facts rather than in the statute, and resolving it by choosing one of them would invent a fact, so no exclusion is computed.`,
+          `accounts.${accountId}.planRules.dependentCareFsa.employeeEarnedIncome`,
+          "IRC 129(b)(1)",
+        ),
+      );
+      plan.status = CalculationStatus.INDETERMINATE;
+      plan.statutoryMaximum = null;
+      plan.detail.applicableExclusionLimit = null;
+      // Detaching from the pool keeps the contradiction from consuming the
+      // household amount, matching how every other indeterminate plan behaves.
+      plan.poolKey = null;
+    }
+  }
+
   // Assistance actually supplied draws on the household amount before any
   // remaining capacity is offered, so what IRC 129(a)(2)(B) includes in income
   // is measured against the amounts supplied rather than against capacity the
@@ -9848,9 +9904,12 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     const elected = account.existingContributions.dependentCareSalaryReduction;
     if (elected <= 0) continue;
     const householdRemaining = poolRemaining(pool) ?? 0;
-    const ceiling = plan.earnedIncomeLimitation === null
+    const earnedIncomeCeiling = context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null;
+    // Measured against what the pool has already excluded, not against this
+    // account alone: the IRC 129(b)(1) ceiling is the return's for the year.
+    const ceiling = earnedIncomeCeiling === null
       ? householdRemaining
-      : minMoney(householdRemaining, plan.earnedIncomeLimitation);
+      : minMoney(householdRemaining, nonnegative(roundMoney(earnedIncomeCeiling - pool.used)));
     const excludable = minMoney(elected, ceiling);
     const includible = roundMoney(elected - excludable);
     pool.used = roundMoney(pool.used + excludable);
@@ -9885,6 +9944,12 @@ function allocateDependentCareFsa(
 
   if (plan.status === CalculationStatus.UNAVAILABLE || plan.status === CalculationStatus.INDETERMINATE || !pool) {
     if (pool) reportPoolWithoutConsuming(pool, sharedLimits);
+    // The components clone what the scenario supplied, so an elected salary
+    // reduction would otherwise be reported as excluded by a plan that has
+    // just said it cannot determine the exclusion. No amount is substantiated
+    // here, and the detail already carries zero for both halves.
+    annual.dependentCareSalaryReduction = 0;
+    annual.dependentCareIncludibleInIncome = detail.includibleInIncome;
     return {
       status: plan.status === CalculationStatus.UNAVAILABLE
         ? CalculationStatus.UNAVAILABLE
@@ -9901,11 +9966,15 @@ function allocateDependentCareFsa(
 
   // The supplied assistance already drew on the household IRC 129(a)(2)(A)
   // amount, so what is left is the further exclusion this employee could
-  // reach, capped by their own IRC 129(b)(1) earned income ceiling.
+  // reach. The IRC 129(b)(1) ceiling is measured against everything the pool
+  // has excluded rather than against this account alone, because it caps the
+  // return's exclusion for the taxable year.
   const alreadyExcluded = detail.excludableAmount;
-  const headroom = plan.earnedIncomeLimitation === null
+  const earnedIncomeCeiling =
+    plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
+  const headroom = earnedIncomeCeiling === null
     ? (poolRemaining(pool) ?? 0)
-    : nonnegative(roundMoney(plan.earnedIncomeLimitation - alreadyExcluded));
+    : nonnegative(roundMoney(earnedIncomeCeiling - pool.used));
   const additionalExcludable = takeFromPool(pool, headroom, sharedLimits);
 
   annual.dependentCareSalaryReduction = roundMoney(alreadyExcluded + additionalExcludable);
