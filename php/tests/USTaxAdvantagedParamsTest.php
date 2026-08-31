@@ -635,6 +635,79 @@ test('1997 self-employed qualified-plan formula applies reduced-rate and recogni
     assertSameValue(24000, $plan['contributionComponents']['employerPreTax']);
 });
 
+test('exposes the IRC 125 and IRC 129 parameter table without extrapolating it', function (): void {
+    assertSameValue(['minimum' => 1987, 'maximum' => 2026], U::supportedFsaTaxYears());
+    assertSameValue(3400, U::fsaParametersForYear(2026)['healthFsa']['salaryReductionLimit']);
+    assertSameValue(7500, U::fsaParametersForYear(2026)['dependentCare']['exclusionLimit']);
+    assertSameValue(null, U::fsaParametersForYear(2012)['healthFsa']);
+    assertSameValue(null, U::fsaParametersForYear(1986));
+    $ids = array_column(U::fsaSourceMetadata(), 'id');
+    assertTrue(in_array('pl-119-21', $ids, true), 'Pub. L. 119-21 must be listed as an FSA source');
+});
+
+test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
+    assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
+    assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));
+    try {
+        U::normalizeAccountType('FSA');
+        failTest('Expected ParameterException');
+    } catch (ParameterException $error) {
+        assertSameValue('INVALID_ACCOUNT_TYPE', $error->errorCode);
+        assertTrue(str_contains($error->getMessage(), 'health_fsa'), 'message must name health_fsa');
+        assertTrue(str_contains($error->getMessage(), 'dependent_care_fsa'), 'message must name dependent_care_fsa');
+    }
+});
+
+test('validates health FSA plan facts before calculating anything', function (): void {
+    $cases = [
+        'INVALID_HEALTH_FSA_PURPOSE' => ['purpose' => 'general'],
+        'INVALID_BOOLEAN' => ['offersCarryover' => 'yes'],
+        'INVALID_MONEY' => ['priorYearUnusedAmount' => -1],
+    ];
+    foreach ($cases as $expectedCode => $rules) {
+        try {
+            scenario(2026, [['id' => 't', 'birthYear' => 1980]], [[
+                'id' => 'f', 'ownerId' => 't', 'type' => 'health_fsa',
+                'planRules' => ['healthFsa' => $rules],
+            ]]);
+            failTest("Expected ParameterException {$expectedCode}");
+        } catch (ParameterException $error) {
+            assertSameValue($expectedCode, $error->errorCode);
+        }
+    }
+    try {
+        scenario(2026, [['id' => 't', 'birthYear' => 1980]], [[
+            'id' => 'f', 'ownerId' => 't', 'type' => 'health_fsa',
+            'planRules' => ['healthFsa' => 3400],
+        ]]);
+        failTest('Expected ParameterException INVALID_INPUT_OBJECT');
+    } catch (ParameterException $error) {
+        assertSameValue('INVALID_INPUT_OBJECT', $error->errorCode);
+    }
+});
+
+test('the health FSA builder reaches every IRC 125(i) plan fact', function (): void {
+    $result = ScenarioBuilder::forTaxYear(2026)
+        ->taxpayer('t', static fn ($person) => $person->bornIn(1985)->w2Compensation(150000))
+        ->addAccount(
+            (new AccountBuilder('f', 't', AccountType::HEALTH_FSA))
+                ->employer('e')
+                ->healthFsaPurpose('post_deductible')
+                ->healthFsaCarryover(true, 700)
+                ->healthFsaEmployerFlexCredit(250, false)
+                ->healthFsaCalendarPlanYear(),
+        )
+        ->calculate();
+    $fsa = accountResult($result, 'f');
+    assertSameValue(CalculationStatus::DETERMINATE->value, $fsa['status']);
+    assertSameValue(3400.0, $fsa['statutoryMaximumAnnualContribution']);
+    assertSameValue('post_deductible', $fsa['healthFsa']['purpose']);
+    assertSameValue(false, $fsa['healthFsa']['disqualifiesHsaEligibility']);
+    assertSameValue(660.0, $fsa['healthFsa']['carryoverFromPriorYear']);
+    assertSameValue(40.0, $fsa['healthFsa']['forfeitedAmount']);
+    assertSameValue(0.0, $fsa['healthFsa']['employerFlexCreditCountedAgainstLimit']);
+});
+
 $failed = 0;
 $started = microtime(true);
 foreach ($tests as $name => $body) {

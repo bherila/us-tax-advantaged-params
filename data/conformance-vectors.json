@@ -3938,6 +3938,815 @@
         "fsaParameters": null,
         "parameters.year": 1986
       }
+    },
+    {
+      "name": "2026 health FSA election at the IRC 125(i) limit",
+      "description": "Rev. Proc. 2025-32 section 3.15 sets the 2026 dollar limitation under IRC 125(i) on voluntary employee salary reductions for contributions to health flexible spending arrangements at 3400, so an employee electing the maximum elects 3400. IRC 125(a) keeps the salary reduction out of gross income, so the whole 3400 comes out of Form W-2 box 1 and out of social security and medicare wages under IRC 3121(a)(5)(G) and none of it appears in federalAgiReduction, which reports above-the-line deductions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": 3400,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 680,
+        "accounts.0.healthFsa.disqualifiesHsaEligibility": false,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3400,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3400,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 0,
+        "totals.healthFsaSalaryReduction": 3400,
+        "totals.federalAgiReduction": 0
+      }
+    },
+    {
+      "name": "2013 is the first year IRC 125(i) limits a health FSA election",
+      "description": "IRC 125(i)(1) fixes the limit at 2500 and IRC 125(i)(2) begins indexing only for taxable years beginning after December 31, 2013, so 2013 carries the raw statutory amount. No annual revenue procedure states it: Rev. Proc. 2012-41's list of 2013 adjusted items has no Cafeteria Plans entry, and Notice 2012-40 is the operative authority. Paired with the 2012 vector, this pins the effective date rather than the figure alone.",
+      "input": {
+        "taxYear": 2013,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.healthFsa.salaryReductionLimit": 2500,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 500,
+        "accounts.0.healthFsa.purpose": null,
+        "accounts.0.healthFsa.disqualifiesHsaEligibility": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "2012 health FSA has no statutory salary-reduction ceiling",
+      "description": "IRC 125(i) was added by Pub. L. 111-148 section 9005 and Notice 2012-40 section II records that before its effective date plan sponsors imposed their own limits but there was no statutory limit. Notice 2012-40 section III reads the effective date as reaching plan years beginning after December 31, 2012. A health FSA therefore existed in 2012 and could receive salary reductions; what did not exist is a ceiling. The result is indeterminate with a null statutory maximum rather than unavailable with a zero, which is what the account type not existing would produce, and rather than a 2500 borrowed from the following year.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.healthFsa.salaryReductionLimit": null,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": null,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013"
+      }
+    },
+    {
+      "name": "2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited",
+      "description": "Notice 2020-33 section III.A sets the carryover at 20 percent of the IRC 125(i) limit for the plan year the amounts are carried FROM, and Rev. Proc. 2024-40 section 3.16 states 660 for a plan year beginning in 2025, which is 20 percent of that year's 3300 limit. Notice 2013-71 section III makes the carried amount the lesser of the unused amount and the cap, and forfeits the rest: 900 unused gives 660 carried and 240 forfeited. The receiving year's cap of 680 is a different figure and does not govern this carryover, which is the error a receiving-year reading would make.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.healthFsa.carryoverFromPriorYear": 660,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": 660,
+        "accounts.0.healthFsa.carryoverLimitForThisYear": 680,
+        "accounts.0.healthFsa.forfeitedAmount": 240,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_DOES_NOT_REDUCE_THE_LIMIT"
+      }
+    },
+    {
+      "name": "2026 health FSA carryover sits on top of the IRC 125(i) limit",
+      "description": "Notice 2013-71 section III holds that in addition to the carried-over amount the plan may permit the individual to elect up to the maximum allowed salary reduction, so the carryover \"does not count against or otherwise affect\" the IRC 125(i) limit. A 400 carryover out of the 2025 plan year, below that year's 660 cap so nothing is forfeited, therefore leaves the 2026 ceiling at the full 3400 from Rev. Proc. 2025-32 section 3.15, and 3800 is available to pay claims incurred in 2026. Implementing the carryover as a reduction would give 3000 here, which is why this needs its own vector.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 400,
+        "accounts.0.healthFsa.forfeitedAmount": 0
+      }
+    },
+    {
+      "name": "a health FSA grace period precludes a carryover",
+      "description": "Notice 2013-71 section IV holds that a plan providing for a carryover may not also provide a grace period, and conversely a plan that offers the Prop. Treas. Reg. 1.125-1(e) grace period carries nothing over. Nothing is carried in, and no forfeiture figure is produced because how much of the prior year's balance survives depends on expenses incurred during the two-month-and-15-day grace period, which is not a tax parameter. Paired with the carryover vector on the same 900 unused amount, this shows the plan option and not the amount is what decides.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersGracePeriod": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_GRACE_PERIOD_PRECLUDES_CARRYOVER"
+      }
+    },
+    {
+      "name": "a health FSA offering neither carryover nor grace period forfeits the whole unused amount",
+      "description": "Prop. Treas. Reg. 1.125-5(c) requires unused benefits or contributions remaining at the end of the plan year to be forfeited, which Notice 2013-71 calls the use-or-lose rule. A plan that offers no carryover forfeits all 900, not the 240 excess above the 660 cap that a carryover plan would forfeit. The forfeiture is reported rather than silently dropped.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": false,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.forfeitedAmount": 900,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_UNUSED_AMOUNTS_FORFEITED"
+      }
+    },
+    {
+      "name": "a health FSA carryover and grace period asserted together are refused",
+      "description": "Notice 2013-71 section IV: a section 125 cafeteria plan that incorporates a carryover provision may not also provide for a grace period in the plan year to which unused amounts may be carried over. Asserting both describes a plan that cannot exist, so a determinate carryover figure computed from either fact would assert something the guidance forbids. The result is indeterminate with no statutory maximum and no carryover cap, following the treatment of shares that do not divide the IRC 223(b)(5) family limitation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "offersGracePeriod": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_AND_GRACE_PERIOD_ARE_MUTUALLY_EXCLUSIVE"
+      }
+    },
+    {
+      "name": "nothing may be carried into 2013, the first year the carryover existed",
+      "description": "Notice 2013-71 section IV permits a plan to adopt the carryover for a plan year beginning in 2013, so 2013 is the first plan year amounts may be carried FROM and 2014 the first year they may land in. There is consequently no 2012 cap, and a 2013 scenario asserting a carryover of a prior-year unused amount cannot be answered: the cap that governs belongs to the source year. Reporting zero carried would be indistinguishable from a plan that forfeited, so the result is indeterminate.",
+      "input": {
+        "taxYear": 2013,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PRIOR_YEAR_CARRYOVER_LIMIT_NOT_ESTABLISHED"
+      }
+    },
+    {
+      "name": "a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled",
+      "description": "Rev. Proc. 2019-44 section 3.17 sets the 2020 IRC 125(i) limit at 2750 and Notice 2020-33 section III.A states 550 as the maximum unused amount from a plan year starting in 2020, being 20 percent of 2750. Section 214 of Pub. L. 116-260, implemented by Notice 2021-15 section III.A, separately permitted a plan to carry over ALL unused amounts from a plan year ending in 2020 to the plan year ending in 2021. Adopting that was entirely a plan option, so the ordinary cap is applied and the divergence is disclosed rather than left silent: 900 unused gives 550 carried under the ordinary cap and would give 900 under section 214 relief.",
+      "input": {
+        "taxYear": 2021,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 2750,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 550,
+        "accounts.0.healthFsa.carryoverLimitForPriorYear": 550,
+        "accounts.0.healthFsa.forfeitedAmount": 350,
+        "accounts.0.diagnostics.1.code": "HEALTH_FSA_SECTION_214_RELIEF_NOT_MODELLED"
+      }
+    },
+    {
+      "name": "a prior-year unused amount without a stated plan option asks for the fact",
+      "description": "Notice 2013-71 makes the carryover and the grace period plan options that a plan may adopt, may adopt one of, or may adopt neither, and they are mutually exclusive. An unused amount alone therefore does not determine what happens to it. Assuming a carryover would report 660 carried and assuming forfeiture would report 900 forfeited, so the engine reports neither, asks for the fact, and marks the result determinate with assumptions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.carryoverFromPriorYear": 0,
+        "accounts.0.healthFsa.forfeitedAmount": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_CARRYOVER_FACT_REQUIRED"
+      }
+    },
+    {
+      "name": "a health FSA election above the IRC 125(i) limit is reported, not truncated",
+      "description": "IRC 125(i) makes a health FSA a qualified benefit only if the plan provides that an employee may not elect salary reduction contributions above the limit, and Notice 2012-40 section III holds that a plan failing to comply is not a section 125 cafeteria plan at all, so the value of the taxable benefits the employee could have elected is includible regardless of the benefit elected. A 4000 election for 2026 against the 3400 limit from Rev. Proc. 2025-32 section 3.15 is therefore an error carrying a plan-qualification consequence, and truncating it to 3400 would report a smaller consequence than the statute produces. The 600 excess is reported and nothing further is allocated.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.existingAnnualContribution": 4000,
+        "accounts.0.excessContribution": 600,
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 4000,
+        "accounts.0.healthFsa.electedSalaryReduction": 4000,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT"
+      }
+    },
+    {
+      "name": "two unrelated employers each carry a full health FSA limit",
+      "description": "Notice 2012-40 section III: an employee employed by two or more employers that are not members of the same controlled group may elect up to the indexed limit under each employer's health FSA. For 2026 that is 3400 under each of two unrelated employers and 6800 in total, which is the answer a single per-person limit would get wrong.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e2"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 3400,
+        "totals.healthFsaSalaryReduction": 6800
+      }
+    },
+    {
+      "name": "two health FSAs of one employer share a single IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: all employers treated as a single employer under IRC 414(b), (c) or (m) are treated as one for the limit, and an employee participating in multiple cafeteria plans of that group is limited to the indexed amount in total under IRC 125(g)(4). Two arrangements carrying the same employerId therefore draw on one 3400 pool for 2026, not two, so the first exhausts it and the second has nothing left. Paired with the two-unrelated-employers vector, this pins that employerId is what separates the limits.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.0.remainingAfterAccount": 0,
+        "totals.healthFsaSalaryReduction": 3400
+      }
+    },
+    {
+      "name": "spouses filing jointly each carry a full health FSA limit",
+      "description": "Notice 2012-40 section III: the limit applies on an employee-by-employee basis, so if each of two spouses is eligible to elect salary reduction contributions each may elect up to the indexed amount, even in the same health FSA sponsored by the same employer. For 2026 that is 3400 each and 6800 in total. This is the deliberate contrast with IRC 129(a)(2)(A), which is a per-return household amount.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1982
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1"
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "health_fsa",
+            "employerId": "e1"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 3400,
+        "totals.healthFsaSalaryReduction": 6800
+      }
+    },
+    {
+      "name": "non-elective employer flex credits stay outside the IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: the limit applies only to salary reduction contributions and not to employer non-elective contributions, sometimes called flex credits, and its worked example is an employer contributing a 500 flex credit to each employee's health FSA for the plan year, after which each employee may still elect the full indexed amount. For 2026 the employee therefore still elects 3400 alongside a 500 non-elective credit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500,
+                "flexCreditElectableAsCash": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 0,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_OUTSIDE_LIMIT"
+      }
+    },
+    {
+      "name": "flex credits electable as cash consume the IRC 125(i) limit",
+      "description": "Notice 2012-40 section III: if an employer provides flex credits that employees may elect to receive as cash or as a taxable benefit, those flex credits are treated as salary reduction contributions for purposes of IRC 125(i). A 500 cashable credit against the 3400 limit from Rev. Proc. 2025-32 section 3.15 therefore leaves 2900 of election room. Paired with the non-elective vector at the same 500, this pins that the cash election and not the credit is what matters.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500,
+                "flexCreditElectableAsCash": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2900,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2900,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 500,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_COUNTS_AGAINST_LIMIT"
+      }
+    },
+    {
+      "name": "flex credits without a stated cash election ask for the fact",
+      "description": "Notice 2012-40 makes the answer turn entirely on whether the employee could have elected the credit as cash or another taxable benefit, and that is a plan-design fact this engine cannot read. The ordinary case under Prop. Treas. Reg. 1.125-5(b) is a non-elective credit, so the full 3400 is reported, but the assumption is stated rather than silent and the status records it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "employerFlexCredit": 500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.healthFsa.employerFlexCreditCountedAgainstLimit": 0,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_FLEX_CREDIT_CASH_ELECTION_FACT_REQUIRED"
+      }
+    },
+    {
+      "name": "a lower plan-document health FSA limit binds",
+      "description": "Notice 2013-71 section III records that a plan may specify a lower amount than the statutory maximum, and Notice 2012-40 section II notes that before IRC 125(i) plan sponsors imposed their own limits. A plan capping elections at 2000 for 2026 therefore binds below the 3400 statutory ceiling, and both figures are reported so the source of the constraint is visible.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "planDocumentLimit": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2000,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": 2000,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED"
+      }
+    },
+    {
+      "name": "a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate",
+      "description": "Notice 2012-40 section III holds that \"taxable year\" in IRC 125(i) refers to the plan year of the cafeteria plan, so the limit runs on a plan-year basis and a short plan year is prorated by its months, while every annual revenue procedure publishes the figure for taxable years beginning in a calendar year and this package is keyed by tax year. The two agree exactly for a calendar-year plan. For any other plan year the governing figure depends on the plan year start date, which is not an input, so the result is indeterminate rather than the calendar-year figure assumed.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "planYearIsCalendarYear": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.healthFsa.salaryReductionLimit": 3400,
+        "accounts.0.healthFsa.appliedSalaryReductionLimit": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_NON_CALENDAR_PLAN_YEAR_INDETERMINATE"
+      }
+    },
+    {
+      "name": "a bare FSA account type is rejected as ambiguous",
+      "description": "Input-contract assertion rather than a computed amount. \"FSA\" names an IRC 125(i) health flexible spending arrangement and an IRC 129 dependent care assistance program equally well, and the two carry different limits, different authorities, and different household aggregation - IRC 125(i) is per employee per employer while IRC 129(a)(2)(A) is per return. Aliasing the bare string would silently pick one of them, so it is rejected and the message names both spellings.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "FSA"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNT_TYPE"
+      }
+    },
+    {
+      "name": "an unrecognised health FSA purpose is rejected",
+      "description": "Input-contract assertion rather than a computed amount. Rev. Rul. 2004-45 classifies a health FSA as general-purpose, limited-purpose, or post-deductible, and the three lead to different IRC 223(c)(1)(A)(ii) answers. A fourth spelling is not a fourth classification, so it is rejected rather than treated as unstated, which would silently downgrade a stated fact into the diagnose-and-ask path.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited"
+              }
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_HEALTH_FSA_PURPOSE"
+      }
     }
   ]
 }
