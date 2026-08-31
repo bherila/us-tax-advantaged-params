@@ -48,7 +48,7 @@
     "test:fuzz": "node scripts/fuzz-parity.mjs",
     "test": "npm run test:ts && npm run test:php && npm run test:parity && npm run test:fuzz",
     "check:types": "mkdir -p dist-tests && npm pack --ignore-scripts --no-dry-run --pack-destination dist-tests >/dev/null && attw dist-tests/us-tax-advantaged-params-$npm_package_version.tgz",
-    "verify": "npm run validate:data && npm run validate:evidence && npm run generate:check && npm run validate:manifests && npm run check:attestations && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && npm run test:fuzz && node scripts/validate-manifests.mjs --built",
+    "verify": "npm run validate:data && npm run validate:evidence && npm run generate:check && npm run validate:manifests && npm run check:attestations && npm run check:attestations:self-test && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && npm run test:fuzz && node scripts/validate-manifests.mjs --built",
     "validate:release": "node scripts/validate-release.mjs",
     "release:archives": "node scripts/create-release-archives.mjs",
     "prepack": "npm run verify",
@@ -56,7 +56,8 @@
     "validate:evidence:retirement": "node scripts/verify-evidence.mjs retirement-limits",
     "validate:evidence:hsa": "node scripts/verify-evidence.mjs hsa-limits",
     "validate:evidence:fsa": "node scripts/verify-evidence.mjs fsa-limits",
-    "check:attestations": "node scripts/check-attestations.mjs"
+    "check:attestations": "node scripts/check-attestations.mjs",
+    "check:attestations:self-test": "node scripts/check-attestations.mjs --self-test"
   },
   "keywords": [
     "tax-advantaged",
