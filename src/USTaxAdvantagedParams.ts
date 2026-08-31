@@ -374,6 +374,14 @@ export interface DependentCareFsaRulesInput {
    * supplied is a deemed figure, and produces a diagnostic saying so.
    */
   spouseIsStudentOrIncapableOfSelfCare?: boolean;
+  /**
+   * A lower maximum the employer's plan itself allows. Form 2441's dependent
+   * care benefit computation takes the plan's maximum into account when it is
+   * below the Code amount. Like a health FSA plan-document limit, it is a term
+   * of this plan: it caps this arrangement and is not an employer-group or
+   * return-level ceiling.
+   */
+  planDocumentLimit?: Money;
 }
 
 export interface DependentCareFsaAccountDetail {
@@ -381,7 +389,9 @@ export interface DependentCareFsaAccountDetail {
   statutoryExclusion: Money | null;
   /** IRC 129(b)(1) earned income ceiling, or null when the earned income facts were not supplied. */
   earnedIncomeLimitation: Money | null;
-  /** The lesser of the two, which is the ceiling actually applied to this employee. */
+  /** A lower maximum the plan itself allows, or null when none was supplied. */
+  planDocumentLimit: Money | null;
+  /** The least of the applicable limits, which is the ceiling actually applied to this account. */
   applicableExclusionLimit: Money | null;
   /** Dependent care assistance supplied on this account. */
   electedSalaryReduction: Money;
@@ -9759,6 +9769,8 @@ interface DependentCareAccountPlan {
   poolKey: string | null;
   /** IRC 129(b)(1) ceiling on this employee, or null when the earned income facts were not supplied. */
   earnedIncomeLimitation: Money | null;
+  /** A lower maximum this plan allows, which caps this account alone. */
+  planDocumentLimit: Money | null;
 }
 
 /**
@@ -9900,12 +9912,18 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
       );
     }
 
+    const planDocumentLimit =
+      rules.planDocumentLimit === undefined
+        ? null
+        : money(rules.planDocumentLimit, `${path}.planRules.dependentCareFsa.planDocumentLimit`);
     const applicableLimit =
       indeterminate || statutoryExclusion === null
         ? null
-        : earnedIncomeLimitation === null
-          ? statutoryExclusion
-          : minMoney(statutoryExclusion, earnedIncomeLimitation);
+        : minMoney(
+            statutoryExclusion,
+            ...(earnedIncomeLimitation === null ? [] : [earnedIncomeLimitation]),
+            ...(planDocumentLimit === null ? [] : [planDocumentLimit]),
+          );
 
     diagnostics.push(
       diagnostic(
@@ -9920,6 +9938,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     const detail: DependentCareFsaAccountDetail = {
       statutoryExclusion: indeterminate ? null : statutoryExclusion,
       earnedIncomeLimitation,
+      planDocumentLimit,
       applicableExclusionLimit: applicableLimit,
       electedSalaryReduction: elected,
       excludableAmount: 0,
@@ -9935,6 +9954,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         detail,
         poolKey: null,
         earnedIncomeLimitation,
+        planDocumentLimit,
       });
       continue;
     }
@@ -9956,6 +9976,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
       detail,
       poolKey,
       earnedIncomeLimitation,
+      planDocumentLimit,
     });
   }
 
@@ -10035,9 +10056,11 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     const earnedIncomeCeiling = context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null;
     // Measured against what the pool has already excluded, not against this
     // account alone: the IRC 129(b)(1) ceiling is the return's for the year.
-    const ceiling = earnedIncomeCeiling === null
-      ? householdRemaining
-      : minMoney(householdRemaining, nonnegative(roundMoney(earnedIncomeCeiling - pool.used)));
+    const ceiling = minMoney(
+      householdRemaining,
+      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+      ...(plan.planDocumentLimit === null ? [] : [plan.planDocumentLimit]),
+    );
     const excludable = minMoney(elected, ceiling);
     const includible = roundMoney(elected - excludable);
     pool.used = roundMoney(pool.used + excludable);
@@ -10100,9 +10123,11 @@ function allocateDependentCareFsa(
   const alreadyExcluded = detail.excludableAmount;
   const earnedIncomeCeiling =
     plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
-  const headroom = earnedIncomeCeiling === null
-    ? (poolRemaining(pool) ?? 0)
-    : nonnegative(roundMoney(earnedIncomeCeiling - pool.used));
+  const headroom = minMoney(
+    poolRemaining(pool) ?? 0,
+    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+    ...(plan.planDocumentLimit === null ? [] : [nonnegative(roundMoney(plan.planDocumentLimit - alreadyExcluded))]),
+  );
   const additionalExcludable = takeFromPool(pool, headroom, sharedLimits);
 
   annual.dependentCareSalaryReduction = roundMoney(alreadyExcluded + additionalExcludable);

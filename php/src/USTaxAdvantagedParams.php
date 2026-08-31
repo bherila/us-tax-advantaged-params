@@ -10517,11 +10517,19 @@ final class Engine
                 );
             }
 
+            $planDocumentLimit = array_key_exists('planDocumentLimit', $rules)
+                ? self::money($rules['planDocumentLimit'], "{$path}.planRules.dependentCareFsa.planDocumentLimit")
+                : null;
             $applicableLimit = null;
             if (!$indeterminate && $statutoryExclusion !== null) {
-                $applicableLimit = $earnedIncomeLimitation === null
-                    ? $statutoryExclusion
-                    : self::minMoney($statutoryExclusion, $earnedIncomeLimitation);
+                $applicableCandidates = [$statutoryExclusion];
+                if ($earnedIncomeLimitation !== null) {
+                    $applicableCandidates[] = $earnedIncomeLimitation;
+                }
+                if ($planDocumentLimit !== null) {
+                    $applicableCandidates[] = $planDocumentLimit;
+                }
+                $applicableLimit = self::minMoney(...$applicableCandidates);
             }
 
             $diagnostics[] = self::diagnostic(
@@ -10542,6 +10550,7 @@ final class Engine
             $detail = [
                 'statutoryExclusion' => $indeterminate ? null : $statutoryExclusion,
                 'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                'planDocumentLimit' => $planDocumentLimit,
                 'applicableExclusionLimit' => $applicableLimit,
                 'electedSalaryReduction' => $elected,
                 'excludableAmount' => 0.0,
@@ -10559,6 +10568,7 @@ final class Engine
                     'detail' => $detail,
                     'poolKey' => null,
                     'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                    'planDocumentLimit' => $planDocumentLimit,
                 ];
                 continue;
             }
@@ -10580,6 +10590,7 @@ final class Engine
                 'detail' => $detail,
                 'poolKey' => $poolKey,
                 'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                'planDocumentLimit' => $planDocumentLimit,
             ];
         }
 
@@ -10685,11 +10696,16 @@ final class Engine
             // Measured against what the pool has already excluded, not against
             // this account alone: the IRC 129(b)(1) ceiling is the return's for
             // the year.
-            $ceiling = $earnedIncomeCeiling === null
-                ? $householdRemaining
-                : self::minMoney($householdRemaining, self::nonnegative(self::roundMoney(
+            $ceilingCandidates = [$householdRemaining];
+            if ($earnedIncomeCeiling !== null) {
+                $ceilingCandidates[] = self::nonnegative(self::roundMoney(
                     (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['used'],
-                )));
+                ));
+            }
+            if (($plan['planDocumentLimit'] ?? null) !== null) {
+                $ceilingCandidates[] = (float) $plan['planDocumentLimit'];
+            }
+            $ceiling = self::minMoney(...$ceilingCandidates);
             $excludable = self::minMoney($elected, $ceiling);
             $includible = self::roundMoney($elected - $excludable);
             $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
@@ -10771,11 +10787,18 @@ final class Engine
         // caps the return's exclusion for the taxable year.
         $alreadyExcluded = (float) $detail['excludableAmount'];
         $earnedIncomeCeiling = $context['dependentCareEarnedIncomeCeilings'][$poolKey] ?? null;
-        $headroom = $earnedIncomeCeiling === null
-            ? (self::poolRemaining($context['dependentCarePools'][$poolKey]) ?? 0.0)
-            : self::nonnegative(self::roundMoney(
+        $headroomCandidates = [self::poolRemaining($context['dependentCarePools'][$poolKey]) ?? 0.0];
+        if ($earnedIncomeCeiling !== null) {
+            $headroomCandidates[] = self::nonnegative(self::roundMoney(
                 (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['used'],
             ));
+        }
+        if (($plan['planDocumentLimit'] ?? null) !== null) {
+            $headroomCandidates[] = self::nonnegative(self::roundMoney(
+                (float) $plan['planDocumentLimit'] - $alreadyExcluded,
+            ));
+        }
+        $headroom = self::minMoney(...$headroomCandidates);
         $additionalExcludable = self::takeFromPool(
             $context['dependentCarePools'][$poolKey],
             $headroom,

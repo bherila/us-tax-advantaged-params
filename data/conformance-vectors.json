@@ -5510,6 +5510,89 @@
       }
     },
     {
+      "name": "a dependent care plan document below the IRC 129 amount binds this arrangement",
+      "description": "Form 2441's dependent care benefit computation takes the maximum permitted under the employer's plan into account when it is below the Code amount. A plan allowing 4000 for 2026 therefore binds below the 7500 IRC 129(a)(2)(A) amount, and the statutory figure is still reported separately so the source of the constraint is visible rather than merged into one number.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null,
+                "planDocumentLimit": 4000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.planDocumentLimit": 4000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 4000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4000
+      }
+    },
+    {
+      "name": "a dependent care plan document caps its own arrangement, not the household amount",
+      "description": "The IRC 129(a)(2)(A) amount is the return's and a plan document is one plan's own term, so the two constrain different things. For 2026 an arrangement allowing 2000 reaches 2000, and a second arrangement with no such term still reaches the remaining 5500 of the 7500 household amount. A plan document that lowered the household figure would forfeit 5500 of capacity the Code allows.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null,
+                "planDocumentLimit": 2000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": null
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 5500,
+        "totals.dependentCareAssistanceExclusion": 7500
+      }
+    },
+    {
       "name": "the IRC 129(b)(1) ceiling does not pool across married separate returns",
       "description": "IRC 129(a)(2)(A) gives a married individual filing separately half the amount, and the two spouses file two returns rather than one, so each draws on its own 3750 for 2026. The IRC 129(b)(1) ceiling follows the same scope: it caps the exclusion on each return, so a lesser earned income of 3000 binds each return at 3000 rather than binding 3000 across both. Each spouse electing 3500 therefore excludes 3000 and includes 500, and the pair excludes 6000 in total. This is the deliberate contrast with the joint-return vector above, where one ceiling covers both arrangements.",
       "input": {
