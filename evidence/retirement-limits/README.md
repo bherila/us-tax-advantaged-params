@@ -5,13 +5,15 @@ other. They cannot prove the encoded dollar amounts are the ones the IRS
 actually published: two engines reading the same mistyped table agree
 perfectly. This directory closes that gap.
 
-`primary-values.json` transcribes the figures from the notices in `sources/`.
-`scripts/verify-primary-sources.mjs` compares that transcription against
-`data/retirement-parameters.json`, so the shipped parameters are anchored to
-the documents that create them rather than merely self-consistent.
+`primary-values.json` transcribes the figures from the notices in `sources/`,
+and `verifier-config.mjs` declares how each recorded field maps onto
+`data/retirement-parameters.json`. The shared engine
+`scripts/verify-evidence.mjs` does the comparing, so the shipped parameters are
+anchored to the documents that create them rather than merely self-consistent.
 
 ```
-npm run validate:evidence
+npm run validate:evidence               # every corpus under evidence/
+npm run validate:evidence:retirement    # this corpus alone
 ```
 
 **350 comparisons over 2013–2026, 0 mismatches.**
@@ -67,9 +69,9 @@ Take the amounts from the notice itself, never from a summary table — summary
 tables are where transcription errors originate. Add the document to
 `sources/`, extend `SHA256SUMS.txt`, add the year to `primary-values.json`
 citing the notice, then update `data/retirement-parameters.json` until
-`npm run validate:evidence` passes.
+`npm run validate:evidence:retirement` passes.
 
 Any figure recorded in `primary-values.json` that the verifier compares against
 nothing is reported as `UNCOVERED` and fails the run, so a new parameter cannot
 be recorded and then quietly ignored. Figures outside what the package models
-are listed explicitly in the verifier's `UNMODELLED` set.
+are listed explicitly in this corpus's `unmodelled` declaration.

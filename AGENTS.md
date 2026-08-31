@@ -57,7 +57,16 @@ npm run test:php          # PHP unit + conformance tests (plain PHP, no PHPUnit)
 npm run test:parity       # build then full-output TS/PHP parity
 npm run generate          # regenerate embedded data blocks in both engines
 npm run validate:data     # canonical-format and range validation of the JSON
+npm run validate:evidence # compare every evidence corpus against the data it backs
 ```
+
+Evidence corpora live under `evidence/<corpus>/`: the source documents, a
+`primary-values.json` transcription, a `SHA256SUMS.txt`, and a
+`verifier-config.mjs` declaring how recorded fields map onto the data file.
+`scripts/verify-evidence.mjs` is the only comparison engine and the only report
+format; corpora contribute declarations, never logic. It discovers corpora by
+scanning `evidence/`, so a directory without a loadable `verifier-config.mjs`
+fails rather than being silently skipped.
 
 PHP 8.5+ and Node 20+ are required locally; CI runs Node 20/22/24 and PHP 8.5
 on GitHub-hosted arm64 runners (`ubuntu-24.04-arm`).

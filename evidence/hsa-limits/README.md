@@ -3,12 +3,15 @@
 HSA figures are published in an annual **Revenue Procedure**, not in the
 retirement COLA notice, so they carry their own corpus and their own check.
 
-`primary-values.json` transcribes the figures from the documents in `sources/`.
-`scripts/verify-hsa-sources.mjs` compares that transcription against
-`data/hsa-parameters.json`.
+`primary-values.json` transcribes the figures from the documents in `sources/`,
+and `verifier-config.mjs` declares how each recorded field maps onto
+`data/hsa-parameters.json`. The shared engine `scripts/verify-evidence.mjs`
+does the comparing — the HSA figures have their own corpus, not their own
+checking logic.
 
 ```
-npm run validate:evidence:hsa
+npm run validate:evidence        # every corpus under evidence/
+npm run validate:evidence:hsa    # this corpus alone
 ```
 
 **161 comparisons over 2004–2026, 0 mismatches.**

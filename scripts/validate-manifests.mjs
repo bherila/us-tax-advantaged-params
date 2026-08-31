@@ -129,6 +129,9 @@ const requiredSourceFiles = [
   "data/conformance-vectors.json",
   "scripts/generate.mjs",
   "scripts/validate-data.mjs",
+  "scripts/verify-evidence.mjs",
+  "evidence/retirement-limits/verifier-config.mjs",
+  "evidence/hsa-limits/verifier-config.mjs",
   "scripts/check-parity.mjs",
   "scripts/php-parity-runner.php",
   "scripts/smoke-imports.mjs",
@@ -149,6 +152,11 @@ for (const obsoletePath of [
   "tests/USARetirementAccountParameters.test.ts",
   "php/src/USARetirementAccountParameters.php",
   "php/tests/USARetirementAccountParametersTest.php",
+  // Superseded per-corpus evidence verifiers, collapsed into
+  // scripts/verify-evidence.mjs; a leftover copy would drift from the shared
+  // comparison engine while still looking authoritative.
+  "scripts/verify-primary-sources.mjs",
+  "scripts/verify-hsa-sources.mjs",
 ]) {
   if (await exists(obsoletePath)) fail(`obsolete duplicate remains: ${obsoletePath}`);
 }
