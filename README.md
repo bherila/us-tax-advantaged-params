@@ -243,17 +243,31 @@ code and the same message for the same bad input.
 
 | Code | Raised for |
 |---|---|
+| `INVALID_TAX_YEAR` | A `taxYear` that is not an integer |
+| `INVALID_FILING_STATUS` | A missing `filingStatus`, a non-string, or an unrecognized alias |
+| `PERSON_REQUIRED` | `persons` missing, not a list, or empty |
+| `INVALID_ACCOUNTS` / `INVALID_CONVERSIONS` | `accounts` or `conversions` present but not a list |
 | `INVALID_PERSON` / `INVALID_ACCOUNT` / `INVALID_CONVERSION` | An entry of `persons`, `accounts`, or `conversions` that is not an object |
-| `PERSON_ID_REQUIRED` / `ACCOUNT_ID_REQUIRED` / `CONVERSION_ID_REQUIRED` | A missing or blank `id` |
-| `ACCOUNT_OWNER_REQUIRED` / `CONVERSION_OWNER_REQUIRED` | A missing or blank `ownerId` |
+| `PERSON_ID_REQUIRED` / `ACCOUNT_ID_REQUIRED` / `CONVERSION_ID_REQUIRED` | An `id` that is missing, blank, or not a string |
+| `ACCOUNT_OWNER_REQUIRED` / `CONVERSION_OWNER_REQUIRED` | An `ownerId` that is missing, blank, or not a string |
 | `UNKNOWN_ACCOUNT_OWNER` / `UNKNOWN_CONVERSION_OWNER` | An `ownerId` that names no supplied person |
+| `INVALID_ACCOUNT_TYPE` / `INVALID_CONVERSION_TYPE` | A type that is not a string, or an unrecognized one |
+| `INVALID_INPUT_OBJECT` | A structured field — `planRules`, `existingContributions`, `compensation`, `magi`, `priorYearFicaWagesByEmployer`, `hsa`, `hsaCoverage`, `special403bCatchUp`, `section457SpecialCatchUp` — holding something other than an object |
 | `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` |
 | `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
+| `INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD` | A `simpleEmployerContributionMethod` outside `match_3_percent`, `nonelective_2_percent`, `custom` |
 | `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
 
 Enum-valued fields in particular are checked rather than compared loosely: a stale or
 camel-cased value such as `"rothFirst"` would otherwise fall through to a different branch
-and return a plausible but wrong allocation.
+and return a plausible but wrong allocation. Structured fields are checked for the same
+reason — a scalar where an object belongs used to be ignored in silence, taking every rule
+it carried with it.
+
+Two shapes are deliberately *not* rejected. A missing `accounts` or `conversions` key, and
+an explicit `null` in its place, both mean an empty list. And a JSON object whose keys are
+exactly `"0"`, `"1"`, … is accepted wherever a list is expected, because `json_decode`
+cannot tell it apart from a JSON array, so neither engine may.
 
 ## Account coverage
 

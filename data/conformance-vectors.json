@@ -2791,6 +2791,219 @@
         "accounts.0.diagnostics.0.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
         "accounts.0.diagnostics.0.message": "The annual amount $20,000 exceeds the calculated account ceiling of $7,500. Shared-limit records should also be reviewed for excess contributions across accounts."
       }
+    },
+    {
+      "name": "taxYear that is not an integer is rejected",
+      "description": "A string year is not a year. Coercing it silently reported an unsupported-year error naming a year the caller never supplied.",
+      "input": {
+        "taxYear": "2026",
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_TAX_YEAR"
+      }
+    },
+    {
+      "name": "missing filingStatus is rejected rather than defaulted",
+      "description": "Filing status selects every phase-out band and the IRC 223(b)(5) spousal rules, so defaulting an absent one to single silently changes the answer.",
+      "input": {
+        "taxYear": 2026,
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_FILING_STATUS"
+      }
+    },
+    {
+      "name": "filingStatus that is not a string is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": 3,
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "description": "As above; the value is reported by shape rather than by an engine-specific stringification of it.",
+      "expectError": {
+        "code": "INVALID_FILING_STATUS"
+      }
+    },
+    {
+      "name": "accounts that is not an array is rejected",
+      "description": "accounts is a list; a scalar in its place is a caller defect, not an empty portfolio.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": "roth_ira"
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNTS"
+      }
+    },
+    {
+      "name": "conversions that is not an array is rejected",
+      "description": "As for accounts.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": "c"
+      },
+      "expectError": {
+        "code": "INVALID_CONVERSIONS"
+      }
+    },
+    {
+      "name": "account type that is not a string is rejected",
+      "description": "Reported by shape, because interpolating a non-string into the unsupported-type message produced \"undefined\" in one engine and an empty string in the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": 5
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNT_TYPE"
+      }
+    },
+    {
+      "name": "person id that is not a string is rejected",
+      "description": "Identifiers are strings. Coercing 5 to \"5\" makes the scenario depend on a coercion rule rather than on the input.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": 5
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "PERSON_ID_REQUIRED"
+      }
+    },
+    {
+      "name": "structured input field that is not an object is rejected",
+      "description": "planRules, existingContributions, compensation, magi, priorYearFicaWagesByEmployer, hsa, hsaCoverage, special403bCatchUp, and section457SpecialCatchUp are objects; a scalar in their place was silently ignored, so every rule they carry vanished without a word.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_ira",
+            "planRules": 5
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_INPUT_OBJECT"
+      }
+    },
+    {
+      "name": "unrecognized simpleEmployerContributionMethod is rejected",
+      "description": "The same defect shape as contributionPreference: neither engine validated it, so an unrecognized method silently fell through to the default employer formula.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "planRules": {
+              "planCompensation": 60000,
+              "simpleEmployerContributionMethod": "MATCH"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD"
+      }
+    },
+    {
+      "name": "1989 fractional plan-term capacity keeps its fraction in the message",
+      "description": "1989 IRC 415(c)(1)(B) allowed 25 percent of compensation, so 25 percent of 100018 is 25004.50, less the 1989 IRC 402(g) elective-deferral limit of 7627, leaving 17377.50 of capacity that depends on unstated plan terms. The message must print 17,377.5, not a rounded 17,378; PHP rendered money to two decimals where the TypeScript default carries three.",
+      "input": {
+        "taxYear": 1989,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "solo_401k",
+            "planRules": {
+              "planCompensation": 100018
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.planTermDependentCapacity": 17377.5,
+        "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY",
+        "accounts.0.diagnostics.0.message": "$17,377.5 of potential annual-additions capacity requires an employer contribution formula or permission for voluntary after-tax contributions."
+      }
     }
   ]
 }

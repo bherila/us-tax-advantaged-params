@@ -6835,6 +6835,52 @@ const CONVERSION_TYPE_ALIASES: Record<string, ConversionType> = {
   IN_PLAN_ROTH_CONVERSION: ConversionType.IN_PLAN_ROTH_ROLLOVER,
 };
 
+/**
+ * A language-neutral description of a value's shape, so both engines word the
+ * same rejection identically. Arrays and objects collapse into one token
+ * because a JSON `{}` and a JSON `[]` are indistinguishable once decoded in
+ * PHP, and a message that depended on telling them apart could not be matched.
+ */
+function describeInputValue(value: unknown, present = true): string {
+  if (!present || value === undefined) return "no value";
+  if (value === null) return "null";
+  if (typeof value === "boolean") return "a boolean";
+  if (typeof value === "number") return "a number";
+  if (typeof value === "string") return "a string";
+  return "a structured value";
+}
+
+/**
+ * The value as a JSON list, or null when it is not one. An object whose keys
+ * are exactly "0".."n-1" counts, matching PHP's `array_is_list` — after
+ * `json_decode`, PHP cannot distinguish a JSON array from an object with those
+ * keys, so neither engine may.
+ */
+function toInputList(value: unknown): unknown[] | null {
+  if (Array.isArray(value)) return value;
+  if (value === null || typeof value !== "object") return null;
+  const keys = Object.keys(value);
+  for (let index = 0; index < keys.length; index += 1) {
+    if (keys[index] !== String(index)) return null;
+  }
+  return keys.map((key) => (value as Record<string, unknown>)[key]);
+}
+
+/** A non-empty string after trimming, or null. Used for every caller-supplied identifier. */
+function trimmedIdentifier(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/** Structured input fields must be objects; a scalar in their place is silently ignored otherwise. */
+function requireInputObject(value: unknown, path: string): void {
+  if (value === undefined) return;
+  if (value === null || typeof value !== "object") {
+    throw new ParameterError("INVALID_INPUT_OBJECT", `${path} must be an object.`);
+  }
+}
+
 function normalizeToken(value: string): string {
   return value
     .trim()
@@ -6845,11 +6891,21 @@ function normalizeToken(value: string): string {
     .replace(/^_|_$/g, "");
 }
 
-function parseFilingStatus(value: FilingStatus | string, diagnostics?: Diagnostic[]): FilingStatus {
+function parseFilingStatus(
+  value: FilingStatus | string | unknown,
+  diagnostics?: Diagnostic[],
+  present = true,
+): FilingStatus {
   if (Object.values(FilingStatus).includes(value as FilingStatus)) {
     return value as FilingStatus;
   }
-  const token = normalizeToken(String(value));
+  if (typeof value !== "string") {
+    throw new ParameterError(
+      "INVALID_FILING_STATUS",
+      `Filing status must be a string, but received ${describeInputValue(value, present)}.`,
+    );
+  }
+  const token = normalizeToken(value);
   const parsed = FILING_STATUS_ALIASES[token];
   if (!parsed) {
     throw new ParameterError("INVALID_FILING_STATUS", `Unsupported filing status: ${value}`);
@@ -6867,22 +6923,34 @@ function parseFilingStatus(value: FilingStatus | string, diagnostics?: Diagnosti
   return parsed;
 }
 
-function parseAccountType(value: AccountType | string): AccountType {
+function parseAccountType(value: AccountType | string | unknown, present = true): AccountType {
   if (Object.values(AccountType).includes(value as AccountType)) {
     return value as AccountType;
   }
-  const parsed = ACCOUNT_TYPE_ALIASES[normalizeToken(String(value))];
+  if (typeof value !== "string") {
+    throw new ParameterError(
+      "INVALID_ACCOUNT_TYPE",
+      `Account type must be a string, but received ${describeInputValue(value, present)}.`,
+    );
+  }
+  const parsed = ACCOUNT_TYPE_ALIASES[normalizeToken(value)];
   if (!parsed) {
     throw new ParameterError("INVALID_ACCOUNT_TYPE", `Unsupported retirement account type: ${value}`);
   }
   return parsed;
 }
 
-function parseConversionType(value: ConversionType | string): ConversionType {
+function parseConversionType(value: ConversionType | string | unknown, present = true): ConversionType {
   if (Object.values(ConversionType).includes(value as ConversionType)) {
     return value as ConversionType;
   }
-  const parsed = CONVERSION_TYPE_ALIASES[normalizeToken(String(value))];
+  if (typeof value !== "string") {
+    throw new ParameterError(
+      "INVALID_CONVERSION_TYPE",
+      `Roth conversion type must be a string, but received ${describeInputValue(value, present)}.`,
+    );
+  }
+  const parsed = CONVERSION_TYPE_ALIASES[normalizeToken(value)];
   if (!parsed) {
     throw new ParameterError("INVALID_CONVERSION_TYPE", `Unsupported Roth conversion type: ${value}`);
   }
@@ -7175,8 +7243,9 @@ function deepClone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson> {
-  if (!Array.isArray(persons) || persons.length === 0) {
+function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPerson> {
+  const persons = toInputList(personsInput) as PersonInput[] | null;
+  if (persons === null || persons.length === 0) {
     throw new ParameterError("PERSON_REQUIRED", "At least one person is required.");
   }
   const result = new Map<string, NormalizedPerson>();
@@ -7184,16 +7253,23 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
     if (input === null || typeof input !== "object") {
       throw new ParameterError("INVALID_PERSON", `persons[${index}] must be an object/associative array.`);
     }
-    if (!input.id?.trim()) {
+    const id = trimmedIdentifier(input.id);
+    if (id === null) {
       throw new ParameterError("PERSON_ID_REQUIRED", `persons[${index}].id is required.`);
     }
-    if (result.has(input.id)) {
-      throw new ParameterError("DUPLICATE_PERSON_ID", `Duplicate person ID: ${input.id}`);
+    if (result.has(id)) {
+      throw new ParameterError("DUPLICATE_PERSON_ID", `Duplicate person ID: ${id}`);
     }
     if (input.birthYear !== undefined && (!Number.isInteger(input.birthYear) || input.birthYear < 1800 || input.birthYear > 3000)) {
       throw new ParameterError("INVALID_BIRTH_YEAR", `persons[${index}].birthYear is invalid.`);
     }
     if (input.birthDate !== undefined) validateIsoDate(input.birthDate, `persons[${index}].birthDate`);
+    requireInputObject(input.compensation, `persons[${index}].compensation`);
+    requireInputObject(input.magi, `persons[${index}].magi`);
+    requireInputObject(
+      input.priorYearFicaWagesByEmployer,
+      `persons[${index}].priorYearFicaWagesByEmployer`,
+    );
     const compensation = input.compensation ?? {};
     money(compensation.iraCompensation, `persons[${index}].compensation.iraCompensation`);
     money(compensation.w2Compensation, `persons[${index}].compensation.w2Compensation`);
@@ -7206,13 +7282,8 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
     for (const [employerId, amount] of Object.entries(input.priorYearFicaWagesByEmployer ?? {})) {
       wages[employerId] = money(amount, `persons[${index}].priorYearFicaWagesByEmployer.${employerId}`);
     }
+    requireInputObject(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     if (input.hsaCoverage !== undefined) {
-      if (input.hsaCoverage === null || typeof input.hsaCoverage !== "object") {
-        throw new ParameterError(
-          "INVALID_HSA_COVERAGE_INPUT",
-          `persons[${index}].hsaCoverage must be an object.`,
-        );
-      }
       validateHsaCoverage(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     }
     const role = input.role ?? (index === 0 ? "taxpayer" : index === 1 ? "spouse" : "other");
@@ -7222,8 +7293,9 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
         `persons[${index}].role must be taxpayer, spouse, or other.`,
       );
     }
-    result.set(input.id, {
+    result.set(id, {
       ...input,
+      id,
       role,
       compensation,
       magi,
@@ -7255,35 +7327,47 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
 }
 
 function normalizeAccounts(
-  accounts: AccountInput[],
+  accountsInput: AccountInput[] | undefined,
   persons: Map<string, NormalizedPerson>,
 ): NormalizedAccount[] {
+  const accounts = (accountsInput === undefined || accountsInput === null
+    ? []
+    : toInputList(accountsInput)) as AccountInput[] | null;
+  if (accounts === null) {
+    throw new ParameterError("INVALID_ACCOUNTS", "accounts must be an array.");
+  }
   const ids = new Set<string>();
   return accounts.map((input, index) => {
     if (input === null || typeof input !== "object") {
       throw new ParameterError("INVALID_ACCOUNT", `accounts[${index}] must be an object/associative array.`);
     }
-    if (!input.id?.trim()) {
+    const id = trimmedIdentifier(input.id);
+    if (id === null) {
       throw new ParameterError("ACCOUNT_ID_REQUIRED", `accounts[${index}].id is required.`);
     }
-    if (ids.has(input.id)) {
-      throw new ParameterError("DUPLICATE_ACCOUNT_ID", `Duplicate account ID: ${input.id}`);
+    if (ids.has(id)) {
+      throw new ParameterError("DUPLICATE_ACCOUNT_ID", `Duplicate account ID: ${id}`);
     }
-    ids.add(input.id);
-    if (!input.ownerId?.trim()) {
+    ids.add(id);
+    const ownerId = trimmedIdentifier(input.ownerId);
+    if (ownerId === null) {
       throw new ParameterError("ACCOUNT_OWNER_REQUIRED", `accounts[${index}].ownerId is required.`);
     }
-    if (!persons.has(input.ownerId)) {
+    if (!persons.has(ownerId)) {
       throw new ParameterError(
         "UNKNOWN_ACCOUNT_OWNER",
-        `Account ${input.id} references unknown owner ${input.ownerId}.`,
+        `Account ${id} references unknown owner ${ownerId}.`,
       );
     }
+    requireInputObject(input.planRules, `accounts[${index}].planRules`);
+    requireInputObject(input.existingContributions, `accounts[${index}].existingContributions`);
     const planRules = input.planRules ?? {};
     validatePlanRules(planRules, `accounts[${index}].planRules`);
     return {
       ...input,
-      type: parseAccountType(input.type),
+      id,
+      ownerId,
+      type: parseAccountType(input.type, input.type !== undefined),
       priority: input.priority ?? 100,
       planRules,
       existingContributions: cloneComponents(input.existingContributions),
@@ -7304,6 +7388,18 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   rate(rules.employerMatchRate, `${path}.employerMatchRate`);
   rate(rules.employerMatchCompensationFraction, `${path}.employerMatchCompensationFraction`);
   rate(rules.employerNonelectiveRate, `${path}.employerNonelectiveRate`);
+  requireInputObject(rules.special403bCatchUp, `${path}.special403bCatchUp`);
+  requireInputObject(rules.section457SpecialCatchUp, `${path}.section457SpecialCatchUp`);
+  requireInputObject(rules.hsa, `${path}.hsa`);
+  if (
+    rules.simpleEmployerContributionMethod !== undefined &&
+    !SIMPLE_EMPLOYER_CONTRIBUTION_METHODS.includes(rules.simpleEmployerContributionMethod)
+  ) {
+    throw new ParameterError(
+      "INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD",
+      `${path}.simpleEmployerContributionMethod is invalid.`,
+    );
+  }
   if (rules.special403bCatchUp) {
     const special = rules.special403bCatchUp;
     if (!Number.isFinite(special.yearsOfService) || special.yearsOfService < 0) {
@@ -7336,6 +7432,11 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   if (rules.hsa) validateHsaRules(rules.hsa, `${path}.hsa`);
 }
 
+const SIMPLE_EMPLOYER_CONTRIBUTION_METHODS: SimpleEmployerContributionMethod[] = [
+  "match_3_percent",
+  "nonelective_2_percent",
+  "custom",
+];
 const CONTRIBUTION_PREFERENCES: ContributionPreference[] = ["account_type", "pretax_first", "roth_first"];
 const EMPLOYER_CONTRIBUTION_TAX_TREATMENTS: EmployerContributionTaxTreatment[] = ["pretax", "roth"];
 
@@ -7369,11 +7470,12 @@ function validateHsaCoverage(rules: HsaCoverageInput, path: string): void {
   }
   if (rules.coverageTier !== undefined) parseHsaCoverageTier(rules.coverageTier, `${path}.coverageTier`);
   if (rules.eligibleMonths !== undefined) {
-    if (!Array.isArray(rules.eligibleMonths)) {
+    const eligibleMonths = toInputList(rules.eligibleMonths);
+    if (eligibleMonths === null) {
       throw new ParameterError("INVALID_HSA_ELIGIBLE_MONTHS", `${path}.eligibleMonths must be an array.`);
     }
     const seen = new Set<number>();
-    rules.eligibleMonths.forEach((month, index) => {
+    eligibleMonths.forEach((month, index) => {
       const value = validateHsaMonth(month, `${path}.eligibleMonths[${index}]`);
       if (seen.has(value)) {
         throw new ParameterError(
@@ -7385,11 +7487,12 @@ function validateHsaCoverage(rules: HsaCoverageInput, path: string): void {
     });
   }
   if (rules.monthlyCoverage !== undefined) {
-    if (!Array.isArray(rules.monthlyCoverage)) {
+    const monthlyCoverage = toInputList(rules.monthlyCoverage) as HsaMonthlyCoverageInput[] | null;
+    if (monthlyCoverage === null) {
       throw new ParameterError("INVALID_HSA_MONTHLY_COVERAGE", `${path}.monthlyCoverage must be an array.`);
     }
     const seen = new Set<number>();
-    rules.monthlyCoverage.forEach((entry, index) => {
+    monthlyCoverage.forEach((entry, index) => {
       if (entry === null || typeof entry !== "object") {
         throw new ParameterError(
           "INVALID_HSA_MONTHLY_COVERAGE",
@@ -7968,11 +8071,15 @@ function hsaCoverageSignature(coverage: HsaCoverageInput): string {
 function resolveHsaMonths(rules: HsaCoverageInput): Array<HsaCoverageTier | null> | null {
   const months: Array<HsaCoverageTier | null> = HSA_ALL_MONTHS.map(() => null);
   if (rules.monthlyCoverage !== undefined) {
-    for (const entry of rules.monthlyCoverage) months[entry.month - 1] = entry.coverage;
+    const entries = (toInputList(rules.monthlyCoverage) ?? []) as HsaMonthlyCoverageInput[];
+    for (const entry of entries) months[entry.month - 1] = entry.coverage;
     return months;
   }
   if (rules.coverageTier === undefined) return null;
-  for (const month of rules.eligibleMonths ?? HSA_ALL_MONTHS) months[month - 1] = rules.coverageTier;
+  const eligible = rules.eligibleMonths === undefined
+    ? HSA_ALL_MONTHS
+    : ((toInputList(rules.eligibleMonths) ?? []) as number[]);
+  for (const month of eligible) months[month - 1] = rules.coverageTier;
   return months;
 }
 
@@ -10166,40 +10273,50 @@ interface NormalizedConversion extends Omit<RothConversionInput, "type"> {
 }
 
 function normalizeConversions(
-  conversions: RothConversionInput[],
+  conversionsInput: RothConversionInput[] | undefined,
   persons: Map<string, NormalizedPerson>,
   accountsById: Map<string, NormalizedAccount>,
 ): NormalizedConversion[] {
+  const conversions = (conversionsInput === undefined || conversionsInput === null
+    ? []
+    : toInputList(conversionsInput)) as RothConversionInput[] | null;
+  if (conversions === null) {
+    throw new ParameterError("INVALID_CONVERSIONS", "conversions must be an array.");
+  }
   const ids = new Set<string>();
   return conversions.map((input, index) => {
     if (input === null || typeof input !== "object") {
       throw new ParameterError("INVALID_CONVERSION", `conversions[${index}] must be an object/associative array.`);
     }
-    if (!input.id?.trim()) {
+    const id = trimmedIdentifier(input.id);
+    if (id === null) {
       throw new ParameterError("CONVERSION_ID_REQUIRED", `conversions[${index}].id is required.`);
     }
-    if (ids.has(input.id)) {
-      throw new ParameterError("DUPLICATE_CONVERSION_ID", `Duplicate conversion ID: ${input.id}`);
+    if (ids.has(id)) {
+      throw new ParameterError("DUPLICATE_CONVERSION_ID", `Duplicate conversion ID: ${id}`);
     }
-    ids.add(input.id);
-    if (!input.ownerId?.trim()) {
+    ids.add(id);
+    const ownerId = trimmedIdentifier(input.ownerId);
+    if (ownerId === null) {
       throw new ParameterError("CONVERSION_OWNER_REQUIRED", `conversions[${index}].ownerId is required.`);
     }
-    if (!persons.has(input.ownerId)) {
+    if (!persons.has(ownerId)) {
       throw new ParameterError(
         "UNKNOWN_CONVERSION_OWNER",
-        `Conversion ${input.id} references unknown owner ${input.ownerId}.`,
+        `Conversion ${id} references unknown owner ${ownerId}.`,
       );
     }
     if (input.sourceAccountId && !accountsById.has(input.sourceAccountId)) {
       throw new ParameterError(
         "UNKNOWN_CONVERSION_SOURCE_ACCOUNT",
-        `Conversion ${input.id} references unknown source account ${input.sourceAccountId}.`,
+        `Conversion ${id} references unknown source account ${input.sourceAccountId}.`,
       );
     }
     return {
       ...input,
-      type: parseConversionType(input.type),
+      id,
+      ownerId,
+      type: parseConversionType(input.type, input.type !== undefined),
       amount: money(input.amount, `conversions[${index}].amount`),
       afterTaxBasisInConvertedAmount: input.afterTaxBasisInConvertedAmount === undefined
         ? undefined
@@ -10553,9 +10670,13 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const taxYear = input.taxYear;
   const parameters = getParametersForYear(taxYear);
   const hsaParameters = hsaParametersForYear(taxYear);
-  const filingStatus = parseFilingStatus(input.filingStatus, scenarioDiagnostics);
+  const filingStatus = parseFilingStatus(
+    input.filingStatus,
+    scenarioDiagnostics,
+    input.filingStatus !== undefined,
+  );
   const persons = normalizePersons(input.persons);
-  const accounts = normalizeAccounts(input.accounts ?? [], persons);
+  const accounts = normalizeAccounts(input.accounts, persons);
   const allocationOrder = [...accounts].sort(
     (left, right) => (left.priority! - right.priority!) || (left.inputIndex - right.inputIndex),
   );
@@ -10635,7 +10756,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   }
 
   const accountResults = accounts.map((account) => accountResultById.get(account.id)!);
-  const normalizedConversions = normalizeConversions(input.conversions ?? [], persons, context.accountsById);
+  const normalizedConversions = normalizeConversions(input.conversions, persons, context.accountsById);
   const conversionResults = calculateConversions(context, normalizedConversions, accountResults);
   const allDiagnostics = [
     ...scenarioDiagnostics,
