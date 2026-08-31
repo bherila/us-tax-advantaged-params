@@ -1,7 +1,7 @@
 # Validation Report
 
-- **Package:** `us-tax-advantaged-params@0.2.0`
-- **Run:** 2026-08-31T17:12:19.384Z through 2026-08-31T17:12:22.739Z
+- **Package:** `us-tax-advantaged-params@0.3.0`
+- **Run:** 2026-08-31T17:37:57.138Z through 2026-08-31T17:38:00.844Z
 - **Overall:** PASS
 - **Tax years:** 1975-2026
 - **Shared vectors:** 162
@@ -15,23 +15,23 @@
 
 | Check | Result | Exit | Duration |
 |---|---:|---:|---:|
-| Canonical parameter and vector validation | PASS | 0 | 41 ms |
-| Generated native parameter blocks | PASS | 0 | 42 ms |
-| Source manifests and publication files | PASS | 0 | 40 ms |
-| Strict TypeScript typecheck | PASS | 0 | 105 ms |
-| TypeScript unit and conformance tests | PASS | 0 | 547 ms |
-| PHP engine syntax | PASS | 0 | 67 ms |
-| PHP unit-test syntax | PASS | 0 | 63 ms |
-| PHP conformance-test syntax | PASS | 0 | 66 ms |
-| PHP parity runner syntax | PASS | 0 | 61 ms |
-| PHP unit tests | PASS | 0 | 71 ms |
-| PHP conformance vectors | PASS | 0 | 78 ms |
-| ESM, CommonJS, and declaration build | PASS | 0 | 840 ms |
-| ESM/CommonJS smoke imports | PASS | 0 | 49 ms |
-| Complete TypeScript/PHP output parity | PASS | 0 | 157 ms |
-| Built-package manifest validation | PASS | 0 | 38 ms |
-| npm package dry run | PASS | 0 | 314 ms |
-| Composer manifest validation | PASS | 0 | 313 ms |
+| Canonical parameter and vector validation | PASS | 0 | 48 ms |
+| Generated native parameter blocks | PASS | 0 | 44 ms |
+| Source manifests and publication files | PASS | 0 | 41 ms |
+| Strict TypeScript typecheck | PASS | 0 | 160 ms |
+| TypeScript unit and conformance tests | PASS | 0 | 588 ms |
+| PHP engine syntax | PASS | 0 | 89 ms |
+| PHP unit-test syntax | PASS | 0 | 67 ms |
+| PHP conformance-test syntax | PASS | 0 | 67 ms |
+| PHP parity runner syntax | PASS | 0 | 65 ms |
+| PHP unit tests | PASS | 0 | 74 ms |
+| PHP conformance vectors | PASS | 0 | 82 ms |
+| ESM, CommonJS, and declaration build | PASS | 0 | 881 ms |
+| ESM/CommonJS smoke imports | PASS | 0 | 52 ms |
+| Complete TypeScript/PHP output parity | PASS | 0 | 161 ms |
+| Built-package manifest validation | PASS | 0 | 41 ms |
+| npm package dry run | PASS | 0 | 438 ms |
+| Composer manifest validation | PASS | 0 | 325 ms |
 
 ## Runtime qualification note
 
@@ -99,221 +99,221 @@ Command: `npm run test:ts`
 
 ```text
 
-> us-tax-advantaged-params@0.2.0 test:ts
+> us-tax-advantaged-params@0.3.0 test:ts
 > npm run test:compile && node --test dist-tests/tests/USTaxAdvantagedParams.test.js dist-tests/tests/conformance.test.js
 
 
-> us-tax-advantaged-params@0.2.0 test:compile
+> us-tax-advantaged-params@0.3.0 test:compile
 > node scripts/clean-tests.mjs && tsc -p tsconfig.tests.json
 
-✔ supports the first general IRA year through the generated year without extrapolation (1.328417ms)
-✔ normalizes common filing-status and account aliases (0.272833ms)
-✔ 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity (14.767542ms)
-✔ 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold (0.45625ms)
-✔ high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up (0.258208ms)
-✔ 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method (0.423ms)
-✔ 2026 active-participant traditional IRA deduction phases out while total contribution remains available (0.361208ms)
-✔ traditional and Roth IRAs share one owner-level contribution pool (0.278458ms)
-✔ reports the quantified amount of an existing contribution above an account ceiling (0.243084ms)
-✔ 401(k) and 457(b) employee limits are separate (0.451875ms)
-✔ two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups (0.250625ms)
-✔ mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount (0.326625ms)
-✔ self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space (0.293209ms)
-✔ self-employed SEP maximum uses the reduced 20% net-earnings rate (0.230625ms)
-✔ 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up (0.241333ms)
-✔ 457(b) last-three-years catch-up is selected when larger than the age catch-up (0.164083ms)
-✔ 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values (0.714333ms)
-✔ pre-1987 401(k) maximum is explicitly indeterminate rather than invented (0.16625ms)
-✔ 1981 active employer-plan participant is ineligible for the modeled IRA contribution (0.163208ms)
-✔ 1982 one-earner spousal IRA allows $2,000 to the spousal account when the worker contributes nothing (0.113125ms)
-✔ 1982 one-earner spousal IRA is limited to the $2,250 household residue after the worker's own $2,000 (0.148333ms)
-✔ pre-2020 traditional IRA age-70½ restriction is enforced (0.305708ms)
-✔ IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits (0.492416ms)
-✔ in-plan Roth rollover reports only the pre-tax portion as taxable (0.243625ms)
-✔ defined-benefit and cash-balance contributions remain actuarially indeterminate (0.135292ms)
-✔ 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied (0.344625ms)
-✔ self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions (0.212042ms)
-✔ pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling (0.164667ms)
-✔ additional SIMPLE nonelective contribution is capped by 10% of recognized compensation (0.154042ms)
-✔ SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded (0.124375ms)
-✔ multiple 403(b) accounts share one owner-level 15-year catch-up pool (0.162125ms)
-✔ Roth employer contributions are rejected before their 2023 effective year (0.1435ms)
-✔ multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation (0.224542ms)
-✔ duplicate taxpayer or spouse roles are rejected (0.132459ms)
-✔ ambiguous M alias is accepted but produces a diagnostic (0.106416ms)
-✔ 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate (0.192959ms)
-✔ 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling (0.19875ms)
-✔ 1997 employer match uses recognized compensation without capping employee elective deferrals (0.111917ms)
-✔ 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings (0.090875ms)
-✔ 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings (0.086417ms)
-✔ exposes the IRC 125 and IRC 129 parameter table without extrapolating it (0.140167ms)
-✔ rejects a bare FSA account type but accepts each unambiguous spelling (0.061791ms)
-✔ validates health FSA plan facts before calculating anything (0.3225ms)
-✔ the health FSA builder reaches every IRC 125(i) plan fact (0.264291ms)
-✔ validates IRC 129 earned income facts before calculating anything (0.24625ms)
-✔ the dependent care builder reaches the IRC 129(b) earned income facts (0.264459ms)
-✔ conformance: ordinary 2026 401k plan-term capacity (15.954459ms)
-✔ conformance: 2026 high-wage age-60-to-63 Roth catch-up (0.385958ms)
-✔ conformance: 2026 Roth IRA MFJ phaseout (0.35325ms)
-✔ conformance: shared traditional and Roth IRA pool (0.361417ms)
-✔ conformance: 401k and governmental 457b are separate (0.413583ms)
-✔ conformance: mega backdoor 401k fills 415c (0.238125ms)
-✔ conformance: self-employed solo 401k (0.169125ms)
-✔ conformance: 403b 15-year catch-up (0.20425ms)
-✔ conformance: 457b special last-three-years catch-up (0.261958ms)
-✔ conformance: 1994 historical employer-plan limits (0.212666ms)
-✔ conformance: 1985 employer-plan limit remains indeterminate (0.139083ms)
-✔ conformance: 1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule (0.202542ms)
-✔ conformance: 1982 nonworking spouse IRA (0.096375ms)
-✔ conformance: IRA conversion Form 8606 pro-rata (0.45375ms)
-✔ conformance: in-plan Roth rollover basis (0.263791ms)
-✔ conformance: 2026 enhanced SIMPLE (0.2435ms)
-✔ conformance: cash-balance contribution is actuarial (0.120459ms)
-✔ conformance: self-employed retirement deduction classification (0.746333ms)
-✔ conformance: 2009 MFS living apart Roth conversion (0.108708ms)
-✔ conformance: SIMPLE additional nonelective 10 percent cap (0.109792ms)
-✔ conformance: SIMPLE IRA Roth catch-up wage-test exclusion (0.077833ms)
-✔ conformance: aggregate 403b 15-year catch-up pool (0.139917ms)
-✔ conformance: pre-2023 Roth employer contribution unavailable (0.087209ms)
-✔ conformance: aggregate IRA conversion basis penny allocation (0.146583ms)
-✔ conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate (0.138958ms)
-✔ conformance: 1997 nonelective formula applies 401a17 compensation ceiling (0.127917ms)
-✔ conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings (0.066ms)
-✔ conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings (0.060959ms)
-✔ conformance: 1998 SEP compensation below 400 reports maximum-excludable threshold (0.104834ms)
-✔ conformance: 2005 designated Roth governmental 457b unavailable (0.063292ms)
-✔ conformance: 2011 first-year designated Roth governmental 457b (0.06375ms)
-✔ conformance: 2025 SIMPLE 401k match capped by 401a17 compensation (0.075042ms)
-✔ conformance: 2025 SIMPLE IRA match exempt from 401a17 compensation cap (0.066167ms)
-✔ conformance: 2026 MFS living together Roth IRA phase-out (0.082292ms)
-✔ conformance: 2026 MFS living together covered traditional IRA deduction phase-out (0.069625ms)
-✔ conformance: 2026 modern spousal IRA from joint compensation (0.076458ms)
-✔ conformance: 2026 noncovered spouse deduction phase-out band (0.072375ms)
-✔ conformance: 2026 ordinary age-50 catch-up at age 56 (0.072416ms)
-✔ conformance: 2026 age-64 reversion from enhanced catch-up (0.061583ms)
-✔ conformance: 2023 first-year Roth employer contribution (0.065792ms)
-✔ conformance: 2010 Roth conversion after MAGI repeal (0.066416ms)
-✔ conformance: 2020 traditional IRA contribution after age-70-half repeal (0.064583ms)
-✔ conformance: 1975 first-year traditional IRA fifteen percent limit (0.0545ms)
-✔ conformance: unsupported tax year 1974 (0.218209ms)
-✔ conformance: duplicate account id (0.050541ms)
-✔ conformance: unknown account owner (0.04825ms)
-✔ conformance: negative compensation is invalid money (0.045334ms)
-✔ conformance: invalid filing status alias (0.036208ms)
-✔ conformance: 2026 full-year self-only HSA limit (0.492666ms)
-✔ conformance: 2026 full-year family HSA limit (0.107834ms)
-✔ conformance: 2026 mid-year HSA coverage change prorated by month (0.390208ms)
-✔ conformance: 2026 both spouses age 55 receive separate HSA catch-ups (0.446ms)
-✔ conformance: 2026 spouses divide the single family HSA limit as agreed (0.307625ms)
-✔ conformance: 2026 HSA last-month rule with a satisfied testing period (0.173709ms)
-✔ conformance: 2026 HSA last-month rule failed in the testing period (0.179792ms)
-✔ conformance: 2005 HSA monthly limit capped by the plan annual deductible (0.169625ms)
-✔ conformance: 2006 HSA monthly limit capped by the statutory dollar amount (0.11125ms)
-✔ conformance: 2026 employer HSA contribution is excluded rather than deducted (0.10125ms)
-✔ conformance: 2003 predates IRC 223 health savings accounts (0.074958ms)
-✔ conformance: 2026 HSA last-month rule with an unresolved testing period (0.093709ms)
-✔ conformance: 2026 married filing separately family coverage recharacterizes the other spouse (0.144833ms)
-✔ conformance: 2026 spouse family and self-only months divide only the family portion (0.136584ms)
-✔ conformance: 2026 spouses with unequal family-coverage months each divide their own refigured family limit (0.121667ms)
-✔ conformance: 2026 married last-month rule measures the attributable amount against the divided limit (0.140292ms)
-✔ conformance: 2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months (0.123834ms)
-✔ conformance: 2026 unstated spouse coverage leaves a self-only HSA limit indeterminate (0.110333ms)
-✔ conformance: 2026 spouse without high deductible coverage leaves the self-only HSA limit intact (0.091584ms)
-✔ conformance: 2026 unmarried Archer MSA contribution reduces the HSA limit under IRC 223(b)(4)(A) (0.089708ms)
-✔ conformance: 2026 married Archer MSA reduction is taken before the IRC 223(b)(5)(B)(ii) division (0.135667ms)
-✔ conformance: 2026 IRC 223(b)(4)(A) reduces the whole subsection (b) limitation including the age 55 amount (0.074042ms)
-✔ conformance: 2026 IRC 223(b)(5)(B) leaves the age 55 additional contribution amount untouched (0.083416ms)
-✔ conformance: 2026 Archer MSA contribution above the HSA limit reduces it to zero, never below (0.069333ms)
-✔ conformance: 2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule (0.072125ms)
-✔ conformance: persons entry that is not an object is rejected (0.056584ms)
+✔ supports the first general IRA year through the generated year without extrapolation (1.506ms)
+✔ normalizes common filing-status and account aliases (0.266667ms)
+✔ 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity (14.777125ms)
+✔ 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold (0.428ms)
+✔ high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up (0.344542ms)
+✔ 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method (0.478417ms)
+✔ 2026 active-participant traditional IRA deduction phases out while total contribution remains available (0.472083ms)
+✔ traditional and Roth IRAs share one owner-level contribution pool (0.468542ms)
+✔ reports the quantified amount of an existing contribution above an account ceiling (0.29025ms)
+✔ 401(k) and 457(b) employee limits are separate (0.526708ms)
+✔ two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups (0.287375ms)
+✔ mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount (0.326167ms)
+✔ self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space (0.238791ms)
+✔ self-employed SEP maximum uses the reduced 20% net-earnings rate (0.256667ms)
+✔ 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up (0.203958ms)
+✔ 457(b) last-three-years catch-up is selected when larger than the age catch-up (0.153708ms)
+✔ 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values (0.14425ms)
+✔ pre-1987 401(k) maximum is explicitly indeterminate rather than invented (0.595ms)
+✔ 1981 active employer-plan participant is ineligible for the modeled IRA contribution (0.161583ms)
+✔ 1982 one-earner spousal IRA allows $2,000 to the spousal account when the worker contributes nothing (0.115458ms)
+✔ 1982 one-earner spousal IRA is limited to the $2,250 household residue after the worker's own $2,000 (0.140917ms)
+✔ pre-2020 traditional IRA age-70½ restriction is enforced (0.191667ms)
+✔ IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits (0.411125ms)
+✔ in-plan Roth rollover reports only the pre-tax portion as taxable (0.201917ms)
+✔ defined-benefit and cash-balance contributions remain actuarially indeterminate (0.10425ms)
+✔ 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied (0.218917ms)
+✔ self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions (0.152041ms)
+✔ pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling (0.132792ms)
+✔ additional SIMPLE nonelective contribution is capped by 10% of recognized compensation (0.131208ms)
+✔ SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded (0.10975ms)
+✔ multiple 403(b) accounts share one owner-level 15-year catch-up pool (0.146209ms)
+✔ Roth employer contributions are rejected before their 2023 effective year (0.131833ms)
+✔ multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation (0.196292ms)
+✔ duplicate taxpayer or spouse roles are rejected (0.108042ms)
+✔ ambiguous M alias is accepted but produces a diagnostic (0.093375ms)
+✔ 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate (0.125959ms)
+✔ 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling (0.172458ms)
+✔ 1997 employer match uses recognized compensation without capping employee elective deferrals (0.10425ms)
+✔ 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings (0.096417ms)
+✔ 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings (0.081042ms)
+✔ exposes the IRC 125 and IRC 129 parameter table without extrapolating it (0.123166ms)
+✔ rejects a bare FSA account type but accepts each unambiguous spelling (0.061917ms)
+✔ validates health FSA plan facts before calculating anything (0.299709ms)
+✔ the health FSA builder reaches every IRC 125(i) plan fact (0.247125ms)
+✔ validates IRC 129 earned income facts before calculating anything (0.223458ms)
+✔ the dependent care builder reaches the IRC 129(b) earned income facts (0.247459ms)
+✔ conformance: ordinary 2026 401k plan-term capacity (15.880875ms)
+✔ conformance: 2026 high-wage age-60-to-63 Roth catch-up (0.352542ms)
+✔ conformance: 2026 Roth IRA MFJ phaseout (0.326125ms)
+✔ conformance: shared traditional and Roth IRA pool (0.349625ms)
+✔ conformance: 401k and governmental 457b are separate (0.364458ms)
+✔ conformance: mega backdoor 401k fills 415c (0.225458ms)
+✔ conformance: self-employed solo 401k (0.160417ms)
+✔ conformance: 403b 15-year catch-up (0.183833ms)
+✔ conformance: 457b special last-three-years catch-up (0.162917ms)
+✔ conformance: 1994 historical employer-plan limits (0.187875ms)
+✔ conformance: 1985 employer-plan limit remains indeterminate (0.119042ms)
+✔ conformance: 1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule (0.172125ms)
+✔ conformance: 1982 nonworking spouse IRA (0.112917ms)
+✔ conformance: IRA conversion Form 8606 pro-rata (0.39175ms)
+✔ conformance: in-plan Roth rollover basis (0.323958ms)
+✔ conformance: 2026 enhanced SIMPLE (0.257834ms)
+✔ conformance: cash-balance contribution is actuarial (0.176875ms)
+✔ conformance: self-employed retirement deduction classification (0.784666ms)
+✔ conformance: 2009 MFS living apart Roth conversion (0.121792ms)
+✔ conformance: SIMPLE additional nonelective 10 percent cap (0.111041ms)
+✔ conformance: SIMPLE IRA Roth catch-up wage-test exclusion (0.082625ms)
+✔ conformance: aggregate 403b 15-year catch-up pool (0.1405ms)
+✔ conformance: pre-2023 Roth employer contribution unavailable (0.086375ms)
+✔ conformance: aggregate IRA conversion basis penny allocation (0.159333ms)
+✔ conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate (0.157ms)
+✔ conformance: 1997 nonelective formula applies 401a17 compensation ceiling (0.139916ms)
+✔ conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings (0.062583ms)
+✔ conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings (0.060042ms)
+✔ conformance: 1998 SEP compensation below 400 reports maximum-excludable threshold (0.147875ms)
+✔ conformance: 2005 designated Roth governmental 457b unavailable (0.085125ms)
+✔ conformance: 2011 first-year designated Roth governmental 457b (0.07625ms)
+✔ conformance: 2025 SIMPLE 401k match capped by 401a17 compensation (0.085ms)
+✔ conformance: 2025 SIMPLE IRA match exempt from 401a17 compensation cap (0.073709ms)
+✔ conformance: 2026 MFS living together Roth IRA phase-out (0.125416ms)
+✔ conformance: 2026 MFS living together covered traditional IRA deduction phase-out (0.085708ms)
+✔ conformance: 2026 modern spousal IRA from joint compensation (0.1145ms)
+✔ conformance: 2026 noncovered spouse deduction phase-out band (0.080583ms)
+✔ conformance: 2026 ordinary age-50 catch-up at age 56 (0.077291ms)
+✔ conformance: 2026 age-64 reversion from enhanced catch-up (0.059875ms)
+✔ conformance: 2023 first-year Roth employer contribution (0.067042ms)
+✔ conformance: 2010 Roth conversion after MAGI repeal (0.065417ms)
+✔ conformance: 2020 traditional IRA contribution after age-70-half repeal (0.063292ms)
+✔ conformance: 1975 first-year traditional IRA fifteen percent limit (0.048625ms)
+✔ conformance: unsupported tax year 1974 (0.221625ms)
+✔ conformance: duplicate account id (0.055042ms)
+✔ conformance: unknown account owner (0.047416ms)
+✔ conformance: negative compensation is invalid money (0.043417ms)
+✔ conformance: invalid filing status alias (0.034709ms)
+✔ conformance: 2026 full-year self-only HSA limit (0.479208ms)
+✔ conformance: 2026 full-year family HSA limit (0.117375ms)
+✔ conformance: 2026 mid-year HSA coverage change prorated by month (0.401625ms)
+✔ conformance: 2026 both spouses age 55 receive separate HSA catch-ups (0.293917ms)
+✔ conformance: 2026 spouses divide the single family HSA limit as agreed (0.257ms)
+✔ conformance: 2026 HSA last-month rule with a satisfied testing period (0.160083ms)
+✔ conformance: 2026 HSA last-month rule failed in the testing period (0.122791ms)
+✔ conformance: 2005 HSA monthly limit capped by the plan annual deductible (0.131ms)
+✔ conformance: 2006 HSA monthly limit capped by the statutory dollar amount (0.089958ms)
+✔ conformance: 2026 employer HSA contribution is excluded rather than deducted (0.087583ms)
+✔ conformance: 2003 predates IRC 223 health savings accounts (0.068208ms)
+✔ conformance: 2026 HSA last-month rule with an unresolved testing period (0.081666ms)
+✔ conformance: 2026 married filing separately family coverage recharacterizes the other spouse (0.119042ms)
+✔ conformance: 2026 spouse family and self-only months divide only the family portion (0.1245ms)
+✔ conformance: 2026 spouses with unequal family-coverage months each divide their own refigured family limit (0.116291ms)
+✔ conformance: 2026 married last-month rule measures the attributable amount against the divided limit (0.143791ms)
+✔ conformance: 2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months (0.119167ms)
+✔ conformance: 2026 unstated spouse coverage leaves a self-only HSA limit indeterminate (0.113125ms)
+✔ conformance: 2026 spouse without high deductible coverage leaves the self-only HSA limit intact (0.092208ms)
+✔ conformance: 2026 unmarried Archer MSA contribution reduces the HSA limit under IRC 223(b)(4)(A) (0.127ms)
+✔ conformance: 2026 married Archer MSA reduction is taken before the IRC 223(b)(5)(B)(ii) division (0.120875ms)
+✔ conformance: 2026 IRC 223(b)(4)(A) reduces the whole subsection (b) limitation including the age 55 amount (0.100542ms)
+✔ conformance: 2026 IRC 223(b)(5)(B) leaves the age 55 additional contribution amount untouched (0.084291ms)
+✔ conformance: 2026 Archer MSA contribution above the HSA limit reduces it to zero, never below (0.066667ms)
+✔ conformance: 2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule (0.069833ms)
+✔ conformance: persons entry that is not an object is rejected (0.058958ms)
 ✔ conformance: accounts entry that is not an object is rejected (0.046ms)
-✔ conformance: conversions entry that is not an object is rejected (0.055708ms)
-✔ conformance: account without an ownerId is rejected (0.050042ms)
-✔ conformance: conversion without an ownerId is rejected (0.056042ms)
-✔ conformance: unrecognized contributionPreference is rejected (0.058375ms)
-✔ conformance: unrecognized employerContributionTaxTreatment is rejected (0.047958ms)
-✔ conformance: rate outside 0 through 1 is rejected (0.042916ms)
-✔ conformance: existing contributions above the account ceiling name the amounts (0.110458ms)
-✔ conformance: taxYear that is not an integer is rejected (0.024417ms)
-✔ conformance: missing filingStatus is rejected rather than defaulted (0.069041ms)
-✔ conformance: filingStatus that is not a string is rejected (0.039167ms)
-✔ conformance: accounts that is not an array is rejected (0.042209ms)
-✔ conformance: conversions that is not an array is rejected (0.047667ms)
-✔ conformance: account type that is not a string is rejected (0.046917ms)
-✔ conformance: person id that is not a string is rejected (0.054958ms)
-✔ conformance: structured input field that is not an object is rejected (0.055792ms)
-✔ conformance: unrecognized simpleEmployerContributionMethod is rejected (0.044708ms)
-✔ conformance: 1989 fractional plan-term capacity keeps its fraction in the message (0.114208ms)
-✔ conformance: flag field that is not a boolean is rejected (0.050875ms)
-✔ conformance: 2026 unmarried qualified HSA funding distribution reduces the limit under IRC 223(b)(4)(C) (0.115125ms)
-✔ conformance: 2026 qualified HSA funding distribution reaches the IRC 223(b)(3) additional contribution amount (0.0715ms)
-✔ conformance: 2026 IRC 223(b)(4) reduces by the sum of subparagraphs (A) and (C) but not below zero (0.532ms)
-✔ conformance: 2026 married qualified HSA funding distribution is taken after the IRC 223(b)(5)(B)(ii) division (0.240875ms)
-✔ conformance: 2026 matched Archer MSA contribution of the same amount is taken before the division instead (0.117167ms)
-✔ conformance: 2026 married qualified HSA funding distribution reaches that spouse's IRC 223(b)(3) amount (0.100417ms)
-✔ conformance: 2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides (0.083834ms)
-✔ conformance: 2026 family-limit shares that do not exhaust the limitation are not a division (0.10925ms)
-✔ conformance: 2026 family-limit shares totalling exactly one may still give a spouse nothing (0.094833ms)
-✔ conformance: 2026 sole HSA-owning spouse may agree a share below one without forfeiting anything (0.076ms)
-✔ conformance: 2026 incomplete family-limit shares report only the missing-share error (0.078ms)
-✔ conformance: 2026 flexible spending arrangement parameters are published in the result (0.0435ms)
-✔ conformance: 2012 health FSA exists with no statutory ceiling rather than not existing (0.040875ms)
-✔ conformance: 1986 has an IRC 129 row with no dollar ceiling; 1981 has no row at all (0.041292ms)
-✔ conformance: 2026 health FSA election at the IRC 125(i) limit (0.227ms)
-✔ conformance: 2013 is the first year IRC 125(i) limits a health FSA election (0.072042ms)
-✔ conformance: 2012 health FSA has no statutory salary-reduction ceiling (0.058375ms)
-✔ conformance: 2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited (0.072042ms)
-✔ conformance: 2026 health FSA carryover sits on top of the IRC 125(i) limit (0.073083ms)
-✔ conformance: a health FSA grace period precludes a carryover (0.058792ms)
-✔ conformance: a health FSA offering neither carryover nor grace period forfeits the whole unused amount (0.056667ms)
-✔ conformance: a health FSA carryover and grace period asserted together are refused (0.06375ms)
-✔ conformance: nothing may be carried into 2013, the first year the carryover existed (0.058667ms)
-✔ conformance: a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled (0.056417ms)
-✔ conformance: a prior-year unused amount without a stated plan option asks for the fact (0.065041ms)
-✔ conformance: a health FSA election above the IRC 125(i) limit is reported, not truncated (0.094416ms)
-✔ conformance: an account type that did not exist for the tax year reports no exclusion (0.078292ms)
-✔ conformance: a pre-2013 health FSA still excludes its salary reduction under IRC 125(a) (0.083708ms)
-✔ conformance: a pre-2013 health FSA with a supplied plan maximum reports that maximum (0.055416ms)
-✔ conformance: two unrelated employers each carry a full health FSA limit (0.062041ms)
-✔ conformance: two health FSAs of one employer share a single IRC 125(i) limit (0.054292ms)
-✔ conformance: spouses filing jointly each carry a full health FSA limit (0.058833ms)
-✔ conformance: non-elective employer flex credits stay outside the IRC 125(i) limit (0.05875ms)
-✔ conformance: flex credits electable as cash consume the IRC 125(i) limit (0.048417ms)
-✔ conformance: flex credits without a stated cash election ask for the fact (0.063208ms)
-✔ conformance: a lower plan-document health FSA limit binds (0.061459ms)
-✔ conformance: a lower plan-document limit caps its own arrangement, not the employer group (0.079333ms)
-✔ conformance: exceeding a plan-document limit is not the IRC 125(i) qualification failure (0.063375ms)
-✔ conformance: a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate (0.051875ms)
-✔ conformance: a bare FSA account type is rejected as ambiguous (0.049958ms)
-✔ conformance: an unrecognised health FSA purpose is rejected (0.042333ms)
-✔ conformance: 2025 dependent care assistance exclusion on a single return (0.193917ms)
-✔ conformance: 2025 dependent care exclusion is halved on a married separate return (0.084ms)
-✔ conformance: an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount (0.068917ms)
-✔ conformance: a separate return that states it is still married keeps the halved amount (0.069333ms)
-✔ conformance: 2021 only, the ARPA dependent care exclusion is 10500 (0.08875ms)
-✔ conformance: 2022 reverts to the pre-ARPA dependent care exclusion (0.065625ms)
-✔ conformance: 2026 dependent care exclusion rises to 7500 under Pub. L. 119-21 (0.059875ms)
-✔ conformance: the IRC 129(b)(1) earned income limitation binds below the statutory amount (0.064166ms)
-✔ conformance: the IRC 129(b)(1) limitation is asked for when the earned income facts are absent (0.069583ms)
-✔ conformance: the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled (0.085166ms)
-✔ conformance: spouses filing jointly share one IRC 129 household exclusion (0.108333ms)
-✔ conformance: married separate spouses do not share one IRC 129 exclusion (0.071875ms)
-✔ conformance: the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs (0.074417ms)
-✔ conformance: a dependent care plan document below the IRC 129 amount binds this arrangement (0.086542ms)
-✔ conformance: a dependent care plan document caps its own arrangement, not the household amount (0.066375ms)
-✔ conformance: the IRC 129(b)(1) ceiling does not pool across married separate returns (0.073333ms)
-✔ conformance: 1986 dependent care has no statutory ceiling, so the earned income limitation is the ceiling (0.067417ms)
-✔ conformance: 1986 dependent care with no ceiling from any source stays indeterminate (0.060416ms)
-✔ conformance: 1981 predates IRC 129 entirely (0.052584ms)
-✔ conformance: a health FSA and a dependent care FSA carry independent limits (0.074917ms)
-✔ conformance: a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures (0.09925ms)
-✔ conformance: a limited-purpose health FSA raises no IRC 223 conflict (0.0755ms)
-✔ conformance: a post-deductible health FSA raises no IRC 223 conflict (0.067667ms)
-✔ conformance: a health FSA of unstated purpose makes the IRC 223 limitation indeterminate (0.069583ms)
-✔ conformance: a spouse's general-purpose health FSA disqualifies the other spouse's HSA (0.085875ms)
-✔ conformance: a general-purpose health FSA carryover disqualifies the whole receiving plan year (0.078958ms)
-✔ conformance: a general-purpose health FSA grace period extends the IRC 223 disqualification (0.075875ms)
-✔ conformance: a dependent care FSA raises no IRC 223 conflict at all (0.073625ms)
+✔ conformance: conversions entry that is not an object is rejected (0.182417ms)
+✔ conformance: account without an ownerId is rejected (0.085792ms)
+✔ conformance: conversion without an ownerId is rejected (0.072541ms)
+✔ conformance: unrecognized contributionPreference is rejected (0.06175ms)
+✔ conformance: unrecognized employerContributionTaxTreatment is rejected (0.052583ms)
+✔ conformance: rate outside 0 through 1 is rejected (0.052208ms)
+✔ conformance: existing contributions above the account ceiling name the amounts (0.141667ms)
+✔ conformance: taxYear that is not an integer is rejected (0.029167ms)
+✔ conformance: missing filingStatus is rejected rather than defaulted (0.081708ms)
+✔ conformance: filingStatus that is not a string is rejected (0.041417ms)
+✔ conformance: accounts that is not an array is rejected (0.048541ms)
+✔ conformance: conversions that is not an array is rejected (0.055666ms)
+✔ conformance: account type that is not a string is rejected (0.049708ms)
+✔ conformance: person id that is not a string is rejected (0.052083ms)
+✔ conformance: structured input field that is not an object is rejected (0.052875ms)
+✔ conformance: unrecognized simpleEmployerContributionMethod is rejected (0.048917ms)
+✔ conformance: 1989 fractional plan-term capacity keeps its fraction in the message (0.134625ms)
+✔ conformance: flag field that is not a boolean is rejected (0.051541ms)
+✔ conformance: 2026 unmarried qualified HSA funding distribution reduces the limit under IRC 223(b)(4)(C) (0.134ms)
+✔ conformance: 2026 qualified HSA funding distribution reaches the IRC 223(b)(3) additional contribution amount (0.079708ms)
+✔ conformance: 2026 IRC 223(b)(4) reduces by the sum of subparagraphs (A) and (C) but not below zero (0.567708ms)
+✔ conformance: 2026 married qualified HSA funding distribution is taken after the IRC 223(b)(5)(B)(ii) division (0.195625ms)
+✔ conformance: 2026 matched Archer MSA contribution of the same amount is taken before the division instead (0.118959ms)
+✔ conformance: 2026 married qualified HSA funding distribution reaches that spouse's IRC 223(b)(3) amount (0.278084ms)
+✔ conformance: 2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides (0.181291ms)
+✔ conformance: 2026 family-limit shares that do not exhaust the limitation are not a division (0.176917ms)
+✔ conformance: 2026 family-limit shares totalling exactly one may still give a spouse nothing (0.13075ms)
+✔ conformance: 2026 sole HSA-owning spouse may agree a share below one without forfeiting anything (0.100625ms)
+✔ conformance: 2026 incomplete family-limit shares report only the missing-share error (0.150833ms)
+✔ conformance: 2026 flexible spending arrangement parameters are published in the result (0.065375ms)
+✔ conformance: 2012 health FSA exists with no statutory ceiling rather than not existing (0.048375ms)
+✔ conformance: 1986 has an IRC 129 row with no dollar ceiling; 1981 has no row at all (0.041917ms)
+✔ conformance: 2026 health FSA election at the IRC 125(i) limit (0.224583ms)
+✔ conformance: 2013 is the first year IRC 125(i) limits a health FSA election (0.081542ms)
+✔ conformance: 2012 health FSA has no statutory salary-reduction ceiling (0.062958ms)
+✔ conformance: 2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited (0.079833ms)
+✔ conformance: 2026 health FSA carryover sits on top of the IRC 125(i) limit (0.0755ms)
+✔ conformance: a health FSA grace period precludes a carryover (0.065ms)
+✔ conformance: a health FSA offering neither carryover nor grace period forfeits the whole unused amount (0.058917ms)
+✔ conformance: a health FSA carryover and grace period asserted together are refused (0.065959ms)
+✔ conformance: nothing may be carried into 2013, the first year the carryover existed (0.051708ms)
+✔ conformance: a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled (0.058834ms)
+✔ conformance: a prior-year unused amount without a stated plan option asks for the fact (0.069875ms)
+✔ conformance: a health FSA election above the IRC 125(i) limit is reported, not truncated (0.094125ms)
+✔ conformance: an account type that did not exist for the tax year reports no exclusion (0.081333ms)
+✔ conformance: a pre-2013 health FSA still excludes its salary reduction under IRC 125(a) (0.089709ms)
+✔ conformance: a pre-2013 health FSA with a supplied plan maximum reports that maximum (0.058042ms)
+✔ conformance: two unrelated employers each carry a full health FSA limit (0.066041ms)
+✔ conformance: two health FSAs of one employer share a single IRC 125(i) limit (0.054209ms)
+✔ conformance: spouses filing jointly each carry a full health FSA limit (0.057166ms)
+✔ conformance: non-elective employer flex credits stay outside the IRC 125(i) limit (0.052375ms)
+✔ conformance: flex credits electable as cash consume the IRC 125(i) limit (0.053458ms)
+✔ conformance: flex credits without a stated cash election ask for the fact (0.068083ms)
+✔ conformance: a lower plan-document health FSA limit binds (0.067875ms)
+✔ conformance: a lower plan-document limit caps its own arrangement, not the employer group (0.064458ms)
+✔ conformance: exceeding a plan-document limit is not the IRC 125(i) qualification failure (0.06075ms)
+✔ conformance: a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate (0.050625ms)
+✔ conformance: a bare FSA account type is rejected as ambiguous (0.054459ms)
+✔ conformance: an unrecognised health FSA purpose is rejected (0.041334ms)
+✔ conformance: 2025 dependent care assistance exclusion on a single return (0.197ms)
+✔ conformance: 2025 dependent care exclusion is halved on a married separate return (0.086083ms)
+✔ conformance: an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount (0.06975ms)
+✔ conformance: a separate return that states it is still married keeps the halved amount (0.073667ms)
+✔ conformance: 2021 only, the ARPA dependent care exclusion is 10500 (0.087459ms)
+✔ conformance: 2022 reverts to the pre-ARPA dependent care exclusion (0.066666ms)
+✔ conformance: 2026 dependent care exclusion rises to 7500 under Pub. L. 119-21 (0.061709ms)
+✔ conformance: the IRC 129(b)(1) earned income limitation binds below the statutory amount (0.056167ms)
+✔ conformance: the IRC 129(b)(1) limitation is asked for when the earned income facts are absent (0.07ms)
+✔ conformance: the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled (0.076417ms)
+✔ conformance: spouses filing jointly share one IRC 129 household exclusion (0.104583ms)
+✔ conformance: married separate spouses do not share one IRC 129 exclusion (0.073958ms)
+✔ conformance: the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs (0.072583ms)
+✔ conformance: a dependent care plan document below the IRC 129 amount binds this arrangement (0.081292ms)
+✔ conformance: a dependent care plan document caps its own arrangement, not the household amount (0.064916ms)
+✔ conformance: the IRC 129(b)(1) ceiling does not pool across married separate returns (0.074292ms)
+✔ conformance: 1986 dependent care has no statutory ceiling, so the earned income limitation is the ceiling (0.065541ms)
+✔ conformance: 1986 dependent care with no ceiling from any source stays indeterminate (0.054625ms)
+✔ conformance: 1981 predates IRC 129 entirely (0.048041ms)
+✔ conformance: a health FSA and a dependent care FSA carry independent limits (0.07575ms)
+✔ conformance: a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures (0.102083ms)
+✔ conformance: a limited-purpose health FSA raises no IRC 223 conflict (0.077416ms)
+✔ conformance: a post-deductible health FSA raises no IRC 223 conflict (0.070834ms)
+✔ conformance: a health FSA of unstated purpose makes the IRC 223 limitation indeterminate (0.073291ms)
+✔ conformance: a spouse's general-purpose health FSA disqualifies the other spouse's HSA (0.085666ms)
+✔ conformance: a general-purpose health FSA carryover disqualifies the whole receiving plan year (0.078ms)
+✔ conformance: a general-purpose health FSA grace period extends the IRC 223 disqualification (0.073ms)
+✔ conformance: a dependent care FSA raises no IRC 223 conflict at all (0.073333ms)
 ℹ tests 208
 ℹ suites 0
 ℹ pass 208
@@ -321,7 +321,7 @@ Command: `npm run test:ts`
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 107.613375
+ℹ duration_ms 110.334875
 ```
 
 **stderr**
@@ -630,15 +630,15 @@ Command: `npm run build`
 
 ```text
 
-> us-tax-advantaged-params@0.2.0 build
+> us-tax-advantaged-params@0.3.0 build
 > npm run generate:check && npm run clean && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json && node scripts/finalize-build.mjs
 
 
-> us-tax-advantaged-params@0.2.0 generate:check
+> us-tax-advantaged-params@0.3.0 generate:check
 > node scripts/generate.mjs --check
 
 
-> us-tax-advantaged-params@0.2.0 clean
+> us-tax-advantaged-params@0.3.0 clean
 > node scripts/clean.mjs
 ```
 
@@ -697,14 +697,14 @@ Command: `npm pack --dry-run --ignore-scripts --json`
 ```text
 [
   {
-    "id": "us-tax-advantaged-params@0.2.0",
+    "id": "us-tax-advantaged-params@0.3.0",
     "name": "us-tax-advantaged-params",
-    "version": "0.2.0",
-    "size": 253505,
+    "version": "0.3.0",
+    "size": 253506,
     "unpackedSize": 2073519,
-    "shasum": "0af9baa4d874a40cba6924e7be51031640184eb4",
-    "integrity": "sha512-t6gPIm/JaNGel7rNb0k211YQV2rQSpZ8D19wwNFZ7UJYZmr8e+N1/BXrcjcQSlJcMKwcP5UzjXRXCaofxUgJug==",
-    "filename": "us-tax-advantaged-params-0.2.0.tgz",
+    "shasum": "1c39dbf42ecb9404a772b10ab33e9c34b5b156f1",
+    "integrity": "sha512-YeskTOEByspeXcOMyslIIKPukJvU88+R/uw0J7wdrtqej8QaYWeLwZEYy9hSTFk7hD4ffdvTA+0WV/ibNCfB1Q==",
+    "filename": "us-tax-advantaged-params-0.3.0.tgz",
     "files": [
       {
         "path": "LICENSE",
