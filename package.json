@@ -28,7 +28,6 @@
     "data/hsa-parameters.json",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
     "SOURCES.md"
   ],
   "sideEffects": false,

@@ -26,6 +26,33 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
 - **U.S. Department of Labor 401(k) history** — contextual history of 401(k) plans and their development.  
   `https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/faqs/401k-plans`
 
+## Health savings account sources (IRC §223)
+
+HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
+cost-of-living notice, so they are cited and verified separately.
+
+- **Rev. Proc. 2025-19** — 2026 HSA contribution limits and HDHP minimum deductible and
+  out-of-pocket maximum. Earlier years are cited per-year in
+  `evidence/hsa-limits/primary-values.json`, with the document for every year 2004-2026
+  committed under `evidence/hsa-limits/sources/` and fixed by `SHA256SUMS.txt`.
+
+- **IRC §223** — the statute itself, for the §223(b)(3)(B) age-55 additional contribution.
+  That amount is a fixed statutory table rising from $500 for 2004 to $1,000 for 2009 and
+  after. It is **not** inflation-adjusted, which is why the annual Rev. Procs are silent on
+  it and it is cited to the Code rather than to a Rev. Proc.
+
+- **Tax Relief and Health Care Act of 2006** — §303 removed the §223(b)(2) cap that limited
+  the monthly contribution to 1/12 of the *lesser* of the plan's annual deductible and the
+  dollar amount, and §305 added the §223(b)(8) last-month rule, both effective for taxable
+  years beginning after 2006.
+
+- **Medicare Prescription Drug, Improvement, and Modernization Act of 2003** — added §223,
+  effective for taxable years beginning after 2003, which is why HSA coverage starts at 2004.
+
+One caution specific to these documents: **Rev. Proc. 2018-18 was superseded mid-year.** It
+set the 2018 family limit at $6,850; Rev. Proc. 2018-27 restored $6,900. The encoded value is
+$6,900, and both documents are committed so the sequence is auditable.
+
 ## Section 401(a)(17) employer-formula authorities
 
 - **IRS Notice 2001-56** states that §401(a)(17) limits annual compensation used to determine allocations under a defined-contribution plan and discusses the effective date of the EGTRRA compensation-limit increase.  
@@ -61,7 +88,7 @@ For each new tax year:
 5. Add conformance vectors for changed rules and boundary values.
 6. Run `npm run verify` under supported Node and PHP versions.
 7. Review the generated diff in both runtime files; only generated data blocks should change for a data-only annual update.
-8. Record the update in `CHANGELOG.md` and update the package version as appropriate.
+8. Update the package version as appropriate.
 
 ## Legal-change policy
 
