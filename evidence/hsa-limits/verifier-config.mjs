@@ -11,11 +11,29 @@ export default {
   data: "data/hsa-parameters.json",
   evidence: "evidence/hsa-limits/primary-values.json",
 
-  /** Scalar figures: primary-values field -> path within the data year block. */
+  /**
+   * Scalar figures: primary-values field -> path within the data year block.
+   *
+   * The last three are rules rather than published amounts, and drive the two
+   * behaviours the README calls load-bearing: the pre-2007 §223(b)(2) lesser-of
+   * deductible cap and the §223(b)(8) last-month rule with its 13-month testing
+   * period. They are cited to the Code and to the act that enacted them — the
+   * Tax Relief and Health Care Act of 2006, whose §303 removed the cap and
+   * whose §305 added the last-month rule, both for taxable years beginning
+   * after 2006 — following the §223(b)(3)(B) age-55 precedent above. No Rev.
+   * Proc. states any of them.
+   */
   scalars: [
     ["annualContributionLimitSelfOnly_223b2A", ["annualContributionLimit", "selfOnly"], "IRC 223(b)(2)(A)"],
     ["annualContributionLimitFamily_223b2B", ["annualContributionLimit", "family"], "IRC 223(b)(2)(B)"],
     ["additionalContributionAmountAge55", ["additionalContributionAmountAge55"], "IRC 223(b)(3)(B)"],
+    [
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2",
+      ["contributionLimitCappedByHdhpAnnualDeductible"],
+      "IRC 223(b)(2) pre-amendment; Pub. L. 109-432 s.303",
+    ],
+    ["lastMonthRuleAvailable_223b8", ["lastMonthRuleAvailable"], "IRC 223(b)(8); Pub. L. 109-432 s.305"],
+    ["testingPeriodMonths_223b8Biii", ["testingPeriodMonths"], "IRC 223(b)(8)(B)(iii)"],
   ],
 
   /**

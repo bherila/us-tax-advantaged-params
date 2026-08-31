@@ -1,5 +1,5 @@
 {
-  "_comment": "IRC 223 Health Savings Account dollar amounts taken verbatim from the annual IRS revenue procedures (and, for 2004, Notice 2004-2) in sources/, plus the statutory IRC 223(b)(3)(B) catch-up table. Verified 2026-08-30. Amounts are dollars. See README.md for method.",
+  "_comment": "IRC 223 Health Savings Account dollar amounts taken verbatim from the annual IRS revenue procedures (and, for 2004, Notice 2004-2) in sources/, plus the statutory IRC 223(b)(3)(B) catch-up table and the statutory policy flags described in _policyFlagsComment. Verified 2026-08-30. Amounts are dollars. See README.md for method.",
   "_sources": {
     "n-04-02": "IRS Notice 2004-2, Health Savings Accounts (Q&A guidance stating the 2004 statutory amounts and the s.223(b)(3) catch-up schedule)",
     "rp-04-71": "Rev. Proc. 2004-71, 2005 inflation adjusted items, section 3.22 (Health Savings Accounts)",
@@ -28,6 +28,7 @@
     "rp-25-19": "Rev. Proc. 2025-19, 2026 HSA inflation adjusted amounts",
     "usc-26-223": "26 U.S.C. s.223 (U.S. Government Publishing Office, 2023 edition of the United States Code)"
   },
+  "_policyFlagsComment": "Three recorded fields are rules rather than published amounts, so they are cited to the Code and to the act that enacted them, never to a Rev. Proc.: (1) contributionLimitCappedByHdhpAnnualDeductible \u2014 for taxable years beginning before 2007, \u00a7223(b)(2)(A) and (B) capped each monthly limitation at 1/12 of the LESSER of the plan's annual deductible and the dollar amount; the Tax Relief and Health Care Act of 2006, Pub. L. 109-432, div. A, title III, \u00a7303(a)(1) and (2), struck those lesser-of clauses, applicable to taxable years beginning after December 31, 2006 (\u00a7303(c)). (2) lastMonthRuleAvailable \u2014 \u00a7223(b)(8), which treats an individual eligible in the last month of the year as eligible for every month of it, was added by the same act at \u00a7305(a), applicable to taxable years beginning after December 31, 2006 (\u00a7305(b)); it did not exist for earlier years. (3) testingPeriodMonths \u2014 \u00a7223(b)(8)(B)(iii) defines the testing period as beginning with the last month of the taxable year and ending on the last day of the 12th month following that month, which is 13 months; it is null for years in which \u00a7223(b)(8) did not exist. The operative text, the 2006 amendment notes, and the effective-date notes are all in usc-26-223.",
   "planYears": {
     "2004": {
       "source": "n-04-02",
@@ -35,6 +36,10 @@
       "annualContributionLimitFamily_223b2B": 5150,
       "additionalContributionAmount55_223b3B": 500,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": true,
+      "lastMonthRuleAvailable_223b8": false,
+      "testingPeriodMonths_223b8Biii": null,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning before 2007: the \u00a7223(b)(2) lesser-of deductible cap is in force and \u00a7223(b)(8) is not yet enacted. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1000,
         "family": 2000
@@ -51,6 +56,10 @@
       "annualContributionLimitFamily_223b2B": 5250,
       "additionalContributionAmount55_223b3B": 600,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": true,
+      "lastMonthRuleAvailable_223b8": false,
+      "testingPeriodMonths_223b8Biii": null,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning before 2007: the \u00a7223(b)(2) lesser-of deductible cap is in force and \u00a7223(b)(8) is not yet enacted. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1000,
         "family": 2000
@@ -67,6 +76,10 @@
       "annualContributionLimitFamily_223b2B": 5450,
       "additionalContributionAmount55_223b3B": 700,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": true,
+      "lastMonthRuleAvailable_223b8": false,
+      "testingPeriodMonths_223b8Biii": null,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning before 2007: the \u00a7223(b)(2) lesser-of deductible cap is in force and \u00a7223(b)(8) is not yet enacted. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1050,
         "family": 2100
@@ -83,6 +96,10 @@
       "annualContributionLimitFamily_223b2B": 5650,
       "additionalContributionAmount55_223b3B": 800,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1100,
         "family": 2200
@@ -99,6 +116,10 @@
       "annualContributionLimitFamily_223b2B": 5800,
       "additionalContributionAmount55_223b3B": 900,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1100,
         "family": 2200
@@ -114,6 +135,10 @@
       "annualContributionLimitFamily_223b2B": 5950,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1150,
         "family": 2300
@@ -129,6 +154,10 @@
       "annualContributionLimitFamily_223b2B": 6150,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1200,
         "family": 2400
@@ -144,6 +173,10 @@
       "annualContributionLimitFamily_223b2B": 6150,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1200,
         "family": 2400
@@ -159,6 +192,10 @@
       "annualContributionLimitFamily_223b2B": 6250,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1200,
         "family": 2400
@@ -174,6 +211,10 @@
       "annualContributionLimitFamily_223b2B": 6450,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1250,
         "family": 2500
@@ -189,6 +230,10 @@
       "annualContributionLimitFamily_223b2B": 6550,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1250,
         "family": 2500
@@ -204,6 +249,10 @@
       "annualContributionLimitFamily_223b2B": 6650,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1300,
         "family": 2600
@@ -219,6 +268,10 @@
       "annualContributionLimitFamily_223b2B": 6750,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1300,
         "family": 2600
@@ -234,6 +287,10 @@
       "annualContributionLimitFamily_223b2B": 6750,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1300,
         "family": 2600
@@ -249,6 +306,10 @@
       "annualContributionLimitFamily_223b2B": 6900,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1350,
         "family": 2700
@@ -265,6 +326,10 @@
       "annualContributionLimitFamily_223b2B": 7000,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1350,
         "family": 2700
@@ -280,6 +345,10 @@
       "annualContributionLimitFamily_223b2B": 7100,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1400,
         "family": 2800
@@ -295,6 +364,10 @@
       "annualContributionLimitFamily_223b2B": 7200,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1400,
         "family": 2800
@@ -310,6 +383,10 @@
       "annualContributionLimitFamily_223b2B": 7300,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1400,
         "family": 2800
@@ -325,6 +402,10 @@
       "annualContributionLimitFamily_223b2B": 7750,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1500,
         "family": 3000
@@ -340,6 +421,10 @@
       "annualContributionLimitFamily_223b2B": 8300,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1600,
         "family": 3200
@@ -355,6 +440,10 @@
       "annualContributionLimitFamily_223b2B": 8550,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1650,
         "family": 3300
@@ -370,6 +459,10 @@
       "annualContributionLimitFamily_223b2B": 8750,
       "additionalContributionAmount55_223b3B": 1000,
       "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 \u00a7303 removed the \u00a7223(b)(2) deductible cap and \u00a7305 added the \u00a7223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
       "hdhpMinimumAnnualDeductible_223c2Ai": {
         "selfOnly": 1700,
         "family": 3400

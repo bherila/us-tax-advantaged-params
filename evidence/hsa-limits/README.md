@@ -14,7 +14,7 @@ npm run validate:evidence        # every corpus under evidence/
 npm run validate:evidence:hsa    # this corpus alone
 ```
 
-**161 comparisons over 2004–2026, 0 mismatches.**
+**230 comparisons over 2004–2026, 0 mismatches.**
 
 ## What is compared
 
@@ -25,10 +25,18 @@ limits, the §223(b)(3)(B) additional contribution for age 55 and over, and the
 the self-only amount in every year, so deriving one from the other would verify
 an assumption rather than the Rev. Proc.
 
+Also the three fields that are rules rather than amounts, and that drive the two
+behaviours this file calls load-bearing:
+`contributionLimitCappedByHdhpAnnualDeductible`, `lastMonthRuleAvailable`, and
+`testingPeriodMonths`. No Rev. Proc. states any of them, so they are cited to
+the Code and to the act that enacted them, the same way the age-55 amount is —
+see `_policyFlagsComment` in `primary-values.json` for the full derivation.
+
 ## Sources
 
 Twenty-six documents: the annual Rev. Proc. for every year from 2004 through
-2026, plus the statute text. Fixed by `SHA256SUMS.txt`:
+2026, plus the statute text, which carries the 2006 amendment and
+effective-date notes the policy flags rest on. Fixed by `SHA256SUMS.txt`:
 
 ```
 cd sources && shasum -a 256 -c ../SHA256SUMS.txt
@@ -49,7 +57,10 @@ the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible
 and the dollar amount. The Tax Relief and Health Care Act of 2006 §303 removed
 that cap for taxable years beginning after 2006. The data records this as
 `contributionLimitCappedByHdhpAnnualDeductible`; it is a real historical rule,
-not a redundant flag.
+not a redundant flag. The same act's §305 added the §223(b)(8) last-month rule
+on the same effective date, which is why `lastMonthRuleAvailable` and
+`testingPeriodMonths` turn on at the same year boundary. Both are recorded from
+the statute and compared in every year.
 
 ## Adding a year
 
