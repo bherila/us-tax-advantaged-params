@@ -73,7 +73,9 @@ jobs:
       - run: npm run build
       - run: php -l php/src/USTaxAdvantagedParams.php
       - run: php -l scripts/php-parity-runner.php
+      - run: php -l scripts/fuzz-parity-runner.php
       - run: node scripts/check-parity.mjs
+      - run: node scripts/fuzz-parity.mjs
 
   release-validation:
     name: Publication gate

@@ -235,6 +235,42 @@ const result = USTaxAdvantagedParams.calculate({
 
 Filing-status aliases include `S`, `SINGLE`, `MFJ`, `MFS`, `HOH`, `QSS`, and `QW`. The alias `M` is accepted as MFJ but emits an ambiguity diagnostic. Canonical values are preferred in persisted data.
 
+### Input rejection
+
+The unified interface is where stale, mistyped, and cross-runtime data arrives, so an
+input it cannot honour is rejected rather than coerced. Both engines throw the same error
+code and the same message for the same bad input.
+
+| Code | Raised for |
+|---|---|
+| `INVALID_TAX_YEAR` | A `taxYear` that is not an integer |
+| `INVALID_FILING_STATUS` | A missing `filingStatus`, a non-string, or an unrecognized alias |
+| `PERSON_REQUIRED` | `persons` missing, not a list, or empty |
+| `INVALID_ACCOUNTS` / `INVALID_CONVERSIONS` | `accounts` or `conversions` present but not a list |
+| `INVALID_PERSON` / `INVALID_ACCOUNT` / `INVALID_CONVERSION` | An entry of `persons`, `accounts`, or `conversions` that is not an object |
+| `PERSON_ID_REQUIRED` / `ACCOUNT_ID_REQUIRED` / `CONVERSION_ID_REQUIRED` | An `id` that is missing, blank, or not a string |
+| `ACCOUNT_OWNER_REQUIRED` / `CONVERSION_OWNER_REQUIRED` | An `ownerId` that is missing, blank, or not a string |
+| `UNKNOWN_ACCOUNT_OWNER` / `UNKNOWN_CONVERSION_OWNER` | An `ownerId` that names no supplied person |
+| `INVALID_ACCOUNT_TYPE` / `INVALID_CONVERSION_TYPE` | A type that is not a string, or an unrecognized one |
+| `INVALID_INPUT_OBJECT` | A structured field — `planRules`, `existingContributions`, `compensation`, `magi`, `priorYearFicaWagesByEmployer`, `hsa`, `hsaCoverage`, `special403bCatchUp`, `section457SpecialCatchUp` — holding something other than an object |
+| `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` |
+| `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
+| `INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD` | A `simpleEmployerContributionMethod` outside `match_3_percent`, `nonelective_2_percent`, `custom` |
+| `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
+| `INVALID_BOOLEAN` | A flag field holding something other than `true` or `false` |
+
+Enum-valued fields in particular are checked rather than compared loosely: a stale or
+camel-cased value such as `"rothFirst"` would otherwise fall through to a different branch
+and return a plausible but wrong allocation. Structured fields are checked for the same
+reason — a scalar where an object belongs used to be ignored in silence, taking every rule
+it carried with it. Flag fields must be actual booleans, because JavaScript and PHP
+disagree about the truthiness of `"0"` and of an empty array.
+
+Two shapes are deliberately *not* rejected. A missing `accounts` or `conversions` key, and
+an explicit `null` in its place, both mean an empty list. And a JSON object whose keys are
+exactly `"0"`, `"1"`, … is accepted wherever a list is expected, because `json_decode`
+cannot tell it apart from a JSON array, so neither engine may.
+
 ## Account coverage
 
 | Family | Account types |
@@ -262,7 +298,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
-| §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months |
+| §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
 | §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
 | Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
@@ -270,6 +306,41 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 
 The testing period spans two tax years, so a caller who has not yet resolved it receives
 an explicit obligation in the result rather than an assumed outcome.
+
+### Spousal coverage: `persons[].hsaCoverage`
+
+§223(b)(5)(A) turns on whether **either spouse has family coverage**, not on whether either
+spouse owns a health savings account. A spouse with family HDHP coverage and no HSA of their
+own still changes the other spouse's limitation, so that coverage is stated on the person:
+
+```ts
+const result = USTaxAdvantagedParams.forTaxYear(2026)
+  .filingStatus(FilingStatus.MARRIED_FILING_JOINTLY)
+  .taxpayer("taxpayer", (person) => person.bornIn(1985))
+  // The spouse has family HDHP coverage but no HSA of their own.
+  .spouse("spouse", (person) => person.bornIn(1986).hsaCoverage("family"))
+  .account("taxpayer-hsa", "taxpayer", AccountType.HSA, (account) => {
+    account.hsaCoverage("self_only");
+  })
+  .calculate();
+```
+
+`persons[].hsaCoverage` takes the same coverage fields as `planRules.hsa`
+(`coverageTier`, `eligibleMonths`, `monthlyCoverage`, `hdhpAnnualDeductible`). Where a person
+owns an HSA, `planRules.hsa` already carries these facts; supplying both is allowed but they
+must be identical, and a contradiction returns
+`HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT`.
+
+**Supplying the key at all declares the fact known.** An empty object —
+`{ id: "s", hsaCoverage: {} }`, or `.noHsaCoverage()` on the builder — records that the
+spouse held no high deductible health plan coverage in any month.
+
+Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
+coverage is required exactly when it could change the answer. On a married return, an HSA
+owner with at least one self-only month and no stated spousal coverage returns
+`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` rather than a number the input
+cannot support. An owner whose months are all family months is unaffected, since family is
+already the higher tier.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
@@ -413,10 +484,29 @@ data/retirement-parameters.json
            ├── generated PHP parameter block
            └── shared conformance vectors
                          │
-                         └── complete serialized-output parity test
+                         ├── complete serialized-output parity test
+                         └── seeded randomized differential test
 ```
 
 This gives npm consumers an idiomatic TypeScript package and Packagist consumers an idiomatic PHP package without duplicating annual parameter maintenance.
+
+`npm run test:parity` compares complete serialized output for every conformance vector.
+That set is fixed, so `npm run test:fuzz` compares the two engines on randomized scenarios
+instead — varying tax year across the supported range, account types, HSA coverage shapes
+and monthly patterns, existing contributions, conversions, filing statuses, and
+deliberately malformed inputs — and diffs the full output including thrown error codes and
+messages. It is deterministic: every run prints its seed, and `--seed=<n>` replays a
+failure exactly.
+
+```bash
+npm run test:fuzz                            # 5,000 scenarios, random seed
+node scripts/fuzz-parity.mjs --seed=1234      # replay
+node scripts/fuzz-parity.mjs --cases=50000    # deeper sweep
+```
+
+It runs in `npm run verify` and in CI because it is cheap — 10,000 scenarios take under
+three seconds, since the PHP side is batched into one process. Nine of the input-validation
+divergences fixed in this package were found by it rather than by the vectors.
 
 ## Development
 
@@ -428,6 +518,7 @@ npm run typecheck
 npm run test:ts
 npm run test:php
 npm run test:parity
+npm run test:fuzz
 npm run verify
 ```
 

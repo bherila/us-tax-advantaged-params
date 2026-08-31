@@ -28,7 +28,10 @@ years 1975 onward:
 2. **The two engines must stay in behavioral lockstep.** Any semantic change to
    one engine must be mirrored natively in the other in the same change.
    `scripts/check-parity.mjs` compares complete serialized output for every
-   conformance vector; it must pass.
+   conformance vector; it must pass. `scripts/fuzz-parity.mjs` compares them on
+   randomized scenarios outside that set, including malformed inputs; it is
+   seeded, prints its seed, and replays with `--seed=<n>`. Both run in
+   `npm run verify` and in CI.
 3. **Legal parameters come from primary authority only** (IRS notices, statutes,
    Revenue Procedures — see SOURCES.md). Never inflation-extrapolate an
    unannounced year, never silently reuse a prior year's value, and record the
@@ -95,6 +98,7 @@ npm run verify            # full local gate: data validation, generate:check,
 npm run test:ts           # TypeScript unit + conformance tests (node --test)
 npm run test:php          # PHP unit + conformance tests (plain PHP, no PHPUnit)
 npm run test:parity       # build then full-output TS/PHP parity
+npm run test:fuzz         # seeded randomized TS/PHP differential test; --seed=<n> replays
 npm run generate          # regenerate embedded data blocks in both engines
 npm run validate:data     # canonical-format and range validation of the JSON
 npm run validate:evidence # compare every evidence corpus against the data it backs

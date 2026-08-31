@@ -2326,7 +2326,7 @@
     },
     {
       "name": "2026 spouses with unequal family-coverage months each divide their own refigured family limit",
-      "description": "Form 8889 line 6 has each spouse refigure the limitation for the months that spouse was treated as having family coverage (Step 1) and divide that refigured amount (Steps 2-3). Twelve family months give the taxpayer 8750 x 1/2 = 4375; the spouse's six family months give 4375 x 1/2 = 2187.50. The spouse's limit is not raised to the taxpayer's share, so the couple's total is 6562.50, not 8750.",
+      "description": "Form 8889 line 6 has each spouse refigure the limitation for the months that spouse was treated as having family coverage (Step 1) and divide that refigured amount (Steps 2-3). The refigured amount is therefore per spouse, not one couple-wide figure: the taxpayer's twelve family months refigure to 8750 and the spouse's six refigure to 6 x (8750/12) = 4375. An equal division gives the taxpayer 8750 x 1/2 = 4375 and the spouse 4375 x 1/2 = 2187.50. The spouse's limit is not raised to the taxpayer's share, so the couple's total is 6562.50, not 8750.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -2375,6 +2375,9 @@
         "accounts.0.statutoryMaximumAnnualContribution": 4375,
         "accounts.1.statutoryMaximumAnnualContribution": 2187.5,
         "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 4375,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.1.hsa.familyLimitShare": 0.5,
         "totals.hsaContribution": 6562.5
       },
       "expectDiagnosticCodes": [
@@ -2443,6 +2446,589 @@
       "expectDiagnosticCodes": [
         "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED"
       ]
+    },
+    {
+      "name": "2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months",
+      "description": "IRC 223(b)(5)(A) applies when \"either spouse\" has family coverage; it does not ask whether that spouse owns a health savings account, so persons[].hsaCoverage carries the fact. The spouse has family coverage for all twelve months, so the taxpayer's twelve self-only months are treated as family months. Rev. Proc. 2025-19 sets the 2026 family amount at 8750, so IRC 223(b)(2)(B) gives 12 x (8750/12) = 8750. Only the taxpayer has an HSA, so the IRC 223(b)(5)(B)(ii) division allocates the single family limit to it in full.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.hsa.coverageTierByMonth.0": "family",
+        "accounts.0.hsa.familyLimitShare": 1,
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
+        "HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 unstated spouse coverage leaves a self-only HSA limit indeterminate",
+      "description": "The same scenario with the spouse's coverage unstated. IRC 223(b)(5)(A) makes the answer depend on a fact the input does not carry: family coverage held by the spouse yields 8750 and no family coverage yields the IRC 223(b)(2)(A) self-only figure of 12 x (4400/12) = 4400. The engine calculates statutory parameters from caller-supplied facts, so an unsupplied fact that changes the answer is indeterminate rather than assumed away.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 spouse without high deductible coverage leaves the self-only HSA limit intact",
+      "description": "An empty persons[].hsaCoverage records that the spouse held no high deductible health plan coverage in any month, so IRC 223(b)(5)(A) has nothing to recharacterize. The taxpayer's twelve self-only months give 12 x (4400/12) = 4400 under IRC 223(b)(2)(A) with the 2026 self-only amount from Rev. Proc. 2025-19, and no family limit is shared.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 4400
+      }
+    },
+    {
+      "name": "persons entry that is not an object is rejected",
+      "description": "A non-object entry in persons has no id, but reporting it as a missing id hides the real defect and diverged between the two engines. Both reject the shape itself.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          "t"
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_PERSON"
+      }
+    },
+    {
+      "name": "accounts entry that is not an object is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          "a"
+        ]
+      },
+      "description": "As for persons: the shape is checked before any field of it is read.",
+      "expectError": {
+        "code": "INVALID_ACCOUNT"
+      }
+    },
+    {
+      "name": "conversions entry that is not an object is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          "c"
+        ]
+      },
+      "description": "As for persons and accounts: the shape is checked before any field of it is read.",
+      "expectError": {
+        "code": "INVALID_CONVERSION"
+      }
+    },
+    {
+      "name": "account without an ownerId is rejected",
+      "description": "ownerId is required in the same way id is. Falling through to the unknown-owner check produced a message naming a nonexistent owner, and the two engines rendered the absent value differently.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "ACCOUNT_OWNER_REQUIRED"
+      }
+    },
+    {
+      "name": "conversion without an ownerId is rejected",
+      "description": "ownerId is required in the same way id is, for the same reason as on an account.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c",
+            "type": "ira_to_roth_ira",
+            "amount": 1000
+          }
+        ]
+      },
+      "expectError": {
+        "code": "CONVERSION_OWNER_REQUIRED"
+      }
+    },
+    {
+      "name": "unrecognized contributionPreference is rejected",
+      "description": "A stale or camel-cased enum such as \"rothFirst\" is not one of account_type, pretax_first, or roth_first. Accepting it and silently falling through to the pretax path returns a plausible but wrong allocation, so it is rejected.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 200000,
+              "permitsRothContributions": true,
+              "contributionPreference": "rothFirst"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_CONTRIBUTION_PREFERENCE"
+      }
+    },
+    {
+      "name": "unrecognized employerContributionTaxTreatment is rejected",
+      "description": "As for contributionPreference: \"PRETAX\" is not one of pretax or roth, and silently accepting it returns a number rather than an error.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 5000,
+              "employerContributionTaxTreatment": "PRETAX"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT"
+      }
+    },
+    {
+      "name": "rate outside 0 through 1 is rejected",
+      "description": "employerNonelectiveRate is a fraction of compensation, so 1.5 is not a rate. Pinned here because the two engines worded the same rejection differently.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 100000,
+              "employerNonelectiveRate": 1.5
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_RATE"
+      }
+    },
+    {
+      "name": "existing contributions above the account ceiling name the amounts",
+      "description": "2026 IRC 219(b)(5)(A) caps a traditional IRA at 7500 for a taxpayer under 50 (Notice 2025-67), so a supplied 20000 exceeds it by 12500. The diagnostic states both figures; the message is asserted because the two engines carried different wording for the same finding.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 50000
+            },
+            "coveredByEmployerRetirementPlan": false,
+            "magi": {
+              "traditionalIraDeduction": 50000,
+              "rothIra": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_ira",
+            "existingContributions": {
+              "deductibleIra": 20000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.diagnostics.0.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
+        "accounts.0.diagnostics.0.message": "The annual amount $20,000 exceeds the calculated account ceiling of $7,500. Shared-limit records should also be reviewed for excess contributions across accounts."
+      }
+    },
+    {
+      "name": "taxYear that is not an integer is rejected",
+      "description": "A string year is not a year. Coercing it silently reported an unsupported-year error naming a year the caller never supplied.",
+      "input": {
+        "taxYear": "2026",
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_TAX_YEAR"
+      }
+    },
+    {
+      "name": "missing filingStatus is rejected rather than defaulted",
+      "description": "Filing status selects every phase-out band and the IRC 223(b)(5) spousal rules, so defaulting an absent one to single silently changes the answer.",
+      "input": {
+        "taxYear": 2026,
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_FILING_STATUS"
+      }
+    },
+    {
+      "name": "filingStatus that is not a string is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": 3,
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "description": "As above; the value is reported by shape rather than by an engine-specific stringification of it.",
+      "expectError": {
+        "code": "INVALID_FILING_STATUS"
+      }
+    },
+    {
+      "name": "accounts that is not an array is rejected",
+      "description": "accounts is a list; a scalar in its place is a caller defect, not an empty portfolio.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": "roth_ira"
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNTS"
+      }
+    },
+    {
+      "name": "conversions that is not an array is rejected",
+      "description": "As for accounts.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": "c"
+      },
+      "expectError": {
+        "code": "INVALID_CONVERSIONS"
+      }
+    },
+    {
+      "name": "account type that is not a string is rejected",
+      "description": "Reported by shape, because interpolating a non-string into the unsupported-type message produced \"undefined\" in one engine and an empty string in the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": 5
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_ACCOUNT_TYPE"
+      }
+    },
+    {
+      "name": "person id that is not a string is rejected",
+      "description": "Identifiers are strings. Coercing 5 to \"5\" makes the scenario depend on a coercion rule rather than on the input.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": 5
+          }
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "PERSON_ID_REQUIRED"
+      }
+    },
+    {
+      "name": "structured input field that is not an object is rejected",
+      "description": "planRules, existingContributions, compensation, magi, priorYearFicaWagesByEmployer, hsa, hsaCoverage, special403bCatchUp, and section457SpecialCatchUp are objects; a scalar in their place was silently ignored, so every rule they carry vanished without a word.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_ira",
+            "planRules": 5
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_INPUT_OBJECT"
+      }
+    },
+    {
+      "name": "unrecognized simpleEmployerContributionMethod is rejected",
+      "description": "The same defect shape as contributionPreference: neither engine validated it, so an unrecognized method silently fell through to the default employer formula.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "planRules": {
+              "planCompensation": 60000,
+              "simpleEmployerContributionMethod": "MATCH"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD"
+      }
+    },
+    {
+      "name": "1989 fractional plan-term capacity keeps its fraction in the message",
+      "description": "1989 IRC 415(c)(1)(B) allowed 25 percent of compensation, so 25 percent of 100018 is 25004.50, less the 1989 IRC 402(g) elective-deferral limit of 7627, leaving 17377.50 of capacity that depends on unstated plan terms. The message must print 17,377.5, not a rounded 17,378; PHP rendered money to two decimals where the TypeScript default carries three.",
+      "input": {
+        "taxYear": 1989,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "solo_401k",
+            "planRules": {
+              "planCompensation": 100018
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.planTermDependentCapacity": 17377.5,
+        "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY",
+        "accounts.0.diagnostics.0.message": "$17,377.5 of potential annual-additions capacity requires an employer contribution formula or permission for voluntary after-tax contributions."
+      }
+    },
+    {
+      "name": "flag field that is not a boolean is rejected",
+      "description": "The string \"0\" is truthy in JavaScript and falsy in PHP, so coercing it made a 1980 traditional IRA ineligible in one engine and determinate in the other from the same input. Flag fields must be actual booleans; an empty array is the same trap.",
+      "input": {
+        "taxYear": 1980,
+        "filingStatus": "HOH",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1940,
+            "coveredByEmployerRetirementPlan": "0"
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_BOOLEAN"
+      }
     }
   ]
 }

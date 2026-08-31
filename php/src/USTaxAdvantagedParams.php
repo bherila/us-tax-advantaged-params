@@ -222,6 +222,45 @@ final class PersonBuilder
         return $this;
     }
 
+    /**
+     * IRC 223(c)(2) coverage this person held, with an optional list of eligible
+     * months (1-12). Needed on a spouse who owns no health savings account,
+     * because IRC 223(b)(5)(A) reads the couple's coverage, not their accounts.
+     *
+     * @param list<int>|null $eligibleMonths
+     */
+    public function hsaCoverage(string $tier, ?array $eligibleMonths = null): self
+    {
+        $this->value['hsaCoverage']['coverageTier'] = $tier;
+        if ($eligibleMonths !== null) {
+            $this->value['hsaCoverage']['eligibleMonths'] = array_values($eligibleMonths);
+        }
+        return $this;
+    }
+
+    /** IRC 223(b)(2) per-month coverage for this person, for a year in which the tier changes.
+     *  @param list<array{month:int,coverage:string}> $coverage
+     */
+    public function hsaMonthlyCoverage(array $coverage): self
+    {
+        $this->value['hsaCoverage']['monthlyCoverage'] = array_values($coverage);
+        return $this;
+    }
+
+    /** Records that this person held no high deductible health plan coverage in any month. */
+    public function noHsaCoverage(): self
+    {
+        $this->value['hsaCoverage'] = [];
+        return $this;
+    }
+
+    /** The person's plan annual deductible, which IRC 223(b)(5)(A) reads for 2004-2006. */
+    public function hsaHdhpAnnualDeductible(float|int $amount): self
+    {
+        $this->value['hsaCoverage']['hdhpAnnualDeductible'] = $amount;
+        return $this;
+    }
+
     /** @return array<string,mixed> */
     public function build(): array
     {
@@ -6692,7 +6731,11 @@ final class Engine
     public static function calculate(array $input, array $data, array $hsaData): array
     {
         $scenarioDiagnostics = [];
-        $taxYear = (int) ($input['taxYear'] ?? 0);
+        $rawTaxYear = $input['taxYear'] ?? null;
+        if (!is_int($rawTaxYear) && !(is_float($rawTaxYear) && is_finite($rawTaxYear) && floor($rawTaxYear) === $rawTaxYear)) {
+            throw new ParameterException('INVALID_TAX_YEAR', 'taxYear must be an integer.');
+        }
+        $taxYear = (int) $rawTaxYear;
         $minimum = (int) $data['supportedTaxYears']['minimum'];
         $maximum = (int) $data['supportedTaxYears']['maximum'];
         if ($taxYear < $minimum || $taxYear > $maximum || !isset($data['years'][(string) $taxYear])) {
@@ -6701,11 +6744,12 @@ final class Engine
         $parameters = self::copy($data['years'][(string) $taxYear]);
         $hsaParameters = self::hsaParametersForYear($hsaData, $taxYear);
         $filingStatus = self::parseFilingStatus(
-            $input['filingStatus'] ?? FilingStatus::SINGLE->value,
+            $input['filingStatus'] ?? null,
             $scenarioDiagnostics,
+            array_key_exists('filingStatus', $input),
         );
-        $persons = self::normalizePersons($input['persons'] ?? []);
-        $accounts = self::normalizeAccounts($input['accounts'] ?? [], $persons);
+        $persons = self::normalizePersons($input['persons'] ?? null);
+        $accounts = self::normalizeAccounts($input['accounts'] ?? null, $persons);
         $context = self::createContext(
             $taxYear,
             $filingStatus,
@@ -6741,7 +6785,9 @@ final class Engine
                 $diagnostics[] = self::diagnostic(
                     'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM',
                     DiagnosticSeverity::ERROR,
-                    'The annual amount exceeds the calculated account ceiling. Review supplied existing contributions and shared limits.',
+                    'The annual amount $' . self::localeNumber($annualMaximum) . ' exceeds the calculated account '
+                        . 'ceiling of $' . self::localeNumber((float) $outcome['statutoryMaximum']) . '. Shared-limit '
+                        . 'records should also be reviewed for excess contributions across accounts.',
                     "accounts.{$account['id']}.existingContributions",
                 );
             }
@@ -6799,7 +6845,7 @@ final class Engine
         foreach ($accounts as $account) {
             $accountResults[] = $byId[$account['id']];
         }
-        $conversions = self::normalizeConversions($input['conversions'] ?? [], $persons, $context['accountsById']);
+        $conversions = self::normalizeConversions($input['conversions'] ?? null, $persons, $context['accountsById']);
         $conversionResults = self::calculateConversions($context, $conversions, $accountResults);
         $allDiagnostics = $scenarioDiagnostics;
         foreach ($accountResults as $accountResult) {
@@ -6837,13 +6883,19 @@ final class Engine
     }
 
     /** @param list<array<string,mixed>> $diagnostics */
-    public static function parseFilingStatus(FilingStatus|string $value, array &$diagnostics): string
+    public static function parseFilingStatus(mixed $value, array &$diagnostics, bool $present = true): string
     {
         if ($value instanceof FilingStatus) {
             return $value->value;
         }
         if (in_array($value, array_column(FilingStatus::cases(), 'value'), true)) {
             return $value;
+        }
+        if (!is_string($value)) {
+            throw new ParameterException(
+                'INVALID_FILING_STATUS',
+                'Filing status must be a string, but received ' . self::describeInputValue($value, $present) . '.',
+            );
         }
         $token = self::normalizeToken($value);
         $aliases = [
@@ -6880,13 +6932,19 @@ final class Engine
         return $aliases[$token];
     }
 
-    public static function parseAccountType(AccountType|string $value): string
+    public static function parseAccountType(mixed $value, bool $present = true): string
     {
         if ($value instanceof AccountType) {
             return $value->value;
         }
         if (in_array($value, array_column(AccountType::cases(), 'value'), true)) {
             return $value;
+        }
+        if (!is_string($value)) {
+            throw new ParameterException(
+                'INVALID_ACCOUNT_TYPE',
+                'Account type must be a string, but received ' . self::describeInputValue($value, $present) . '.',
+            );
         }
         $aliases = [
             'IRA' => AccountType::TRADITIONAL_IRA->value,
@@ -6959,13 +7017,20 @@ final class Engine
         return $aliases[$token];
     }
 
-    public static function parseConversionType(ConversionType|string $value): string
+    public static function parseConversionType(mixed $value, bool $present = true): string
     {
         if ($value instanceof ConversionType) {
             return $value->value;
         }
         if (in_array($value, array_column(ConversionType::cases(), 'value'), true)) {
             return $value;
+        }
+        if (!is_string($value)) {
+            throw new ParameterException(
+                'INVALID_CONVERSION_TYPE',
+                'Roth conversion type must be a string, but received '
+                    . self::describeInputValue($value, $present) . '.',
+            );
         }
         $aliases = [
             'IRA_TO_ROTH' => ConversionType::IRA_TO_ROTH_IRA->value,
@@ -6981,6 +7046,80 @@ final class Engine
             throw new ParameterException('INVALID_CONVERSION_TYPE', "Unsupported Roth conversion type: {$value}");
         }
         return $aliases[$token];
+    }
+
+    /**
+     * A language-neutral description of a value's shape, so both engines word the
+     * same rejection identically. Arrays and objects collapse into one token
+     * because a JSON {} and a JSON [] are indistinguishable once decoded here,
+     * and a message that depended on telling them apart could not be matched.
+     */
+    private static function describeInputValue(mixed $value, bool $present = true): string
+    {
+        if (!$present) {
+            return 'no value';
+        }
+        if ($value === null) {
+            return 'null';
+        }
+        if (is_bool($value)) {
+            return 'a boolean';
+        }
+        if (is_int($value) || is_float($value)) {
+            return 'a number';
+        }
+        if (is_string($value)) {
+            return 'a string';
+        }
+        return 'a structured value';
+    }
+
+    /** The value as a JSON list, or null when it is not one.
+     *  @return list<mixed>|null
+     */
+    private static function toInputList(mixed $value): ?array
+    {
+        return is_array($value) && array_is_list($value) ? $value : null;
+    }
+
+    /** A non-empty string after trimming, or null. Used for every caller-supplied identifier. */
+    private static function trimmedIdentifier(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $trimmed = trim($value);
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    /**
+     * Flag fields must be actual booleans. JavaScript and PHP disagree about the
+     * truthiness of "0" and of an empty array, so coercing one would make the
+     * answer depend on the runtime rather than on the input.
+     *
+     * @param array<string,mixed> $container
+     */
+    private static function booleanFlag(array $container, string $key, string $path): void
+    {
+        if (!array_key_exists($key, $container)) {
+            return;
+        }
+        if (!is_bool($container[$key])) {
+            throw new ParameterException('INVALID_BOOLEAN', "{$path} must be a boolean.");
+        }
+    }
+
+    /** Structured input fields must be objects; a scalar in their place is silently ignored otherwise.
+     *  @param array<string,mixed> $container
+     */
+    private static function requireInputObject(array $container, string $key, string $path): void
+    {
+        if (!array_key_exists($key, $container)) {
+            return;
+        }
+        if (!is_array($container[$key])) {
+            throw new ParameterException('INVALID_INPUT_OBJECT', "{$path} must be an object.");
+        }
     }
 
     private static function normalizeToken(string $value): string
@@ -7185,11 +7324,11 @@ final class Engine
             return $default;
         }
         if (!is_int($value) && !is_float($value)) {
-            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be a number from 0 through 1.");
         }
         $number = (float) $value;
         if (!is_finite($number) || $number < 0 || $number > 1) {
-            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be a number from 0 through 1.");
         }
         return $number;
     }
@@ -7378,12 +7517,11 @@ final class Engine
         return $result;
     }
 
-    /** @param list<array<string,mixed>> $persons
-     *  @return array<string,array<string,mixed>>
-     */
-    private static function normalizePersons(array $persons): array
+    /** @return array<string,array<string,mixed>> */
+    private static function normalizePersons(mixed $personsInput): array
     {
-        if ($persons === []) {
+        $persons = self::toInputList($personsInput);
+        if ($persons === null || $persons === []) {
             throw new ParameterException('PERSON_REQUIRED', 'At least one person is required.');
         }
         $result = [];
@@ -7391,8 +7529,8 @@ final class Engine
             if (!is_array($input)) {
                 throw new ParameterException('INVALID_PERSON', "persons[{$index}] must be an object/associative array.");
             }
-            $id = trim((string) ($input['id'] ?? ''));
-            if ($id === '') {
+            $id = self::trimmedIdentifier($input['id'] ?? null);
+            if ($id === null) {
                 throw new ParameterException('PERSON_ID_REQUIRED', "persons[{$index}].id is required.");
             }
             if (isset($result[$id])) {
@@ -7407,6 +7545,13 @@ final class Engine
             if (isset($input['birthDate'])) {
                 self::validateIsoDate((string) $input['birthDate'], "persons[{$index}].birthDate");
             }
+            self::requireInputObject($input, 'compensation', "persons[{$index}].compensation");
+            self::requireInputObject($input, 'magi', "persons[{$index}].magi");
+            self::requireInputObject(
+                $input,
+                'priorYearFicaWagesByEmployer',
+                "persons[{$index}].priorYearFicaWagesByEmployer",
+            );
             $compensation = is_array($input['compensation'] ?? null) ? $input['compensation'] : [];
             foreach (['iraCompensation', 'w2Compensation', 'selfEmploymentNetEarnings'] as $key) {
                 if (array_key_exists($key, $compensation)) {
@@ -7426,6 +7571,16 @@ final class Engine
                     "persons[{$index}].priorYearFicaWagesByEmployer.{$employerId}",
                 );
             }
+            self::requireInputObject($input, 'hsaCoverage', "persons[{$index}].hsaCoverage");
+            if (array_key_exists('hsaCoverage', $input)) {
+                self::validateHsaCoverage($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
+            }
+            self::booleanFlag(
+                $input,
+                'coveredByEmployerRetirementPlan',
+                "persons[{$index}].coveredByEmployerRetirementPlan",
+            );
+            self::booleanFlag($input, 'livedWithSpouseDuringYear', "persons[{$index}].livedWithSpouseDuringYear");
             $role = $input['role'] ?? ($index === 0 ? 'taxpayer' : ($index === 1 ? 'spouse' : 'other'));
             if (!in_array($role, ['taxpayer', 'spouse', 'other'], true)) {
                 throw new ParameterException(
@@ -7469,35 +7624,47 @@ final class Engine
      *  @param array<string,array<string,mixed>> $persons
      *  @return list<array<string,mixed>>
      */
-    private static function normalizeAccounts(array $accounts, array $persons): array
+    private static function normalizeAccounts(mixed $accountsInput, array $persons): array
     {
+        $accounts = $accountsInput === null ? [] : self::toInputList($accountsInput);
+        if ($accounts === null) {
+            throw new ParameterException('INVALID_ACCOUNTS', 'accounts must be an array.');
+        }
         $ids = [];
         $result = [];
         foreach ($accounts as $index => $input) {
             if (!is_array($input)) {
                 throw new ParameterException('INVALID_ACCOUNT', "accounts[{$index}] must be an object/associative array.");
             }
-            $id = trim((string) ($input['id'] ?? ''));
-            if ($id === '') {
+            $id = self::trimmedIdentifier($input['id'] ?? null);
+            if ($id === null) {
                 throw new ParameterException('ACCOUNT_ID_REQUIRED', "accounts[{$index}].id is required.");
             }
             if (isset($ids[$id])) {
                 throw new ParameterException('DUPLICATE_ACCOUNT_ID', "Duplicate account ID: {$id}");
             }
             $ids[$id] = true;
-            $ownerId = (string) ($input['ownerId'] ?? '');
+            $ownerId = self::trimmedIdentifier($input['ownerId'] ?? null);
+            if ($ownerId === null) {
+                throw new ParameterException('ACCOUNT_OWNER_REQUIRED', "accounts[{$index}].ownerId is required.");
+            }
             if (!isset($persons[$ownerId])) {
                 throw new ParameterException(
                     'UNKNOWN_ACCOUNT_OWNER',
                     "Account {$id} references unknown owner {$ownerId}.",
                 );
             }
+            self::requireInputObject($input, 'planRules', "accounts[{$index}].planRules");
+            self::requireInputObject($input, 'existingContributions', "accounts[{$index}].existingContributions");
             $planRules = is_array($input['planRules'] ?? null) ? $input['planRules'] : [];
             self::validatePlanRules($planRules, "accounts[{$index}].planRules");
             $normalized = $input;
             $normalized['id'] = $id;
             $normalized['ownerId'] = $ownerId;
-            $normalized['type'] = self::parseAccountType($input['type'] ?? '');
+            $normalized['type'] = self::parseAccountType(
+                $input['type'] ?? null,
+                array_key_exists('type', $input),
+            );
             $normalized['priority'] = isset($input['priority']) ? (int) $input['priority'] : 100;
             $normalized['planRules'] = $planRules;
             $normalized['existingContributions'] = self::components(
@@ -7533,8 +7700,35 @@ final class Engine
                 self::rate($rules[$key], "{$path}.{$key}");
             }
         }
+        foreach (
+            [
+                'permitsRothContributions',
+                'permitsRothCatchUp',
+                'permitsAfterTaxEmployeeContributions',
+                'permitsInPlanRothRollover',
+                'simpleEnhancedLimitEligible',
+                'isSelfEmployedOwner',
+                'grandfatheredSarsep',
+            ] as $key
+        ) {
+            self::booleanFlag($rules, $key, "{$path}.{$key}");
+        }
+        self::requireInputObject($rules, 'special403bCatchUp', "{$path}.special403bCatchUp");
+        self::requireInputObject($rules, 'section457SpecialCatchUp', "{$path}.section457SpecialCatchUp");
+        self::requireInputObject($rules, 'hsa', "{$path}.hsa");
+        if (array_key_exists('simpleEmployerContributionMethod', $rules) && !in_array(
+            $rules['simpleEmployerContributionMethod'],
+            ['match_3_percent', 'nonelective_2_percent', 'custom'],
+            true,
+        )) {
+            throw new ParameterException(
+                'INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD',
+                "{$path}.simpleEmployerContributionMethod is invalid.",
+            );
+        }
         if (isset($rules['special403bCatchUp']) && is_array($rules['special403bCatchUp'])) {
             $special = $rules['special403bCatchUp'];
+            self::booleanFlag($special, 'eligible', "{$path}.special403bCatchUp.eligible");
             $years = $special['yearsOfService'] ?? null;
             if ((!is_int($years) && !is_float($years)) || !is_finite((float) $years) || (float) $years < 0) {
                 throw new ParameterException(
@@ -7546,12 +7740,17 @@ final class Engine
             self::money($special['priorSpecialCatchUpUsed'] ?? null, "{$path}.special403bCatchUp.priorSpecialCatchUpUsed");
         }
         if (isset($rules['section457SpecialCatchUp']) && is_array($rules['section457SpecialCatchUp'])) {
+            self::booleanFlag(
+                $rules['section457SpecialCatchUp'],
+                'eligible',
+                "{$path}.section457SpecialCatchUp.eligible",
+            );
             self::money(
                 $rules['section457SpecialCatchUp']['unusedDeferralsFromPriorYears'] ?? null,
                 "{$path}.section457SpecialCatchUp.unusedDeferralsFromPriorYears",
             );
         }
-        if (isset($rules['contributionPreference']) && !in_array(
+        if (array_key_exists('contributionPreference', $rules) && !in_array(
             $rules['contributionPreference'],
             ['account_type', 'pretax_first', 'roth_first'],
             true,
@@ -7561,7 +7760,7 @@ final class Engine
                 "{$path}.contributionPreference is invalid.",
             );
         }
-        if (isset($rules['employerContributionTaxTreatment']) && !in_array(
+        if (array_key_exists('employerContributionTaxTreatment', $rules) && !in_array(
             $rules['employerContributionTaxTreatment'],
             ['pretax', 'roth'],
             true,
@@ -7600,7 +7799,7 @@ final class Engine
     }
 
     /** @param array<string,mixed> $rules */
-    private static function validateHsaRules(array $rules, string $path): void
+    private static function validateHsaCoverage(array $rules, string $path): void
     {
         $hasMonthly = array_key_exists('monthlyCoverage', $rules);
         $hasTierForm = array_key_exists('coverageTier', $rules) || array_key_exists('eligibleMonths', $rules);
@@ -7662,6 +7861,19 @@ final class Engine
             }
         }
         self::money($rules['hdhpAnnualDeductible'] ?? null, "{$path}.hdhpAnnualDeductible");
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateHsaRules(array $rules, string $path): void
+    {
+        self::validateHsaCoverage($rules, $path);
+        self::booleanFlag($rules, 'useLastMonthRule', "{$path}.useLastMonthRule");
+        self::booleanFlag($rules, 'testingPeriodSatisfied', "{$path}.testingPeriodSatisfied");
+        self::booleanFlag(
+            $rules,
+            'testingPeriodFailureByDeathOrDisability',
+            "{$path}.testingPeriodFailureByDeathOrDisability",
+        );
         if (array_key_exists('familyLimitShare', $rules)) {
             self::rate($rules['familyLimitShare'], "{$path}.familyLimitShare");
         }
@@ -8356,14 +8568,19 @@ final class Engine
         return is_array($row) ? self::copy($row) : null;
     }
 
-    /** Mirrors JavaScript Number.prototype.toLocaleString for a money amount. */
+    /**
+     * Mirrors JavaScript Number.prototype.toLocaleString for a money amount.
+     * The default JavaScript formatter carries zero to three fraction digits,
+     * so a sub-cent amount such as 0.003 must survive; rounding to two here
+     * printed it as 0 while the TypeScript engine printed 0.003.
+     */
     private static function localeNumber(float $value): string
     {
-        $rounded = round($value, 2);
+        $rounded = round($value, 3);
         if ($rounded === floor($rounded)) {
             return number_format($rounded, 0);
         }
-        return rtrim(number_format($rounded, 2), '0');
+        return rtrim(number_format($rounded, 3), '0');
     }
 
     /** Mirrors JavaScript template-literal number interpolation. */
@@ -8373,6 +8590,23 @@ final class Engine
             return (string) (int) $value;
         }
         return (string) json_encode($value);
+    }
+
+    /**
+     * The four IRC 223(c)(2) coverage fields, in a stable order, so coverage
+     * stated on a person can be compared with coverage stated on that person's
+     * account.
+     *
+     * @param array<string,mixed> $coverage
+     */
+    private static function hsaCoverageSignature(array $coverage): string
+    {
+        return (string) json_encode([
+            $coverage['coverageTier'] ?? null,
+            $coverage['eligibleMonths'] ?? null,
+            $coverage['monthlyCoverage'] ?? null,
+            $coverage['hdhpAnnualDeductible'] ?? null,
+        ]);
     }
 
     /** Twelve coverage slots, or null when no coverage facts were supplied at all.
@@ -8501,10 +8735,14 @@ final class Engine
                     $conflict = true;
                 }
             }
+            $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'rules' => $rules,
                 'conflict' => $conflict,
+                'personConflict' => $rules !== null
+                    && is_array($declared)
+                    && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared),
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
         }
@@ -8516,11 +8754,39 @@ final class Engine
                 $coupleMembersWithAccounts[] = $personId;
             }
         }
+
+        /*
+         * IRC 223(b)(5)(A) turns on whether *either spouse* has family coverage,
+         * not on whether either spouse owns a health savings account. Coverage is
+         * therefore read from the person: from planRules.hsa where that spouse has
+         * an HSA, and from persons[].hsaCoverage where they do not.
+         */
+        $coupleCoverage = [];
+        foreach ($couple ?? [] as $personId) {
+            if (isset($facts[$personId]) && $facts[$personId]['rules'] !== null) {
+                $coupleCoverage[$personId] = [
+                    'supplied' => true,
+                    'months' => $facts[$personId]['months'],
+                    'hdhpAnnualDeductible' => $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null,
+                ];
+                continue;
+            }
+            $declared = $context['persons'][$personId]['hsaCoverage'] ?? null;
+            $coupleCoverage[$personId] = is_array($declared)
+                ? [
+                    'supplied' => true,
+                    'months' => self::resolveHsaMonths($declared)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                    'hdhpAnnualDeductible' => $declared['hdhpAnnualDeductible'] ?? null,
+                ]
+                : ['supplied' => false, 'months' => null, 'hdhpAnnualDeductible' => null];
+        }
+
         $familyMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
             $any = false;
-            foreach ($coupleMembersWithAccounts as $personId) {
-                if (($facts[$personId]['months'][$month - 1] ?? null) === 'family') {
+            foreach ($couple ?? [] as $personId) {
+                if (($coupleCoverage[$personId]['months'][$month - 1] ?? null) === 'family') {
                     $any = true;
                 }
             }
@@ -8552,8 +8818,8 @@ final class Engine
          * limitation by the deductible.
          */
         $coupleDeductibles = [];
-        foreach ($coupleMembersWithAccounts as $personId) {
-            $value = $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null;
+        foreach ($couple ?? [] as $personId) {
+            $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
             if ($value !== null) {
                 $coupleDeductibles[] = (float) $value;
             }
@@ -8578,6 +8844,18 @@ final class Engine
                     'IRC 223(b)',
                 );
             }
+            if ($owner['personConflict']) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'This person\'s persons[].hsaCoverage and their health savings account\'s planRules.hsa state '
+                        . 'different IRC 223(c)(2) coverage. Coverage is one fact about the person, so the two must be '
+                        . 'identical; persons[].hsaCoverage exists for a spouse who owns no HSA.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)',
+                );
+            }
             if ($owner['rules'] === null || $owner['months'] === null) {
                 $indeterminate = true;
                 $diagnostics[] = self::diagnostic(
@@ -8592,6 +8870,46 @@ final class Engine
             }
 
             $months = $owner['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+
+            /*
+             * IRC 223(b)(5)(A) can only lower a self-only month, so the other
+             * spouse's coverage is needed exactly when this owner has one. Without
+             * it the answer is genuinely unknown - self-only for the whole year is
+             * $4,400 for 2026, but a spouse's family coverage makes it a divided
+             * family limit instead - and answering with either number is a guess.
+             */
+            $marriedFiler = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
+                || $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+            $otherSpouseId = null;
+            foreach ($couple ?? [] as $personId) {
+                if ($personId !== $ownerId) {
+                    $otherSpouseId = $personId;
+                }
+            }
+            $ownerIsSpouseOfCouple = $couple !== null && in_array($ownerId, $couple, true);
+            $spouseCoverageSupplied = $otherSpouseId !== null
+                && ($coupleCoverage[$otherSpouseId]['supplied'] ?? false);
+            $ownerHasSelfOnlyMonth = in_array('self_only', $months, true);
+            if (
+                $marriedFiler
+                && ($ownerIsSpouseOfCouple || ($person['role'] ?? null) === 'taxpayer' || ($person['role'] ?? null) === 'spouse')
+                && !$spouseCoverageSupplied
+                && $ownerHasSelfOnlyMonth
+            ) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of '
+                        . 'them has it, whether or not that spouse owns a health savings account. This owner has at '
+                        . 'least one self-only month, so the other spouse\'s coverage changes the answer and is not '
+                        . 'supplied. State it on that spouse\'s persons[].hsaCoverage — an empty object records that '
+                        . 'the spouse held no high deductible health plan coverage.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(5)(A)',
+                );
+            }
+
             $eligibleMonthCount = 0;
             foreach ($months as $tier) {
                 if ($tier !== null) {
@@ -8742,9 +9060,12 @@ final class Engine
         }
 
         /*
-         * The single IRC 223(b)(5) family limit the spouses divide is the limitation
-         * attributable to family-coverage months only. Self-only months stay outside
-         * the division (Form 8889 line 6, Steps 1-4).
+         * The couple-wide ceiling on family-month capacity: no division of the one
+         * family limit can put more than the largest refigured family limitation into
+         * the two HSAs combined. Each spouse divides their *own* refigured amount
+         * (Form 8889 line 6, Steps 1-4), which is what sharedFamilyContributionLimit
+         * reports per owner; this maximum is the aggregate guard, and self-only months
+         * are added to it undivided.
          */
         $rawSharedFamilyLimit = null;
         $sharedFamilyLimit = null;
@@ -9010,7 +9331,9 @@ final class Engine
                 'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
                 'familyLimitShare' => $share,
-                'sharedFamilyContributionLimit' => $isSharingMember ? $sharedFamilyLimit : null,
+                'sharedFamilyContributionLimit' => $isSharingMember
+                    ? self::roundMoney($amounts['familyPortionApplied'])
+                    : null,
                 'lastMonthRuleApplied' => $amounts['lastMonthRuleApplied'],
                 'amountAttributableToLastMonthRule' => $attributable,
                 'testingPeriod' => $testingPeriod,
@@ -9785,7 +10108,7 @@ final class Engine
             $diagnostics[] = self::diagnostic(
                 'HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT',
                 DiagnosticSeverity::WARNING,
-                'Prior-year FICA wages exceeded $' . number_format((float) $threshold, 0)
+                'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
                     . '; no catch-up amount was allocated because the supplied plan rules do not permit Roth catch-up contributions.',
                 "accounts.{$account['id']}.planRules.permitsRothCatchUp",
                 'IRC 414(v)(7)',
@@ -9795,7 +10118,7 @@ final class Engine
         $diagnostics[] = self::diagnostic(
             'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
             DiagnosticSeverity::INFO,
-            'Prior-year FICA wages exceeded $' . number_format((float) $threshold, 0)
+            'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
                 . ', so the age-based catch-up is allocated as Roth.',
             "accounts.{$account['id']}",
             'IRC 414(v)(7)',
@@ -10124,7 +10447,7 @@ final class Engine
                 'SIMPLE_ADDITIONAL_NONELECTIVE_CONTRIBUTION_CAPPED',
                 DiagnosticSeverity::WARNING,
                 'The additional SIMPLE nonelective contribution was capped at $'
-                    . number_format($additionalStatutoryMaximum, 0)
+                    . self::localeNumber($additionalStatutoryMaximum)
                     . ', the lesser of the indexed dollar cap and 10% of recognized compensation.',
                 "accounts.{$account['id']}.planRules.simpleAdditionalNonelectiveContribution",
             );
@@ -10311,7 +10634,7 @@ final class Engine
                 $diagnostics[] = self::diagnostic(
                     'PLAN_TERM_DEPENDENT_415C_CAPACITY',
                     DiagnosticSeverity::WARNING,
-                    '$' . number_format($planTermDependentCapacity, 0)
+                    '$' . self::localeNumber($planTermDependentCapacity)
                         . ' of potential annual-additions capacity requires an employer contribution formula or permission for voluntary after-tax contributions.',
                     "accounts.{$account['id']}.planRules",
                 );
@@ -10806,8 +11129,12 @@ final class Engine
      *  @param array<string,array<string,mixed>> $accountsById
      *  @return list<array<string,mixed>>
      */
-    private static function normalizeConversions(array $conversions, array $persons, array $accountsById): array
+    private static function normalizeConversions(mixed $conversionsInput, array $persons, array $accountsById): array
     {
+        $conversions = $conversionsInput === null ? [] : self::toInputList($conversionsInput);
+        if ($conversions === null) {
+            throw new ParameterException('INVALID_CONVERSIONS', 'conversions must be an array.');
+        }
         $ids = [];
         $result = [];
         foreach ($conversions as $index => $input) {
@@ -10817,8 +11144,8 @@ final class Engine
                     "conversions[{$index}] must be an object/associative array.",
                 );
             }
-            $id = trim((string) ($input['id'] ?? ''));
-            if ($id === '') {
+            $id = self::trimmedIdentifier($input['id'] ?? null);
+            if ($id === null) {
                 throw new ParameterException(
                     'CONVERSION_ID_REQUIRED',
                     "conversions[{$index}].id is required.",
@@ -10828,7 +11155,10 @@ final class Engine
                 throw new ParameterException('DUPLICATE_CONVERSION_ID', "Duplicate conversion ID: {$id}");
             }
             $ids[$id] = true;
-            $ownerId = (string) ($input['ownerId'] ?? '');
+            $ownerId = self::trimmedIdentifier($input['ownerId'] ?? null);
+            if ($ownerId === null) {
+                throw new ParameterException('CONVERSION_OWNER_REQUIRED', "conversions[{$index}].ownerId is required.");
+            }
             if (!isset($persons[$ownerId])) {
                 throw new ParameterException(
                     'UNKNOWN_CONVERSION_OWNER',
@@ -10841,10 +11171,18 @@ final class Engine
                     "Conversion {$id} references unknown source account {$input['sourceAccountId']}.",
                 );
             }
+            self::booleanFlag(
+                $input,
+                'otherwiseDistributableAmount',
+                "conversions[{$index}].otherwiseDistributableAmount",
+            );
             $normalized = $input;
             $normalized['id'] = $id;
             $normalized['ownerId'] = $ownerId;
-            $normalized['type'] = self::parseConversionType($input['type'] ?? '');
+            $normalized['type'] = self::parseConversionType(
+                $input['type'] ?? null,
+                array_key_exists('type', $input),
+            );
             $normalized['amount'] = self::money($input['amount'] ?? null, "conversions[{$index}].amount");
             foreach (
                 ['afterTaxBasisInConvertedAmount', 'aggregateIraBasisOverride', 'yearEndAggregateIraValueOverride']
