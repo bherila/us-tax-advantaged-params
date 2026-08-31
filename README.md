@@ -257,12 +257,14 @@ code and the same message for the same bad input.
 | `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
 | `INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD` | A `simpleEmployerContributionMethod` outside `match_3_percent`, `nonelective_2_percent`, `custom` |
 | `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
+| `INVALID_BOOLEAN` | A flag field holding something other than `true` or `false` |
 
 Enum-valued fields in particular are checked rather than compared loosely: a stale or
 camel-cased value such as `"rothFirst"` would otherwise fall through to a different branch
 and return a plausible but wrong allocation. Structured fields are checked for the same
 reason — a scalar where an object belongs used to be ignored in silence, taking every rule
-it carried with it.
+it carried with it. Flag fields must be actual booleans, because JavaScript and PHP
+disagree about the truthiness of `"0"` and of an empty array.
 
 Two shapes are deliberately *not* rejected. A missing `accounts` or `conversions` key, and
 an explicit `null` in its place, both mean an empty list. And a JSON object whose keys are

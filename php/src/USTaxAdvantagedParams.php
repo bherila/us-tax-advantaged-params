@@ -7092,6 +7092,23 @@ final class Engine
         return $trimmed === '' ? null : $trimmed;
     }
 
+    /**
+     * Flag fields must be actual booleans. JavaScript and PHP disagree about the
+     * truthiness of "0" and of an empty array, so coercing one would make the
+     * answer depend on the runtime rather than on the input.
+     *
+     * @param array<string,mixed> $container
+     */
+    private static function booleanFlag(array $container, string $key, string $path): void
+    {
+        if (!array_key_exists($key, $container)) {
+            return;
+        }
+        if (!is_bool($container[$key])) {
+            throw new ParameterException('INVALID_BOOLEAN', "{$path} must be a boolean.");
+        }
+    }
+
     /** Structured input fields must be objects; a scalar in their place is silently ignored otherwise.
      *  @param array<string,mixed> $container
      */
@@ -7558,6 +7575,12 @@ final class Engine
             if (array_key_exists('hsaCoverage', $input)) {
                 self::validateHsaCoverage($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
             }
+            self::booleanFlag(
+                $input,
+                'coveredByEmployerRetirementPlan',
+                "persons[{$index}].coveredByEmployerRetirementPlan",
+            );
+            self::booleanFlag($input, 'livedWithSpouseDuringYear', "persons[{$index}].livedWithSpouseDuringYear");
             $role = $input['role'] ?? ($index === 0 ? 'taxpayer' : ($index === 1 ? 'spouse' : 'other'));
             if (!in_array($role, ['taxpayer', 'spouse', 'other'], true)) {
                 throw new ParameterException(
@@ -7677,6 +7700,19 @@ final class Engine
                 self::rate($rules[$key], "{$path}.{$key}");
             }
         }
+        foreach (
+            [
+                'permitsRothContributions',
+                'permitsRothCatchUp',
+                'permitsAfterTaxEmployeeContributions',
+                'permitsInPlanRothRollover',
+                'simpleEnhancedLimitEligible',
+                'isSelfEmployedOwner',
+                'grandfatheredSarsep',
+            ] as $key
+        ) {
+            self::booleanFlag($rules, $key, "{$path}.{$key}");
+        }
         self::requireInputObject($rules, 'special403bCatchUp', "{$path}.special403bCatchUp");
         self::requireInputObject($rules, 'section457SpecialCatchUp', "{$path}.section457SpecialCatchUp");
         self::requireInputObject($rules, 'hsa', "{$path}.hsa");
@@ -7692,6 +7728,7 @@ final class Engine
         }
         if (isset($rules['special403bCatchUp']) && is_array($rules['special403bCatchUp'])) {
             $special = $rules['special403bCatchUp'];
+            self::booleanFlag($special, 'eligible', "{$path}.special403bCatchUp.eligible");
             $years = $special['yearsOfService'] ?? null;
             if ((!is_int($years) && !is_float($years)) || !is_finite((float) $years) || (float) $years < 0) {
                 throw new ParameterException(
@@ -7703,6 +7740,11 @@ final class Engine
             self::money($special['priorSpecialCatchUpUsed'] ?? null, "{$path}.special403bCatchUp.priorSpecialCatchUpUsed");
         }
         if (isset($rules['section457SpecialCatchUp']) && is_array($rules['section457SpecialCatchUp'])) {
+            self::booleanFlag(
+                $rules['section457SpecialCatchUp'],
+                'eligible',
+                "{$path}.section457SpecialCatchUp.eligible",
+            );
             self::money(
                 $rules['section457SpecialCatchUp']['unusedDeferralsFromPriorYears'] ?? null,
                 "{$path}.section457SpecialCatchUp.unusedDeferralsFromPriorYears",
@@ -7825,6 +7867,13 @@ final class Engine
     private static function validateHsaRules(array $rules, string $path): void
     {
         self::validateHsaCoverage($rules, $path);
+        self::booleanFlag($rules, 'useLastMonthRule', "{$path}.useLastMonthRule");
+        self::booleanFlag($rules, 'testingPeriodSatisfied', "{$path}.testingPeriodSatisfied");
+        self::booleanFlag(
+            $rules,
+            'testingPeriodFailureByDeathOrDisability',
+            "{$path}.testingPeriodFailureByDeathOrDisability",
+        );
         if (array_key_exists('familyLimitShare', $rules)) {
             self::rate($rules['familyLimitShare'], "{$path}.familyLimitShare");
         }
@@ -11122,6 +11171,11 @@ final class Engine
                     "Conversion {$id} references unknown source account {$input['sourceAccountId']}.",
                 );
             }
+            self::booleanFlag(
+                $input,
+                'otherwiseDistributableAmount',
+                "conversions[{$index}].otherwiseDistributableAmount",
+            );
             $normalized = $input;
             $normalized['id'] = $id;
             $normalized['ownerId'] = $ownerId;

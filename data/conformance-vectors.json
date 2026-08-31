@@ -3004,6 +3004,31 @@
         "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY",
         "accounts.0.diagnostics.0.message": "$17,377.5 of potential annual-additions capacity requires an employer contribution formula or permission for voluntary after-tax contributions."
       }
+    },
+    {
+      "name": "flag field that is not a boolean is rejected",
+      "description": "The string \"0\" is truthy in JavaScript and falsy in PHP, so coercing it made a 1980 traditional IRA ineligible in one engine and determinate in the other from the same input. Flag fields must be actual booleans; an empty array is the same trap.",
+      "input": {
+        "taxYear": 1980,
+        "filingStatus": "HOH",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1940,
+            "coveredByEmployerRetirementPlan": "0"
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_BOOLEAN"
+      }
     }
   ]
 }

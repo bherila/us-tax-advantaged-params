@@ -6873,6 +6873,18 @@ function trimmedIdentifier(value: unknown): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+/**
+ * Flag fields must be actual booleans. JavaScript and PHP disagree about the
+ * truthiness of `"0"` and of an empty array, so coercing one would make the
+ * answer depend on the runtime rather than on the input.
+ */
+function booleanFlag(value: unknown, path: string): void {
+  if (value === undefined) return;
+  if (typeof value !== "boolean") {
+    throw new ParameterError("INVALID_BOOLEAN", `${path} must be a boolean.`);
+  }
+}
+
 /** Structured input fields must be objects; a scalar in their place is silently ignored otherwise. */
 function requireInputObject(value: unknown, path: string): void {
   if (value === undefined) return;
@@ -7286,6 +7298,8 @@ function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPe
     if (input.hsaCoverage !== undefined) {
       validateHsaCoverage(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     }
+    booleanFlag(input.coveredByEmployerRetirementPlan, `persons[${index}].coveredByEmployerRetirementPlan`);
+    booleanFlag(input.livedWithSpouseDuringYear, `persons[${index}].livedWithSpouseDuringYear`);
     const role = input.role ?? (index === 0 ? "taxpayer" : index === 1 ? "spouse" : "other");
     if (role !== "taxpayer" && role !== "spouse" && role !== "other") {
       throw new ParameterError(
@@ -7388,6 +7402,13 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   rate(rules.employerMatchRate, `${path}.employerMatchRate`);
   rate(rules.employerMatchCompensationFraction, `${path}.employerMatchCompensationFraction`);
   rate(rules.employerNonelectiveRate, `${path}.employerNonelectiveRate`);
+  booleanFlag(rules.permitsRothContributions, `${path}.permitsRothContributions`);
+  booleanFlag(rules.permitsRothCatchUp, `${path}.permitsRothCatchUp`);
+  booleanFlag(rules.permitsAfterTaxEmployeeContributions, `${path}.permitsAfterTaxEmployeeContributions`);
+  booleanFlag(rules.permitsInPlanRothRollover, `${path}.permitsInPlanRothRollover`);
+  booleanFlag(rules.simpleEnhancedLimitEligible, `${path}.simpleEnhancedLimitEligible`);
+  booleanFlag(rules.isSelfEmployedOwner, `${path}.isSelfEmployedOwner`);
+  booleanFlag(rules.grandfatheredSarsep, `${path}.grandfatheredSarsep`);
   requireInputObject(rules.special403bCatchUp, `${path}.special403bCatchUp`);
   requireInputObject(rules.section457SpecialCatchUp, `${path}.section457SpecialCatchUp`);
   requireInputObject(rules.hsa, `${path}.hsa`);
@@ -7402,6 +7423,7 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   }
   if (rules.special403bCatchUp) {
     const special = rules.special403bCatchUp;
+    booleanFlag(special.eligible, `${path}.special403bCatchUp.eligible`);
     if (!Number.isFinite(special.yearsOfService) || special.yearsOfService < 0) {
       throw new ParameterError("INVALID_YEARS_OF_SERVICE", `${path}.special403bCatchUp.yearsOfService is invalid.`);
     }
@@ -7409,6 +7431,7 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
     money(special.priorSpecialCatchUpUsed, `${path}.special403bCatchUp.priorSpecialCatchUpUsed`);
   }
   if (rules.section457SpecialCatchUp) {
+    booleanFlag(rules.section457SpecialCatchUp.eligible, `${path}.section457SpecialCatchUp.eligible`);
     money(
       rules.section457SpecialCatchUp.unusedDeferralsFromPriorYears,
       `${path}.section457SpecialCatchUp.unusedDeferralsFromPriorYears`,
@@ -7515,6 +7538,12 @@ function validateHsaCoverage(rules: HsaCoverageInput, path: string): void {
 
 function validateHsaRules(rules: HsaRulesInput, path: string): void {
   validateHsaCoverage(rules, path);
+  booleanFlag(rules.useLastMonthRule, `${path}.useLastMonthRule`);
+  booleanFlag(rules.testingPeriodSatisfied, `${path}.testingPeriodSatisfied`);
+  booleanFlag(
+    rules.testingPeriodFailureByDeathOrDisability,
+    `${path}.testingPeriodFailureByDeathOrDisability`,
+  );
   if (rules.familyLimitShare !== undefined) {
     rate(rules.familyLimitShare, `${path}.familyLimitShare`);
   }
@@ -10312,6 +10341,7 @@ function normalizeConversions(
         `Conversion ${id} references unknown source account ${input.sourceAccountId}.`,
       );
     }
+    booleanFlag(input.otherwiseDistributableAmount, `conversions[${index}].otherwiseDistributableAmount`);
     return {
       ...input,
       id,
