@@ -900,6 +900,18 @@ private const PARAMETER_JSON = <<<'JSON'
       "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
       "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
       "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "irs-pub-571-2001",
+      "title": "IRS Publication 571 (2001), Tax-Sheltered Annuity Plans (403(b) Plans), maximum exclusion allowance and maximum amount contributable",
+      "url": "https://www.irs.gov/pub/irs-prior/p571--2001.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "pl-107-16",
+      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
+      "authority": "U.S. Congress"
     }
   ],
   "years": {
@@ -925,6 +937,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1006,6 +1019,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1087,6 +1101,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1168,6 +1183,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1249,6 +1265,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1330,6 +1347,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1411,6 +1429,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1492,6 +1511,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1573,6 +1593,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1654,6 +1675,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1735,6 +1757,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1816,6 +1839,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1897,6 +1921,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2000,6 +2025,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2103,6 +2129,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2206,6 +2233,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2309,6 +2337,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2412,6 +2441,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2515,6 +2545,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2618,6 +2649,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2721,6 +2753,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2824,6 +2857,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2927,6 +2961,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3030,6 +3065,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3146,6 +3182,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3262,6 +3299,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3378,6 +3416,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 35000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3494,6 +3533,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3610,6 +3650,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3726,6 +3767,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 41000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3842,6 +3884,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 42000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3958,6 +4001,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 44000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4074,6 +4118,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 45000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4190,6 +4235,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 46000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4306,6 +4352,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": 195000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4422,6 +4469,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": 195000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4538,6 +4586,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4654,6 +4703,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4770,6 +4820,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 51000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
+      "definedBenefitAnnualBenefit415b": 205000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4886,6 +4937,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 52000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5002,6 +5054,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5118,6 +5171,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5234,6 +5288,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 54000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
+      "definedBenefitAnnualBenefit415b": 215000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5350,6 +5405,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 55000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
+      "definedBenefitAnnualBenefit415b": 220000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5466,6 +5522,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 56000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
+      "definedBenefitAnnualBenefit415b": 225000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5582,6 +5639,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 57000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
+      "definedBenefitAnnualBenefit415b": 230000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5698,6 +5756,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 58000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
+      "definedBenefitAnnualBenefit415b": 230000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5814,6 +5873,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 61000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
+      "definedBenefitAnnualBenefit415b": 245000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5930,6 +5990,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 66000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
+      "definedBenefitAnnualBenefit415b": 265000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6046,6 +6107,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 69000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
+      "definedBenefitAnnualBenefit415b": 275000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6162,6 +6224,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 70000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
+      "definedBenefitAnnualBenefit415b": 280000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6278,6 +6341,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 72000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
+      "definedBenefitAnnualBenefit415b": 290000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -8108,6 +8172,9 @@ final class Engine
             }
             if (isset($outcome['hsaDetail'])) {
                 $result['hsa'] = $outcome['hsaDetail'];
+            }
+            if (isset($outcome['definedBenefitDetail'])) {
+                $result['definedBenefit'] = $outcome['definedBenefitDetail'];
             }
             if (isset($outcome['healthFsaDetail'])) {
                 $result['healthFsa'] = $outcome['healthFsaDetail'];
@@ -12623,7 +12690,7 @@ final class Engine
             'qualified_elective' => self::allocateQualifiedElective($context, $account, $traits),
             'section457' => self::allocateSection457($context, $account, $traits),
             'annual_additions_only' => self::allocateAnnualAdditionsOnly($context, $account, $traits),
-            'defined_benefit' => self::allocateDefinedBenefit($account),
+            'defined_benefit' => self::allocateDefinedBenefit($context, $account),
             'section457f' => self::allocateSection457f($account),
             'hsa' => self::allocateHsa($context, $account),
             'health_fsa' => self::allocateHealthFsa($context, $account),
@@ -13484,6 +13551,46 @@ final class Engine
                 'diagnostics' => $diagnostics,
             ];
         }
+        // IRC 403(b)(2) capped the amount excludable from a tax-sheltered annuity
+        // at the exclusion allowance, a third ceiling standing beside IRC 415(c)
+        // and IRC 402(g) rather than behind them: IRS Publication 571 (2001)
+        // chapter 5 computes the maximum amount contributable as the *least* of
+        // the three. The allowance was 20 percent of includible compensation for
+        // the most recent year of service, multiplied by years of service,
+        // reduced by amounts previously excludable. That last term is a lifetime
+        // aggregate across the participant's service with the employer, and
+        // nothing in the scenario input supplies it, so the exclusion allowance
+        // cannot be computed and the least of the three cannot be identified.
+        // Returning the lesser of IRC 415(c) and IRC 402(g) would state a ceiling
+        // that the omitted third term can only lower.
+        //
+        // EGTRRA (Pub. L. 107-16) section 632(a)(2)(B) struck IRC 403(b)(2) and
+        // section 632(a)(3)(E) struck IRC 415(c)(4), whose elections could change
+        // which limit bound; section 632(a)(4) applies both "to years beginning
+        // after December 31, 2001". 2001 is therefore the last year the allowance
+        // governs. The test reads as "<= 2001" because that is the statutory
+        // boundary; years before 1987 never reach it, having already returned
+        // above with no encoded IRC 415(c) limit at all.
+        if (!empty($traits['is403b']) && $context['taxYear'] <= 2001) {
+            $diagnostics[] = self::diagnostic(
+                'PRE_2002_403B_EXCLUSION_ALLOWANCE_NOT_APPLIED',
+                DiagnosticSeverity::ERROR,
+                "For {$context['taxYear']}, IRC 403(b)(2) limited the amount excludable from gross income to the exclusion allowance \u{2014} 20 percent of includible compensation for the most recent year of service, multiplied by years of service, reduced by amounts previously excludable \u{2014} and the excludable maximum was the least of that allowance, the IRC 415(c) annual-additions limit, and the IRC 402(g) elective-deferral limit. Amounts previously excludable are a lifetime figure this package does not hold, and the IRC 415(c)(4) alternative elections could change which limit binds, so no universal maximum can be stated. EGTRRA (Pub. L. 107-16) section 632 repealed both for years beginning after December 31, 2001.",
+                "accounts.{$account['id']}",
+                'IRC 403(b)(2), 415(c)(4) (as in effect before Pub. L. 107-16 section 632)',
+            );
+            self::reportPoolWithoutConsuming($context['annualAdditionsPools'][$groupId], $sharedLimits);
+
+            return [
+                'status' => CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => null,
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+            ];
+        }
         $deferral = self::allocateBaseAndCatchUp(
             $context,
             $account,
@@ -14047,12 +14154,14 @@ final class Engine
         ];
     }
 
-    /** @param array<string,mixed> $account
+    /** @param array<string,mixed> $context
+     *  @param array<string,mixed> $account
      *  @return array<string,mixed>
      */
-    private static function allocateDefinedBenefit(array $account): array
+    private static function allocateDefinedBenefit(array $context, array $account): array
     {
-        return self::emptyOutcome($account, CalculationStatus::INDETERMINATE->value, null, [
+        $annualBenefitLimit = $context['parameters']['definedBenefitAnnualBenefit415b'] ?? null;
+        $diagnostics = [
             self::diagnostic(
                 'DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION',
                 DiagnosticSeverity::ERROR,
@@ -14060,7 +14169,24 @@ final class Engine
                 "accounts.{$account['id']}",
                 'IRC 404, 412, 415(b); ERISA funding rules',
             ),
-        ]);
+        ];
+        if ($annualBenefitLimit !== null) {
+            $annualBenefitLimit = (float) $annualBenefitLimit;
+            $diagnostics[] = self::diagnostic(
+                'DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED',
+                DiagnosticSeverity::INFO,
+                'The IRC 415(b)(1)(A) limitation on the annual benefit for ' . $context['taxYear']
+                    . ' is $' . self::localeNumber($annualBenefitLimit)
+                    . '. It caps the benefit the plan may pay, stated as a straight life annuity beginning between ages 62 and 65, and is neither a contribution ceiling nor a funding figure.'
+                    . ' IRC 415(b)(2) adjusts it for another benefit form or starting age and IRC 415(b)(5) reduces it for fewer than ten years; neither adjustment is applied here.',
+                "accounts.{$account['id']}",
+                'IRC 415(b)(1)(A), 415(d)',
+            );
+        }
+        $outcome = self::emptyOutcome($account, CalculationStatus::INDETERMINATE->value, null, $diagnostics);
+        $outcome['definedBenefitDetail'] = ['annualBenefitLimit' => $annualBenefitLimit];
+
+        return $outcome;
     }
 
     /** @param array<string,mixed> $account

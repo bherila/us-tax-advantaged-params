@@ -113,6 +113,19 @@ if (parameters) {
     if (row && row.annualAdditions415c !== null && row.annualAdditions415c <= 0) {
       fail(`Year ${year} has an invalid annualAdditions415c value.`);
     }
+    // IRC 415(b)(1)(A) is a defined-benefit *benefit* ceiling, so it is
+    // independent of every defined-contribution figure and cannot be range
+    // checked against one. Null means no figure is transcribed for the year;
+    // anything else must be a real published whole-dollar amount, because a
+    // zero or a fraction here would be an invented limit rather than an absent
+    // one.
+    if (row && !(row.definedBenefitAnnualBenefit415b === null
+      || (Number.isInteger(row.definedBenefitAnnualBenefit415b) && row.definedBenefitAnnualBenefit415b > 0))) {
+      fail(`Year ${year} definedBenefitAnnualBenefit415b must be null or a positive whole-dollar amount.`);
+    }
+    if (row && !("definedBenefitAnnualBenefit415b" in row)) {
+      fail(`Year ${year} definedBenefitAnnualBenefit415b is required; use null where no figure is transcribed.`);
+    }
     for (const [field, value] of Object.entries(row?.special403b15YearCatchUp ?? {})) {
       requirePositiveAmount(value, `Year ${year} special403b15YearCatchUp.${field}`);
     }

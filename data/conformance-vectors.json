@@ -6128,6 +6128,209 @@
         "totals.hsaContribution": 4400,
         "totals.dependentCareAssistanceExclusion": 7500
       }
+    },
+    {
+      "name": "2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit",
+      "description": "Notice 2025-67 states that effective January 1, 2026 'the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from ,000 to ,000', so the 2026 annual benefit limit is ,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "db",
+            "ownerId": "t",
+            "type": "defined_benefit_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 290000,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 290000
+      }
+    },
+    {
+      "name": "a cash balance plan in a year with no transcribed IRC 415(b)(1)(A) figure reports no annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. IRC 415(b)(1)(A) is adjusted annually under IRC 415(d), but this package encodes only the figures transcribed from the notices committed under evidence/retirement-limits, and no dbAnnualBenefit_415b1A figure is recorded there for 2012. SOURCES.md forbids reusing a prior year published amount or inflation-extrapolating an unrecorded one, so the limit is reported as null rather than carried forward from the 195000 recorded for 2010 or interpolated toward the 205000 recorded for 2013. Absence of the figure is also not a reason to add a claim: the actuarial-valuation diagnostic is still the first diagnostic on the account, because no benefit-limit diagnostic is issued where there is no published amount to state.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "cb",
+            "ownerId": "t",
+            "type": "cash_balance_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": null,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "parameters.definedBenefitAnnualBenefit415b": null
+      }
+    },
+    {
+      "name": "2001 403(b) is indeterminate because the IRC 403(b)(2) exclusion allowance still governs",
+      "description": "Before EGTRRA, IRC 403(b)(2) capped the amount excludable from a tax-sheltered annuity at the exclusion allowance, and IRS Publication 571 (2001) chapter 5 computes the maximum amount contributable as the LEAST of that allowance, the IRC 415(c) limit on annual additions and the IRC 402(g) limit on elective deferrals. The allowance is 20 percent of includible compensation for the most recent year of service, multiplied by years of service, reduced by amounts previously excludable; that last term is a lifetime aggregate over the participant service with the employer and no ScenarioInput field supplies it. With the allowance unknown, the least of three cannot be identified, so no universal maximum exists and both the statutory maximum and the input-supported maximum are null rather than the 13500 the other two limits alone would produce (IRC 402(g) 10500 for 2001 plus the IRC 402(g)(7)(A)(i) 15-year catch-up of 3000). SOURCES.md already states this policy for legacy 403(b) exclusion allowances; before this vector the engines contradicted it. The IRC 415(c) pool is still reported without being consumed, and its limit is the lesser of the 35000 dollar amount and the 25 percent of 80000 compensation that IRC 415(c)(1)(B) then imposed, which is 20000. 2001 is the last governed year: EGTRRA (Pub. L. 107-16) section 632(a)(2)(B) struck IRC 403(b)(2), section 632(a)(3)(E) struck the IRC 415(c)(4) elections, and section 632(a)(4) applies both to years beginning after December 31, 2001.",
+      "input": {
+        "taxYear": 2001,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "p",
+            "birthYear": 1960,
+            "w2Compensation": 80000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "p",
+            "type": "403b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 80000,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 20
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.planTermDependentCapacity": 0,
+        "accounts.0.diagnostics.0.code": "PRE_2002_403B_EXCLUSION_ALLOWANCE_NOT_APPLIED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": 20000
+      }
+    },
+    {
+      "name": "2002 403(b) is determinable because EGTRRA repealed the exclusion allowance",
+      "description": "EGTRRA (Pub. L. 107-16) section 632(a)(2)(A) replaced the words \"the exclusion allowance for such taxable year\" in IRC 403(b)(1) with \"the applicable limit under section 415\", section 632(a)(2)(B) struck IRC 403(b)(2) outright, section 632(a)(3)(E) struck IRC 415(c)(4), and section 632(a)(4) applies all of them to years beginning after December 31, 2001. From 2002 the excludable amount is bounded by IRC 415 and IRC 402(g) alone, both of which this package encodes, so the account is answerable. Section 611(b)(1) raised the IRC 415(c)(1)(A) dollar amount from 30000 to 40000 and section 632(a)(1) replaced the 25 percent of compensation in IRC 415(c)(1)(B) with 100 percent, so on 80000 of compensation the annual-additions ceiling is 40000. Section 611(d) set the IRC 402(g) applicable dollar amount for taxable years beginning in 2002 at 11000, and IRC 402(g)(7)(A)(i) adds 3000 of 15-year catch-up for an employee with 20 years of service, whose 15000 lifetime cap and 5000-per-year service cap are both unreached, giving an employee-supported maximum of 14000. The remaining 26000 of annual-additions space needs an employer formula or after-tax permission, which is a plan term rather than a statutory unknown, so the status is determinate_with_assumptions and not indeterminate. This is the far side of the boundary the previous vector pins.",
+      "input": {
+        "taxYear": 2002,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "p",
+            "birthYear": 1960,
+            "w2Compensation": 80000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "p",
+            "type": "403b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 80000,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 20
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 40000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 14000,
+        "accounts.0.planTermDependentCapacity": 26000,
+        "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY"
+      }
+    },
+    {
+      "name": "1986 403(b) still reports the missing IRC 415(c) limit rather than the exclusion allowance",
+      "description": "IRC 403(b)(2) governed 1986 as much as it governed 2001, but the package encodes no universal IRC 415(c) annual-additions limit before 1987, so the more fundamental gap is reported first and the account returns HISTORICAL_415C_LIMIT_INDETERMINATE with a null annual-additions pool limit. Both diagnoses reach the same answer of indeterminate and a null maximum, and stating the more specific missing figure is more useful than stating the exclusion allowance on top of it. This pins the ordering: the exclusion-allowance check sits after the IRC 415(c) check, so 1986 keeps the diagnostic it always had and the pre-2002 window observably begins at 1987.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "p",
+            "birthYear": 1960,
+            "w2Compensation": 80000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "p",
+            "type": "403b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 80000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.diagnostics.0.code": "HISTORICAL_415C_LIMIT_INDETERMINATE",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "2001 401(k) is unaffected by the IRC 403(b)(2) exclusion allowance",
+      "description": "The exclusion allowance was a term of IRC 403(b) and reached tax-sheltered annuities only; a qualified cash or deferred arrangement under IRC 401(k) was never subject to it. A 2001 401(k) on the same facts therefore stays answerable: IRC 415(c) is the lesser of the 35000 dollar amount and the 25 percent of 80000 compensation then required by IRC 415(c)(1)(B), which is 20000, and the IRC 402(g) limit for 2001 is 10500, with no age-50 catch-up because IRC 414(v) was added by EGTRRA section 631 only for years beginning after December 31, 2001 and the participant is 41 in any event. The 9500 balance of annual-additions space rests on an unknown employer formula. Pinning the control case is the point: the exclusion-allowance downgrade is scoped by account type, and a check written against the tax year alone would wrongly swallow every pre-2002 elective plan.",
+      "input": {
+        "taxYear": 2001,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "p",
+            "birthYear": 1960,
+            "w2Compensation": 80000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "p",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 80000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 20000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 10500,
+        "accounts.0.planTermDependentCapacity": 9500,
+        "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY"
+      }
     }
   ]
 }
