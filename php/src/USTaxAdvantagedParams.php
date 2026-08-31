@@ -222,6 +222,45 @@ final class PersonBuilder
         return $this;
     }
 
+    /**
+     * IRC 223(c)(2) coverage this person held, with an optional list of eligible
+     * months (1-12). Needed on a spouse who owns no health savings account,
+     * because IRC 223(b)(5)(A) reads the couple's coverage, not their accounts.
+     *
+     * @param list<int>|null $eligibleMonths
+     */
+    public function hsaCoverage(string $tier, ?array $eligibleMonths = null): self
+    {
+        $this->value['hsaCoverage']['coverageTier'] = $tier;
+        if ($eligibleMonths !== null) {
+            $this->value['hsaCoverage']['eligibleMonths'] = array_values($eligibleMonths);
+        }
+        return $this;
+    }
+
+    /** IRC 223(b)(2) per-month coverage for this person, for a year in which the tier changes.
+     *  @param list<array{month:int,coverage:string}> $coverage
+     */
+    public function hsaMonthlyCoverage(array $coverage): self
+    {
+        $this->value['hsaCoverage']['monthlyCoverage'] = array_values($coverage);
+        return $this;
+    }
+
+    /** Records that this person held no high deductible health plan coverage in any month. */
+    public function noHsaCoverage(): self
+    {
+        $this->value['hsaCoverage'] = [];
+        return $this;
+    }
+
+    /** The person's plan annual deductible, which IRC 223(b)(5)(A) reads for 2004-2006. */
+    public function hsaHdhpAnnualDeductible(float|int $amount): self
+    {
+        $this->value['hsaCoverage']['hdhpAnnualDeductible'] = $amount;
+        return $this;
+    }
+
     /** @return array<string,mixed> */
     public function build(): array
     {
@@ -7426,6 +7465,15 @@ final class Engine
                     "persons[{$index}].priorYearFicaWagesByEmployer.{$employerId}",
                 );
             }
+            if (array_key_exists('hsaCoverage', $input)) {
+                if (!is_array($input['hsaCoverage'])) {
+                    throw new ParameterException(
+                        'INVALID_HSA_COVERAGE_INPUT',
+                        "persons[{$index}].hsaCoverage must be an object.",
+                    );
+                }
+                self::validateHsaCoverage($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
+            }
             $role = $input['role'] ?? ($index === 0 ? 'taxpayer' : ($index === 1 ? 'spouse' : 'other'));
             if (!in_array($role, ['taxpayer', 'spouse', 'other'], true)) {
                 throw new ParameterException(
@@ -7600,7 +7648,7 @@ final class Engine
     }
 
     /** @param array<string,mixed> $rules */
-    private static function validateHsaRules(array $rules, string $path): void
+    private static function validateHsaCoverage(array $rules, string $path): void
     {
         $hasMonthly = array_key_exists('monthlyCoverage', $rules);
         $hasTierForm = array_key_exists('coverageTier', $rules) || array_key_exists('eligibleMonths', $rules);
@@ -7662,6 +7710,12 @@ final class Engine
             }
         }
         self::money($rules['hdhpAnnualDeductible'] ?? null, "{$path}.hdhpAnnualDeductible");
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateHsaRules(array $rules, string $path): void
+    {
+        self::validateHsaCoverage($rules, $path);
         if (array_key_exists('familyLimitShare', $rules)) {
             self::rate($rules['familyLimitShare'], "{$path}.familyLimitShare");
         }
@@ -8375,6 +8429,23 @@ final class Engine
         return (string) json_encode($value);
     }
 
+    /**
+     * The four IRC 223(c)(2) coverage fields, in a stable order, so coverage
+     * stated on a person can be compared with coverage stated on that person's
+     * account.
+     *
+     * @param array<string,mixed> $coverage
+     */
+    private static function hsaCoverageSignature(array $coverage): string
+    {
+        return (string) json_encode([
+            $coverage['coverageTier'] ?? null,
+            $coverage['eligibleMonths'] ?? null,
+            $coverage['monthlyCoverage'] ?? null,
+            $coverage['hdhpAnnualDeductible'] ?? null,
+        ]);
+    }
+
     /** Twelve coverage slots, or null when no coverage facts were supplied at all.
      *  @param array<string,mixed> $rules
      *  @return list<string|null>|null
@@ -8501,10 +8572,14 @@ final class Engine
                     $conflict = true;
                 }
             }
+            $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'rules' => $rules,
                 'conflict' => $conflict,
+                'personConflict' => $rules !== null
+                    && is_array($declared)
+                    && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared),
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
         }
@@ -8516,11 +8591,39 @@ final class Engine
                 $coupleMembersWithAccounts[] = $personId;
             }
         }
+
+        /*
+         * IRC 223(b)(5)(A) turns on whether *either spouse* has family coverage,
+         * not on whether either spouse owns a health savings account. Coverage is
+         * therefore read from the person: from planRules.hsa where that spouse has
+         * an HSA, and from persons[].hsaCoverage where they do not.
+         */
+        $coupleCoverage = [];
+        foreach ($couple ?? [] as $personId) {
+            if (isset($facts[$personId]) && $facts[$personId]['rules'] !== null) {
+                $coupleCoverage[$personId] = [
+                    'supplied' => true,
+                    'months' => $facts[$personId]['months'],
+                    'hdhpAnnualDeductible' => $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null,
+                ];
+                continue;
+            }
+            $declared = $context['persons'][$personId]['hsaCoverage'] ?? null;
+            $coupleCoverage[$personId] = is_array($declared)
+                ? [
+                    'supplied' => true,
+                    'months' => self::resolveHsaMonths($declared)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                    'hdhpAnnualDeductible' => $declared['hdhpAnnualDeductible'] ?? null,
+                ]
+                : ['supplied' => false, 'months' => null, 'hdhpAnnualDeductible' => null];
+        }
+
         $familyMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
             $any = false;
-            foreach ($coupleMembersWithAccounts as $personId) {
-                if (($facts[$personId]['months'][$month - 1] ?? null) === 'family') {
+            foreach ($couple ?? [] as $personId) {
+                if (($coupleCoverage[$personId]['months'][$month - 1] ?? null) === 'family') {
                     $any = true;
                 }
             }
@@ -8552,8 +8655,8 @@ final class Engine
          * limitation by the deductible.
          */
         $coupleDeductibles = [];
-        foreach ($coupleMembersWithAccounts as $personId) {
-            $value = $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null;
+        foreach ($couple ?? [] as $personId) {
+            $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
             if ($value !== null) {
                 $coupleDeductibles[] = (float) $value;
             }
@@ -8578,6 +8681,18 @@ final class Engine
                     'IRC 223(b)',
                 );
             }
+            if ($owner['personConflict']) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'This person\'s persons[].hsaCoverage and their health savings account\'s planRules.hsa state '
+                        . 'different IRC 223(c)(2) coverage. Coverage is one fact about the person, so the two must be '
+                        . 'identical; persons[].hsaCoverage exists for a spouse who owns no HSA.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)',
+                );
+            }
             if ($owner['rules'] === null || $owner['months'] === null) {
                 $indeterminate = true;
                 $diagnostics[] = self::diagnostic(
@@ -8592,6 +8707,46 @@ final class Engine
             }
 
             $months = $owner['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+
+            /*
+             * IRC 223(b)(5)(A) can only lower a self-only month, so the other
+             * spouse's coverage is needed exactly when this owner has one. Without
+             * it the answer is genuinely unknown - self-only for the whole year is
+             * $4,400 for 2026, but a spouse's family coverage makes it a divided
+             * family limit instead - and answering with either number is a guess.
+             */
+            $marriedFiler = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
+                || $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+            $otherSpouseId = null;
+            foreach ($couple ?? [] as $personId) {
+                if ($personId !== $ownerId) {
+                    $otherSpouseId = $personId;
+                }
+            }
+            $ownerIsSpouseOfCouple = $couple !== null && in_array($ownerId, $couple, true);
+            $spouseCoverageSupplied = $otherSpouseId !== null
+                && ($coupleCoverage[$otherSpouseId]['supplied'] ?? false);
+            $ownerHasSelfOnlyMonth = in_array('self_only', $months, true);
+            if (
+                $marriedFiler
+                && ($ownerIsSpouseOfCouple || ($person['role'] ?? null) === 'taxpayer' || ($person['role'] ?? null) === 'spouse')
+                && !$spouseCoverageSupplied
+                && $ownerHasSelfOnlyMonth
+            ) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of '
+                        . 'them has it, whether or not that spouse owns a health savings account. This owner has at '
+                        . 'least one self-only month, so the other spouse\'s coverage changes the answer and is not '
+                        . 'supplied. State it on that spouse\'s persons[].hsaCoverage — an empty object records that '
+                        . 'the spouse held no high deductible health plan coverage.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(5)(A)',
+                );
+            }
+
             $eligibleMonthCount = 0;
             foreach ($months as $tier) {
                 if ($tier !== null) {

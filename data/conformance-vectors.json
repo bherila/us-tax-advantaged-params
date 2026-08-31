@@ -2443,6 +2443,125 @@
       "expectDiagnosticCodes": [
         "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED"
       ]
+    },
+    {
+      "name": "2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months",
+      "description": "IRC 223(b)(5)(A) applies when \"either spouse\" has family coverage; it does not ask whether that spouse owns a health savings account, so persons[].hsaCoverage carries the fact. The spouse has family coverage for all twelve months, so the taxpayer's twelve self-only months are treated as family months. Rev. Proc. 2025-19 sets the 2026 family amount at 8750, so IRC 223(b)(2)(B) gives 12 x (8750/12) = 8750. Only the taxpayer has an HSA, so the IRC 223(b)(5)(B)(ii) division allocates the single family limit to it in full.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.hsa.coverageTierByMonth.0": "family",
+        "accounts.0.hsa.familyLimitShare": 1,
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
+        "HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 unstated spouse coverage leaves a self-only HSA limit indeterminate",
+      "description": "The same scenario with the spouse's coverage unstated. IRC 223(b)(5)(A) makes the answer depend on a fact the input does not carry: family coverage held by the spouse yields 8750 and no family coverage yields the IRC 223(b)(2)(A) self-only figure of 12 x (4400/12) = 4400. The engine calculates statutory parameters from caller-supplied facts, so an unsupplied fact that changes the answer is indeterminate rather than assumed away.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 spouse without high deductible coverage leaves the self-only HSA limit intact",
+      "description": "An empty persons[].hsaCoverage records that the spouse held no high deductible health plan coverage in any month, so IRC 223(b)(5)(A) has nothing to recharacterize. The taxpayer's twelve self-only months give 12 x (4400/12) = 4400 under IRC 223(b)(2)(A) with the 2026 self-only amount from Rev. Proc. 2025-19, and no family limit is shared.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 4400
+      }
     }
   ]
 }

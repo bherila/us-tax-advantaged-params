@@ -144,6 +144,16 @@ export interface PersonInput {
   yearEndTraditionalSepSimpleIraValue?: Money;
   /** Other current-year distributions included in the Form 8606 denominator. */
   otherTraditionalSepSimpleIraDistributions?: Money;
+  /**
+   * IRC 223(c)(2) coverage held by this person, whether or not they own a
+   * health savings account. IRC 223(b)(5)(A) turns on whether *either spouse*
+   * has family coverage, so a spouse's coverage changes the other spouse's
+   * limitation even when that spouse has no HSA. Supplying the key at all
+   * declares the fact known; an empty object states that this person held no
+   * high deductible health plan coverage in any month. Where the person does
+   * own an HSA, `planRules.hsa` carries the same facts and the two must agree.
+   */
+  hsaCoverage?: HsaCoverageInput;
 }
 
 export interface ExistingContributionInput {
@@ -189,21 +199,33 @@ export interface HsaMonthlyCoverageInput {
 }
 
 /**
- * IRC 223 facts about one owner's HSA eligibility. Whether a person is an
- * "eligible individual" under IRC 223(c)(1) — high deductible health plan
- * coverage, absence of disqualifying other coverage, Medicare entitlement under
- * IRC 223(b)(7), and the IRC 223(b)(6) dependent denial — is supplied by the
- * caller through the month list, not derived by this engine.
+ * IRC 223(c)(2) high deductible health plan coverage held by one *person*.
+ * These are facts about the individual, not about any account, which is why the
+ * same shape is reachable both from an HSA's `planRules.hsa` and from
+ * `persons[].hsaCoverage` for a spouse who owns no HSA of their own.
+ *
+ * Whether a person is an "eligible individual" under IRC 223(c)(1) — high
+ * deductible health plan coverage, absence of disqualifying other coverage,
+ * Medicare entitlement under IRC 223(b)(7), and the IRC 223(b)(6) dependent
+ * denial — is supplied by the caller through the month list, not derived by
+ * this engine.
  */
-export interface HsaRulesInput {
+export interface HsaCoverageInput {
   /** Coverage tier for every eligible month when the tier does not change. */
   coverageTier?: HsaCoverageTier;
-  /** Months (1-12) on whose first day the owner was an eligible individual. Defaults to all twelve. */
+  /** Months (1-12) on whose first day the person was an eligible individual. Defaults to all twelve. */
   eligibleMonths?: number[];
   /** Per-month coverage when the tier changes during the year. Mutually exclusive with the two fields above. */
   monthlyCoverage?: HsaMonthlyCoverageInput[];
   /** The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by it. */
   hdhpAnnualDeductible?: Money;
+}
+
+/**
+ * IRC 223 facts about one owner's HSA: that person's coverage, plus the
+ * elections and agreements that belong to the account rather than the person.
+ */
+export interface HsaRulesInput extends HsaCoverageInput {
   /** Elect the IRC 223(b)(8) last-month rule. Requires eligibility in December. */
   useLastMonthRule?: boolean;
   /** Whether the IRC 223(b)(8)(B)(iii) testing period was, or will be, satisfied. Omitted means unresolved. */
@@ -7176,6 +7198,15 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
     for (const [employerId, amount] of Object.entries(input.priorYearFicaWagesByEmployer ?? {})) {
       wages[employerId] = money(amount, `persons[${index}].priorYearFicaWagesByEmployer.${employerId}`);
     }
+    if (input.hsaCoverage !== undefined) {
+      if (input.hsaCoverage === null || typeof input.hsaCoverage !== "object") {
+        throw new ParameterError(
+          "INVALID_HSA_COVERAGE_INPUT",
+          `persons[${index}].hsaCoverage must be an object.`,
+        );
+      }
+      validateHsaCoverage(input.hsaCoverage, `persons[${index}].hsaCoverage`);
+    }
     const role = input.role ?? (index === 0 ? "taxpayer" : index === 1 ? "spouse" : "other");
     if (role !== "taxpayer" && role !== "spouse" && role !== "other") {
       throw new ParameterError(
@@ -7295,7 +7326,7 @@ function validateHsaMonth(value: unknown, path: string): number {
   return value;
 }
 
-function validateHsaRules(rules: HsaRulesInput, path: string): void {
+function validateHsaCoverage(rules: HsaCoverageInput, path: string): void {
   const hasMonthly = rules.monthlyCoverage !== undefined;
   const hasTierForm = rules.coverageTier !== undefined || rules.eligibleMonths !== undefined;
   if (hasMonthly && hasTierForm) {
@@ -7345,6 +7376,10 @@ function validateHsaRules(rules: HsaRulesInput, path: string): void {
     });
   }
   money(rules.hdhpAnnualDeductible, `${path}.hdhpAnnualDeductible`);
+}
+
+function validateHsaRules(rules: HsaRulesInput, path: string): void {
+  validateHsaCoverage(rules, path);
   if (rules.familyLimitShare !== undefined) {
     rate(rules.familyLimitShare, `${path}.familyLimitShare`);
   }
@@ -7866,7 +7901,17 @@ interface HsaOwnerFacts {
   ownerId: string;
   rules: HsaRulesInput | null;
   conflict: boolean;
+  /** The owner's own `persons[].hsaCoverage` contradicts their account's `planRules.hsa`. */
+  personConflict: boolean;
   months: Array<HsaCoverageTier | null> | null;
+}
+
+/** IRC 223(c)(2) coverage facts for one person, from whichever input carried them. */
+interface HsaPersonCoverage {
+  /** False when nothing in the input states this person's coverage either way. */
+  supplied: boolean;
+  months: Array<HsaCoverageTier | null> | null;
+  hdhpAnnualDeductible: Money | undefined;
 }
 
 function hsaParametersForYear(year: number): HsaYearParameters | null {
@@ -7874,8 +7919,21 @@ function hsaParametersForYear(year: number): HsaYearParameters | null {
   return row ? deepClone(row) : null;
 }
 
+/**
+ * The four IRC 223(c)(2) coverage fields, in a stable order, so coverage stated
+ * on a person can be compared with coverage stated on that person's account.
+ */
+function hsaCoverageSignature(coverage: HsaCoverageInput): string {
+  return JSON.stringify([
+    coverage.coverageTier ?? null,
+    coverage.eligibleMonths ?? null,
+    coverage.monthlyCoverage ?? null,
+    coverage.hdhpAnnualDeductible ?? null,
+  ]);
+}
+
 /** Twelve coverage slots, or null when no coverage facts were supplied at all. */
-function resolveHsaMonths(rules: HsaRulesInput): Array<HsaCoverageTier | null> | null {
+function resolveHsaMonths(rules: HsaCoverageInput): Array<HsaCoverageTier | null> | null {
   const months: Array<HsaCoverageTier | null> = HSA_ALL_MONTHS.map(() => null);
   if (rules.monthlyCoverage !== undefined) {
     for (const entry of rules.monthlyCoverage) months[entry.month - 1] = entry.coverage;
@@ -7964,10 +8022,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         conflict = true;
       }
     }
+    const declared = context.persons.get(ownerId)?.hsaCoverage;
     facts.set(ownerId, {
       ownerId,
       rules,
       conflict,
+      personConflict:
+        rules !== null && declared !== undefined && hsaCoverageSignature(rules) !== hsaCoverageSignature(declared),
       months: rules === null ? null : resolveHsaMonths(rules),
     });
   }
@@ -7976,8 +8037,39 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const coupleMembersWithAccounts = couple
     ? couple.filter((personId) => accountsByOwner.has(personId))
     : [];
+
+  /**
+   * IRC 223(b)(5)(A) turns on whether *either spouse* has family coverage, not
+   * on whether either spouse owns a health savings account. Coverage is
+   * therefore read from the person: from `planRules.hsa` where that spouse has
+   * an HSA, and from `persons[].hsaCoverage` where they do not.
+   */
+  const coupleCoverage = new Map<string, HsaPersonCoverage>();
+  for (const personId of couple ?? []) {
+    const owned = facts.get(personId);
+    if (owned && owned.rules !== null) {
+      coupleCoverage.set(personId, {
+        supplied: true,
+        months: owned.months,
+        hdhpAnnualDeductible: owned.rules.hdhpAnnualDeductible,
+      });
+      continue;
+    }
+    const declared = context.persons.get(personId)?.hsaCoverage;
+    coupleCoverage.set(
+      personId,
+      declared === undefined
+        ? { supplied: false, months: null, hdhpAnnualDeductible: undefined }
+        : {
+            supplied: true,
+            months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
+            hdhpAnnualDeductible: declared.hdhpAnnualDeductible,
+          },
+    );
+  }
+
   const familyMonth = HSA_ALL_MONTHS.map((month) =>
-    coupleMembersWithAccounts.some((personId) => facts.get(personId)?.months?.[month - 1] === "family"),
+    (couple ?? []).some((personId) => coupleCoverage.get(personId)?.months?.[month - 1] === "family"),
   );
   const familySharingApplies = familyMonth.some(Boolean);
   const recharacterized = new Set<string>();
@@ -8003,8 +8095,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
    * limitation by the deductible.
    */
-  const coupleDeductibles = coupleMembersWithAccounts
-    .map((personId) => facts.get(personId)?.rules?.hdhpAnnualDeductible)
+  const coupleDeductibles = (couple ?? [])
+    .map((personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible)
     .filter((value): value is Money => value !== undefined);
   const lowestCoupleDeductible = coupleDeductibles.length > 0 ? Math.min(...coupleDeductibles) : null;
 
@@ -8046,6 +8138,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         ),
       );
     }
+    if (owner.personConflict) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+          DiagnosticSeverity.ERROR,
+          "This person's persons[].hsaCoverage and their health savings account's planRules.hsa state different IRC 223(c)(2) coverage. Coverage is one fact about the person, so the two must be identical; persons[].hsaCoverage exists for a spouse who owns no HSA.",
+          `persons.${ownerId}`,
+          "IRC 223(b)",
+        ),
+      );
+    }
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
       diagnostics.push(
@@ -8060,6 +8164,38 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
 
     const months = owner.months ?? HSA_ALL_MONTHS.map(() => null);
+
+    /**
+     * IRC 223(b)(5)(A) can only lower a self-only month, so the other spouse's
+     * coverage is needed exactly when this owner has one. Without it the answer
+     * is genuinely unknown — self-only for the whole year is $4,400 for 2026,
+     * but a spouse's family coverage makes it a divided family limit instead —
+     * and answering with either number would be a guess.
+     */
+    const marriedFiler =
+      context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
+      context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY;
+    const otherSpouseId = couple?.find((personId) => personId !== ownerId);
+    const ownerIsSpouseOfCouple = couple !== null && couple.includes(ownerId);
+    const spouseCoverageSupplied =
+      otherSpouseId !== undefined && (coupleCoverage.get(otherSpouseId)?.supplied ?? false);
+    if (
+      marriedFiler &&
+      (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
+      !spouseCoverageSupplied &&
+      months.some((tier) => tier === "self_only")
+    ) {
+      indeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+          DiagnosticSeverity.ERROR,
+          "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied. State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(5)(A)",
+        ),
+      );
+    }
     const eligibleMonthCount = months.filter((tier) => tier !== null).length;
     const age = ageAtEndOfTaxYear(person, context.taxYear);
     if (age === null) {
@@ -10650,6 +10786,36 @@ export class PersonBuilder {
 
   public otherTraditionalSepSimpleIraDistributions(amount: Money): this {
     this.value.otherTraditionalSepSimpleIraDistributions = amount;
+    return this;
+  }
+
+  /**
+   * IRC 223(c)(2) coverage this person held, with an optional list of eligible
+   * months (1-12). Needed on a spouse who owns no health savings account,
+   * because IRC 223(b)(5)(A) reads the couple's coverage, not their accounts.
+   */
+  public hsaCoverage(tier: HsaCoverageTier, eligibleMonths?: number[]): this {
+    const coverage = (this.value.hsaCoverage ??= {});
+    coverage.coverageTier = tier;
+    if (eligibleMonths !== undefined) coverage.eligibleMonths = [...eligibleMonths];
+    return this;
+  }
+
+  /** IRC 223(b)(2) per-month coverage for this person, for a year in which the tier changes. */
+  public hsaMonthlyCoverage(coverage: HsaMonthlyCoverageInput[]): this {
+    (this.value.hsaCoverage ??= {}).monthlyCoverage = coverage.map((entry) => ({ ...entry }));
+    return this;
+  }
+
+  /** Records that this person held no high deductible health plan coverage in any month. */
+  public noHsaCoverage(): this {
+    this.value.hsaCoverage = {};
+    return this;
+  }
+
+  /** The person's plan annual deductible, which IRC 223(b)(5)(A) reads for 2004-2006. */
+  public hsaHdhpAnnualDeductible(amount: Money): this {
+    (this.value.hsaCoverage ??= {}).hdhpAnnualDeductible = amount;
     return this;
   }
 

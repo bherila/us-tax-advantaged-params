@@ -262,7 +262,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
-| §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months |
+| §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
 | §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
 | Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
@@ -270,6 +270,41 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 
 The testing period spans two tax years, so a caller who has not yet resolved it receives
 an explicit obligation in the result rather than an assumed outcome.
+
+### Spousal coverage: `persons[].hsaCoverage`
+
+§223(b)(5)(A) turns on whether **either spouse has family coverage**, not on whether either
+spouse owns a health savings account. A spouse with family HDHP coverage and no HSA of their
+own still changes the other spouse's limitation, so that coverage is stated on the person:
+
+```ts
+const result = USTaxAdvantagedParams.forTaxYear(2026)
+  .filingStatus(FilingStatus.MARRIED_FILING_JOINTLY)
+  .taxpayer("taxpayer", (person) => person.bornIn(1985))
+  // The spouse has family HDHP coverage but no HSA of their own.
+  .spouse("spouse", (person) => person.bornIn(1986).hsaCoverage("family"))
+  .account("taxpayer-hsa", "taxpayer", AccountType.HSA, (account) => {
+    account.hsaCoverage("self_only");
+  })
+  .calculate();
+```
+
+`persons[].hsaCoverage` takes the same coverage fields as `planRules.hsa`
+(`coverageTier`, `eligibleMonths`, `monthlyCoverage`, `hdhpAnnualDeductible`). Where a person
+owns an HSA, `planRules.hsa` already carries these facts; supplying both is allowed but they
+must be identical, and a contradiction returns
+`HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT`.
+
+**Supplying the key at all declares the fact known.** An empty object —
+`{ id: "s", hsaCoverage: {} }`, or `.noHsaCoverage()` on the builder — records that the
+spouse held no high deductible health plan coverage in any month.
+
+Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
+coverage is required exactly when it could change the answer. On a married return, an HSA
+owner with at least one self-only month and no stated spousal coverage returns
+`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` rather than a number the input
+cannot support. An owner whose months are all family months is unaffected, since family is
+already the higher tier.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
