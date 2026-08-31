@@ -141,6 +141,23 @@ export interface PersonInput {
   livedWithSpouseDuringYear?: boolean;
   /** Prior-year IRC 3121(a) wages, keyed by common-law employer ID. */
   priorYearFicaWagesByEmployer?: Record<string, Money>;
+  /**
+   * IRC 129(b)(1) earned income of this person for the taxable year. The
+   * limitation is one figure for the return -- the employee's own earned
+   * income, or for a married employee the lesser of theirs and their
+   * spouse's -- so it is a fact about the person rather than about any
+   * dependent care program they participate in. Two programs cannot disagree
+   * about it when it lives here.
+   */
+  dependentCareEarnedIncome?: Money;
+  /**
+   * IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who
+   * is a student or incapable of caring for himself. The IRC 21(d)(2) schedule
+   * is not encoded -- no primary source for it is in this package's evidence
+   * corpus -- so asserting this records that any `dependentCareEarnedIncome`
+   * supplied for this person is a deemed figure, and produces a diagnostic.
+   */
+  isStudentOrIncapableOfSelfCare?: boolean;
   /** Accumulated nondeductible basis in all traditional/SEP/SIMPLE IRAs. */
   traditionalSepSimpleIraBasis?: Money;
   /** December 31 value of all traditional/SEP/SIMPLE IRAs. */
@@ -211,7 +228,7 @@ export interface ExistingContributionInput {
   /** IRC 125 salary reduction contributions elected to a health flexible spending arrangement. */
   healthFsaSalaryReduction?: Money;
   /** Dependent care assistance provided for the year through an IRC 129 program. */
-  dependentCareSalaryReduction?: Money;
+  dependentCareAssistanceProvided?: Money;
 }
 
 export interface Special403bCatchUpInput {
@@ -362,18 +379,6 @@ export interface HealthFsaAccountDetail {
  * figure is applied and an absent one is diagnosed rather than ignored.
  */
 export interface DependentCareFsaRulesInput {
-  /** IRC 129(b)(1)(A) or (B)(i) earned income of the employee for the taxable year. */
-  employeeEarnedIncome?: Money;
-  /** IRC 129(b)(1)(B)(ii) earned income of the employee's spouse; needed whenever the employee is married. */
-  spouseEarnedIncome?: Money;
-  /**
-   * IRC 129(b)(2): the spouse is a student or incapable of caring for himself,
-   * so IRC 21(d)(2) deems an amount of earned income. The IRC 21(d)(2) schedule
-   * is not encoded — no primary source for it is in this package's evidence
-   * corpus — so asserting this only records that any `spouseEarnedIncome`
-   * supplied is a deemed figure, and produces a diagnostic saying so.
-   */
-  spouseIsStudentOrIncapableOfSelfCare?: boolean;
   /**
    * A lower maximum the employer's plan itself allows. Form 2441's dependent
    * care benefit computation takes the plan's maximum into account when it is
@@ -626,8 +631,15 @@ export interface ContributionComponents {
   hsaEmployerOrCafeteria: Money;
   /** IRC 125 salary reduction contributions elected to a health flexible spending arrangement. */
   healthFsaSalaryReduction: Money;
-  /** Dependent care assistance excluded from gross income under IRC 129(a)(1). */
-  dependentCareSalaryReduction: Money;
+  /**
+   * Dependent care assistance provided under an IRC 129 program. Not only
+   * salary reductions: IRC 129(e)(1) covers amounts paid for, or services
+   * provided to, an employee under a dependent care assistance program, and
+   * Form 2441 aggregates direct employer payments and employer-provided care
+   * alongside cafeteria-plan elections. The IRC 129(a)(1) exclusion applies to
+   * the total, so this field carries the total.
+   */
+  dependentCareAssistanceProvided: Money;
   /**
    * Dependent care assistance included in gross income under IRC 129(a)(2)(B)
    * because it exceeds the limitation. It is a derived split of the supplied
@@ -8251,7 +8263,7 @@ function zeroComponents(): ContributionComponents {
     hsaDeductible: 0,
     hsaEmployerOrCafeteria: 0,
     healthFsaSalaryReduction: 0,
-    dependentCareSalaryReduction: 0,
+    dependentCareAssistanceProvided: 0,
     dependentCareIncludibleInIncome: 0,
   };
 }
@@ -8277,9 +8289,9 @@ function cloneComponents(source?: ExistingContributionInput): ContributionCompon
   // dependentCareIncludibleInIncome is deliberately not read from the input: it
   // is the IRC 129(a)(2)(B) split of the supplied amount, computed here, in the
   // same way unclassifiedIra is derived rather than supplied.
-  result.dependentCareSalaryReduction = money(
-    source.dependentCareSalaryReduction,
-    "existing.dependentCareSalaryReduction",
+  result.dependentCareAssistanceProvided = money(
+    source.dependentCareAssistanceProvided,
+    "existing.dependentCareAssistanceProvided",
   );
   return result;
 }
@@ -8401,7 +8413,7 @@ function contributionTaxEffects(
   // of social security and medicare wages, and absent from federalAgiReduction,
   // because the money was never included rather than reduced.
   const cafeteriaExclusion = roundMoney(
-    components.healthFsaSalaryReduction + components.dependentCareSalaryReduction,
+    components.healthFsaSalaryReduction + components.dependentCareAssistanceProvided,
   );
 
   result.formW2Box1WageReduction = roundMoney(
@@ -8448,7 +8460,7 @@ function contributionTaxEffects(
       "Health flexible spending arrangement salary reduction contributions are excluded from gross income under IRC 125(a) and are outside Form W-2 box 1 and Social Security and Medicare wages (IRC 3121(a)(5)(G)). They are an exclusion rather than a deduction - the money never entered gross income - so they do not appear in federalAgiReduction.",
     );
   }
-  if (components.dependentCareSalaryReduction > 0) {
+  if (components.dependentCareAssistanceProvided > 0) {
     result.notes.push(
       "Dependent care assistance within the IRC 129(a)(2) limitation is excluded from gross income under IRC 129(a)(1) and is outside Form W-2 box 1 and Social Security and Medicare wages (IRC 3121(a)(18)); it is reported in Form W-2 box 10. It is an exclusion rather than a deduction, so it does not appear in federalAgiReduction.",
     );
@@ -8626,6 +8638,8 @@ function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPe
     }
     booleanFlag(input.coveredByEmployerRetirementPlan, `persons[${index}].coveredByEmployerRetirementPlan`);
     booleanFlag(input.livedWithSpouseDuringYear, `persons[${index}].livedWithSpouseDuringYear`);
+    booleanFlag(input.isStudentOrIncapableOfSelfCare, `persons[${index}].isStudentOrIncapableOfSelfCare`);
+    money(input.dependentCareEarnedIncome, `persons[${index}].dependentCareEarnedIncome`);
     const role = input.role ?? (index === 0 ? "taxpayer" : index === 1 ? "spouse" : "other");
     if (role !== "taxpayer" && role !== "spouse" && role !== "other") {
       throw new ParameterError(
@@ -8913,12 +8927,7 @@ function validateHealthFsaRules(rules: HealthFsaRulesInput, path: string): void 
 }
 
 function validateDependentCareFsaRules(rules: DependentCareFsaRulesInput, path: string): void {
-  money(rules.employeeEarnedIncome, `${path}.employeeEarnedIncome`);
-  money(rules.spouseEarnedIncome, `${path}.spouseEarnedIncome`);
-  booleanFlag(
-    rules.spouseIsStudentOrIncapableOfSelfCare,
-    `${path}.spouseIsStudentOrIncapableOfSelfCare`,
-  );
+  money(rules.planDocumentLimit, `${path}.planDocumentLimit`);
 }
 
 function validateIsoDate(value: string, path: string): void {
@@ -9907,7 +9916,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     let unavailable = false;
     let earnedIncomeFactsMissing = false;
 
-    const elected = account.existingContributions.dependentCareSalaryReduction;
+    const elected = account.existingContributions.dependentCareAssistanceProvided;
 
     if (yearParameters === null) {
       indeterminate = true;
@@ -9934,14 +9943,12 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     // IRC 129(b)(1): the exclusion cannot exceed the employee's earned income,
     // or, for a married employee, the lesser of the employee's and the spouse's.
     // Both figures are caller-supplied; this package does not derive income.
-    const employeeEarnedIncome =
-      rules.employeeEarnedIncome === undefined
-        ? null
-        : money(rules.employeeEarnedIncome, `${path}.planRules.dependentCareFsa.employeeEarnedIncome`);
-    const spouseEarnedIncome =
-      rules.spouseEarnedIncome === undefined
-        ? null
-        : money(rules.spouseEarnedIncome, `${path}.planRules.dependentCareFsa.spouseEarnedIncome`);
+    // They are facts about the people on the return, so two dependent care
+    // programs cannot state them differently.
+    const owner = context.persons.get(account.ownerId);
+    const ownerSpouse = owner === undefined ? undefined : spouseForPerson(context.persons, owner);
+    const employeeEarnedIncome = owner?.dependentCareEarnedIncome ?? null;
+    const spouseEarnedIncome = ownerSpouse?.dependentCareEarnedIncome ?? null;
     let earnedIncomeLimitation: Money | null = null;
     if (employeeEarnedIncome !== null && (!married || spouseEarnedIncome !== null)) {
       earnedIncomeLimitation = married
@@ -9961,7 +9968,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
           married
             ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned income for the taxable year. Both are caller-supplied facts and at least one was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it."
             : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. That is a caller-supplied fact and was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it.",
-          `${path}.planRules.dependentCareFsa.employeeEarnedIncome`,
+          `persons.${account.ownerId}.dependentCareEarnedIncome`,
           "IRC 129(b)(1)",
         ),
       );
@@ -9978,14 +9985,14 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         ),
       );
     }
-    if (rules.spouseIsStudentOrIncapableOfSelfCare === true && !indeterminate) {
+    if ((owner?.isStudentOrIncapableOfSelfCare === true || ownerSpouse?.isStudentOrIncapableOfSelfCare === true) && !indeterminate) {
       status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
       diagnostics.push(
         diagnostic(
           "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED",
           DiagnosticSeverity.WARNING,
-          "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, because no primary source for it is committed to this package's evidence corpus and an unattested figure is never encoded. Any spouseEarnedIncome supplied is used exactly as stated, so supply the deemed amount if the deeming applies.",
-          `${path}.planRules.dependentCareFsa.spouseIsStudentOrIncapableOfSelfCare`,
+          "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, because no primary source for it is committed to this package's evidence corpus and an unattested figure is never encoded. Any dependentCareEarnedIncome supplied for the person is used exactly as stated, so supply the deemed amount if the deeming applies.",
+          `persons.${account.ownerId}.isStudentOrIncapableOfSelfCare`,
           "IRC 129(b)(2); IRC 21(d)(2)",
         ),
       );
@@ -10078,49 +10085,17 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
   // IRC 129(b)(1) caps "the amount excluded from the income of an employee
   // under subsection (a) for any taxable year", which is that year's aggregate
   // rather than a per-plan figure, and Form 2441 Part III computes a single
-  // excluded-benefits amount for the return from the smaller of the benefits,
-  // the earned incomes, and the IRC 129(a)(2)(A) amount. The ceiling therefore
-  // belongs to the pool the accounts share. Applied per account it would let a
-  // return exclude the limitation once for every dependent care FSA it holds.
-  const earnedIncomeCeilingsByPool = new Map<string, Money[]>();
+  // excluded-benefits amount for the return. The ceiling therefore belongs to
+  // the pool the accounts share. Applied per account it would let a return
+  // exclude the limitation once for every dependent care FSA it holds.
+  //
+  // Every plan in a pool derives the ceiling from the same two people, so they
+  // cannot disagree about it. That was not true while the figures lived on each
+  // account's plan rules, and the contradiction then had to be reported as an
+  // error; moving them onto the person removed the possibility instead.
   for (const plan of context.dependentCarePlans.values()) {
     if (plan.poolKey === null || plan.earnedIncomeLimitation === null) continue;
-    const seen = earnedIncomeCeilingsByPool.get(plan.poolKey) ?? [];
-    if (!seen.includes(plan.earnedIncomeLimitation)) seen.push(plan.earnedIncomeLimitation);
-    earnedIncomeCeilingsByPool.set(plan.poolKey, seen);
-  }
-  for (const [poolKey, ceilings] of earnedIncomeCeilingsByPool) {
-    if (ceilings.length === 1) {
-      context.dependentCareEarnedIncomeCeilings.set(poolKey, ceilings[0]);
-      continue;
-    }
-    // The earned income facts describe one return, so accounts sharing an
-    // IRC 129(a)(2)(A) amount reporting different ceilings is a contradiction
-    // in the supplied facts. Choosing one of them would invent a fact, so no
-    // exclusion is computed for any account drawing on that amount.
-    const reported = ceilings
-      .slice()
-      .sort((left, right) => left - right)
-      .map((value) => `$${value.toLocaleString()}`)
-      .join(", ");
-    for (const [accountId, plan] of context.dependentCarePlans) {
-      if (plan.poolKey !== poolKey) continue;
-      plan.diagnostics.push(
-        diagnostic(
-          "DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT",
-          DiagnosticSeverity.ERROR,
-          `IRC 129(b)(1) caps the amount excluded for the taxable year at the employee's earned income, or for a married employee at the lesser of the employee's and the spouse's. That is one figure for the return, but the dependent care flexible spending arrangements sharing this IRC 129(a)(2)(A) amount report different ceilings (${reported}). The contradiction is in the supplied facts rather than in the statute, and resolving it by choosing one of them would invent a fact, so no exclusion is computed.`,
-          `accounts.${accountId}.planRules.dependentCareFsa.employeeEarnedIncome`,
-          "IRC 129(b)(1)",
-        ),
-      );
-      plan.status = CalculationStatus.INDETERMINATE;
-      plan.statutoryMaximum = null;
-      plan.detail.applicableExclusionLimit = null;
-      // Detaching from the pool keeps the contradiction from consuming the
-      // household amount, matching how every other indeterminate plan behaves.
-      plan.poolKey = null;
-    }
+    context.dependentCareEarnedIncomeCeilings.set(plan.poolKey, plan.earnedIncomeLimitation);
   }
 
   // Assistance actually supplied draws on the household amount before any
@@ -10132,7 +10107,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     if (!plan || plan.poolKey === null) continue;
     const pool = context.dependentCarePools.get(plan.poolKey);
     if (!pool) continue;
-    const elected = account.existingContributions.dependentCareSalaryReduction;
+    const elected = account.existingContributions.dependentCareAssistanceProvided;
     if (elected <= 0) continue;
     const householdRemaining = poolRemaining(pool) ?? 0;
     const earnedIncomeCeiling = context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null;
@@ -10154,7 +10129,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
           "DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME",
           DiagnosticSeverity.WARNING,
           `$${includible.toLocaleString()} of the $${elected.toLocaleString()} of dependent care assistance supplied exceeds the limitation that applies to this employee, so IRC 129(a)(2)(B) includes it in gross income for the taxable year in which the dependent care services were provided. The IRC 129(a)(2)(A) amount is a per-return figure rather than a per-person one, so two employees on one return draw on a single amount rather than one each.`,
-          `accounts.${account.id}.existingContributions.dependentCareSalaryReduction`,
+          `accounts.${account.id}.existingContributions.dependentCareAssistanceProvided`,
           "IRC 129(a)(2)(B)",
         ),
       );
@@ -10181,7 +10156,7 @@ function allocateDependentCareFsa(
     // reduction would otherwise be reported as excluded by a plan that has
     // just said it cannot determine the exclusion. No amount is substantiated
     // here, and the detail already carries zero for both halves.
-    annual.dependentCareSalaryReduction = 0;
+    annual.dependentCareAssistanceProvided = 0;
     annual.dependentCareIncludibleInIncome = detail.includibleInIncome;
     return {
       status: plan.status === CalculationStatus.UNAVAILABLE
@@ -10212,10 +10187,10 @@ function allocateDependentCareFsa(
   );
   const additionalExcludable = takeFromPool(pool, headroom, sharedLimits);
 
-  annual.dependentCareSalaryReduction = roundMoney(alreadyExcluded + additionalExcludable);
+  annual.dependentCareAssistanceProvided = roundMoney(alreadyExcluded + additionalExcludable);
   annual.dependentCareIncludibleInIncome = detail.includibleInIncome;
-  additional.dependentCareSalaryReduction = additionalExcludable;
-  detail.excludableAmount = annual.dependentCareSalaryReduction;
+  additional.dependentCareAssistanceProvided = additionalExcludable;
+  detail.excludableAmount = annual.dependentCareAssistanceProvided;
 
   return {
     status: accountStatusFromDiagnostics(plan.status, diagnostics),
@@ -13440,7 +13415,7 @@ function calculateScenarioTotals(
       totals.healthFsaSalaryReduction + components.healthFsaSalaryReduction,
     );
     totals.dependentCareAssistanceExclusion = roundMoney(
-      totals.dependentCareAssistanceExclusion + components.dependentCareSalaryReduction,
+      totals.dependentCareAssistanceExclusion + components.dependentCareAssistanceProvided,
     );
     totals.dependentCareIncludibleInIncome = roundMoney(
       totals.dependentCareIncludibleInIncome + components.dependentCareIncludibleInIncome,
@@ -13525,6 +13500,18 @@ export class PersonBuilder {
 
   public rothConversionMagi(amount: Money): this {
     (this.value.magi ??= {}).rothConversion = amount;
+    return this;
+  }
+
+  /** IRC 129(b)(1) earned income of this person for the taxable year. */
+  public dependentCareEarnedIncome(amount: Money): this {
+    this.value.dependentCareEarnedIncome = amount;
+    return this;
+  }
+
+  /** IRC 129(b)(2): this person is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
+  public studentOrIncapableOfSelfCare(applies = true): this {
+    this.value.isStudentOrIncapableOfSelfCare = applies;
     return this;
   }
 
@@ -13834,17 +13821,9 @@ export class AccountBuilder {
     return this;
   }
 
-  /** IRC 129(b)(1) earned income. The spouse's amount is required whenever the employee is married. */
-  public dependentCareEarnedIncome(employee: Money, spouse?: Money): this {
-    const dependentCareFsa = ((this.value.planRules ??= {}).dependentCareFsa ??= {});
-    dependentCareFsa.employeeEarnedIncome = employee;
-    if (spouse !== undefined) dependentCareFsa.spouseEarnedIncome = spouse;
-    return this;
-  }
-
-  /** IRC 129(b)(2): the spouse is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
-  public dependentCareSpouseIsStudentOrIncapableOfSelfCare(applies = true): this {
-    ((this.value.planRules ??= {}).dependentCareFsa ??= {}).spouseIsStudentOrIncapableOfSelfCare = applies;
+  /** A lower dependent care maximum the employer's plan itself allows. */
+  public dependentCarePlanDocumentLimit(limit: Money): this {
+    ((this.value.planRules ??= {}).dependentCareFsa ??= {}).planDocumentLimit = limit;
     return this;
   }
 

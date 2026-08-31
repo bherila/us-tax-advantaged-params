@@ -4963,7 +4963,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 60000
-            }
+            },
+            "dependentCareEarnedIncome": 60000
           }
         ],
         "accounts": [
@@ -4971,12 +4972,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5007,12 +5003,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 60000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 55000
           }
         ],
         "accounts": [
@@ -5020,13 +5018,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000,
-                "spouseEarnedIncome": 55000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5050,12 +5042,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5063,13 +5057,7 @@
             "id": "a",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e1"
           }
         ]
       },
@@ -5091,12 +5079,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5104,13 +5094,7 @@
             "id": "a",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e1"
           }
         ]
       },
@@ -5131,12 +5115,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 70000
           }
         ],
         "accounts": [
@@ -5144,13 +5130,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 70000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5171,12 +5151,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 70000
           }
         ],
         "accounts": [
@@ -5184,13 +5166,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 70000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5213,7 +5189,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 60000
-            }
+            },
+            "dependentCareEarnedIncome": 60000
           }
         ],
         "accounts": [
@@ -5221,12 +5198,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5246,12 +5218,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5259,13 +5233,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5288,7 +5256,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
@@ -5301,12 +5270,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5329,12 +5293,15 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 500,
+            "isStudentOrIncapableOfSelfCare": true
           }
         ],
         "accounts": [
@@ -5342,14 +5309,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 500,
-                "spouseIsStudentOrIncapableOfSelfCare": true
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5371,12 +5331,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 80000
           }
         ],
         "accounts": [
@@ -5386,13 +5348,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 80000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           },
           {
@@ -5401,13 +5357,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 80000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           }
         ]
@@ -5437,12 +5387,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 80000
           }
         ],
         "accounts": [
@@ -5452,13 +5404,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3750
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 80000
-              }
+              "dependentCareAssistanceProvided": 3750
             }
           },
           {
@@ -5467,13 +5413,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3750
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 80000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 3750
             }
           }
         ]
@@ -5500,12 +5440,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5515,13 +5457,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           },
           {
@@ -5530,13 +5466,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 3000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           }
         ]
@@ -5561,7 +5491,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -5572,8 +5503,6 @@
             "employerId": "e1",
             "planRules": {
               "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null,
                 "planDocumentLimit": 4000
               }
             }
@@ -5597,7 +5526,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -5608,8 +5538,6 @@
             "employerId": "e1",
             "planRules": {
               "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null,
                 "planDocumentLimit": 2000
               }
             }
@@ -5618,13 +5546,7 @@
             "id": "b",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e2",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null
-              }
-            }
+            "employerId": "e2"
           }
         ]
       },
@@ -5644,12 +5566,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5659,13 +5583,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3500
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
+              "dependentCareAssistanceProvided": 3500
             }
           },
           {
@@ -5674,13 +5592,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3500
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 3000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 3500
             }
           }
         ]
@@ -5696,66 +5608,6 @@
       }
     },
     {
-      "name": "dependent care FSAs sharing one exclusion may not report different IRC 129(b)(1) ceilings",
-      "description": "The IRC 129(b)(1) ceiling is one figure for the return, so two dependent care FSAs drawing on the same IRC 129(a)(2)(A) amount cannot each be right about it. Here one reports a spouse earning 3000 and the other a spouse earning 5000. Resolving the disagreement by taking either figure, or the lesser of them, would invent a fact the caller did not supply, so the contradiction is reported and no exclusion is computed for either arrangement.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "MFJ",
-        "persons": [
-          {
-            "id": "t",
-            "role": "taxpayer",
-            "birthYear": 1985
-          },
-          {
-            "id": "s",
-            "role": "spouse",
-            "birthYear": 1986
-          }
-        ],
-        "accounts": [
-          {
-            "id": "a",
-            "ownerId": "t",
-            "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
-          },
-          {
-            "id": "b",
-            "ownerId": "s",
-            "type": "dependent_care_fsa",
-            "employerId": "e2",
-            "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 5000
-              }
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.status": "indeterminate",
-        "accounts.0.statutoryMaximumAnnualContribution": null,
-        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
-        "accounts.1.status": "indeterminate",
-        "accounts.1.statutoryMaximumAnnualContribution": null,
-        "totals.dependentCareAssistanceExclusion": 0
-      }
-    },
-    {
       "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
       "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
       "input": {
@@ -5764,7 +5616,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1950
+            "birthYear": 1950,
+            "dependentCareEarnedIncome": 40000
           }
         ],
         "accounts": [
@@ -5772,12 +5625,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dcap",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 40000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5798,7 +5646,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1950
+            "birthYear": 1950,
+            "dependentCareEarnedIncome": 40000
           }
         ],
         "accounts": [
@@ -5806,12 +5655,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dcap",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 40000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5834,7 +5678,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 120000
-            }
+            },
+            "dependentCareEarnedIncome": 120000
           }
         ],
         "accounts": [
@@ -5848,12 +5693,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 120000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -6190,7 +6030,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -6208,12 +6049,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },

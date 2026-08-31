@@ -88,7 +88,7 @@ const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
   "employeeAfterTax", "employerPreTax", "employerRoth", "deductibleIra", "nondeductibleIra",
   "rothIra", "special403bCatchUp", "special457CatchUp", "hsaDeductible", "hsaEmployerOrCafeteria",
-  "healthFsaSalaryReduction", "dependentCareSalaryReduction",
+  "healthFsaSalaryReduction", "dependentCareAssistanceProvided",
 ];
 
 /**
@@ -164,15 +164,26 @@ function randomHealthFsaRules() {
  */
 function randomDependentCareRules() {
   const rules = {};
-  if (chance(0.65)) {
-    rules.employeeEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  if (chance(0.5)) {
+    rules.planDocumentLimit = chance(0.05) ? junk() : pick([0, 1, 2000, 2500, 3750, 5000, 7500, money()]);
   }
-  if (chance(0.55)) {
-    rules.spouseEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
-  }
-  if (chance(0.3)) rules.spouseIsStudentOrIncapableOfSelfCare = chance(0.05) ? junk() : chance(0.5);
-  if (chance(0.04)) rules[pick(["employeeEarnedIncome", "spouseEarnedIncome", "spouseIsStudentOrIncapableOfSelfCare"])] = junk();
   return rules;
+}
+
+/**
+ * The IRC 129(b)(1) facts live on the person, so they are generated there. The
+ * values run below, at and above the IRC 129(a)(2)(A) amounts for every encoded
+ * year, so the limitation binds and falls away, and the employee-only,
+ * spouse-only and neither-supplied shapes are all reached across a run.
+ */
+function addDependentCareFactsToPerson(person) {
+  if (chance(0.6)) {
+    person.dependentCareEarnedIncome = chance(0.05)
+      ? junk()
+      : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  }
+  if (chance(0.3)) person.isStudentOrIncapableOfSelfCare = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.04)) person[pick(["dependentCareEarnedIncome", "isStudentOrIncapableOfSelfCare"])] = junk();
 }
 
 function randomPlanRules(type) {
@@ -232,6 +243,7 @@ function randomExisting() {
 
 function randomPerson(id, role, taxYear) {
   const person = { id, role };
+  addDependentCareFactsToPerson(person);
   if (chance(0.9)) {
     if (chance(0.5)) person.birthYear = integer(taxYear - 85, taxYear - 18);
     else person.birthDate = `${integer(taxYear - 85, taxYear - 18)}-${String(integer(1, 12)).padStart(2, "0")}-${String(integer(1, 28)).padStart(2, "0")}`;

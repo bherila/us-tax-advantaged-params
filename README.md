@@ -563,9 +563,17 @@ written for. Both figures are caller-supplied, like every other fact here.
 incapable of self-care, §129(b)(2) applies the §21(d)(2) monthly schedule. That
 schedule is not encoded, because no primary source for it is committed to this
 package's evidence corpus and an unattested figure is never encoded. Asserting
-`spouseIsStudentOrIncapableOfSelfCare` records that any `spouseEarnedIncome`
-supplied is the deemed amount, and emits a diagnostic saying the schedule is not
-applied for you.
+`isStudentOrIncapableOfSelfCare` on the person records that the
+`dependentCareEarnedIncome` supplied for them is the deemed amount, and emits a
+diagnostic saying the schedule is not applied for you.
+
+**The §129(b)(1) facts live on the person, not the program.** The limitation is
+one figure for the return — the employee's own earned income, or for a married
+employee the lesser of theirs and their spouse's — so `dependentCareEarnedIncome`
+is a `PersonInput` field. While it sat on each account's plan rules, two
+dependent care programs on one return could state it differently and the engine
+had to report the contradiction as an error; putting it on the person removes the
+possibility instead of diagnosing it.
 
 ## The §125 / §223 interaction: diagnose, do not enforce
 
