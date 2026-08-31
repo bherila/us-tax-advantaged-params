@@ -292,7 +292,7 @@ cannot tell it apart from a JSON array, so neither engine may.
 | Individual retirement arrangements | Traditional IRA, Roth IRA, rollover IRA, payroll-deduction IRA, deemed traditional/Roth IRA, inherited traditional/Roth IRA |
 | Small-employer arrangements | SEP IRA, Roth SEP IRA, SIMPLE IRA, Roth SIMPLE IRA, grandfathered SARSEP |
 | Qualified elective plans | Traditional/Roth 401(k), Solo/Roth Solo 401(k), SIMPLE/Roth SIMPLE 401(k), starter 401(k) |
-| Tax-sheltered annuities | Traditional/Roth 403(b), safe-harbor deferral-only 403(b) |
+| Tax-sheltered annuities | Traditional/Roth 403(b), safe-harbor deferral-only 403(b) — see the §403(b)(2) note below for tax years 1987-2001 |
 | Deferred compensation | Governmental/Roth governmental 457(b), nongovernmental eligible 457(b), 457(f) |
 | Federal plan | Traditional and Roth TSP |
 | Employer-only defined-contribution plans | 401(a), profit-sharing, money-purchase, Keogh, ESOP |
@@ -766,6 +766,29 @@ Possible statuses are:
 - `unavailable`
 - `ineligible`
 
+### Pre-2002 403(b): the §403(b)(2) exclusion allowance
+
+A 403(b) account for a tax year **1987 through 2001** returns `indeterminate` with
+`PRE_2002_403B_EXCLUSION_ALLOWANCE_NOT_APPLIED`, and both its statutory maximum and its
+input-supported maximum are `null`.
+
+Before EGTRRA, §403(b)(2) capped the excludable amount at the *exclusion allowance*, and IRS
+Publication 571 (2001) computes the maximum amount contributable as the **least** of that
+allowance, the §415(c) annual-additions limit, and the §402(g) elective-deferral limit. The
+allowance is 20% of includible compensation for the most recent year of service, multiplied by
+years of service, reduced by *amounts previously excludable* — a lifetime aggregate over the
+participant's service with that employer, which no input supplies. With one of the three
+unknown, the least of them cannot be identified, so reporting the lesser of §415(c) and
+§402(g) would state a ceiling the omitted term can only lower. The package does not model the
+allowance; it declines to answer, exactly as SOURCES.md says it does.
+
+The window closes at 2001 because EGTRRA (Pub. L. 107-16) §632(a)(2)(B) struck §403(b)(2) and
+§632(a)(3)(E) struck the §415(c)(4) alternative elections, both applying "to years beginning
+after December 31, 2001" (§632(a)(4)). 2002 onward is answerable from §415 and §402(g) alone.
+The window opens at 1987 only because 1986 and earlier already return `indeterminate` with
+`HISTORICAL_415C_LIMIT_INDETERMINATE`, there being no encoded §415(c) limit at all. Plans
+other than 403(b) are untouched: a 2001 401(k) is still `determinate_with_assumptions`.
+
 Do not discard diagnostics. They are part of the calculation contract. A non-error status may still contain warnings about missing plan terms, historical uncertainty, employer aggregation, Roth catch-up classification, or caller assumptions.
 
 ## Native TypeScript/PHP parity
@@ -848,6 +871,7 @@ The package does not calculate:
 - ADP, ACP, coverage, top-heavy, or other nondiscrimination testing.
 - Employer controlled-group ownership from raw entity records.
 - Full payroll, self-employment tax, or tax-return MAGI.
+- The pre-2002 §403(b)(2) maximum exclusion allowance and the §415(c)(4) alternative elections. Both are diagnosed and the affected years return `indeterminate`; neither is computed.
 - Defined-benefit or cash-balance actuarial funding, and the participant-specific §415(b)(2) and §415(b)(5) adjustments to the annual benefit limit. The flat §415(b)(1)(A) figure itself *is* reported.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 

@@ -1054,6 +1054,18 @@ const RAW_PARAMETERS: ParameterData = {
       "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
       "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
       "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "irs-pub-571-2001",
+      "title": "IRS Publication 571 (2001), Tax-Sheltered Annuity Plans (403(b) Plans), maximum exclusion allowance and maximum amount contributable",
+      "url": "https://www.irs.gov/pub/irs-prior/p571--2001.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "pl-107-16",
+      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
+      "authority": "U.S. Congress"
     }
   ],
   "years": {
@@ -12692,6 +12704,48 @@ function allocateQualifiedElective(
       ),
     );
     if (annualGroup) reportPoolWithoutConsuming(annualGroup, sharedLimits);
+    return {
+      status: CalculationStatus.INDETERMINATE,
+      statutoryMaximum: null,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+    };
+  }
+
+  // IRC 403(b)(2) capped the amount excludable from a tax-sheltered annuity at
+  // the exclusion allowance, a third ceiling standing beside IRC 415(c) and
+  // IRC 402(g) rather than behind them: IRS Publication 571 (2001) chapter 5
+  // computes the maximum amount contributable as the *least* of the three. The
+  // allowance was 20 percent of includible compensation for the most recent
+  // year of service, multiplied by years of service, reduced by amounts
+  // previously excludable. That last term is a lifetime aggregate across the
+  // participant's service with the employer, and nothing in ScenarioInput
+  // supplies it, so the exclusion allowance cannot be computed and the least of
+  // the three cannot be identified. Returning the lesser of IRC 415(c) and
+  // IRC 402(g) would state a ceiling that the omitted third term can only
+  // lower.
+  //
+  // EGTRRA (Pub. L. 107-16) section 632(a)(2)(B) struck IRC 403(b)(2) and
+  // section 632(a)(3)(E) struck IRC 415(c)(4), whose elections could change
+  // which limit bound; section 632(a)(4) applies both "to years beginning after
+  // December 31, 2001". 2001 is therefore the last year the allowance governs.
+  // The test reads as "<= 2001" because that is the statutory boundary; years
+  // before 1987 never reach it, having already returned above with no encoded
+  // IRC 415(c) limit at all.
+  if (traits.is403b && context.taxYear <= 2001) {
+    diagnostics.push(
+      diagnostic(
+        "PRE_2002_403B_EXCLUSION_ALLOWANCE_NOT_APPLIED",
+        DiagnosticSeverity.ERROR,
+        `For ${context.taxYear}, IRC 403(b)(2) limited the amount excludable from gross income to the exclusion allowance — 20 percent of includible compensation for the most recent year of service, multiplied by years of service, reduced by amounts previously excludable — and the excludable maximum was the least of that allowance, the IRC 415(c) annual-additions limit, and the IRC 402(g) elective-deferral limit. Amounts previously excludable are a lifetime figure this package does not hold, and the IRC 415(c)(4) alternative elections could change which limit binds, so no universal maximum can be stated. EGTRRA (Pub. L. 107-16) section 632 repealed both for years beginning after December 31, 2001.`,
+        `accounts.${account.id}`,
+        "IRC 403(b)(2), 415(c)(4) (as in effect before Pub. L. 107-16 section 632)",
+      ),
+    );
+    reportPoolWithoutConsuming(annualGroup, sharedLimits);
     return {
       status: CalculationStatus.INDETERMINATE,
       statutoryMaximum: null,

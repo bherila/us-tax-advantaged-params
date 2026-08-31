@@ -36,6 +36,28 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
   figure is encoded; the §415(b)(2) benefit-form and starting-age adjustments and the
   §415(b)(5) short-service reduction are participant-specific and are not modelled.
 
+- **Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16 §632** —
+  §632(a)(2)(B) struck IRC §403(b)(2), the maximum exclusion allowance; §632(a)(3)(E) struck
+  IRC §415(c)(4), the alternative elections; and §632(a)(4) applies both "to years beginning
+  after December 31, 2001". The enrolled act is committed as
+  `evidence/retirement-limits/sources/plaw-107publ16.pdf` and fixed by `SHA256SUMS.txt`.
+  §632(a)(1) also replaced the 25 percent of compensation in IRC §415(c)(1)(B) with 100
+  percent for the same years.
+
+- **IRS Publication 571 (2001), Tax-Sheltered Annuity Plans (403(b) Plans)** — states the
+  exclusion allowance as 20 percent of includible compensation for the most recent year of
+  service multiplied by years of service, reduced by amounts previously excludable, and
+  computes the maximum amount contributable as the **least** of that allowance, the §415(c)
+  limit on annual additions, and the §402(g) limit on elective deferrals. "Amounts previously
+  excludable" is a lifetime aggregate that no caller-supplied fact in this package expresses,
+  which is why tax years 1987 through 2001 return an indeterminate 403(b) result with
+  `PRE_2002_403B_EXCLUSION_ALLOWANCE_NOT_APPLIED` rather than the lesser of the two limits it
+  does encode. The same publication records the repeal prospectively: "Recent legislation made
+  several changes to 403(b) plans that will take effect for years beginning after 2001. Among
+  these changes are the repeal of the maximum exclusion allowance and the alternative limits on
+  annual additions."
+  `https://www.irs.gov/pub/irs-prior/p571--2001.pdf`
+
 - **26 U.S.C. §402(g)(7)** — statutory annual, lifetime, and service-based limits for the special 403(b) 15-year catch-up.
   `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim`
 
