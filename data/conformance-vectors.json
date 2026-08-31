@@ -1589,6 +1589,630 @@
       "expectError": {
         "code": "INVALID_FILING_STATUS"
       }
+    },
+    {
+      "name": "2026 full-year self-only HSA limit",
+      "description": "IRC 223(b)(1)-(2)(A): twelve eligible months each limited to one twelfth of the $4,400 self-only amount (Rev. Proc. 2025-19), so 12 x 4400 / 12 = 4400. Under 55, so no IRC 223(b)(3) increase.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.annualContributionLimit.selfOnly": 4400,
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4400,
+        "accounts.0.contributionComponents.hsaDeductible": 4400,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 4400,
+        "accounts.0.hsa.eligibleMonthCount": 12,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.additionalContributionAmount": 0,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.testingPeriod": null,
+        "totals.hsaContribution": 4400
+      },
+      "expectDiagnosticCodes": [
+        "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER"
+      ]
+    },
+    {
+      "name": "2026 full-year family HSA limit",
+      "description": "IRC 223(b)(2)(B): twelve eligible months of family coverage at one twelfth of $8,750 each, so 12 x 8750 / 12 = 8750. An unmarried individual with family coverage is not subject to the IRC 223(b)(5) division, so no share is recorded.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.annualContributionLimit.family": 8750,
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.contributionComponents.hsaDeductible": 8750,
+        "accounts.0.hsa.proratedContributionLimit": 8750,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 mid-year HSA coverage change prorated by month",
+      "description": "IRC 223(b)(2) sets a separate monthly limitation for each month, determined by the coverage held on that month's first day. Ineligible January and February contribute nothing; March through June are self-only at 4400/12; July through December are family at 8750/12. (4 x 4400 + 6 x 8750) / 12 = 70100 / 12 = 5841.67.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 3,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5841.67,
+        "accounts.0.contributionComponents.hsaDeductible": 5841.67,
+        "accounts.0.hsa.eligibleMonthCount": 10,
+        "accounts.0.hsa.proratedContributionLimit": 5841.67,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 5841.67,
+        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.coverageTierByMonth": [
+          null,
+          null,
+          "self_only",
+          "self_only",
+          "self_only",
+          "self_only",
+          "family",
+          "family",
+          "family",
+          "family",
+          "family",
+          "family"
+        ],
+        "totals.hsaContribution": 5841.67,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.1": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.2": 4400,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.5": 4400,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.6": 8750,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 8750
+      }
+    },
+    {
+      "name": "2026 both spouses age 55 receive separate HSA catch-ups",
+      "description": "IRC 223(b)(5) gives the couple one $8,750 family limit, divided equally by default at 4375 each. IRC 223(b)(3) adds $1,000 for each spouse who attains 55 before the close of the year, is excluded from the family division by IRC 223(b)(5)(B), and must go into that spouse's own HSA. Each account is therefore 4375 + 1000 = 5375 and the couple's total is 8750 + 2000 = 10750.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1968
+          },
+          {
+            "id": "s",
+            "birthYear": 1967
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5375,
+        "accounts.1.statutoryMaximumAnnualContribution": 5375,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.1.hsa.familyLimitShare": 0.5,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.1.hsa.additionalContributionAmount": 1000,
+        "accounts.0.contributionComponents.hsaDeductible": 5375,
+        "accounts.1.contributionComponents.hsaDeductible": 5375,
+        "totals.hsaContribution": 10750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
+        "HSA_AGE_55_ADDITIONAL_CONTRIBUTION_IS_PER_SPOUSE"
+      ]
+    },
+    {
+      "name": "2026 spouses divide the single family HSA limit as agreed",
+      "description": "IRC 223(b)(5)(B)(ii) divides the one $8,750 family limit as the spouses agree. A 75/25 agreement yields 6562.50 and 2187.50, which still sum to exactly one family limit. Both spouses are under 55, so there is no IRC 223(b)(3) increase.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.75
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.25
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 6562.5,
+        "accounts.1.statutoryMaximumAnnualContribution": 2187.5,
+        "accounts.0.hsa.familyLimitShare": 0.75,
+        "accounts.1.hsa.familyLimitShare": 0.25,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.hsa.additionalContributionAmount": 0,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 HSA last-month rule with a satisfied testing period",
+      "description": "Eligible only in December. The ordinary IRC 223(b)(2) limitation is 4400 / 12 = 366.67. IRC 223(b)(8)(A) instead treats the individual as eligible for every month of 2026 with December's self-only coverage, giving the full 4400. The amount that could not have been contributed but for that rule is 4400 - 366.67 = 4033.33, and the IRC 223(b)(8)(B)(iii) testing period runs the thirteen months ending 2027-12. It is satisfied here, so nothing is included.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.contributionComponents.hsaDeductible": 4400,
+        "accounts.0.hsa.eligibleMonthCount": 1,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
+        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4033.33,
+        "accounts.0.hsa.testingPeriod.months": 13,
+        "accounts.0.hsa.testingPeriod.startMonth": "2026-12",
+        "accounts.0.hsa.testingPeriod.endMonth": "2027-12",
+        "accounts.0.hsa.testingPeriod.status": "satisfied",
+        "accounts.0.hsa.testingPeriod.grossIncomeInclusionIfFailed": 0,
+        "accounts.0.hsa.testingPeriod.additionalTaxIfFailed": 0,
+        "accounts.0.hsa.testingPeriod.inclusionTaxYear": 2027,
+        "totals.hsaContribution": 4400
+      }
+    },
+    {
+      "name": "2026 HSA last-month rule failed in the testing period",
+      "description": "Same facts as the satisfied case, but the individual ceases to be an eligible individual inside the thirteen-month testing period. IRC 223(b)(8)(B)(i)(I) includes the 4033.33 attributable to the rule in gross income for 2027, and (i)(II) adds a 10 percent additional tax of 403.33. Both fall in 2027, so the 2026 IRC 223(a) deduction is still the full 4400.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.contributionComponents.hsaDeductible": 4400,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 4400,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4033.33,
+        "accounts.0.hsa.testingPeriod.status": "failed",
+        "accounts.0.hsa.testingPeriod.grossIncomeInclusionIfFailed": 4033.33,
+        "accounts.0.hsa.testingPeriod.additionalTaxIfFailed": 403.33,
+        "accounts.0.hsa.testingPeriod.inclusionTaxYear": 2027,
+        "totals.hsaContribution": 4400
+      },
+      "expectDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED"
+      ]
+    },
+    {
+      "name": "2005 HSA monthly limit capped by the plan annual deductible",
+      "description": "Before the Tax Relief and Health Care Act of 2006 section 303, IRC 223(b)(2)(A) limited each month to one twelfth of the lesser of the plan's annual deductible and the dollar amount. For 2005 the self-only dollar amount is 2650 (Rev. Proc. 2004-71), so an 1800 deductible binds and the full-year limit is 1800. The individual attains 55 in 2005, so the non-indexed IRC 223(b)(3)(B) table adds 600.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1945
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 1800
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "hsaParameters.lastMonthRuleAvailable": false,
+        "hsaParameters.additionalContributionAmountAge55": 600,
+        "accounts.0.statutoryMaximumAnnualContribution": 2400,
+        "accounts.0.hsa.proratedContributionLimit": 1800,
+        "accounts.0.hsa.additionalContributionAmount": 600,
+        "accounts.0.contributionComponents.hsaDeductible": 2400,
+        "totals.hsaContribution": 2400
+      }
+    },
+    {
+      "name": "2006 HSA monthly limit capped by the statutory dollar amount",
+      "description": "The same pre-2007 lesser-of test with the other branch binding: a 6000 family deductible exceeds the 2006 family dollar amount of 5450 (Rev. Proc. 2005-70), so the limit is 5450. IRC 223(b)(8) did not exist until taxable years beginning after 2006, so electing the last-month rule produces a diagnostic and the ordinary month-by-month limitation.",
+      "input": {
+        "taxYear": 2006,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 6000,
+                "useLastMonthRule": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.annualContributionLimit.family": 5450,
+        "accounts.0.statutoryMaximumAnnualContribution": 5450,
+        "accounts.0.hsa.proratedContributionLimit": 5450,
+        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.testingPeriod": null,
+        "totals.hsaContribution": 5450
+      },
+      "expectDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR"
+      ]
+    },
+    {
+      "name": "2026 employer HSA contribution is excluded rather than deducted",
+      "description": "The IRC 223(b) ceiling is a single 4400. An employer or cafeteria-plan contribution of 1000 is excluded from gross income under IRC 106(d) and reduces the IRC 223(a) deduction under IRC 223(b)(4)(B), leaving 3400 deductible. The excluded 1000 is outside Form W-2 box 1 and outside Social Security and Medicare wages.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "expectedEmployerContribution": 1000,
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.contributionComponents.hsaEmployerOrCafeteria": 1000,
+        "accounts.0.contributionComponents.hsaDeductible": 3400,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 3400,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 1000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 1000,
+        "totals.hsaContribution": 4400
+      }
+    },
+    {
+      "name": "2003 predates IRC 223 health savings accounts",
+      "description": "IRC 223 was added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. There is no 2003 limitation to prorate, so the account is unavailable rather than assigned an invented amount.",
+      "input": {
+        "taxYear": 2003,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters": null,
+        "accounts.0.status": "unavailable",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 0,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_NOT_AVAILABLE_FOR_TAX_YEAR"
+      ]
+    },
+    {
+      "name": "2026 HSA last-month rule with an unresolved testing period",
+      "description": "Eligible only in November and December, so the ordinary IRC 223(b)(2) limitation is 2 x 4400 / 12 = 733.33 and IRC 223(b)(8)(A) raises it to 4400. 4400 - 733.33 = 3666.67 could not have been contributed but for the rule. Whether the thirteen-month testing period is satisfied was not supplied, so compliance is not assumed: the result is determinate_with_assumptions and the 10 percent IRC 223(b)(8)(B)(i)(II) tax of 366.67 is quantified rather than ignored.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  11,
+                  12
+                ],
+                "useLastMonthRule": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.hsa.eligibleMonthCount": 2,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 733.33,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 3666.67,
+        "accounts.0.hsa.testingPeriod.status": "unresolved",
+        "accounts.0.hsa.testingPeriod.grossIncomeInclusionIfFailed": 3666.67,
+        "accounts.0.hsa.testingPeriod.additionalTaxIfFailed": 366.67,
+        "totals.hsaContribution": 4400
+      },
+      "expectDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED"
+      ]
+    },
+    {
+      "name": "2026 married filing separately family coverage recharacterizes the other spouse",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having only family coverage for any month in which either has it, and IRC 223(b)(5) applies to individuals married to each other whether they file jointly or separately. The self-only spouse is therefore recharacterized to twelve family months, the couple shares one 8750 limit divided equally at 4375, and each spouse adds an IRC 223(b)(3) 1000 in that spouse's own account, for 5375 each and 10750 in total.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960
+          },
+          {
+            "id": "s",
+            "birthYear": 1961
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.hsa.coverageTierByMonth.0": "family",
+        "accounts.1.hsa.coverageTierByMonth.11": "family",
+        "accounts.0.statutoryMaximumAnnualContribution": 5375,
+        "accounts.1.statutoryMaximumAnnualContribution": 5375,
+        "accounts.1.hsa.familyLimitShare": 0.5,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.hsa.additionalContributionAmount": 1000,
+        "totals.hsaContribution": 10750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
+        "HSA_AGE_55_ADDITIONAL_CONTRIBUTION_IS_PER_SPOUSE"
+      ]
     }
   ]
 }
