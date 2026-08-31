@@ -10148,7 +10148,10 @@ final class Engine
                 );
             }
 
-            $statutoryMaximum = $indeterminate || $appliedLimit === null
+            $statutoryMaximum = $indeterminate || $salaryReductionLimit === null
+                ? null
+                : self::nonnegative(self::roundMoney((float) $salaryReductionLimit - $flexCreditCounted));
+            $appliedMaximum = $indeterminate || $appliedLimit === null
                 ? null
                 : self::nonnegative(self::roundMoney($appliedLimit - $flexCreditCounted));
 
@@ -10159,8 +10162,16 @@ final class Engine
             // could have elected is includible regardless of what was elected.
             // Truncating the election to the limit would report the wrong
             // consequence.
-            if ($statutoryMaximum !== null
-                && self::roundMoney($elected + $flexCreditCounted) > (float) $appliedLimit + 0.009
+            $electedWithCredits = self::roundMoney($elected + $flexCreditCounted);
+            // Exceeding the statutory ceiling and exceeding a lower
+            // plan-document ceiling are different failures. Notice 2012-40
+            // section III attaches its loss-of-IRC-125-status consequence to
+            // the IRC 125(i) limit, so only the statutory breach carries it; a
+            // plan-document breach is reported without asserting that the whole
+            // exclusion fails.
+            if ($appliedMaximum !== null
+                && $salaryReductionLimit !== null
+                && $electedWithCredits > (float) $salaryReductionLimit + 0.009
             ) {
                 $diagnostics[] = self::diagnostic(
                     'HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT',
@@ -10174,6 +10185,23 @@ final class Engine
                         . 'here because truncation would report a smaller consequence than the statute produces.',
                     "{$path}.existingContributions.healthFsaSalaryReduction",
                     'IRC 125(i); IRC 125(d)(1)(B); Notice 2012-40',
+                );
+            } elseif ($appliedMaximum !== null
+                && $appliedLimit !== null
+                && $electedWithCredits > (float) $appliedLimit + 0.009
+            ) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_ELECTION_EXCEEDS_PLAN_DOCUMENT_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Salary reduction contributions of $' . self::localeNumber($electedWithCredits)
+                        . ' exceed the $' . self::localeNumber((float) $appliedLimit) . ' the plan document allows, '
+                        . 'though they remain within the $' . self::localeNumber((float) $salaryReductionLimit)
+                        . ' IRC 125(i) ceiling. Notice 2013-71 confirms a plan may specify a lower amount, and an '
+                        . "election above the plan's own term is a plan-operation question this engine does not "
+                        . 'resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, '
+                        . 'because that holding addresses the IRC 125(i) limit rather than a lower plan term.',
+                    "{$path}.existingContributions.healthFsaSalaryReduction",
+                    'IRC 125(d)(1)(B); Notice 2013-71',
                 );
             }
 
@@ -10209,6 +10237,7 @@ final class Engine
                     'status' => CalculationStatus::INDETERMINATE->value,
                     'diagnostics' => $diagnostics,
                     'statutoryMaximum' => null,
+                    'appliedMaximum' => null,
                     'detail' => $detail,
                     'poolKey' => null,
                 ];
@@ -10220,17 +10249,15 @@ final class Engine
                 $context['healthFsaPools'][$poolKey] = [
                     'id' => "irc-125i:{$poolKey}",
                     'legalLimit' => 'IRC 125(i) health FSA salary reduction limit, per employee per employer',
-                    'limit' => $appliedLimit,
+                    // The pool is the statutory ceiling the employers treated
+                    // as one under IRC 125(g)(4) share. A lower limit in one
+                    // plan document is a term of that plan and binds elections
+                    // under it; it gives that plan no power over elections
+                    // under a different plan of the same group, so it caps the
+                    // account rather than the pool.
+                    'limit' => $statutoryMaximum === null ? null : $salaryReductionLimit,
                     'used' => 0.0,
                 ];
-            } elseif (
-                $context['healthFsaPools'][$poolKey]['limit'] !== null
-                && $appliedLimit !== null
-                && $appliedLimit < (float) $context['healthFsaPools'][$poolKey]['limit']
-            ) {
-                // A lower plan-document limit on one arrangement of a controlled
-                // group binds the group's shared IRC 125(g)(4) limit.
-                $context['healthFsaPools'][$poolKey]['limit'] = $appliedLimit;
             }
             $context['healthFsaPools'][$poolKey]['used'] = self::roundMoney(
                 (float) $context['healthFsaPools'][$poolKey]['used'] + $flexCreditCounted + $elected,
@@ -10240,6 +10267,7 @@ final class Engine
                 'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
                 'diagnostics' => $diagnostics,
                 'statutoryMaximum' => $statutoryMaximum,
+                'appliedMaximum' => $appliedMaximum,
                 'detail' => $detail,
                 'poolKey' => $poolKey,
             ];
@@ -10276,8 +10304,14 @@ final class Engine
             ];
         }
 
-        $remaining = self::poolRemaining($context['healthFsaPools'][$poolKey]) ?? 0.0;
-        $taken = self::takeFromPool($context['healthFsaPools'][$poolKey], $remaining, $sharedLimits);
+        // The pool offers the employer group's statutory room; this account may
+        // only reach its own plan document's ceiling within it.
+        $localHeadroom = ($plan['appliedMaximum'] ?? null) === null
+            ? (self::poolRemaining($context['healthFsaPools'][$poolKey]) ?? 0.0)
+            : self::nonnegative(self::roundMoney(
+                (float) $plan['appliedMaximum'] - (float) $account['existingContributions']['healthFsaSalaryReduction'],
+            ));
+        $taken = self::takeFromPool($context['healthFsaPools'][$poolKey], $localHeadroom, $sharedLimits);
         $additional['healthFsaSalaryReduction'] = $taken;
         $annual['healthFsaSalaryReduction'] = self::roundMoney($annual['healthFsaSalaryReduction'] + $taken);
 

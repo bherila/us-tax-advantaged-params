@@ -4697,7 +4697,7 @@
     },
     {
       "name": "a lower plan-document health FSA limit binds",
-      "description": "Notice 2013-71 section III records that a plan may specify a lower amount than the statutory maximum, and Notice 2012-40 section II notes that before IRC 125(i) plan sponsors imposed their own limits. A plan capping elections at 2000 for 2026 therefore binds below the 3400 statutory ceiling, and both figures are reported so the source of the constraint is visible.",
+      "description": "Notice 2013-71 section III records that a plan may specify a lower amount than the statutory maximum, and Notice 2012-40 section II notes that before IRC 125(i) plan sponsors imposed their own limits. A plan capping elections at 2000 for 2026 therefore binds below the 3400 statutory ceiling. The two are reported separately rather than merged: statutoryMaximumAnnualContribution is what IRC 125(i) sets, and maximumAnnualContributionBasedOnInputs is what the supplied plan document allows within it. Reporting 2000 as the statutory maximum would attribute the plan sponsor's own term to the statute.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -4726,10 +4726,99 @@
       },
       "expect": {
         "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 2000,
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
         "accounts.0.healthFsa.salaryReductionLimit": 3400,
         "accounts.0.healthFsa.appliedSalaryReductionLimit": 2000,
-        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED"
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PLAN_DOCUMENT_LIMIT_APPLIED",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000
+      }
+    },
+    {
+      "name": "a lower plan-document limit caps its own arrangement, not the employer group",
+      "description": "IRC 125(g)(4) treats employers under IRC 414(b), (c) or (m) as one employer, which Notice 2012-40 applies to aggregate elections across their cafeteria plans against the one statutory ceiling. It aggregates to the statutory amount; it does not turn one plan's own lower term into an employer-wide ceiling. A plan document capping elections at 2000 binds elections under that plan and gives it no power over a different plan of the same group, so for 2026 the first arrangement reaches 2000, the second reaches the 1400 left of the shared 3400, and the group total is 3400 rather than 2000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 2000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 3400
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000,
+        "accounts.0.sharedLimits.0.limit": 3400,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 1400,
+        "accounts.1.sharedLimits.0.limit": 3400,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 2000
+      }
+    },
+    {
+      "name": "exceeding a plan-document limit is not the IRC 125(i) qualification failure",
+      "description": "Notice 2012-40 section III holds that a cafeteria plan permitting an election above the IRC 125(i) limit is not an IRC 125 cafeteria plan at all, which is why an election above the statutory ceiling reports no IRC 125(a) exclusion. That holding addresses the statutory limit. An election of 3000 against a plan document allowing 2000 stays within the 3400 IRC 125(i) ceiling for 2026, so it is a plan-operation question rather than a statutory qualification failure: it is reported, but the exclusion is not withdrawn, and the 3000 remains outside Form W-2 box 1 and outside social security and medicare wages.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "existingContributions": {
+              "healthFsaSalaryReduction": 3000
+            },
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.contributionComponents.healthFsaSalaryReduction": 3000,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 3000
       }
     },
     {

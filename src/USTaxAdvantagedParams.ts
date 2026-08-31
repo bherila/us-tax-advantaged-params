@@ -9341,7 +9341,14 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
 interface HealthFsaAccountPlan {
   status: CalculationStatus;
   diagnostics: Diagnostic[];
+  /** The IRC 125(i) ceiling itself, net of counted flex credits. */
   statutoryMaximum: Money | null;
+  /**
+   * The same figure after any lower plan-document limit. A plan document binds
+   * elections under that plan only; it is not an employer-group ceiling, so it
+   * caps this account rather than the IRC 125(g)(4) pool.
+   */
+  appliedMaximum: Money | null;
   detail: HealthFsaAccountDetail;
   poolKey: string | null;
 }
@@ -9572,6 +9579,10 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
     }
 
     const statutoryMaximum =
+      indeterminate || salaryReductionLimit === null
+        ? null
+        : nonnegative(roundMoney(salaryReductionLimit - flexCreditCounted));
+    const appliedMaximum =
       indeterminate || appliedLimit === null ? null : nonnegative(roundMoney(appliedLimit - flexCreditCounted));
 
     // IRC 125(i) is a plan-qualification condition rather than a cap the plan
@@ -9580,7 +9591,17 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
     // value of the taxable benefits the employee could have elected is
     // includible regardless of what was elected. Truncating the election to the
     // limit would report the wrong consequence.
-    if (statutoryMaximum !== null && roundMoney(elected + flexCreditCounted) > appliedLimit! + 0.009) {
+    const electedWithCredits = roundMoney(elected + flexCreditCounted);
+    // Exceeding the statutory ceiling and exceeding a lower plan-document
+    // ceiling are different failures. Notice 2012-40 section III attaches its
+    // loss-of-IRC-125-status consequence to the IRC 125(i) limit, so only the
+    // statutory breach carries it; a plan-document breach is reported without
+    // asserting that the whole exclusion fails.
+    if (
+      appliedMaximum !== null &&
+      salaryReductionLimit !== null &&
+      electedWithCredits > salaryReductionLimit + 0.009
+    ) {
       diagnostics.push(
         diagnostic(
           "HEALTH_FSA_ELECTION_EXCEEDS_SECTION_125I_LIMIT",
@@ -9588,6 +9609,16 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
           `Salary reduction contributions of $${roundMoney(elected + flexCreditCounted).toLocaleString()} exceed the $${appliedLimit!.toLocaleString()} limit that applies. Notice 2012-40 holds that a cafeteria plan permitting an election above IRC 125(i) is not a section 125 cafeteria plan, so the value of the taxable benefits the employee could have elected becomes includible in gross income regardless of the benefit elected. The excess is not truncated here because truncation would report a smaller consequence than the statute produces.`,
           `${path}.existingContributions.healthFsaSalaryReduction`,
           "IRC 125(i); IRC 125(d)(1)(B); Notice 2012-40",
+        ),
+      );
+    } else if (appliedMaximum !== null && appliedLimit !== null && electedWithCredits > appliedLimit + 0.009) {
+      diagnostics.push(
+        diagnostic(
+          "HEALTH_FSA_ELECTION_EXCEEDS_PLAN_DOCUMENT_LIMIT",
+          DiagnosticSeverity.ERROR,
+          `Salary reduction contributions of $${electedWithCredits.toLocaleString()} exceed the $${appliedLimit.toLocaleString()} the plan document allows, though they remain within the $${salaryReductionLimit!.toLocaleString()} IRC 125(i) ceiling. Notice 2013-71 confirms a plan may specify a lower amount, and an election above the plan's own term is a plan-operation question this engine does not resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, because that holding addresses the IRC 125(i) limit rather than a lower plan term.`,
+          `${path}.existingContributions.healthFsaSalaryReduction`,
+          "IRC 125(d)(1)(B); Notice 2013-71",
         ),
       );
     }
@@ -9620,6 +9651,7 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
         status: CalculationStatus.INDETERMINATE,
         diagnostics,
         statutoryMaximum: null,
+        appliedMaximum: null,
         detail,
         poolKey: null,
       });
@@ -9632,14 +9664,15 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
       pool = {
         id: `irc-125i:${poolKey}`,
         legalLimit: "IRC 125(i) health FSA salary reduction limit, per employee per employer",
-        limit: appliedLimit,
+        // The pool is the statutory ceiling the employers treated as one under
+        // IRC 125(g)(4) share. A lower limit in one plan document is a term of
+        // that plan and binds elections under it; it gives that plan no power
+        // over elections under a different plan of the same group, so it caps
+        // the account rather than the pool.
+        limit: statutoryMaximum === null ? null : salaryReductionLimit,
         used: 0,
       };
       context.healthFsaPools.set(poolKey, pool);
-    } else if (pool.limit !== null && appliedLimit !== null && appliedLimit < pool.limit) {
-      // A lower plan-document limit on one arrangement of a controlled group
-      // binds the group's shared IRC 125(g)(4) limit.
-      pool.limit = appliedLimit;
     }
     pool.used = roundMoney(pool.used + flexCreditCounted + elected);
 
@@ -9647,6 +9680,7 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
       status: accountStatusFromDiagnostics(status, diagnostics),
       diagnostics,
       statutoryMaximum,
+      appliedMaximum,
       detail,
       poolKey,
     });
@@ -9675,7 +9709,13 @@ function allocateHealthFsa(context: CalculationContext, account: NormalizedAccou
     };
   }
 
-  const taken = takeFromPool(pool, poolRemaining(pool) ?? 0, sharedLimits);
+  // The pool offers the employer group's statutory room; this account may only
+  // reach its own plan document's ceiling within it.
+  const localHeadroom =
+    plan.appliedMaximum === null
+      ? (poolRemaining(pool) ?? 0)
+      : nonnegative(roundMoney(plan.appliedMaximum - account.existingContributions.healthFsaSalaryReduction));
+  const taken = takeFromPool(pool, localHeadroom, sharedLimits);
   additional.healthFsaSalaryReduction = taken;
   annual.healthFsaSalaryReduction = roundMoney(annual.healthFsaSalaryReduction + taken);
 
