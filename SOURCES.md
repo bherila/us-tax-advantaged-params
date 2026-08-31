@@ -88,7 +88,9 @@ For each new tax year:
 5. Add conformance vectors for changed rules and boundary values.
 6. Run `npm run verify` under supported Node and PHP versions.
 7. Review the generated diff in both runtime files; only generated data blocks should change for a data-only annual update.
-8. Update the package version as appropriate.
+8. Leave the package version alone unless this is a release; versioning is a
+   separate act (see AGENTS.md). There is no CHANGELOG — user-facing behaviour
+   goes in `README.md` and provenance goes here.
 
 ## Legal-change policy
 

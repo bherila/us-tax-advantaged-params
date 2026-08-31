@@ -44,6 +44,46 @@ years 1975 onward:
    (ascending `priority`, then input order), and phase-outs use IRS
    worksheet-style rounding to the encoded increment with the encoded positive
    reduced minimum. Preserve these semantics.
+6. **Never weaken, skip, or special-case a check to get green.** If something
+   legitimately cannot pass, leave it failing and say so. A green gate obtained
+   by loosening the gate is worse than a red one.
+7. **Derive expected values from the statute or the primary source, never from
+   engine output.** A vector or test written from the implementation proves only
+   that the implementation does what it does. Record the derivation in the
+   vector's `description`. When a vector and an engine disagree, work out which
+   is wrong before changing either, and say which it was.
+8. **Prove a regression test fails without its fix.** Stash the source change,
+   re-run the test, quote the failure, restore. A test that would have passed
+   without the fix is not a regression test.
+9. **Fixtures carry synthetic values only.** Never real taxpayer data, and never
+   a real figure rescaled — a rescaled real series is still the real series.
+
+## Naming
+
+Public symbols carry **no** domain prefix. The `Retirement` prefix was dropped in
+0.2.0 when the package broadened beyond retirement accounts: the surface is
+`AccountInput`, `ScenarioInput`, `ScenarioResult`, `AccountBuilder`, `Scenario`,
+`ScenarioBuilder`, `ParameterError` / `ParameterException`, and
+`calculateScenario`. Do not reintroduce a domain-prefixed parallel surface where
+a shared name fits — a new account domain extends these types, it does not clone
+them.
+
+Domain-scoped *detail* types are a different thing and are correct: `HsaRulesInput`,
+`HsaAccountDetail`, and `HsaYearParameters` name IRC §223-specific structures that
+genuinely have no shared counterpart. Retirement-specific *data field* names such
+as `coveredByEmployerRetirementPlan` are likewise correct and stay.
+
+## Documentation
+
+**There is no CHANGELOG in this repository.** It was deliberately removed; do not
+recreate one. User-facing behaviour goes in `README.md` and provenance goes in
+`SOURCES.md`.
+
+**Do not bump the version or create a tag as part of feature work.** Releasing is
+a separate act. The version lives in four places kept in sync by
+`npm run validate:manifests` — `package.json`, `package-lock.json`, and
+`ENGINE_VERSION` in each engine — so a partial bump fails the gate rather than
+shipping a mismatch.
 
 ## Commands
 
@@ -60,13 +100,46 @@ npm run validate:data     # canonical-format and range validation of the JSON
 npm run validate:evidence # compare every evidence corpus against the data it backs
 ```
 
-Evidence corpora live under `evidence/<corpus>/`: the source documents, a
-`primary-values.json` transcription, a `SHA256SUMS.txt`, and a
-`verifier-config.mjs` declaring how recorded fields map onto the data file.
-`scripts/verify-evidence.mjs` is the only comparison engine and the only report
-format; corpora contribute declarations, never logic. It discovers corpora by
-scanning `evidence/`, so a directory without a loadable `verifier-config.mjs`
-fails rather than being silently skipped.
+## Evidence
+
+Evidence corpora live under `evidence/<corpus>/`: the source documents in
+`sources/`, a `primary-values.json` transcription taken verbatim from those
+documents, a `SHA256SUMS.txt` fixing them, and a `verifier-config.mjs` declaring
+how recorded fields map onto the data file. `scripts/verify-evidence.mjs` is the
+only comparison engine and the only report format; corpora contribute
+declarations, never logic. It discovers corpora by scanning `evidence/`, so a
+directory without a loadable `verifier-config.mjs` fails rather than being
+silently skipped.
+
+- **Transcribe from the document itself, never from a summary table.** Summary
+  tables are where transcription errors originate.
+- **A recorded figure compared against nothing fails as `UNCOVERED`.** This is
+  deliberate: a parameter cannot be transcribed and then quietly ignored. A
+  figure the package genuinely does not model goes in the corpus config's
+  `unmodelled` declaration, so gaining coverage later is a visible change.
+- **A deliberate evidence-vs-data divergence is asserted against its reconciled
+  value, never skipped.** The worked example is the Notice 2023-62 case in
+  `evidence/retirement-limits/verifier-config.mjs`: the evidence records the
+  §414(v)(7)(A) threshold the IRS *published* for catch-up years 2024 and 2025,
+  the data records `null` because the transition period suspended the mandate,
+  and the verifier's `reconciled` map asserts the data equals `null`. Drifting
+  off the reconciled value is still a failure. Copy that pattern; do not add a
+  skip.
+- **Evidence ships in neither artifact.** npm excludes it via the `files`
+  allowlist in `package.json`; Composer excludes it via `/evidence export-ignore`
+  in `.gitattributes`. A new corpus must inherit both — check with
+  `npm pack --dry-run`.
+
+Two traps, both hit in practice:
+
+- **WebFetch's summariser mangles IRS PDFs.** It has returned figures from the
+  wrong year and reported real, non-empty documents as empty. `curl` the PDF and
+  extract the text with `pypdf`, then read the extracted text.
+- **`SHA256SUMS.txt` lists bare filenames**, so it verifies only from inside
+  `sources/`:
+  ```bash
+  cd evidence/<corpus>/sources && shasum -a 256 -c ../SHA256SUMS.txt
+  ```
 
 PHP 8.5+ and Node 20+ are required locally; CI runs Node 20/22/24 and PHP 8.5
 on GitHub-hosted arm64 runners (`ubuntu-24.04-arm`).
