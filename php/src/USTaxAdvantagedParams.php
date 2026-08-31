@@ -60,6 +60,7 @@ enum AccountType: string
     case CASH_BALANCE_PLAN = 'cash_balance_plan';
     case HSA = 'hsa';
     case HEALTH_FSA = 'health_fsa';
+    case DEPENDENT_CARE_FSA = 'dependent_care_fsa';
 }
 
 enum ConversionType: string
@@ -568,6 +569,25 @@ final class AccountBuilder
     {
         $this->value['planRules']['healthFsa'] ??= [];
         $this->value['planRules']['healthFsa']['planYearIsCalendarYear'] = $isCalendarYear;
+        return $this;
+    }
+
+    /** IRC 129(b)(1) earned income. The spouse's amount is required whenever the employee is married. */
+    public function dependentCareEarnedIncome(float|int $employee, float|int|null $spouse = null): self
+    {
+        $this->value['planRules']['dependentCareFsa'] ??= [];
+        $this->value['planRules']['dependentCareFsa']['employeeEarnedIncome'] = (float) $employee;
+        if ($spouse !== null) {
+            $this->value['planRules']['dependentCareFsa']['spouseEarnedIncome'] = (float) $spouse;
+        }
+        return $this;
+    }
+
+    /** IRC 129(b)(2): the spouse is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
+    public function dependentCareSpouseIsStudentOrIncapableOfSelfCare(bool $applies = true): self
+    {
+        $this->value['planRules']['dependentCareFsa'] ??= [];
+        $this->value['planRules']['dependentCareFsa']['spouseIsStudentOrIncapableOfSelfCare'] = $applies;
         return $this;
     }
 
@@ -7789,6 +7809,9 @@ final class Engine
             if (isset($outcome['healthFsaDetail'])) {
                 $result['healthFsa'] = $outcome['healthFsaDetail'];
             }
+            if (isset($outcome['dependentCareDetail'])) {
+                $result['dependentCareFsa'] = $outcome['dependentCareDetail'];
+            }
             $byId[$account['id']] = $result;
         }
 
@@ -7973,6 +7996,13 @@ final class Engine
             'MEDICAL_FSA' => AccountType::HEALTH_FSA->value,
             'HEALTH_FLEXIBLE_SPENDING_ARRANGEMENT' => AccountType::HEALTH_FSA->value,
             'SECTION_125_HEALTH_FSA' => AccountType::HEALTH_FSA->value,
+            'DEPENDENT_CARE_FSA' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ACCOUNT' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ASSISTANCE' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DEPENDENT_CARE_ASSISTANCE_PROGRAM' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DCAP' => AccountType::DEPENDENT_CARE_FSA->value,
+            'DCFSA' => AccountType::DEPENDENT_CARE_FSA->value,
+            'SECTION_129' => AccountType::DEPENDENT_CARE_FSA->value,
         ];
         $token = self::normalizeToken($value);
         if (!isset($aliases[$token])) {
@@ -8249,6 +8279,9 @@ final class Engine
         if ($type === AccountType::HEALTH_FSA->value) {
             return array_replace($base, ['family' => 'health_fsa']);
         }
+        if ($type === AccountType::DEPENDENT_CARE_FSA->value) {
+            return array_replace($base, ['family' => 'dependent_care_fsa']);
+        }
         throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$type}");
     }
 
@@ -8366,6 +8399,8 @@ final class Engine
             'hsaDeductible' => 0.0,
             'hsaEmployerOrCafeteria' => 0.0,
             'healthFsaSalaryReduction' => 0.0,
+            'dependentCareSalaryReduction' => 0.0,
+            'dependentCareIncludibleInIncome' => 0.0,
         ];
     }
 
@@ -8376,7 +8411,9 @@ final class Engine
     {
         $result = self::zeroComponents();
         foreach (array_keys($result) as $key) {
-            if ($key === 'unclassifiedIra') {
+            // Both are derived splits computed by the engine rather than
+            // supplied inputs, in the same way unclassifiedIra is.
+            if ($key === 'unclassifiedIra' || $key === 'dependentCareIncludibleInIncome') {
                 continue;
             }
             $result[$key] = self::money($source[$key] ?? null, "existing.{$key}");
@@ -8459,7 +8496,9 @@ final class Engine
         // Form W-2 box 1 and out of social security and medicare wages, and
         // absent from federalAgiReduction, because the money was never included
         // rather than reduced.
-        $cafeteriaExclusion = $components['healthFsaSalaryReduction'];
+        $cafeteriaExclusion = self::roundMoney(
+            $components['healthFsaSalaryReduction'] + $components['dependentCareSalaryReduction'],
+        );
         $result['formW2Box1WageReduction'] = self::roundMoney(
             (!empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee) + $hsaExclusion + $cafeteriaExclusion,
         );
@@ -8500,11 +8539,22 @@ final class Engine
                 . 'and are outside Form W-2 box 1 and Social Security and Medicare wages (Notice 2004-2 A-19). They were never '
                 . 'included rather than reduced, and they reduce the IRC 223(a) deduction under IRC 223(b)(4)(B).';
         }
-        if ($cafeteriaExclusion > 0) {
+        if ($components['healthFsaSalaryReduction'] > 0) {
             $result['notes'][] = 'Health flexible spending arrangement salary reduction contributions are excluded from '
                 . 'gross income under IRC 125(a) and are outside Form W-2 box 1 and Social Security and Medicare wages '
                 . '(IRC 3121(a)(5)(G)). They are an exclusion rather than a deduction - the money never entered gross '
                 . 'income - so they do not appear in federalAgiReduction.';
+        }
+        if ($components['dependentCareSalaryReduction'] > 0) {
+            $result['notes'][] = 'Dependent care assistance within the IRC 129(a)(2) limitation is excluded from gross '
+                . 'income under IRC 129(a)(1) and is outside Form W-2 box 1 and Social Security and Medicare wages '
+                . '(IRC 3121(a)(18)); it is reported in Form W-2 box 10. It is an exclusion rather than a deduction, '
+                . 'so it does not appear in federalAgiReduction.';
+        }
+        if ($components['dependentCareIncludibleInIncome'] > 0) {
+            $result['notes'][] = 'Dependent care assistance above the IRC 129(a)(2) limitation is included in gross '
+                . 'income under IRC 129(a)(2)(B) in the taxable year the services were provided, so only the '
+                . 'excludable part reduces Form W-2 box 1 and Social Security and Medicare wages.';
         }
         return $result;
     }
@@ -8715,6 +8765,7 @@ final class Engine
         self::requireInputObject($rules, 'section457SpecialCatchUp', "{$path}.section457SpecialCatchUp");
         self::requireInputObject($rules, 'hsa', "{$path}.hsa");
         self::requireInputObject($rules, 'healthFsa', "{$path}.healthFsa");
+        self::requireInputObject($rules, 'dependentCareFsa', "{$path}.dependentCareFsa");
         if (array_key_exists('simpleEmployerContributionMethod', $rules) && !in_array(
             $rules['simpleEmployerContributionMethod'],
             ['match_3_percent', 'nonelective_2_percent', 'custom'],
@@ -8775,6 +8826,21 @@ final class Engine
         if (isset($rules['healthFsa']) && is_array($rules['healthFsa'])) {
             self::validateHealthFsaRules($rules['healthFsa'], "{$path}.healthFsa");
         }
+        if (isset($rules['dependentCareFsa']) && is_array($rules['dependentCareFsa'])) {
+            self::validateDependentCareFsaRules($rules['dependentCareFsa'], "{$path}.dependentCareFsa");
+        }
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateDependentCareFsaRules(array $rules, string $path): void
+    {
+        self::money($rules['employeeEarnedIncome'] ?? null, "{$path}.employeeEarnedIncome");
+        self::money($rules['spouseEarnedIncome'] ?? null, "{$path}.spouseEarnedIncome");
+        self::booleanFlag(
+            $rules,
+            'spouseIsStudentOrIncapableOfSelfCare',
+            "{$path}.spouseIsStudentOrIncapableOfSelfCare",
+        );
     }
 
     /** @param array<string,mixed> $rules */
@@ -9283,6 +9349,8 @@ final class Engine
             'hsaPlans' => [],
             'healthFsaPools' => [],
             'healthFsaPlans' => [],
+            'dependentCarePools' => [],
+            'dependentCarePlans' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
@@ -9292,6 +9360,7 @@ final class Engine
         // arrangements must be resolved before the health savings accounts that
         // consult them.
         self::initializeHealthFsaPools($context, $accounts);
+        self::initializeDependentCarePools($context, $accounts);
         self::initializeHsaPools($context, $accounts);
         return $context;
     }
@@ -10159,6 +10228,361 @@ final class Engine
             'sharedLimits' => $sharedLimits,
             'diagnostics' => $diagnostics,
             'healthFsaDetail' => $plan['detail'],
+        ];
+    }
+
+    /**
+     * IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L.
+     * 97-34, and the effective-date note to the section makes it applicable to
+     * taxable years beginning after December 31, 1981. Before that the section
+     * did not exist; from 1982 through 1986 it existed with no dollar
+     * limitation, which the Tax Reform Act of 1986 Pub. L. 99-514 s.1163 added
+     * for taxable years beginning after December 31, 1986. The three states
+     * report differently.
+     */
+    private const DEPENDENT_CARE_FIRST_TAX_YEAR = 1982;
+
+    /**
+     * IRC 129(a)(2)(A) is a per-return amount, not a per-person one, and only a
+     * joint return puts two people on one return. Spouses filing jointly
+     * therefore share one pool; everybody else, including each spouse of a
+     * married-separate pair filing their own return at the halved amount,
+     * carries their own.
+     *
+     * @param array<string,mixed> $context
+     */
+    private static function dependentCarePoolKey(array $context, string $ownerId): string
+    {
+        if ($context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value) {
+            $role = $context['persons'][$ownerId]['role'] ?? null;
+            if ($role === 'taxpayer' || $role === 'spouse') {
+                return 'return';
+            }
+        }
+        return "return:{$ownerId}";
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     */
+    private static function initializeDependentCarePools(array &$context, array $accounts): void
+    {
+        // The IRC 129(a)(2)(A) amount is one figure for the return, so which
+        // account draws on it first decides which employee's assistance is
+        // includible. That must follow the same deterministic order the
+        // allocation uses.
+        $dcAccounts = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] === 'dependent_care_fsa') {
+                $dcAccounts[] = $account;
+            }
+        }
+        if ($dcAccounts === []) {
+            return;
+        }
+        usort(
+            $dcAccounts,
+            static fn (array $left, array $right): int =>
+                (($left['priority'] ?? 100) <=> ($right['priority'] ?? 100))
+                ?: ($left['inputIndex'] <=> $right['inputIndex']),
+        );
+
+        $taxYear = (int) $context['taxYear'];
+        $yearParameters = $context['fsaParameters']['dependentCare'] ?? null;
+        $married = in_array($context['filingStatus'], [
+            FilingStatus::MARRIED_FILING_JOINTLY->value,
+            FilingStatus::MARRIED_FILING_SEPARATELY->value,
+        ], true);
+        $statutoryExclusion = null;
+        if ($yearParameters !== null) {
+            $statutoryExclusion = $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value
+                ? (float) $yearParameters['marriedFilingSeparatelyExclusionLimit']
+                : (float) $yearParameters['exclusionLimit'];
+        }
+
+        foreach ($dcAccounts as $account) {
+            $rules = $account['planRules']['dependentCareFsa'] ?? [];
+            if (!is_array($rules)) {
+                $rules = [];
+            }
+            $path = "accounts.{$account['id']}";
+            $diagnostics = [];
+            $status = CalculationStatus::DETERMINATE->value;
+            $indeterminate = false;
+            $unavailable = false;
+
+            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+
+            if ($yearParameters === null) {
+                $indeterminate = true;
+                $unavailable = $taxYear < self::DEPENDENT_CARE_FIRST_TAX_YEAR;
+                $diagnostics[] = $unavailable
+                    ? self::diagnostic(
+                        'DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR',
+                        DiagnosticSeverity::ERROR,
+                        'IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34, applicable to '
+                            . 'taxable years beginning after December 31, 1981, so no dependent care assistance '
+                            . "exclusion existed for tax year {$taxYear}.",
+                        'taxYear',
+                        'IRC 129; Pub. L. 97-34 s.124(f)',
+                    )
+                    : self::diagnostic(
+                        'DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987',
+                        DiagnosticSeverity::ERROR,
+                        'The IRC 129(a)(2)(A) limitation of exclusion was added by the Tax Reform Act of 1986, Pub. L. '
+                            . '99-514 section 1163(a), applicable to taxable years beginning after December 31, 1986. '
+                            . "For tax year {$taxYear} IRC 129 existed and excluded employer-provided dependent care "
+                            . 'assistance, but carried no dollar ceiling on the exclusion, so none is reported.',
+                        'taxYear',
+                        'IRC 129(a)(2)(A); Pub. L. 99-514 s.1163',
+                    );
+            }
+
+            // IRC 129(b)(1): the exclusion cannot exceed the employee's earned
+            // income, or, for a married employee, the lesser of the employee's
+            // and the spouse's. Both figures are caller-supplied; this package
+            // does not derive income.
+            $employeeEarnedIncome = array_key_exists('employeeEarnedIncome', $rules)
+                ? self::money($rules['employeeEarnedIncome'], "{$path}.planRules.dependentCareFsa.employeeEarnedIncome")
+                : null;
+            $spouseEarnedIncome = array_key_exists('spouseEarnedIncome', $rules)
+                ? self::money($rules['spouseEarnedIncome'], "{$path}.planRules.dependentCareFsa.spouseEarnedIncome")
+                : null;
+            $earnedIncomeLimitation = null;
+            if ($employeeEarnedIncome !== null && (!$married || $spouseEarnedIncome !== null)) {
+                $earnedIncomeLimitation = $married
+                    ? self::minMoney($employeeEarnedIncome, $spouseEarnedIncome)
+                    : $employeeEarnedIncome;
+            } elseif (!$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED',
+                    DiagnosticSeverity::WARNING,
+                    $married
+                        ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned "
+                            . 'income for the taxable year. Both are caller-supplied facts and at least one was not '
+                            . 'supplied, so the limitation has not been applied and the reported ceiling is the IRC '
+                            . '129(a)(2)(A) amount alone, which may overstate it.'
+                        : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. "
+                            . 'That is a caller-supplied fact and was not supplied, so the limitation has not been '
+                            . 'applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may '
+                            . 'overstate it.',
+                    "{$path}.planRules.dependentCareFsa.employeeEarnedIncome",
+                    'IRC 129(b)(1)',
+                );
+            }
+            if (($rules['spouseIsStudentOrIncapableOfSelfCare'] ?? null) === true && !$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED',
+                    DiagnosticSeverity::WARNING,
+                    'IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or '
+                        . 'incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, '
+                        . "because no primary source for it is committed to this package's evidence corpus and an "
+                        . 'unattested figure is never encoded. Any spouseEarnedIncome supplied is used exactly as '
+                        . 'stated, so supply the deemed amount if the deeming applies.',
+                    "{$path}.planRules.dependentCareFsa.spouseIsStudentOrIncapableOfSelfCare",
+                    'IRC 129(b)(2); IRC 21(d)(2)',
+                );
+            }
+
+            $applicableLimit = null;
+            if (!$indeterminate && $statutoryExclusion !== null) {
+                $applicableLimit = $earnedIncomeLimitation === null
+                    ? $statutoryExclusion
+                    : self::minMoney($statutoryExclusion, $earnedIncomeLimitation);
+            }
+
+            $diagnostics[] = self::diagnostic(
+                'DEPENDENT_CARE_FACTS_SUPPLIED_BY_CALLER',
+                DiagnosticSeverity::INFO,
+                'This calculation applies IRC 129(a)(2) and, where the earned income facts are supplied, IRC '
+                    . '129(b)(1). It does not test whether the program meets the IRC 129(d) written-plan '
+                    . 'requirements, the IRC 129(d)(2) through (8) nondiscrimination rules, the IRC 129(c) denial for '
+                    . 'amounts paid to a related individual, or whether the individuals cared for qualify. It does not '
+                    . "model the IRC 21 dependent care credit or the IRC 21(c) reduction of that credit's expense "
+                    . 'base. A dependent care program may not offer a carryover at all except under section 214 of the '
+                    . 'Consolidated Appropriations Act, 2021, which is a plan option this engine cannot read, so no '
+                    . 'dependent care carryover is modelled.',
+                $path,
+                'IRC 129',
+            );
+
+            $detail = [
+                'statutoryExclusion' => $indeterminate ? null : $statutoryExclusion,
+                'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                'applicableExclusionLimit' => $applicableLimit,
+                'electedSalaryReduction' => $elected,
+                'excludableAmount' => 0.0,
+                'includibleInIncome' => 0.0,
+                'householdExclusionShared' => false,
+            ];
+
+            if ($indeterminate) {
+                $context['dependentCarePlans'][(string) $account['id']] = [
+                    'status' => $unavailable
+                        ? CalculationStatus::UNAVAILABLE->value
+                        : CalculationStatus::INDETERMINATE->value,
+                    'diagnostics' => $diagnostics,
+                    'statutoryMaximum' => $unavailable ? 0.0 : null,
+                    'detail' => $detail,
+                    'poolKey' => null,
+                    'earnedIncomeLimitation' => $earnedIncomeLimitation,
+                ];
+                continue;
+            }
+
+            $poolKey = self::dependentCarePoolKey($context, (string) $account['ownerId']);
+            if (!isset($context['dependentCarePools'][$poolKey])) {
+                $context['dependentCarePools'][$poolKey] = [
+                    'id' => "irc-129:{$poolKey}",
+                    'legalLimit' => 'IRC 129(a)(2)(A) dependent care assistance exclusion, per return',
+                    'limit' => $statutoryExclusion,
+                    'used' => 0.0,
+                ];
+            }
+
+            $context['dependentCarePlans'][(string) $account['id']] = [
+                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'diagnostics' => $diagnostics,
+                'statutoryMaximum' => $applicableLimit,
+                'detail' => $detail,
+                'poolKey' => $poolKey,
+                'earnedIncomeLimitation' => $earnedIncomeLimitation,
+            ];
+        }
+
+        // A pool serving more than one account is a household figure two
+        // employees draw on, which IRC 129(a)(2)(A) makes visible rather than
+        // doubling.
+        $accountsByPool = [];
+        foreach ($context['dependentCarePlans'] as $plan) {
+            if ($plan['poolKey'] === null) {
+                continue;
+            }
+            $accountsByPool[$plan['poolKey']] = ($accountsByPool[$plan['poolKey']] ?? 0) + 1;
+        }
+        foreach ($context['dependentCarePlans'] as $accountId => $plan) {
+            if ($plan['poolKey'] !== null && ($accountsByPool[$plan['poolKey']] ?? 0) > 1) {
+                $context['dependentCarePlans'][$accountId]['detail']['householdExclusionShared'] = true;
+            }
+        }
+
+        // Assistance actually supplied draws on the household amount before any
+        // remaining capacity is offered, so what IRC 129(a)(2)(B) includes in
+        // income is measured against the amounts supplied rather than against
+        // capacity the scenario merely reports as available.
+        foreach ($dcAccounts as $account) {
+            $accountId = (string) $account['id'];
+            if (!isset($context['dependentCarePlans'][$accountId])) {
+                continue;
+            }
+            $plan = $context['dependentCarePlans'][$accountId];
+            if ($plan['poolKey'] === null || !isset($context['dependentCarePools'][$plan['poolKey']])) {
+                continue;
+            }
+            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+            if ($elected <= 0) {
+                continue;
+            }
+            $householdRemaining = self::poolRemaining($context['dependentCarePools'][$plan['poolKey']]) ?? 0.0;
+            $ceiling = $plan['earnedIncomeLimitation'] === null
+                ? $householdRemaining
+                : self::minMoney($householdRemaining, $plan['earnedIncomeLimitation']);
+            $excludable = self::minMoney($elected, $ceiling);
+            $includible = self::roundMoney($elected - $excludable);
+            $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
+                (float) $context['dependentCarePools'][$plan['poolKey']]['used'] + $excludable,
+            );
+            $context['dependentCarePlans'][$accountId]['detail']['excludableAmount'] = $excludable;
+            $context['dependentCarePlans'][$accountId]['detail']['includibleInIncome'] = $includible;
+            if ($includible > 0) {
+                array_unshift(
+                    $context['dependentCarePlans'][$accountId]['diagnostics'],
+                    self::diagnostic(
+                        'DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME',
+                        DiagnosticSeverity::WARNING,
+                        '$' . self::localeNumber($includible) . ' of the $' . self::localeNumber($elected)
+                            . ' of dependent care assistance supplied exceeds the limitation that applies to this '
+                            . 'employee, so IRC 129(a)(2)(B) includes it in gross income for the taxable year in which '
+                            . 'the dependent care services were provided. The IRC 129(a)(2)(A) amount is a per-return '
+                            . 'figure rather than a per-person one, so two employees on one return draw on a single '
+                            . 'amount rather than one each.',
+                        "accounts.{$account['id']}.existingContributions.dependentCareSalaryReduction",
+                        'IRC 129(a)(2)(B)',
+                    ),
+                );
+                $context['dependentCarePlans'][$accountId]['status'] = self::accountStatusFromDiagnostics(
+                    $context['dependentCarePlans'][$accountId]['status'],
+                    $context['dependentCarePlans'][$accountId]['diagnostics'],
+                );
+            }
+        }
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param array<string,mixed> $account
+     *  @return array<string,mixed>
+     */
+    private static function allocateDependentCareFsa(array &$context, array $account): array
+    {
+        $plan = $context['dependentCarePlans'][(string) $account['id']];
+        $annual = $account['existingContributions'];
+        $additional = self::zeroComponents();
+        $sharedLimits = [];
+        $diagnostics = $plan['diagnostics'];
+        $detail = $plan['detail'];
+        $poolKey = $plan['poolKey'];
+        $hasPool = $poolKey !== null && isset($context['dependentCarePools'][$poolKey]);
+
+        if ($plan['status'] === CalculationStatus::UNAVAILABLE->value
+            || $plan['status'] === CalculationStatus::INDETERMINATE->value
+            || !$hasPool
+        ) {
+            if ($hasPool) {
+                self::reportPoolWithoutConsuming($context['dependentCarePools'][$poolKey], $sharedLimits);
+            }
+            return [
+                'status' => $plan['status'] === CalculationStatus::UNAVAILABLE->value
+                    ? CalculationStatus::UNAVAILABLE->value
+                    : CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => $plan['statutoryMaximum'],
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+                'dependentCareDetail' => $detail,
+            ];
+        }
+
+        // The supplied assistance already drew on the household IRC 129(a)(2)(A)
+        // amount, so what is left is the further exclusion this employee could
+        // reach, capped by their own IRC 129(b)(1) earned income ceiling.
+        $alreadyExcluded = (float) $detail['excludableAmount'];
+        $headroom = $plan['earnedIncomeLimitation'] === null
+            ? (self::poolRemaining($context['dependentCarePools'][$poolKey]) ?? 0.0)
+            : self::nonnegative(self::roundMoney((float) $plan['earnedIncomeLimitation'] - $alreadyExcluded));
+        $additionalExcludable = self::takeFromPool(
+            $context['dependentCarePools'][$poolKey],
+            $headroom,
+            $sharedLimits,
+        );
+
+        $annual['dependentCareSalaryReduction'] = self::roundMoney($alreadyExcluded + $additionalExcludable);
+        $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
+        $additional['dependentCareSalaryReduction'] = $additionalExcludable;
+        $detail['excludableAmount'] = $annual['dependentCareSalaryReduction'];
+
+        return [
+            'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
+            'statutoryMaximum' => $plan['statutoryMaximum'],
+            'annualComponents' => $annual,
+            'additionalComponents' => $additional,
+            'planTermDependentCapacity' => 0.0,
+            'sharedLimits' => $sharedLimits,
+            'diagnostics' => $diagnostics,
+            'dependentCareDetail' => $detail,
         ];
     }
 
@@ -11417,6 +11841,7 @@ final class Engine
             'section457f' => self::allocateSection457f($account),
             'hsa' => self::allocateHsa($context, $account),
             'health_fsa' => self::allocateHealthFsa($context, $account),
+            'dependent_care_fsa' => self::allocateDependentCareFsa($context, $account),
             default => throw new ParameterException(
                 'UNSUPPORTED_ACCOUNT_FAMILY',
                 "Unsupported account family {$traits['family']}.",
@@ -13332,6 +13757,8 @@ final class Engine
             'nondeductibleIraContribution' => 0.0,
             'hsaContribution' => 0.0,
             'healthFsaSalaryReduction' => 0.0,
+            'dependentCareAssistanceExclusion' => 0.0,
+            'dependentCareIncludibleInIncome' => 0.0,
             'federalAgiReduction' => 0.0,
             'federalAgiIncrease' => 0.0,
             'taxableRothConversions' => 0.0,
@@ -13383,6 +13810,12 @@ final class Engine
             );
             $totals['healthFsaSalaryReduction'] = self::roundMoney(
                 $totals['healthFsaSalaryReduction'] + $components['healthFsaSalaryReduction'],
+            );
+            $totals['dependentCareAssistanceExclusion'] = self::roundMoney(
+                $totals['dependentCareAssistanceExclusion'] + $components['dependentCareSalaryReduction'],
+            );
+            $totals['dependentCareIncludibleInIncome'] = self::roundMoney(
+                $totals['dependentCareIncludibleInIncome'] + $components['dependentCareIncludibleInIncome'],
             );
             $totals['federalAgiReduction'] = self::roundMoney(
                 $totals['federalAgiReduction'] + $account['federalTaxEffects']['federalAgiReduction'],

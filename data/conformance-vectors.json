@@ -4747,6 +4747,570 @@
       "expectError": {
         "code": "INVALID_HEALTH_FSA_PURPOSE"
       }
+    },
+    {
+      "name": "2025 dependent care assistance exclusion on a single return",
+      "description": "IRC 129(a)(2)(A) sets the amount excludable for dependent care services provided during a taxable year at 5000, and the amount is not inflation adjusted, so no revenue procedure states it and 2025 carries the same figure the Tax Reform Act of 1986 put there. IRC 129(a)(1) excludes it from gross income, so it comes out of Form W-2 box 1 and out of social security and medicare wages under IRC 3121(a)(18) and contributes nothing to federalAgiReduction. The employee's 60000 of earned income does not bind under IRC 129(b)(1)(A).",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 60000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 5000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 5000,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 60000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 5000,
+        "accounts.0.dependentCareFsa.excludableAmount": 5000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 5000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 5000,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 0,
+        "totals.dependentCareAssistanceExclusion": 5000,
+        "totals.dependentCareIncludibleInIncome": 0
+      }
+    },
+    {
+      "name": "2025 dependent care exclusion is halved on a married separate return",
+      "description": "The IRC 129(a)(2)(A) parenthetical sets the amount at 2500 in the case of a separate return by a married individual. Married separate spouses file separate returns, so each carries their own 2500 rather than dividing one 5000, which is why the amount is halved rather than shared. IRC 129(b)(1)(B) needs both spouses' earned income; 60000 and 55000 leave the statutory amount binding.",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000,
+                "spouseEarnedIncome": 55000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 2500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 55000,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false
+      }
+    },
+    {
+      "name": "2021 only, the ARPA dependent care exclusion is 10500",
+      "description": "IRC 129(a)(2)(D), added by the American Rescue Plan Act of 2021, Pub. L. 117-2 section 9632(a), applies subparagraph (A) for a taxable year beginning after December 31, 2020 and before January 1, 2022 by substituting \"$10,500 (half such dollar amount\" for \"$5,000 ($2,500\". The statute writes the separate-return amount as half rather than as a number, and half of 10500 is 5250. Enacted in March 2021, so Rev. Proc. 2020-45 could not carry it; the authority is the act.",
+      "input": {
+        "taxYear": 2021,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 70000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 10500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 10500,
+        "fsaParameters.dependentCare.exclusionLimit": 10500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 5250
+      }
+    },
+    {
+      "name": "2022 reverts to the pre-ARPA dependent care exclusion",
+      "description": "IRC 129(a)(2)(D) reaches only a taxable year beginning before January 1, 2022, so the substitution lapses and subparagraph (A) applies unmodified from 2022: 5000, or 2500 on a married separate return. A 2021-only vector passes even if the reversion is missing entirely, which is why the pair is needed rather than the single year.",
+      "input": {
+        "taxYear": 2022,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 70000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 5000,
+        "fsaParameters.dependentCare.exclusionLimit": 5000,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    {
+      "name": "2026 dependent care exclusion rises to 7500 under Pub. L. 119-21",
+      "description": "Pub. L. 119-21 section 70404(a) amends IRC 129(a)(2)(A) by striking \"$5,000 ($2,500\" and inserting \"$7,500 ($3,750\", and section 70404(b) applies the amendment to taxable years beginning after December 31, 2025. It is a fixed-dollar substitution that adds no indexing mechanism. Paired with the 2025 vector this pins the effective date; the 2024 edition of the Code still prints the old figures, so a year block generated from the Code text alone would be wrong here.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 60000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 60000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) earned income limitation binds below the statutory amount",
+      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 3000
+      }
+    },
+    {
+      "name": "the IRC 129(b)(1) limitation is asked for when the earned income facts are absent",
+      "description": "IRC 129(b)(1) is a hard ceiling, not an optional refinement, so leaving it out cannot be silent. Nothing is assumed about the employee's income: the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate the exclusion, and the status records the assumption. Married employees need both figures under IRC 129(b)(1)(B), so supplying only the employee's is still incomplete.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED"
+      }
+    },
+    {
+      "name": "the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled",
+      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 500,
+                "spouseIsStudentOrIncapableOfSelfCare": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 500,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED"
+      }
+    },
+    {
+      "name": "spouses filing jointly share one IRC 129 household exclusion",
+      "description": "IRC 129(a)(2)(A) limits the amount which may be excluded for dependent care services provided during a taxable year, and IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4); it is a per-return figure, not a per-person one. Two spouses electing 5000 each for 2026 against the 7500 household amount therefore exclude 7500 in total, not 15000, and IRC 129(a)(2)(B) includes the remaining 2500 in gross income for the taxable year the services were provided. This is the deliberate contrast with IRC 125(i), which is per employee and gives each spouse a full limit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 80000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 5000
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 80000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.excludableAmount": 5000,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": true,
+        "accounts.0.sharedLimits.0.limit": 7500,
+        "accounts.1.dependentCareFsa.excludableAmount": 2500,
+        "accounts.1.dependentCareFsa.includibleInIncome": 2500,
+        "accounts.1.dependentCareFsa.householdExclusionShared": true,
+        "accounts.1.federalTaxEffects.formW2Box1WageReduction": 2500,
+        "accounts.1.federalTaxEffects.ficaWageReduction": 2500,
+        "accounts.1.diagnostics.0.code": "DEPENDENT_CARE_AMOUNT_INCLUDIBLE_IN_INCOME",
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.dependentCareIncludibleInIncome": 2500
+      }
+    },
+    {
+      "name": "married separate spouses do not share one IRC 129 exclusion",
+      "description": "IRC 129(a)(2)(A) is per return and married separate spouses file two returns, so each carries their own halved 3750 amount for 2026 rather than dividing a single 7500. Two 3750 elections are therefore both wholly excludable and nothing is includible, which pooling them would get wrong by including 3750. Paired with the joint vector on the same two elections, this pins that filing status and not marriage decides the pooling.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3750
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 80000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "dependent_care_fsa",
+            "employerId": "e2",
+            "existingContributions": {
+              "dependentCareSalaryReduction": 3750
+            },
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 80000,
+                "spouseEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.dependentCareFsa.statutoryExclusion": 3750,
+        "accounts.0.dependentCareFsa.excludableAmount": 3750,
+        "accounts.0.dependentCareFsa.includibleInIncome": 0,
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.1.dependentCareFsa.excludableAmount": 3750,
+        "accounts.1.dependentCareFsa.includibleInIncome": 0,
+        "accounts.1.dependentCareFsa.householdExclusionShared": false,
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.dependentCareIncludibleInIncome": 0
+      }
+    },
+    {
+      "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
+      "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dcap",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 40000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987"
+      }
+    },
+    {
+      "name": "1981 predates IRC 129 entirely",
+      "description": "The effective-date note to IRC 129 makes the section applicable to taxable years beginning after December 31, 1981, under section 124(f) of the Economic Recovery Tax Act of 1981, Pub. L. 97-34. For 1981 there was no dependent care assistance exclusion at all, which is a different fact from the 1982 through 1986 years where the exclusion existed without a ceiling. The two therefore report differently: unavailable with a zero here, indeterminate with a null there.",
+      "input": {
+        "taxYear": 1981,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dcap",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 40000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR"
+      }
+    },
+    {
+      "name": "a health FSA and a dependent care FSA carry independent limits",
+      "description": "IRC 125(i) limits salary reduction contributions to a health flexible spending arrangement and Notice 2012-40 section III states expressly that it does not limit employee salary reduction contributions to an FSA for dependent care assistance, which IRC 129(a)(2)(A) governs separately. For 2026 an employee may therefore elect 3400 under Rev. Proc. 2025-32 section 3.15 and 7500 under IRC 129(a)(2)(A) as amended by Pub. L. 119-21 section 70404, and the two figures never draw on one another.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 120000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          },
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 120000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.1.statutoryMaximumAnnualContribution": 7500,
+        "totals.healthFsaSalaryReduction": 3400,
+        "totals.dependentCareAssistanceExclusion": 7500,
+        "totals.federalAgiReduction": 0
+      }
     }
   ]
 }

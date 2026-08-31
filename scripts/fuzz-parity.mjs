@@ -71,6 +71,7 @@ const ACCOUNT_TYPES = [
   "defined_benefit_plan", "cash_balance_plan",
   "hsa",
   "health_fsa",
+  "dependent_care_fsa",
 ];
 const FILING_STATUSES = [
   "single", "married_filing_jointly", "married_filing_separately",
@@ -87,7 +88,7 @@ const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
   "employeeAfterTax", "employerPreTax", "employerRoth", "deductibleIra", "nondeductibleIra",
   "rothIra", "special403bCatchUp", "special457CatchUp", "hsaDeductible", "hsaEmployerOrCafeteria",
-  "healthFsaSalaryReduction",
+  "healthFsaSalaryReduction", "dependentCareSalaryReduction",
 ];
 
 /**
@@ -155,6 +156,25 @@ function randomHealthFsaRules() {
   return rules;
 }
 
+/**
+ * IRC 129 facts. Earned income is generated below, at, and above the
+ * IRC 129(a)(2)(A) amounts for every encoded year so the IRC 129(b)(1)
+ * limitation binds and falls away, and each of the employee-only, spouse-only
+ * and neither-supplied shapes is reached.
+ */
+function randomDependentCareRules() {
+  const rules = {};
+  if (chance(0.65)) {
+    rules.employeeEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  }
+  if (chance(0.55)) {
+    rules.spouseEarnedIncome = chance(0.05) ? junk() : pick([0, 0.01, 1, 2500, 3750, 5000, 7500, 10500, 60000, money()]);
+  }
+  if (chance(0.3)) rules.spouseIsStudentOrIncapableOfSelfCare = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.04)) rules[pick(["employeeEarnedIncome", "spouseEarnedIncome", "spouseIsStudentOrIncapableOfSelfCare"])] = junk();
+  return rules;
+}
+
 function randomPlanRules(type) {
   const rules = {};
   if (chance(0.8)) rules.planCompensation = money();
@@ -192,6 +212,7 @@ function randomPlanRules(type) {
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
   if (type === "health_fsa" || chance(0.05)) rules.healthFsa = randomHealthFsaRules();
+  if (type === "dependent_care_fsa" || chance(0.05)) rules.dependentCareFsa = randomDependentCareRules();
   if (chance(0.04)) {
     rules[pick([
       "planCompensation", "employerMatchRate", "employerNonelectiveRate",
@@ -250,9 +271,11 @@ function randomPerson(id, role, taxYear) {
 function randomScenario() {
   const hsaHeavy = chance(0.35);
   const fsaHeavy = chance(0.3);
-  const taxYear = hsaHeavy || fsaHeavy
+  const taxYear = hsaHeavy
     ? integer(2002, 2028)
-    : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
+    : fsaHeavy
+      ? pick([integer(1979, 1990), integer(2009, 2028)])
+      : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
   const filingStatus = pick(FILING_STATUSES);
   const personCount = chance(0.55) ? 2 : 1;
   const persons = [randomPerson("t", "taxpayer", taxYear)];
@@ -263,8 +286,8 @@ function randomScenario() {
   for (let index = 0; index < accountCount; index += 1) {
     const type = hsaHeavy && chance(0.7)
       ? "hsa"
-      : fsaHeavy && chance(0.7)
-        ? pick(["health_fsa", "hsa"])
+      : fsaHeavy && chance(0.8)
+        ? pick(["health_fsa", "dependent_care_fsa", "dependent_care_fsa", "hsa"])
         : pick(ACCOUNT_TYPES);
     const account = {
       id: `a${index}`,

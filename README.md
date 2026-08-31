@@ -298,6 +298,7 @@ cannot tell it apart from a JSON array, so neither engine may.
 | Employer-only defined-contribution plans | 401(a), profit-sharing, money-purchase, Keogh, ESOP |
 | Pension arrangements | Defined-benefit and cash-balance plans |
 | Health accounts | Health savings account (HSA), health flexible spending arrangement (health FSA) |
+| Dependent care | Dependent care assistance program (dependent care FSA) |
 
 Defined-benefit and cash-balance contributions are deliberately returned as `indeterminate`; their funding requires the plan formula, census, assets, actuarial assumptions, and funding rules.
 
@@ -535,6 +536,37 @@ both spellings rather than silently picking one.
 Encoded §125 and §129 parameters are verified against the documents that published them —
 see [`evidence/fsa-limits/`](evidence/fsa-limits/).
 
+## Dependent care assistance (IRC §129)
+
+§129(a)(2)(A) is a **per-return** amount, which is the single most important
+difference from §125(i). Two spouses filing jointly do not get one each.
+
+| Rule | Treatment |
+|---|---|
+| §129(a)(2)(A) exclusion | Not inflation-adjusted, so it appears in no Revenue Procedure and is cited to the Code. Each year is encoded as its own row, so the 2021 increase and its reversion are both data rather than a rule |
+| Married filing separately | The statutory parenthetical amount. Separate returns mean each spouse carries their own halved amount rather than dividing one |
+| **2021 only** | ARPA §9632 substituted "$10,500 (half such dollar amount" for taxable years beginning after 2020 and before 2022 — enacted in March 2021, so Rev. Proc. 2020-45 could not carry it |
+| **2026 onward** | Pub. L. 119-21 §70404 struck `$5,000 ($2,500` and inserted `$7,500 ($3,750` for taxable years beginning after December 31, 2025. A fixed-dollar substitution: the amount changed, the absence of indexing did not |
+| Household sharing | Spouses filing jointly draw on one pool, reported through `sharedLimits` so the constraint is visible. Assistance above it is `includibleInIncome` under §129(a)(2)(B), not silently dropped |
+| §129(b)(1) earned income | Applied whenever the caller supplies the figures: the employee's earned income, or for a married employee the lesser of theirs and their spouse's. Absent, the ceiling is the §129(a)(2)(A) amount alone and a `WARNING` says the limitation was not applied |
+| Years before 1987 | §129 existed from 1982 but carried **no dollar ceiling** until the Tax Reform Act of 1986 §1163. Those years are `indeterminate` with a null limit; 1981 and earlier, when §129 did not exist at all, are `unavailable` with a zero |
+| §129(a)(1) exclusion | Reduces W-2 box 1 and FICA wages and contributes nothing to `federalAgiReduction`, exactly as the §125 and §106(d) exclusions do |
+
+### Why the earned income limitation is here at all
+
+The package's boundary is that it does not *derive* income, not that it ignores
+supplied facts. §129(b)(1) is a hard statutory ceiling, so leaving it out
+entirely would over-report the exclusion for exactly the taxpayers it was
+written for. Both figures are caller-supplied, like every other fact here.
+
+**§129(b)(2) deeming is not modelled.** For a spouse who is a student or
+incapable of self-care, §129(b)(2) applies the §21(d)(2) monthly schedule. That
+schedule is not encoded, because no primary source for it is committed to this
+package's evidence corpus and an unattested figure is never encoded. Asserting
+`spouseIsStudentOrIncapableOfSelfCare` records that any `spouseEarnedIncome`
+supplied is the deemed amount, and emits a diagnostic saying the schedule is not
+applied for you.
+
 ## Multiple employers
 
 Statutory pools are keyed to match the statute rather than to the taxpayer uniformly:
@@ -734,6 +766,9 @@ The package does not calculate:
 - Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
 - The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.
 - Adoption assistance under §137, commuter benefits under §132(f), and educational assistance under §127.
+- The §21 dependent care **credit**, and the §21(c) interaction whereby §129 exclusions reduce that credit's expense base. The §129 exclusion is calculated; the credit is not.
+- The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.
+- Whether a dependent care program meets the §129(d) written-plan and nondiscrimination requirements, the §129(c) denial for amounts paid to a related individual, and whether the individuals cared for qualify.
 - The §408(d)(9)(C) once-per-lifetime limitation on a qualified HSA funding distribution and the separate §408(d)(9)(D) testing period. The §223(b)(4)(C) reduction itself *is* applied, from the amount supplied as `persons[].qualifiedHsaFundingDistributions`, which is taken as stated.
 - The retirement savings contributions credit.
 - Required minimum distributions or distribution penalties.

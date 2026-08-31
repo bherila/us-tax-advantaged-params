@@ -708,6 +708,46 @@ test('the health FSA builder reaches every IRC 125(i) plan fact', function (): v
     assertSameValue(0.0, $fsa['healthFsa']['employerFlexCreditCountedAgainstLimit']);
 });
 
+test('validates IRC 129 earned income facts before calculating anything', function (): void {
+    $cases = [
+        'INVALID_MONEY' => ['employeeEarnedIncome' => -1],
+        'INVALID_BOOLEAN' => ['spouseIsStudentOrIncapableOfSelfCare' => 'yes'],
+    ];
+    foreach ($cases as $expectedCode => $rules) {
+        try {
+            scenario(2026, [['id' => 't', 'birthYear' => 1985]], [[
+                'id' => 'd', 'ownerId' => 't', 'type' => 'dependent_care_fsa',
+                'planRules' => ['dependentCareFsa' => $rules],
+            ]]);
+            failTest("Expected ParameterException {$expectedCode}");
+        } catch (ParameterException $error) {
+            assertSameValue($expectedCode, $error->errorCode);
+        }
+    }
+    assertSameValue(AccountType::DEPENDENT_CARE_FSA->value, U::normalizeAccountType('DCAP'));
+    assertSameValue(AccountType::DEPENDENT_CARE_FSA->value, U::normalizeAccountType('dependent care assistance'));
+});
+
+test('the dependent care builder reaches the IRC 129(b) earned income facts', function (): void {
+    $result = ScenarioBuilder::forTaxYear(2026)
+        ->filingStatus(FilingStatus::MARRIED_FILING_JOINTLY)
+        ->taxpayer('t', static fn ($person) => $person->bornIn(1985))
+        ->spouse('s', static fn ($person) => $person->bornIn(1986))
+        ->addAccount(
+            (new AccountBuilder('d', 't', AccountType::DEPENDENT_CARE_FSA))
+                ->employer('e')
+                ->dependentCareEarnedIncome(90000, 4000),
+        )
+        ->calculate();
+    $dc = accountResult($result, 'd');
+    assertSameValue(CalculationStatus::DETERMINATE->value, $dc['status']);
+    assertSameValue(4000.0, $dc['statutoryMaximumAnnualContribution']);
+    assertSameValue(7500.0, $dc['dependentCareFsa']['statutoryExclusion']);
+    assertSameValue(4000.0, $dc['dependentCareFsa']['earnedIncomeLimitation']);
+    assertSameValue(0.0, $dc['federalTaxEffects']['federalAgiReduction']);
+    assertSameValue(4000.0, $dc['federalTaxEffects']['ficaWageReduction']);
+});
+
 $failed = 0;
 $started = microtime(true);
 foreach ($tests as $name => $body) {
