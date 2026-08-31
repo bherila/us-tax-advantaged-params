@@ -31,3 +31,6 @@
 # from text normalisation and diffing keeps them byte-identical to what was
 # downloaded, which is what SHA256SUMS.txt attests.
 /evidence/**/*.pdf -text -diff
+# Primary-law HTML captures are hash-pinned source artifacts too. Preserve their
+# upstream line endings and whitespace exactly, just like the PDF notices.
+/evidence/**/*.html -text -diff

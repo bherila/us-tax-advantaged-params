@@ -97,6 +97,11 @@ test('supports 1975 through 2026 without extrapolation', function (): void {
     assertSameValue(['minimum' => 1975, 'maximum' => 2026], U::supportedTaxYears());
     assertSameValue(1500, U::parametersForYear(1975)['ira']['baseContributionLimit']);
     assertSameValue(7500, U::parametersForYear(2026)['ira']['baseContributionLimit']);
+    assertSameValue([
+        'annualLimit' => 3000,
+        'lifetimeLimit' => 15000,
+        'serviceLimitPerYear' => 5000,
+    ], U::parametersForYear(2026)['special403b15YearCatchUp']);
     try {
         U::parametersForYear(2027);
         failTest('Expected UnsupportedTaxYearException');
@@ -144,6 +149,23 @@ test('2026 age 60 to 63 high wage catch-up is Roth', function (): void {
     assertSameValue(11250, $k['contributionComponents']['employeeRothCatchUp']);
     assertSameValue(0, $k['contributionComponents']['employeePreTaxCatchUp']);
     assertSameValue(35750, $k['maximumAnnualContributionBasedOnInputs']);
+});
+
+test('reports the quantified amount of an existing contribution above an account ceiling', function (): void {
+    $result = scenario(2026, [[
+        'id' => 't',
+        'birthYear' => 1980,
+        'compensation' => ['iraCompensation' => 50000],
+        'coveredByEmployerRetirementPlan' => false,
+        'magi' => ['traditionalIraDeduction' => 50000, 'rothIra' => 50000],
+    ]], [[
+        'id' => 'ira',
+        'ownerId' => 't',
+        'type' => 'traditional_ira',
+        'existingContributions' => ['deductibleIra' => 20000],
+    ]]);
+    // IRC 219(b)(5)(A)'s 2026 $7,500 limit leaves $12,500 excessive.
+    assertSameValue(12500, accountResult($result, 'ira')['excessContribution']);
 });
 
 test('high wage catch-up is unavailable without plan Roth catch-up', function (): void {

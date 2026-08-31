@@ -787,6 +787,12 @@ private const PARAMETER_JSON = <<<'JSON'
       "title": "SARSEP Fix-It Guide: contribution-limit and compensation rules",
       "url": "https://www.irs.gov/retirement-plans/sarsep-fix-it-guide-total-contributions-employee-elective-deferrals-and-nonelective-employer-contributions-exceeded-the-maximum-legal-limits",
       "authority": "IRS"
+    },
+    {
+      "id": "usc-26-402",
+      "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -863,6 +869,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1976": {
@@ -938,6 +949,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1977": {
@@ -1013,6 +1029,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1978": {
@@ -1088,6 +1109,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1979": {
@@ -1163,6 +1189,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1980": {
@@ -1238,6 +1269,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1981": {
@@ -1313,6 +1349,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1982": {
@@ -1388,6 +1429,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1983": {
@@ -1463,6 +1509,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1984": {
@@ -1538,6 +1589,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1985": {
@@ -1613,6 +1669,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1986": {
@@ -1688,6 +1749,11 @@ private const PARAMETER_JSON = <<<'JSON'
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1987": {
@@ -1785,6 +1851,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1988": {
@@ -1882,6 +1953,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1989": {
@@ -1979,6 +2055,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1990": {
@@ -2076,6 +2157,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1991": {
@@ -2173,6 +2259,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1992": {
@@ -2270,6 +2361,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1993": {
@@ -2367,6 +2463,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1994": {
@@ -2464,6 +2565,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1995": {
@@ -2561,6 +2667,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1996": {
@@ -2658,6 +2769,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1997": {
@@ -2685,7 +2801,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2755,6 +2871,11 @@ private const PARAMETER_JSON = <<<'JSON'
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1998": {
@@ -2782,7 +2903,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2865,6 +2986,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1999": {
@@ -2892,7 +3018,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2975,6 +3101,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2000": {
@@ -3085,6 +3216,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2001": {
@@ -3195,6 +3331,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2002": {
@@ -3305,6 +3446,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2003": {
@@ -3415,6 +3561,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2004": {
@@ -3525,6 +3676,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2005": {
@@ -3635,6 +3791,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2006": {
@@ -3745,6 +3906,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2007": {
@@ -3855,6 +4021,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2008": {
@@ -3965,6 +4136,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2009": {
@@ -4075,6 +4251,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2010": {
@@ -4185,6 +4366,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2011": {
@@ -4295,6 +4481,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2012": {
@@ -4405,6 +4596,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2013": {
@@ -4515,6 +4711,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2014": {
@@ -4625,6 +4826,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2015": {
@@ -4735,6 +4941,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2016": {
@@ -4845,6 +5056,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2017": {
@@ -4955,6 +5171,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2018": {
@@ -5065,6 +5286,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2019": {
@@ -5175,6 +5401,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2020": {
@@ -5285,6 +5516,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2021": {
@@ -5395,6 +5631,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2022": {
@@ -5505,6 +5746,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2023": {
@@ -5615,6 +5861,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2024": {
@@ -5725,6 +5976,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2025": {
@@ -5835,6 +6091,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2026": {
@@ -5945,6 +6206,11 @@ private const PARAMETER_JSON = <<<'JSON'
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     }
   }
@@ -6777,6 +7043,9 @@ final class Engine
             $existingAnnual = self::sumComponents($account['existingContributions']);
             $annualMaximum = self::sumComponents($outcome['annualComponents']);
             $additionalMaximum = self::sumComponents($outcome['additionalComponents']);
+            $excessContribution = $outcome['statutoryMaximum'] === null
+                ? null
+                : self::nonnegative($existingAnnual - (float) $outcome['statutoryMaximum']);
             $diagnostics = $outcome['diagnostics'];
             if (
                 $outcome['statutoryMaximum'] !== null
@@ -6822,6 +7091,7 @@ final class Engine
                         ? null
                         : $additionalMaximum,
                 'existingAnnualContribution' => $existingAnnual,
+                'excessContribution' => $excessContribution,
                 'contributionComponents' => $outcome['annualComponents'],
                 'planTermDependentCapacity' => $outcome['planTermDependentCapacity'],
                 'federalTaxEffects' => self::contributionTaxEffects(
@@ -8423,7 +8693,7 @@ final class Engine
             $context['special403bCatchUpPools'][$id] = [
                 'id' => "402g7:{$id}",
                 'legalLimit' => 'IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit',
-                'limit' => 3000.0,
+                'limit' => (float) $context['parameters']['special403b15YearCatchUp']['annualLimit'],
                 'used' => 0.0,
             ];
         }
@@ -10035,21 +10305,25 @@ final class Engine
             : (float) $context['parameters']['electiveDeferral402g'];
     }
 
-    /** @param array<string,mixed> $account */
-    private static function special403bCatchUpLimit(array $account): float
+    /** @param array<string,mixed> $parameters
+     *  @param array<string,mixed> $account
+     */
+    private static function special403bCatchUpLimit(array $parameters, array $account): float
     {
         $input = $account['planRules']['special403bCatchUp'] ?? null;
         if (!is_array($input) || empty($input['eligible'])) {
             return 0.0;
         }
+        $limits = $parameters['special403b15YearCatchUp'];
         $lifetimeRemaining = self::nonnegative(
-            15000.0 - self::money($input['priorSpecialCatchUpUsed'] ?? null, "{$account['id']}.priorSpecialCatchUpUsed"),
+            (float) $limits['lifetimeLimit']
+            - self::money($input['priorSpecialCatchUpUsed'] ?? null, "{$account['id']}.priorSpecialCatchUpUsed"),
         );
         $serviceRemaining = self::nonnegative(
-            5000.0 * (float) $input['yearsOfService']
+            (float) $limits['serviceLimitPerYear'] * (float) $input['yearsOfService']
             - self::money($input['priorElectiveDeferrals'] ?? null, "{$account['id']}.priorElectiveDeferrals"),
         );
-        return self::floorMoney(self::minMoney(3000.0, $lifetimeRemaining, $serviceRemaining));
+        return self::floorMoney(self::minMoney((float) $limits['annualLimit'], $lifetimeRemaining, $serviceRemaining));
     }
 
     /** @param array<string,mixed> $context
@@ -10233,7 +10507,7 @@ final class Engine
             - $annual['special403bCatchUp'],
         );
         if (!empty($traits['is403b'])) {
-            $specialLimit = self::special403bCatchUpLimit($account);
+            $specialLimit = self::special403bCatchUpLimit($context['parameters'], $account);
             $existingSpecial = $account['existingContributions']['special403bCatchUp'];
             $planDocumentRemaining = !array_key_exists('planDocumentAnnualAdditionsLimit', $account['planRules'])
                 ? PHP_FLOAT_MAX

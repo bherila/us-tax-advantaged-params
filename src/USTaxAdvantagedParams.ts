@@ -434,6 +434,8 @@ export interface AccountCalculationResult {
   maximumAnnualContributionBasedOnInputs: Money | null;
   maximumAdditionalContributionBasedOnInputs: Money | null;
   existingAnnualContribution: Money;
+  /** Amount of supplied contributions above this account's determinable statutory ceiling. */
+  excessContribution: Money | null;
   contributionComponents: ContributionComponents;
   /** Potential IRC 415(c) space that requires unknown plan/employer terms. */
   planTermDependentCapacity: Money;
@@ -509,6 +511,12 @@ export interface YearParameters {
     rothAvailable: boolean;
   };
   electiveDeferral402g: Money | null;
+  /** IRC 402(g)(7) 15-year catch-up limits for eligible 403(b) employees. */
+  special403b15YearCatchUp: {
+    annualLimit: Money;
+    lifetimeLimit: Money;
+    serviceLimitPerYear: Money;
+  };
   generalAge50CatchUp: Money;
   age60To63CatchUp: Money | null;
   rothCatchUpPriorYearFicaWageThreshold: Money | null;
@@ -681,6 +689,12 @@ const RAW_PARAMETERS: ParameterData = {
       "title": "SARSEP Fix-It Guide: contribution-limit and compensation rules",
       "url": "https://www.irs.gov/retirement-plans/sarsep-fix-it-guide-total-contributions-employee-elective-deferrals-and-nonelective-employer-contributions-exceeded-the-maximum-legal-limits",
       "authority": "IRS"
+    },
+    {
+      "id": "usc-26-402",
+      "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -757,6 +771,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1976": {
@@ -832,6 +851,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1977": {
@@ -907,6 +931,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1978": {
@@ -982,6 +1011,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1979": {
@@ -1057,6 +1091,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1980": {
@@ -1132,6 +1171,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1981": {
@@ -1207,6 +1251,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1982": {
@@ -1282,6 +1331,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1983": {
@@ -1357,6 +1411,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1984": {
@@ -1432,6 +1491,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1985": {
@@ -1507,6 +1571,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1986": {
@@ -1582,6 +1651,11 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalIraCovered": null,
         "traditionalIraSpouseCovered": null,
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1987": {
@@ -1679,6 +1753,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1988": {
@@ -1776,6 +1855,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1989": {
@@ -1873,6 +1957,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1990": {
@@ -1970,6 +2059,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1991": {
@@ -2067,6 +2161,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1992": {
@@ -2164,6 +2263,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1993": {
@@ -2261,6 +2365,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1994": {
@@ -2358,6 +2467,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1995": {
@@ -2455,6 +2569,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1996": {
@@ -2552,6 +2671,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1997": {
@@ -2579,7 +2703,7 @@ const RAW_PARAMETERS: ParameterData = {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2649,6 +2773,11 @@ const RAW_PARAMETERS: ParameterData = {
           ]
         },
         "rothIra": null
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1998": {
@@ -2676,7 +2805,7 @@ const RAW_PARAMETERS: ParameterData = {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2759,6 +2888,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "1999": {
@@ -2786,7 +2920,7 @@ const RAW_PARAMETERS: ParameterData = {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
         "selfEmployedEquivalentRate": 0.13043478260869565,
-        "minimumEligibleCompensation": null,
+        "minimumEligibleCompensation": 400,
         "newSarsepMayBeEstablished": false,
         "grandfatheredSarsepMayOperate": true,
         "rothSepAvailable": false
@@ -2869,6 +3003,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2000": {
@@ -2979,6 +3118,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2001": {
@@ -3089,6 +3233,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2002": {
@@ -3199,6 +3348,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2003": {
@@ -3309,6 +3463,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2004": {
@@ -3419,6 +3578,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2005": {
@@ -3529,6 +3693,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2006": {
@@ -3639,6 +3808,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2007": {
@@ -3749,6 +3923,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2008": {
@@ -3859,6 +4038,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2009": {
@@ -3969,6 +4153,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2010": {
@@ -4079,6 +4268,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2011": {
@@ -4189,6 +4383,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2012": {
@@ -4299,6 +4498,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2013": {
@@ -4409,6 +4613,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2014": {
@@ -4519,6 +4728,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2015": {
@@ -4629,6 +4843,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2016": {
@@ -4739,6 +4958,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2017": {
@@ -4849,6 +5073,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2018": {
@@ -4959,6 +5188,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2019": {
@@ -5069,6 +5303,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2020": {
@@ -5179,6 +5418,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2021": {
@@ -5289,6 +5533,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2022": {
@@ -5399,6 +5648,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2023": {
@@ -5509,6 +5763,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2024": {
@@ -5619,6 +5878,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2025": {
@@ -5729,6 +5993,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     },
     "2026": {
@@ -5839,6 +6108,11 @@ const RAW_PARAMETERS: ParameterData = {
             10000
           ]
         }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
       }
     }
   }
@@ -7940,7 +8214,7 @@ function initializeElectiveDeferralPools(context: CalculationContext, accounts: 
     context.special403bCatchUpPools.set(person.id, {
       id: `402g7:${person.id}`,
       legalLimit: "IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit",
-      limit: 3_000,
+      limit: context.parameters.special403b15YearCatchUp.annualLimit,
       used: 0,
     });
   }
@@ -9326,14 +9600,18 @@ function baseDeferralLimitForAccount(
   return context.parameters.electiveDeferral402g;
 }
 
-function special403bCatchUpLimit(account: NormalizedAccount): Money {
+function special403bCatchUpLimit(parameters: YearParameters, account: NormalizedAccount): Money {
   const input = account.planRules.special403bCatchUp;
   if (!input?.eligible) return 0;
-  const lifetimeRemaining = nonnegative(15_000 - money(input.priorSpecialCatchUpUsed, `${account.id}.priorSpecialCatchUpUsed`));
-  const serviceRemaining = nonnegative(
-    5_000 * input.yearsOfService - money(input.priorElectiveDeferrals, `${account.id}.priorElectiveDeferrals`),
+  const limits = parameters.special403b15YearCatchUp;
+  const lifetimeRemaining = nonnegative(
+    limits.lifetimeLimit - money(input.priorSpecialCatchUpUsed, `${account.id}.priorSpecialCatchUpUsed`),
   );
-  return floorMoney(minMoney(3_000, lifetimeRemaining, serviceRemaining));
+  const serviceRemaining = nonnegative(
+    limits.serviceLimitPerYear * input.yearsOfService -
+      money(input.priorElectiveDeferrals, `${account.id}.priorElectiveDeferrals`),
+  );
+  return floorMoney(minMoney(limits.annualLimit, lifetimeRemaining, serviceRemaining));
 }
 
 type CatchUpTaxTreatment = "pretax" | "roth" | "unavailable" | "unknown";
@@ -9504,7 +9782,7 @@ function allocateBaseAndCatchUp(
   );
 
   if (traits.is403b) {
-    const specialLimit = special403bCatchUpLimit(account);
+    const specialLimit = special403bCatchUpLimit(context.parameters, account);
     const existingSpecial = account.existingContributions.special403bCatchUp;
     const planDocumentRemaining = account.planRules.planDocumentAnnualAdditionsLimit === undefined
       ? Number.MAX_SAFE_INTEGER
@@ -10727,6 +11005,9 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     const existingAnnualContribution = sumComponents(account.existingContributions);
     const annualMaximum = sumComponents(outcome.annualComponents);
     const additionalMaximum = sumComponents(outcome.additionalComponents);
+    const excessContribution = outcome.statutoryMaximum === null
+      ? null
+      : nonnegative(existingAnnualContribution - outcome.statutoryMaximum);
     const diagnostics = [...outcome.diagnostics];
 
     if (
@@ -10775,6 +11056,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
         ? null
         : additionalMaximum,
       existingAnnualContribution,
+      excessContribution,
       contributionComponents: outcome.annualComponents,
       planTermDependentCapacity: outcome.planTermDependentCapacity,
       federalTaxEffects: contributionTaxEffects(outcome.annualComponents, traits, account.planRules),

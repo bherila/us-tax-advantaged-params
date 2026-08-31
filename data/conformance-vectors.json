@@ -4,6 +4,7 @@
   "vectors": [
     {
       "name": "ordinary 2026 401k plan-term capacity",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective-deferral limit at 24500 and the IRC 415(c)(1)(A) annual-additions dollar limit at 72000. With 200000 of compensation, the IRC 415(c)(1)(B) percentage limit does not bind. The stated 24500 deferral leaves 72000 - 24500 = 47500 that can be filled only if the plan terms permit employer or after-tax contributions, so that portion is determinate_with_assumptions.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -38,6 +39,7 @@
     },
     {
       "name": "2026 high-wage age-60-to-63 Roth catch-up",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) limit at 24500 and the SECURE 2.0 Act section 109 enhanced IRC 414(v) catch-up at 11250 for participants attaining ages 60 through 63. The prior-year FICA wages of 150001 exceed the 150000 IRC 414(v)(7) threshold published by that Notice, so the permitted 11250 catch-up is designated Roth under the SECURE 2.0 Act section 603 rule; 24500 + 11250 = 35750.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -78,6 +80,7 @@
     },
     {
       "name": "2026 Roth IRA MFJ phaseout",
+      "description": "IRC 408A(c)(3) reduces a Roth IRA contribution across the statutory phase-out range. Notice 2025-67 sets the 2026 joint-return range at 242000 through 252000 and the under-50 IRC 219(b)(1) amount at 7500. At MAGI 247000, the reduction is 7500 x (247000 - 242000) / 10000 = 3750, leaving 7500 - 3750 = 3750 (already a multiple of the IRS worksheet's 10-dollar rounding increment).",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -122,6 +125,7 @@
     },
     {
       "name": "shared traditional and Roth IRA pool",
+      "description": "IRC 219(b)(1) permits one 7500 IRA contribution for this under-50 individual, and IRC 408A(c)(3) makes the Roth amount 7500 x (168000 - 158000) / (168000 - 153000) = 5000 using Notice 2025-67's 2026 single Roth range. IRC 219(b)(5) aggregates traditional and Roth IRA contributions, so the priority-one Roth allocation of 5000 leaves 7500 - 5000 = 2500 deductible traditional IRA capacity; the total remains 7500.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -162,6 +166,7 @@
     },
     {
       "name": "401k and governmental 457b are separate",
+      "description": "Notice 2025-67 sets both the 2026 IRC 402(g)(1) elective-deferral limit and IRC 457(b)(2) governmental-plan limit at 24500. IRC 457(b) provides its own limit rather than sharing IRC 402(g), so each account receives 24500 and total employee pre-tax contributions are 24500 + 24500 = 49000.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -203,6 +208,7 @@
     },
     {
       "name": "mega backdoor 401k fills 415c",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) deferral limit at 24500 and IRC 415(c)(1)(A) annual-additions limit at 72000. The supplied 10000 employer contribution plus the regular deferral use 34500, leaving 72000 - 24500 - 10000 = 37500 for plan-permitted after-tax employee contributions; all components sum to 72000.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -238,6 +244,7 @@
     },
     {
       "name": "self-employed solo 401k",
+      "description": "Notice 2025-67 gives a 24500 IRC 402(g)(1) deferral limit and a 72000 IRC 415(c)(1)(A) annual-additions limit. The IRC 401(c)(2) self-employed equivalent of a 25-percent employer rate is 20 percent, so 20 percent x 200000 = 40000 employer contribution. Plan-permitted after-tax contributions then fill 72000 - 24500 - 40000 = 7500.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -273,6 +280,7 @@
     },
     {
       "name": "403b 15-year catch-up",
+      "description": "IRC 402(g)(7)(C) limits the special 403(b) catch-up to the least of 3000, 15000 less prior special catch-up, and 5000 times years of service less prior elective deferrals. Here those are 3000, 15000, and (5000 x 15) - 20000 = 55000, so the special catch-up is 3000 in addition to Notice 2025-67's 24500 regular IRC 402(g) limit.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -310,6 +318,7 @@
     },
     {
       "name": "457b special last-three-years catch-up",
+      "description": "Notice 2025-67 sets the 2026 IRC 457(b)(2) base limit at 24500. IRC 457(b)(3) permits a special last-three-years total of the lesser of twice that limit (49000) and the base limit plus unused prior deferrals (24500 + 30000 = 54500), so the total is 49000; the special catch-up replaces rather than stacks with IRC 414(v) age catch-up. The regular 24500 plus the additional 24500 special component totals 49000.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -352,6 +361,7 @@
     },
     {
       "name": "1994 historical employer-plan limits",
+      "description": "The IRS Coda manual's historical table records the 1994 IRC 402(g) elective-deferral limit as 9240. IRC 415(c)(1) then limited annual additions to the lesser of 25000 and 25 percent of 100000 compensation, both 25000, so the stated statutory maximum is 25000.",
       "input": {
         "taxYear": 1994,
         "filingStatus": "S",
@@ -383,6 +393,7 @@
     },
     {
       "name": "1985 employer-plan limit remains indeterminate",
+      "description": "The repository's historical-coverage policy records that pre-1987 employer-plan limits cannot be reduced to one universal modern IRC 402(g)/415(c) value without plan-document and historical-law facts. The primary historical tables do not support inventing one for this 1985 account, so the statutory maximum is null and the prescribed result is indeterminate with HISTORICAL_415C_LIMIT_INDETERMINATE.",
       "input": {
         "taxYear": 1985,
         "filingStatus": "S",
@@ -417,6 +428,7 @@
     },
     {
       "name": "1982 nonworking spouse IRA",
+      "description": "The IRS SOI Bulletin describing the 1982 IRA rules records a 2000 individual limit but only a 250 individual contribution for a nonworking spouse, within a 2250 one-earner joint cap. The spouse has no compensation and the taxpayer's 20000 compensation supports the joint return, so the spouse's deductible contribution and maximum are 250.",
       "input": {
         "taxYear": 1982,
         "filingStatus": "MFJ",
@@ -455,6 +467,7 @@
     },
     {
       "name": "IRA conversion Form 8606 pro-rata",
+      "description": "IRC 408(d)(2) and Form 8606 aggregate traditional, SEP, and SIMPLE IRAs for basis recovery. The conversion is 20000 and the denominator is 80000 year-end value plus 20000 distributed = 100000, so the nontaxable share is 20000 x 20000 / 100000 = 4000 and the taxable share is 20000 - 4000 = 16000. A conversion is not an IRC 219 contribution.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -486,6 +499,7 @@
     },
     {
       "name": "in-plan Roth rollover basis",
+      "description": "IRC 402A(c)(4) treats an in-plan Roth rollover as taxable except for basis. Of the 50000 rolled over, the supplied 10000 after-tax basis is nontaxable, so 50000 - 10000 = 40000 is taxable.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -528,6 +542,7 @@
     },
     {
       "name": "2026 enhanced SIMPLE",
+      "description": "SECURE 2.0 Act section 117 raises the eligible SIMPLE plan's 2026 salary-reduction limit to 18100, as published in Notice 2025-67. Section 109's enhanced IRC 414(v) catch-up at age 61 is 5250. The mandatory SIMPLE match is 3 percent of 100000 = 3000 under IRC 408(p)(2)(A)(ii), so 18100 + 5250 + 3000 = 26350.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -566,6 +581,7 @@
     },
     {
       "name": "cash-balance contribution is actuarial",
+      "description": "A cash-balance plan is a defined-benefit plan; its funding contribution depends on the actuarial valuation required by IRC 412 and 430 rather than the defined-contribution IRC 415(c) annual-additions limit. No valuation or plan-benefit facts are supplied, so no universal maximum can be derived and the result is indeterminate with the actuarial-valuation diagnostic.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -597,6 +613,7 @@
     },
     {
       "name": "self-employed retirement deduction classification",
+      "description": "IRC 404(a)(8) allows the deductible self-employed retirement contribution, while a sole proprietor has no Form W-2 wage reduction. Notice 2025-67 supplies 24500 under IRC 402(g); the IRC 401(c)(2) equivalent employer rate yields 20 percent x 200000 = 40000. Thus the above-the-line deduction and AGI reduction are 24500 + 40000 = 64500, and the W-2 box 1 reduction is zero.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -630,6 +647,7 @@
     },
     {
       "name": "2009 MFS living apart Roth conversion",
+      "description": "Before 2010, IRC 408A(c)(3)(B) barred conversions above 100000 MAGI and for MFS taxpayers, but an MFS taxpayer who did not live with a spouse during the year is treated under the applicable IRA rules as single for that restriction. MAGI 90000 therefore permits the conversion. IRC 408(d)(2)'s denominator is 10000 ending value plus 10000 converted = 20000, so 10000 x 10000 / 20000 = 5000 basis and 5000 taxable.",
       "input": {
         "taxYear": 2009,
         "filingStatus": "MFS",
@@ -663,6 +681,7 @@
     },
     {
       "name": "SIMPLE additional nonelective 10 percent cap",
+      "description": "SECURE 2.0 Act section 117 permits the additional SIMPLE nonelective contribution but caps it at the lesser of 10 percent of compensation and the indexed dollar cap. Ten percent of 20000 is 2000, below Notice 2025-67's 5300 cap; with the mandatory 2-percent contribution of 400 under IRC 408(p)(2)(A)(iii), employer contributions are 2000 + 400 = 2400. The statutory maximum is the 17000 salary reduction plus 2600 permitted employer amount, or 19600.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -699,6 +718,7 @@
     },
     {
       "name": "SIMPLE IRA Roth catch-up wage-test exclusion",
+      "description": "Notice 2025-67 sets the 2026 SIMPLE salary-reduction limit at 17000 and the age-60-to-63 catch-up at 5250. SECURE 2.0 Act section 603's mandatory-Roth rule applies only when prior-year FICA wages exceed the indexed threshold; no employer wage record is supplied, so it cannot require Roth treatment. The permitted components are therefore 17000 pre-tax deferral, 5250 pre-tax catch-up, and zero Roth catch-up.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -732,6 +752,7 @@
     },
     {
       "name": "aggregate 403b 15-year catch-up pool",
+      "description": "IRC 402(g)(7) is an aggregate per-individual 403(b) special-catch-up limit, not a separate 3000 entitlement for each contract. Each account's facts independently produce the 3000 least-of amount, but the priority-one account consumes the entire 3000 shared pool, leaving zero for the priority-two account.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -786,6 +807,7 @@
     },
     {
       "name": "pre-2023 Roth employer contribution unavailable",
+      "description": "SECURE 2.0 Act section 604 first permitted participants to elect designated Roth treatment for vested employer matching and nonelective contributions, effective after enactment. The 2022 contribution predates that authority, so no employer Roth amount can be derived; the 2022 IRC 402(g) regular deferral remains 20500 and the result is indeterminate with the availability diagnostic.",
       "input": {
         "taxYear": 2022,
         "filingStatus": "S",
@@ -823,6 +845,7 @@
     },
     {
       "name": "aggregate IRA conversion basis penny allocation",
+      "description": "IRC 408(d)(2) applies one aggregate basis fraction: 1 of basis over 147 year-end value plus 3 converted = 1/150. The three 1-dollar conversions therefore recover 3/150 = 0.02 of basis in total; cents rounding allocates the two pennies deterministically to the first two conversions, leaving 2.98 taxable in total.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -865,6 +888,7 @@
     },
     {
       "name": "1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate",
+      "description": "For 1997, IRC 401(a)(17)'s indexed compensation ceiling is 160000 and the IRS SEP/SARSEP audit guidance applies the plan's 15-percent rate to capped compensation. Thus 15 percent x 160000 = 24000. That is below the IRC 415(c) dollar limit, so the statutory maximum, employer contribution, and input-based maximum are all 24000.",
       "input": {
         "taxYear": 1997,
         "filingStatus": "S",
@@ -897,6 +921,7 @@
     },
     {
       "name": "1997 nonelective formula applies 401a17 compensation ceiling",
+      "description": "IRC 415(c)(1) gives a 1997 annual-additions maximum of the lesser of 30000 and 25 percent of compensation; 25 percent x 500000 = 125000, so the statutory maximum is 30000. IRC 401(a)(17)'s 160000 compensation cap applies before the supplied 15-percent employer formula, producing 15 percent x 160000 = 24000 for both the contribution and input-based maximum.",
       "input": {
         "taxYear": 1997,
         "filingStatus": "S",
@@ -930,6 +955,7 @@
     },
     {
       "name": "1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings",
+      "description": "The IRS self-employed SEP worksheet reduces a 15-percent plan rate to 15 / 115 = 13.043478 percent for net earnings: that rate times 500000 exceeds the separate 15 percent x 160000 = 24000 capped-plan-rate ceiling under IRC 401(a)(17). The 1997 IRC 415(c) dollar ceiling is higher, so all asserted contribution maxima are 24000.",
       "input": {
         "taxYear": 1997,
         "filingStatus": "S",
@@ -964,6 +990,7 @@
     },
     {
       "name": "1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings",
+      "description": "The IRS self-employed qualified-plan worksheet reduces the 15-percent plan rate to 15 / 115 = 13.043478 percent of 500000 net earnings, but IRC 401(a)(17)'s 160000 compensation ceiling also makes the plan-rate ceiling 15 percent x 160000 = 24000. IRC 415(c)'s 30000 dollar limit is higher, so the employer contribution and input-based maximum are 24000 while the statutory maximum is 30000.",
       "input": {
         "taxYear": 1997,
         "filingStatus": "S",
@@ -997,7 +1024,42 @@
       }
     },
     {
+      "name": "1998 SEP compensation below 400 reports maximum-excludable threshold",
+      "description": "Notice 97-58 sets the 1998 IRC 408(k)(2)(C) SEP compensation amount at 400. With plan compensation of 399, the calculation remains determinate because the statute permits rather than mandates exclusion, but it must report the plan-document-dependent below-threshold warning. This vector fails before the sourced 400 value is encoded because the warning is absent.",
+      "input": {
+        "taxYear": 1998,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 399
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sep",
+            "ownerId": "t",
+            "type": "sep_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 399
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate"
+      },
+      "expectDiagnosticCodes": [
+        "SEP_COMPENSATION_BELOW_MAXIMUM_EXCLUDABLE_THRESHOLD"
+      ]
+    },
+    {
       "name": "2005 designated Roth governmental 457b unavailable",
+      "description": "The Pension Protection Act of 2006 section 827 extended IRC 402A designated Roth treatment to governmental IRC 457(b) plans only for taxable years beginning after 2010. A 2005 designated Roth governmental 457(b) account therefore has no statutory availability or contribution capacity, yielding unavailable and zero.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "S",
@@ -1032,6 +1094,7 @@
     },
     {
       "name": "2011 first-year designated Roth governmental 457b",
+      "description": "Pension Protection Act of 2006 section 827 made designated Roth governmental IRC 457(b) contributions available for taxable years beginning after 2010. Notice 2010-95 sets the 2011 IRC 457(b)(2) limit at 16500, so the first eligible year's Roth deferral and maximum are both 16500.",
       "input": {
         "taxYear": 2011,
         "filingStatus": "S",
@@ -1064,6 +1127,7 @@
     },
     {
       "name": "2025 SIMPLE 401k match capped by 401a17 compensation",
+      "description": "Notice 2024-80 sets the 2025 SIMPLE salary-reduction limit at 16500 and IRC 401(a)(17) compensation cap at 350000. A SIMPLE 401(k)'s 3-percent match is therefore 3 percent x 350000 = 10500, not 3 percent of 500000; together with 16500, the maximum is 27000.",
       "input": {
         "taxYear": 2025,
         "filingStatus": "S",
@@ -1098,6 +1162,7 @@
     },
     {
       "name": "2025 SIMPLE IRA match exempt from 401a17 compensation cap",
+      "description": "Notice 2024-80 sets the 2025 SIMPLE salary-reduction limit at 16500. IRC 408(p)(2)(A)(ii) bases a SIMPLE IRA's 3-percent match on the employee's compensation and does not import the qualified-plan IRC 401(a)(17) compensation limit, so 3 percent x 500000 = 15000. The maximum is 16500 + 15000 = 31500.",
       "input": {
         "taxYear": 2025,
         "filingStatus": "S",
@@ -1132,6 +1197,7 @@
     },
     {
       "name": "2026 MFS living together Roth IRA phase-out",
+      "description": "IRC 408A(c)(3) supplies a separate 0 through 10000 phase-out for a married-filing-separately individual who lived with a spouse. Notice 2025-67 sets the 2026 under-50 contribution amount at 7500. At MAGI 5000, the reduction is 7500 x 5000 / 10000 = 3750, leaving a 3750 Roth contribution after worksheet rounding.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFS",
@@ -1164,6 +1230,7 @@
     },
     {
       "name": "2026 MFS living together covered traditional IRA deduction phase-out",
+      "description": "IRC 219(g) gives a covered married-filing-separately individual living with a spouse the 0 through 10000 deduction phase-out. Notice 2025-67 sets the 2026 IRA contribution limit at 7500. At MAGI 5000, the deductible amount is 7500 - (7500 x 5000 / 10000) = 3750; IRC 219 permits the remaining 3750 contribution but not its deduction, so it is nondeductible and the total remains 7500.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFS",
@@ -1198,6 +1265,7 @@
     },
     {
       "name": "2026 modern spousal IRA from joint compensation",
+      "description": "IRC 219(c) lets a joint-return couple use the other spouse's compensation after accounting for that spouse's IRA contribution. The taxpayer's 100000 compensation is more than the Notice 2025-67 2026 under-50 limit of 7500, so the non-earning spouse may make and deduct the full 7500 traditional IRA contribution.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -1237,6 +1305,7 @@
     },
     {
       "name": "2026 noncovered spouse deduction phase-out band",
+      "description": "IRC 219(g)(7) applies the noncovered spouse's joint-return deduction phase-out when the other spouse is covered. Notice 2025-67 sets the 2026 band at 242000 through 252000 and the contribution amount at 7500. At MAGI 244000, the reduction is 7500 x 2000 / 10000 = 1500, leaving 6000 deductible and 1500 nondeductible contribution capacity.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -1283,6 +1352,7 @@
     },
     {
       "name": "2026 ordinary age-50 catch-up at age 56",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) regular limit at 24500 and IRC 414(v) catch-up at 8000. SECURE 2.0's enhanced amount applies only to participants attaining ages 60 through 63, so an individual attaining 56 receives the ordinary 8000 catch-up and 24500 + 8000 = 32500 total.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1318,6 +1388,7 @@
     },
     {
       "name": "2026 age-64 reversion from enhanced catch-up",
+      "description": "SECURE 2.0 Act section 109 limits the enhanced IRC 414(v) catch-up to participants attaining ages 60, 61, 62, or 63. An individual attaining 64 instead receives Notice 2025-67's ordinary 8000 catch-up; with the 24500 IRC 402(g)(1) limit, the maximum is 32500.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1352,6 +1423,7 @@
     },
     {
       "name": "2023 first-year Roth employer contribution",
+      "description": "SECURE 2.0 Act section 604 permitted participants to elect designated Roth treatment for vested employer matching and nonelective contributions after enactment. Notice 2022-55 sets the 2023 IRC 402(g)(1) limit at 22500. The supplied 10000 employer contribution is therefore Roth, and 22500 + 10000 = 32500 maximum annual contribution based on the supplied plan terms.",
       "input": {
         "taxYear": 2023,
         "filingStatus": "S",
@@ -1388,6 +1460,7 @@
     },
     {
       "name": "2010 Roth conversion after MAGI repeal",
+      "description": "The Tax Increase Prevention and Reconciliation Act of 2005 repealed the IRC 408A(c)(3)(B) 100000 MAGI conversion restriction for tax years beginning after 2009, so MAGI 500000 does not bar this 2010 conversion. IRC 408(d)(2)'s basis fraction is 2000 / (8000 ending value + 2000 conversion) = 20 percent; 20 percent x 2000 = 400 nontaxable and 1600 taxable.",
       "input": {
         "taxYear": 2010,
         "filingStatus": "S",
@@ -1420,6 +1493,7 @@
     },
     {
       "name": "2020 traditional IRA contribution after age-70-half repeal",
+      "description": "SECURE Act section 114 repealed IRC 219(d)(1)'s age-70-and-one-half bar for contributions made for tax years beginning after 2019. The individual has 20000 compensation, exceeding the 2020 IRC 219(b) under-50 limit of 6000 plus 1000 IRC 219(b)(5) catch-up, so the age-72 taxpayer may deduct the full 7000.",
       "input": {
         "taxYear": 2020,
         "filingStatus": "S",
@@ -1449,6 +1523,7 @@
     },
     {
       "name": "1975 first-year traditional IRA fifteen percent limit",
+      "description": "Former IRC 219(b), as enacted for the first generally available IRA year, limited the deductible contribution to the lesser of 1500 or 15 percent of compensation. Fifteen percent x 20000 = 3000, so the 1500 statutory dollar limit binds and is fully deductible.",
       "input": {
         "taxYear": 1975,
         "filingStatus": "S",
@@ -1478,6 +1553,7 @@
     },
     {
       "name": "unsupported tax year 1974",
+      "description": "The canonical statutory-parameter dataset begins at 1975, its first supported tax year; 1974 has no encoded primary-authority row. The input is therefore rejected with UNSUPPORTED_TAX_YEAR rather than extrapolating a retirement-law value.",
       "input": {
         "taxYear": 1974,
         "filingStatus": "S",
@@ -1495,6 +1571,7 @@
     },
     {
       "name": "duplicate account id",
+      "description": "Account IDs identify accounts for allocation and conversion references, so the input contract requires them to be unique. The two supplied accounts both use a, making DUPLICATE_ACCOUNT_ID the required validation result before any statutory contribution calculation.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1526,6 +1603,7 @@
     },
     {
       "name": "unknown account owner",
+      "description": "An account's ownerId must name an entry in persons so that the account can be assigned that person's statutory limits. The supplied ownerId missing has no matching person, so the input contract requires UNKNOWN_ACCOUNT_OWNER before calculation.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1549,6 +1627,7 @@
     },
     {
       "name": "negative compensation is invalid money",
+      "description": "Compensation is a nonnegative monetary input used by IRC 219, 401, and 415 limits. The supplied -1 cannot be a valid amount under the library's money-input contract, so it is rejected as INVALID_MONEY rather than treated as a statutory negative limit.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1575,6 +1654,7 @@
     },
     {
       "name": "invalid filing status alias",
+      "description": "Filing status selects statutory IRA phase-out bands and spousal rules. XX is not one of the supported tax filing-status codes, so the input contract rejects it with INVALID_FILING_STATUS rather than mapping it to a legally different status.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "XX",
@@ -2788,6 +2868,7 @@
         ]
       },
       "expect": {
+        "accounts.0.excessContribution": 12500,
         "accounts.0.diagnostics.0.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
         "accounts.0.diagnostics.0.message": "The annual amount $20,000 exceeds the calculated account ceiling of $7,500. Shared-limit records should also be reviewed for excess contributions across accounts."
       }

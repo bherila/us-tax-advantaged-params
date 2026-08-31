@@ -35,20 +35,29 @@ npm run validate:evidence               # every corpus under evidence/
 npm run validate:evidence:retirement    # this corpus alone
 ```
 
-**402 comparisons over 2009–2026, 0 mismatches.**
+The checked comparison count is reported by `npm run validate:evidence:retirement`.
 
 ## What is compared
 
 Per plan year: §415(c)(1)(A) annual additions, §402(g)(1) elective deferral,
+§402(g)(7) annual, lifetime, and service-based 403(b) 15-year catch-up limits,
 §457(e)(15), §414(v)(2)(B)(i) age-50 catch-up, §414(v)(2)(E)(i) age 60–63
 catch-up, §414(v)(7)(A) Roth catch-up wage threshold, §401(a)(17) compensation,
 §219(b)(5)(A) IRA contribution, and §219(b)(5)(B)(ii) IRA catch-up.
 
-The 2009 and 2010 blocks additionally record three figures their notices publish
-and the package models: §408(p)(2)(E) SIMPLE salary reduction, §414(v)(2)(B)(ii)
-SIMPLE catch-up, and §408(k)(2)(C) SEP compensation. The 2013–2026 notices
-publish them too and those blocks do not yet record them — backfilling is a
-coverage gain, not a correction.
+Representative years also bind every modeled `ira` policy field: the historical
+compensation fraction and employer-plan eligibility rule, nondeductible and
+spousal availability, the retired fixed-spousal-limit fields as `null`, the
+pre-2020 age-70½ restriction, and pre-Roth availability.
+
+Every available plan-year block transcribes three additional figures that its
+notice publishes and the package models: §408(p)(2)(E) SIMPLE salary reduction,
+§414(v)(2)(B)(ii) SIMPLE catch-up, and §408(k)(2)(C) SEP compensation. For
+2024–2026, it also binds the SECURE 2.0-era certain-SIMPLE, additional
+nonelective, and starter-plan dollar limits published in the notices. Section
+457(e)(15) base deferrals are compared in both the plan-year blocks and the
+separate elective-deferral/457 series; the latter retains its wider treatment
+for the historical releases.
 
 All seven IRA phase-out bands, **both ends of each**: §219(g)(3) covered,
 §219(g)(7)(A) spouse-covered, and §408A(c)(3) Roth. A band's width is a
@@ -76,11 +85,15 @@ The §402(g)/§457(e)(15) elective series is compared for every year it records.
 
 ## Sources
 
-Twenty-one documents: IRS COLA notices from 2008 through 2025, the
-IR-series releases that carried the figures before the notice format, SSA
-Federal Register wage-base determinations, and the text of 26 U.S.C. §219 and
-§408A for the phase-out widths and zero applicable dollar amounts the notices
-never print. Every file is fixed by `SHA256SUMS.txt`, which
+The enacted texts of ERISA, the Tax Reform Act of 1976, the Revenue Act of 1978,
+and ERTA establish the 1975–86 discontinuities. The remaining sources include
+IRS COLA notices and Bulletin publications from 1996 through 2025; annual IRS
+Publication 590 editions for 1995 through 2000 and 2002; IRS CODA and SEP/SARSEP
+technical guidance; the IR-series releases that carried the figures before the
+notice format; EGTRRA's enacted text; SSA Federal Register wage-base
+determinations; and the text of 26 U.S.C. §§219, 402, 408, and 408A for
+statutory amounts the notices never print. Every file is fixed by
+`SHA256SUMS.txt`, which
 `npm run validate:evidence` verifies in both directions: a listed file that is
 missing or has changed fails, and so does a file in `sources/` that nothing
 attests to. The manual form, which reads only the bare filenames in the
