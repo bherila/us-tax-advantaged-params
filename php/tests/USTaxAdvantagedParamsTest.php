@@ -636,11 +636,24 @@ test('1997 self-employed qualified-plan formula applies reduced-rate and recogni
 });
 
 test('exposes the IRC 125 and IRC 129 parameter table without extrapolating it', function (): void {
-    assertSameValue(['minimum' => 1987, 'maximum' => 2026], U::supportedFsaTaxYears());
+    // The table starts where IRC 129 does, not where its dollar ceiling does: a
+    // year can exist with no statutory ceiling, and that is a state rather than
+    // an absence. Absence now means only "the program did not exist".
+    assertSameValue(['minimum' => 1982, 'maximum' => 2026], U::supportedFsaTaxYears());
+    assertSameValue('statutory_dollar_limit', U::fsaParametersForYear(2026)['healthFsa']['state']);
     assertSameValue(3400, U::fsaParametersForYear(2026)['healthFsa']['salaryReductionLimit']);
     assertSameValue(7500, U::fsaParametersForYear(2026)['dependentCare']['exclusionLimit']);
-    assertSameValue(null, U::fsaParametersForYear(2012)['healthFsa']);
-    assertSameValue(null, U::fsaParametersForYear(1986));
+    assertSameValue(
+        'available_without_statutory_dollar_limit',
+        U::fsaParametersForYear(2012)['healthFsa']['state'],
+    );
+    assertSameValue(null, U::fsaParametersForYear(2012)['healthFsa']['salaryReductionLimit']);
+    assertSameValue(
+        'available_without_statutory_dollar_limit',
+        U::fsaParametersForYear(1986)['dependentCare']['state'],
+    );
+    assertSameValue(null, U::fsaParametersForYear(1986)['dependentCare']['exclusionLimit']);
+    assertSameValue(null, U::fsaParametersForYear(1981));
     $ids = array_column(U::fsaSourceMetadata(), 'id');
     assertTrue(in_array('pl-119-21', $ids, true), 'Pub. L. 119-21 must be listed as an FSA source');
 });

@@ -218,9 +218,30 @@ if (fsa) {
       continue;
     }
 
-    // §125(i) did not exist before 2013, so a null health FSA block is a real
-    // historical state rather than a gap. What is forbidden is a *partial* one.
-    if (row.healthFsa !== null) {
+    // Every row carries a state. `statutory_dollar_limit` must carry figures;
+    // `available_without_statutory_dollar_limit` must carry nulls, because a
+    // year with no statutory ceiling has no figure to state and a number there
+    // would be an invented one. A partial block is forbidden either way.
+    const STATES = ["available_without_statutory_dollar_limit", "statutory_dollar_limit"];
+    for (const [program, block] of [["healthFsa", row.healthFsa], ["dependentCare", row.dependentCare]]) {
+      if (!STATES.includes(block?.state)) {
+        fail(`${label} ${program}.state must be one of ${STATES.join(", ")}.`);
+      }
+    }
+    if (row.healthFsa?.state === "available_without_statutory_dollar_limit") {
+      if (row.healthFsa.salaryReductionLimit !== null || row.healthFsa.carryoverLimit !== null) {
+        fail(`${label} healthFsa has no statutory ceiling, so both of its amounts must be null.`);
+      }
+    }
+    if (row.dependentCare?.state === "available_without_statutory_dollar_limit") {
+      if (
+        row.dependentCare.exclusionLimit !== null ||
+        row.dependentCare.marriedFilingSeparatelyExclusionLimit !== null
+      ) {
+        fail(`${label} dependentCare has no statutory ceiling, so both of its amounts must be null.`);
+      }
+    }
+    if (row.healthFsa?.state === "statutory_dollar_limit") {
       requirePositiveAmount(row.healthFsa?.salaryReductionLimit, `${label} healthFsa.salaryReductionLimit`);
       if (!Number.isInteger(row.healthFsa?.carryoverLimit) || row.healthFsa.carryoverLimit < 0) {
         fail(`${label} healthFsa.carryoverLimit must be a whole-dollar amount of at least zero.`);
@@ -230,22 +251,30 @@ if (fsa) {
       }
     }
 
-    requirePositiveAmount(row.dependentCare?.exclusionLimit, `${label} dependentCare.exclusionLimit`);
-    requirePositiveAmount(
-      row.dependentCare?.marriedFilingSeparatelyExclusionLimit,
-      `${label} dependentCare.marriedFilingSeparatelyExclusionLimit`,
-    );
+    if (row.dependentCare?.state === "statutory_dollar_limit") {
+      requirePositiveAmount(row.dependentCare?.exclusionLimit, `${label} dependentCare.exclusionLimit`);
+      requirePositiveAmount(
+        row.dependentCare?.marriedFilingSeparatelyExclusionLimit,
+        `${label} dependentCare.marriedFilingSeparatelyExclusionLimit`,
+      );
+    }
     if (row.dependentCare?.marriedFilingSeparatelyExclusionLimit > row.dependentCare?.exclusionLimit) {
       fail(`${label} married-separate §129 exclusion exceeds the general exclusion.`);
     }
   }
 
-  validateSources(fsa.sources, "data/fsa-parameters.json", ["usc-26-125", "usc-26-129", "pl-117-2", "pl-119-21"]);
+  validateSources(fsa.sources, "data/fsa-parameters.json", ["usc-26-125", "usc-26-129", "pl-97-34", "pl-99-514", "pl-117-2", "pl-119-21"]);
 
   // The two §125(i) boundaries the engine reads: 2012 has no statutory
   // salary-reduction ceiling at all, and 2013 is the first year one exists.
-  if (fsa.years?.["2012"]?.healthFsa !== null) {
-    fail("The 2012 FSA row must carry no §125(i) health FSA block; the limit applies only to plan years beginning after 2012.");
+  if (fsa.years?.["2012"]?.healthFsa?.state !== "available_without_statutory_dollar_limit") {
+    fail("The 2012 FSA row must record the health FSA as existing with no statutory §125(i) ceiling; the limit applies only to plan years beginning after 2012.");
+  }
+  if (fsa.years?.["1986"]?.dependentCare?.state !== "available_without_statutory_dollar_limit") {
+    fail("The 1986 FSA row must record dependent care as existing with no statutory §129(a)(2)(A) ceiling; the limitation applies only to taxable years beginning after 1986.");
+  }
+  if (fsa.years?.["1987"]?.dependentCare?.state !== "statutory_dollar_limit") {
+    fail("The 1987 FSA row must record the first year the §129(a)(2)(A) limitation applies.");
   }
   if (fsa.years?.["2013"]?.healthFsa?.salaryReductionLimit !== 2500) {
     fail("The 2013 FSA row must carry the unindexed statutory §125(i) amount of $2,500.");

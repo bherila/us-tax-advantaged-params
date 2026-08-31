@@ -29,11 +29,17 @@
     "irs-notice-2021-15": "Notice 2021-15, the Consolidated Appropriations Act, 2021 section 214 temporary carryover relief for plan years ending in 2020 and 2021",
     "irs-notice-2021-26": "Notice 2021-26, the ARPA section 9632 dependent care increase and its interaction with section 214 carryovers",
     "irs-rev-rul-2004-45": "Rev. Rul. 2004-45, general-purpose health FSA coverage is disqualifying under IRC 223(c)(1)(A)(ii) while limited-purpose and post-deductible coverage is not",
-    "fr-72-43938": "72 Fed. Reg. 43938 (Aug. 6, 2007), notice of proposed rulemaking under IRC 125; Prop. Treas. Reg. 1.125-1(e) grace period and 1.125-5(b) flex credits. Proposed, not final, regulations."
+    "fr-72-43938": "72 Fed. Reg. 43938 (Aug. 6, 2007), notice of proposed rulemaking under IRC 125; Prop. Treas. Reg. 1.125-1(e) grace period and 1.125-5(b) flex credits. Proposed, not final, regulations.",
+    "pl-97-34": "Economic Recovery Tax Act of 1981, Pub. L. 97-34 s.124, which adds IRC 129; s.124(f) makes it applicable to taxable years beginning after December 31, 1981, which is what sets supportedTaxYears.minimum. LINKED, not committed here: the Statutes at Large volume is ~30 MB and the same file is already hash-verified as evidence/retirement-limits/sources/statute-95-pg172.pdf, so a second copy would put two SHA256SUMS entries behind identical bytes and weaken the unattested-file check",
+    "pl-99-514": "Tax Reform Act of 1986, Pub. L. 99-514 s.1163(a), which adds the IRC 129(a)(2)(A) dollar limitation for taxable years beginning after December 31, 1986 -- the 1986/1987 state transition this corpus binds. LINKED, not committed: the volume is ~138 MB, disproportionate to one effective-date sentence, and the same date is carried by the amendment notes in the committed usc-26-129.pdf that the transition is actually verified against"
   },
   "_dependentCareComment": "The IRC 129(a)(2)(A) amounts are not inflation adjusted, so no annual revenue procedure states them and they are cited to the Code and to the acts that changed them, the same way the HSA corpus cites the IRC 223(b)(3)(B) age-55 amount to the statute. The series starts at 1987 because Pub. L. 99-514 section 1163(a) added the limitation of exclusion applicable to taxable years beginning after December 31, 1986; before that IRC 129(a) carried no dollar cap, which the 1986 amendment note in usc-26-129 shows by quoting the prior text. The 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures, so the amounts ran unbroken from 1987 to 2020 and again from 2022 to 2025.",
   "_healthFsaCarryoverComment": "The carryover is an IRS-created plan option, not a statutory one, and it belongs to the plan year the amounts are carried FROM. Notice 2013-71 created it at a fixed $500; Notice 2020-33 raised it to 20 percent of the IRC 125(i) limit for that plan year. Rev. Proc. 2013-35 through Rev. Proc. 2019-44 state the IRC 125(i) limit and no carryover figure, so 2013 through 2019 are cited to Notice 2013-71 and 2020 to Notice 2020-33. Rev. Proc. 2020-45 is the first annual procedure here to state a carryover amount itself.",
   "planYears": {
+    "1986": {
+      "healthFsaDollarLimitState": "available_without_statutory_dollar_limit",
+      "dependentCareDollarLimitState": "available_without_statutory_dollar_limit"
+    },
     "1987": {
       "source": "usc-26-129",
       "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
@@ -41,7 +47,9 @@
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       },
-      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures.",
+      "healthFsaDollarLimitState": "available_without_statutory_dollar_limit",
+      "dependentCareDollarLimitState": "statutory_dollar_limit"
     },
     "1988": {
       "source": "usc-26-129",
@@ -266,7 +274,9 @@
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       },
-      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures.",
+      "healthFsaDollarLimitState": "available_without_statutory_dollar_limit",
+      "dependentCareDollarLimitState": "statutory_dollar_limit"
     },
     "2013": {
       "source": "irs-notice-2012-40",
@@ -278,7 +288,9 @@
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       },
-      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures.",
+      "healthFsaDollarLimitState": "statutory_dollar_limit",
+      "dependentCareDollarLimitState": "statutory_dollar_limit"
     },
     "2014": {
       "source": "irs-rev-proc-2013-35",

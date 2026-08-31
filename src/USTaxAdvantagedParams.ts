@@ -884,8 +884,10 @@ interface HsaParameterData {
 
 /** IRC 125(i) health flexible spending arrangement amounts for one year. */
 export interface HealthFsaYearParameters {
-  /** IRC 125(i)(1) dollar limitation on salary reduction contributions, as indexed under IRC 125(i)(2). */
-  salaryReductionLimit: Money;
+  /** Whether IRC 125(i) supplied a statutory ceiling for the year. */
+  state: DollarLimitState;
+  /** IRC 125(i)(1) dollar limitation, as indexed under IRC 125(i)(2). Null before IRC 125(i) existed. */
+  salaryReductionLimit: Money | null;
   /**
    * The maximum unused amount from *this* year that a plan permitting a
    * carryover may carry into the immediately following year. Notice 2013-71
@@ -893,21 +895,35 @@ export interface HealthFsaYearParameters {
    * IRC 125(i) limit. Both are phrased as the amount carried *from* a plan
    * year, so it belongs to the source year and never to the receiving one.
    */
-  carryoverLimit: Money;
+  carryoverLimit: Money | null;
 }
 
 /** IRC 129(a)(2)(A) dependent care assistance exclusion amounts for one year. */
 export interface DependentCareYearParameters {
+  /** Whether IRC 129(a)(2)(A) supplied a statutory ceiling for the year. */
+  state: DollarLimitState;
   /** IRC 129(a)(2)(A) exclusion for a return other than a married separate one. */
-  exclusionLimit: Money;
+  exclusionLimit: Money | null;
   /** IRC 129(a)(2)(A) parenthetical amount for a separate return by a married individual. */
-  marriedFilingSeparatelyExclusionLimit: Money;
+  marriedFilingSeparatelyExclusionLimit: Money | null;
 }
+
+/**
+ * Whether a program existed for the tax year, and whether a universal statutory
+ * dollar ceiling existed for it. The middle state is the one worth having: a
+ * program can exist, and its exclusion apply, with no statutory ceiling at all.
+ * A year in that state has a null statutory maximum, but a maximum computed
+ * from caller-supplied plan terms or earned income is still a real answer, and
+ * the engine reports it rather than refusing.
+ *
+ * `unavailable` is expressed by absence: a year below `supportedTaxYears.minimum`
+ * predates the program.
+ */
+export type DollarLimitState = "available_without_statutory_dollar_limit" | "statutory_dollar_limit";
 
 export interface FsaYearParameters {
   year: number;
-  /** Null for a year before IRC 125(i) existed, when no statutory salary-reduction ceiling applied. */
-  healthFsa: HealthFsaYearParameters | null;
+  healthFsa: HealthFsaYearParameters;
   dependentCare: DependentCareYearParameters;
 }
 
@@ -7153,7 +7169,7 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
   "package": "us-tax-advantaged-params",
   "generatedThroughTaxYear": 2026,
   "supportedTaxYears": {
-    "minimum": 1987,
+    "minimum": 1982,
     "maximum": 2026
   },
   "moneyUnit": "USD",
@@ -7333,213 +7349,422 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
       "title": "Rev. Proc. 2025-32, section 3.15, 2026 cafeteria plan amount and maximum carryover",
       "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
       "authority": "IRS"
+    },
+    {
+      "id": "pl-97-34",
+      "title": "Economic Recovery Tax Act of 1981, Pub. L. 97-34, section 124 (adds IRC 129; section 124(f) effective for taxable years beginning after December 31, 1981)",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-95/pdf/STATUTE-95-Pg172.pdf",
+      "authority": "U.S. Government Publishing Office",
+      "retrieval": "linked, not committed: the Statutes at Large volume is ~30 MB. The same file is committed in evidence/retirement-limits/sources/statute-95-pg172.pdf and is hash-verified there, so the bytes are attested in this repository without a second copy."
+    },
+    {
+      "id": "pl-99-514",
+      "title": "Tax Reform Act of 1986, Pub. L. 99-514, section 1163(a) (adds the IRC 129(a)(2)(A) dollar limitation for taxable years beginning after December 31, 1986)",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-100/pdf/STATUTE-100-Pg2085.pdf",
+      "authority": "U.S. Government Publishing Office",
+      "retrieval": "linked, not committed: the Statutes at Large volume is ~138 MB, which is disproportionate to one effective-date sentence. The same effective date is carried by the amendment notes in the committed usc-26-129.pdf, which is what the corpus verifies against."
     }
   ],
   "years": {
+    "1982": {
+      "year": 1982,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1983": {
+      "year": 1983,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1984": {
+      "year": 1984,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1985": {
+      "year": 1985,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1986": {
+      "year": 1986,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
     "1987": {
       "year": 1987,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1988": {
       "year": 1988,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1989": {
       "year": 1989,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1990": {
       "year": 1990,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1991": {
       "year": 1991,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1992": {
       "year": 1992,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1993": {
       "year": 1993,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1994": {
       "year": 1994,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1995": {
       "year": 1995,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1996": {
       "year": 1996,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1997": {
       "year": 1997,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1998": {
       "year": 1998,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1999": {
       "year": 1999,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2000": {
       "year": 2000,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2001": {
       "year": 2001,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2002": {
       "year": 2002,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2003": {
       "year": 2003,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2004": {
       "year": 2004,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2005": {
       "year": 2005,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2006": {
       "year": 2006,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2007": {
       "year": 2007,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2008": {
       "year": 2008,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2009": {
       "year": 2009,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2010": {
       "year": 2010,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2011": {
       "year": 2011,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2012": {
       "year": 2012,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7547,10 +7772,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2013": {
       "year": 2013,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2500,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7558,10 +7785,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2014": {
       "year": 2014,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2500,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7569,10 +7798,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2015": {
       "year": 2015,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2550,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7580,10 +7811,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2016": {
       "year": 2016,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2550,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7591,10 +7824,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2017": {
       "year": 2017,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2600,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7602,10 +7837,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2018": {
       "year": 2018,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2650,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7613,10 +7850,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2019": {
       "year": 2019,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2700,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7624,10 +7863,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2020": {
       "year": 2020,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2750,
         "carryoverLimit": 550
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7635,10 +7876,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2021": {
       "year": 2021,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2750,
         "carryoverLimit": 550
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 10500,
         "marriedFilingSeparatelyExclusionLimit": 5250
       }
@@ -7646,10 +7889,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2022": {
       "year": 2022,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2850,
         "carryoverLimit": 570
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7657,10 +7902,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2023": {
       "year": 2023,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3050,
         "carryoverLimit": 610
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7668,10 +7915,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2024": {
       "year": 2024,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3200,
         "carryoverLimit": 640
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7679,10 +7928,12 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2025": {
       "year": 2025,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3300,
         "carryoverLimit": 660
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -7690,14 +7941,21 @@ const RAW_FSA_PARAMETERS: FsaParameterData = {
     "2026": {
       "year": 2026,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3400,
         "carryoverLimit": 680
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 7500,
         "marriedFilingSeparatelyExclusionLimit": 3750
       }
     }
+  },
+  "dollarLimitStates": {
+    "unavailable": "The program did not exist for the tax year. A year below supportedTaxYears.minimum is unavailable by absence: IRC 129 was added by Pub. L. 97-34 section 124 for taxable years beginning after December 31, 1981.",
+    "available_without_statutory_dollar_limit": "The program existed and its exclusion applied, but no universal statutory dollar ceiling did. The statutory maximum is null; a maximum computed from caller-supplied plan terms or earned income is still a real answer and is reported as such.",
+    "statutory_dollar_limit": "A published statutory dollar ceiling applies and is encoded."
   }
 } as FsaParameterData;
 /* </generated-fsa-parameters> */
@@ -9482,8 +9740,16 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
   );
   if (fsaAccounts.length === 0) return;
 
-  const yearParameters = context.fsaParameters?.healthFsa ?? null;
-  const priorYearParameters = fsaParametersForYear(context.taxYear - 1)?.healthFsa ?? null;
+  // A year in the available-without-statutory-dollar-limit state supplies no
+  // ceiling, which is not the same as supplying a ceiling of nothing. Treating
+  // the row as absent keeps the downstream "no statutory figure" handling and
+  // lets a caller-supplied plan document still produce a real maximum.
+  const healthFsaYear = context.fsaParameters?.healthFsa ?? null;
+  const yearParameters =
+    healthFsaYear !== null && healthFsaYear.state === "statutory_dollar_limit" ? healthFsaYear : null;
+  const priorYearRow = fsaParametersForYear(context.taxYear - 1)?.healthFsa ?? null;
+  const priorYearParameters =
+    priorYearRow !== null && priorYearRow.state === "statutory_dollar_limit" ? priorYearRow : null;
 
   for (const account of fsaAccounts) {
     const rules: HealthFsaRulesInput = account.planRules.healthFsa ?? {};
@@ -9564,24 +9830,33 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
 
     const salaryReductionLimit = yearParameters?.salaryReductionLimit ?? null;
     const carryoverLimitForThisYear = yearParameters?.carryoverLimit ?? null;
+    const planDocumentLimitEarly =
+      rules.planDocumentLimit === undefined
+        ? null
+        : money(rules.planDocumentLimit, `${path}.planRules.healthFsa.planDocumentLimit`);
     if (yearParameters === null) {
-      indeterminate = true;
+      // No statutory ceiling is not the same as no answer. The arrangement
+      // existed and IRC 125(a) excluded its salary reductions; the ceiling was
+      // whatever the plan document imposed. If the caller supplied that, the
+      // maximum is knowable and withholding it would discard a fact they gave.
+      indeterminate = planDocumentLimitEarly === null;
       diagnostics.push(
         diagnostic(
-          "HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013",
-          DiagnosticSeverity.ERROR,
-          `IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148 section 9005, and Notice 2012-40 reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary reduction ceiling existed for tax year ${context.taxYear}. Health flexible spending arrangements did exist; what did not exist is a statutory limit, so the ceiling was whatever the plan document imposed and none is reported.`,
+          indeterminate
+            ? "HEALTH_FSA_NO_STATUTORY_LIMIT_BEFORE_2013"
+            : "HEALTH_FSA_LIMIT_RESTS_ENTIRELY_ON_PLAN_DOCUMENT",
+          indeterminate ? DiagnosticSeverity.ERROR : DiagnosticSeverity.WARNING,
+          indeterminate
+            ? `IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148 section 9005, and Notice 2012-40 reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary reduction ceiling existed for tax year ${context.taxYear}. Health flexible spending arrangements did exist; what did not exist is a statutory limit, so the ceiling was whatever the plan document imposed. None was supplied, so none is reported.`
+            : `No statutory salary reduction ceiling existed for tax year ${context.taxYear}: IRC 125(i) reaches plan years beginning after December 31, 2012. The arrangement existed and IRC 125(a) excluded its salary reductions, and the plan document supplied here is the only ceiling there was, so the reported maximum rests entirely on that supplied plan term and on nothing statutory.`,
           "taxYear",
           "IRC 125(i); Notice 2012-40",
         ),
       );
     }
 
-    const planDocumentLimit =
-      rules.planDocumentLimit === undefined
-        ? null
-        : money(rules.planDocumentLimit, `${path}.planRules.healthFsa.planDocumentLimit`);
-    let appliedLimit = salaryReductionLimit;
+    const planDocumentLimit = planDocumentLimitEarly;
+    let appliedLimit = salaryReductionLimit ?? planDocumentLimit;
     if (appliedLimit !== null && planDocumentLimit !== null && planDocumentLimit < appliedLimit) {
       appliedLimit = planDocumentLimit;
       diagnostics.push(
@@ -9727,7 +10002,7 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
         diagnostic(
           "HEALTH_FSA_ELECTION_EXCEEDS_PLAN_DOCUMENT_LIMIT",
           DiagnosticSeverity.ERROR,
-          `Salary reduction contributions of $${electedWithCredits.toLocaleString()} exceed the $${appliedLimit.toLocaleString()} the plan document allows, though they remain within the $${salaryReductionLimit!.toLocaleString()} IRC 125(i) ceiling. Notice 2013-71 confirms a plan may specify a lower amount, and an election above the plan's own term is a plan-operation question this engine does not resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, because that holding addresses the IRC 125(i) limit rather than a lower plan term.`,
+          `Salary reduction contributions of $${electedWithCredits.toLocaleString()} exceed the $${appliedLimit.toLocaleString()} the plan document allows, ${salaryReductionLimit === null ? `and no IRC 125(i) ceiling existed for ${context.taxYear} to exceed` : `though they remain within the $${salaryReductionLimit.toLocaleString()} IRC 125(i) ceiling`}. Notice 2013-71 confirms a plan may specify a lower amount, and an election above the plan's own term is a plan-operation question this engine does not resolve. The Notice 2012-40 section III loss of IRC 125 status is not asserted here, because that holding addresses the IRC 125(i) limit rather than a lower plan term.`,
           `${path}.existingContributions.healthFsaSalaryReduction`,
           "IRC 125(d)(1)(B); Notice 2013-71",
         ),
@@ -9826,7 +10101,19 @@ function allocateHealthFsa(context: CalculationContext, account: NormalizedAccou
     plan.appliedMaximum === null
       ? (poolRemaining(pool) ?? 0)
       : nonnegative(roundMoney(plan.appliedMaximum - account.existingContributions.healthFsaSalaryReduction));
-  const taken = takeFromPool(pool, localHeadroom, sharedLimits);
+  let taken: Money;
+  if (pool.limit === null && plan.appliedMaximum !== null) {
+    // A year with no IRC 125(i) ceiling has no employer-group figure to share,
+    // so there is nothing to draw down: the account is bounded by its own plan
+    // document alone. Putting that document into the shared pool instead would
+    // let one plan's term bind another plan of the same group, which is the
+    // thing IRC 125(g)(4) does not do, and would make the result depend on
+    // which account reached the pool first.
+    reportPoolWithoutConsuming(pool, sharedLimits);
+    taken = localHeadroom;
+  } else {
+    taken = takeFromPool(pool, localHeadroom, sharedLimits);
+  }
   additional.healthFsaSalaryReduction = taken;
   annual.healthFsaSalaryReduction = roundMoney(annual.healthFsaSalaryReduction + taken);
 
@@ -9863,7 +10150,13 @@ interface DependentCareAccountPlan {
  * Tax Reform Act of 1986 Pub. L. 99-514 s.1163 added for taxable years
  * beginning after December 31, 1986. The three states report differently.
  */
-const DEPENDENT_CARE_FIRST_TAX_YEAR = 1982;
+/**
+ * Derived from the table rather than restated: a year below the supported
+ * minimum has no row because the program did not exist for it. Pub. L. 97-34
+ * section 124 added IRC 129 for taxable years beginning after December 31,
+ * 1981, which is what sets the minimum.
+ */
+const DEPENDENT_CARE_FIRST_TAX_YEAR = RAW_FSA_PARAMETERS.supportedTaxYears.minimum;
 
 /**
  * IRC 129(a)(2)(A) is a per-return amount, not a per-person one, and only a
@@ -9888,7 +10181,9 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     .sort((left, right) => (left.priority! - right.priority!) || (left.inputIndex - right.inputIndex));
   if (dcAccounts.length === 0) return;
 
-  const yearParameters = context.fsaParameters?.dependentCare ?? null;
+  const dependentCareYear = context.fsaParameters?.dependentCare ?? null;
+  const yearParameters =
+    dependentCareYear !== null && dependentCareYear.state === "statutory_dollar_limit" ? dependentCareYear : null;
   // IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), so
   // the halved amount and the lesser-of earned income rule do not follow from
   // the filing status alone. IRC 21(e)(4) treats a married-separate taxpayer as
@@ -9918,26 +10213,27 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
 
     const elected = account.existingContributions.dependentCareAssistanceProvided;
 
+    let noStatutoryCeiling = false;
     if (yearParameters === null) {
-      indeterminate = true;
-      unavailable = context.taxYear < DEPENDENT_CARE_FIRST_TAX_YEAR;
-      diagnostics.push(
-        unavailable
-          ? diagnostic(
-              "DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR",
-              DiagnosticSeverity.ERROR,
-              `IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34, applicable to taxable years beginning after December 31, 1981, so no dependent care assistance exclusion existed for tax year ${context.taxYear}.`,
-              "taxYear",
-              "IRC 129; Pub. L. 97-34 s.124(f)",
-            )
-          : diagnostic(
-              "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987",
-              DiagnosticSeverity.ERROR,
-              `The IRC 129(a)(2)(A) limitation of exclusion was added by the Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), applicable to taxable years beginning after December 31, 1986. For tax year ${context.taxYear} IRC 129 existed and excluded employer-provided dependent care assistance, but carried no dollar ceiling on the exclusion, so none is reported.`,
-              "taxYear",
-              "IRC 129(a)(2)(A); Pub. L. 99-514 s.1163",
-            ),
-      );
+      // A year present in the table but carrying no statutory ceiling is not an
+      // unavailable year: IRC 129 existed and excluded the assistance, there was
+      // simply no dollar cap. Whether an answer is possible then depends on
+      // whether the caller supplied a ceiling of their own, which is not known
+      // until the plan and earned income facts below have been read.
+      unavailable = dependentCareYear === null;
+      noStatutoryCeiling = !unavailable;
+      indeterminate = unavailable;
+      if (unavailable) {
+        diagnostics.push(
+          diagnostic(
+            "DEPENDENT_CARE_NOT_AVAILABLE_FOR_TAX_YEAR",
+            DiagnosticSeverity.ERROR,
+            `IRC 129 was added by the Economic Recovery Tax Act of 1981, Pub. L. 97-34, applicable to taxable years beginning after December 31, 1981, so no dependent care assistance exclusion existed for tax year ${context.taxYear}.`,
+            "taxYear",
+            "IRC 129; Pub. L. 97-34 s.124(f)",
+          ),
+        );
+      }
     }
 
     // IRC 129(b)(1): the exclusion cannot exceed the employee's earned income,
@@ -10002,10 +10298,35 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
       rules.planDocumentLimit === undefined
         ? null
         : money(rules.planDocumentLimit, `${path}.planRules.dependentCareFsa.planDocumentLimit`);
+    const suppliedCeilings = [
+      ...(earnedIncomeLimitation === null ? [] : [earnedIncomeLimitation]),
+      ...(planDocumentLimit === null ? [] : [planDocumentLimit]),
+    ];
+    if (noStatutoryCeiling && suppliedCeilings.length === 0) {
+      // Nothing statutory and nothing supplied leaves no ceiling to report.
+      indeterminate = true;
+    }
+    if (noStatutoryCeiling) {
+      diagnostics.push(
+        diagnostic(
+          indeterminate
+            ? "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987"
+            : "DEPENDENT_CARE_LIMIT_RESTS_ENTIRELY_ON_SUPPLIED_FACTS",
+          indeterminate ? DiagnosticSeverity.ERROR : DiagnosticSeverity.WARNING,
+          indeterminate
+            ? `The IRC 129(a)(2)(A) limitation of exclusion was added by the Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), applicable to taxable years beginning after December 31, 1986. For tax year ${context.taxYear} IRC 129 existed and excluded employer-provided dependent care assistance, but carried no dollar ceiling on the exclusion. None was supplied either, so none is reported.`
+            : `No IRC 129(a)(2)(A) dollar ceiling existed for tax year ${context.taxYear}: Pub. L. 99-514 section 1163(a) added it for taxable years beginning after December 31, 1986. IRC 129 did exist and excluded the assistance, and the IRC 129(b)(1) earned income limitation and any plan maximum supplied here are the only ceilings there were, so the reported maximum rests entirely on those supplied facts and on nothing statutory.`,
+          "taxYear",
+          "IRC 129(a)(2)(A); Pub. L. 99-514 s.1163",
+        ),
+      );
+    }
     const applicableLimit =
-      indeterminate || statutoryExclusion === null || earnedIncomeFactsMissing
+      indeterminate || earnedIncomeFactsMissing
         ? null
-        : minMoney(
+        : statutoryExclusion === null
+          ? minMoney(...suppliedCeilings)
+          : minMoney(
             statutoryExclusion,
             ...(earnedIncomeLimitation === null ? [] : [earnedIncomeLimitation]),
             ...(planDocumentLimit === null ? [] : [planDocumentLimit]),
@@ -10180,12 +10501,20 @@ function allocateDependentCareFsa(
   const alreadyExcluded = detail.excludableAmount;
   const earnedIncomeCeiling =
     plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
-  const headroom = minMoney(
-    poolRemaining(pool) ?? 0,
+  const ownCeilings = [
     ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
     ...(plan.planDocumentLimit === null ? [] : [nonnegative(roundMoney(plan.planDocumentLimit - alreadyExcluded))]),
-  );
-  const additionalExcludable = takeFromPool(pool, headroom, sharedLimits);
+  ];
+  let additionalExcludable: Money;
+  if (pool.limit === null && ownCeilings.length > 0) {
+    // A year with no IRC 129(a)(2)(A) ceiling has no household figure to draw
+    // down. The supplied earned income and plan maximum are the only ceilings
+    // there were, and they bound this account directly.
+    reportPoolWithoutConsuming(pool, sharedLimits);
+    additionalExcludable = minMoney(...ownCeilings);
+  } else {
+    additionalExcludable = takeFromPool(pool, minMoney(poolRemaining(pool) ?? 0, ...ownCeilings), sharedLimits);
+  }
 
   annual.dependentCareAssistanceProvided = roundMoney(alreadyExcluded + additionalExcludable);
   annual.dependentCareIncludibleInIncome = detail.includibleInIncome;

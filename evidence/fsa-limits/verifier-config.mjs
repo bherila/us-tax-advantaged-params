@@ -30,6 +30,11 @@ export default {
   scalars: [
     ["healthFsaSalaryReductionLimit_125i", ["healthFsa", "salaryReductionLimit"], "IRC 125(i)"],
     ["healthFsaCarryoverLimit", ["healthFsa", "carryoverLimit"], "Notice 2013-71; Notice 2020-33"],
+    // The transitions themselves, bound on both sides. Vectors already exercise
+    // the behaviour, but a vector is the engine agreeing with itself; these make
+    // the effective dates a claim the corpus checks against the data.
+    ["healthFsaDollarLimitState", ["healthFsa", "state"], "IRC 125(i); Pub. L. 111-148 s.9005; Notice 2012-40"],
+    ["dependentCareDollarLimitState", ["dependentCare", "state"], "IRC 129(a)(2)(A); Pub. L. 99-514 s.1163(a)"],
   ],
 
   /**

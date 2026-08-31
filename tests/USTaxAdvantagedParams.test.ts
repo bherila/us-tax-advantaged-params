@@ -621,11 +621,18 @@ test("1997 self-employed qualified-plan formula applies both reduced-rate and re
 });
 
 test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it", () => {
-  assert.deepEqual(U.supportedFsaTaxYears(), { minimum: 1987, maximum: 2026 });
+  // The table starts where IRC 129 does, not where its dollar ceiling does: a
+  // year can exist with no statutory ceiling, and that is a state rather than
+  // an absence. Absence now means only "the program did not exist".
+  assert.deepEqual(U.supportedFsaTaxYears(), { minimum: 1982, maximum: 2026 });
+  assert.equal(U.fsaParametersForYear(2026)?.healthFsa?.state, "statutory_dollar_limit");
   assert.equal(U.fsaParametersForYear(2026)?.healthFsa?.salaryReductionLimit, 3_400);
   assert.equal(U.fsaParametersForYear(2026)?.dependentCare.exclusionLimit, 7_500);
-  assert.equal(U.fsaParametersForYear(2012)?.healthFsa, null);
-  assert.equal(U.fsaParametersForYear(1986), null);
+  assert.equal(U.fsaParametersForYear(2012)?.healthFsa?.state, "available_without_statutory_dollar_limit");
+  assert.equal(U.fsaParametersForYear(2012)?.healthFsa?.salaryReductionLimit, null);
+  assert.equal(U.fsaParametersForYear(1986)?.dependentCare.state, "available_without_statutory_dollar_limit");
+  assert.equal(U.fsaParametersForYear(1986)?.dependentCare.exclusionLimit, null);
+  assert.equal(U.fsaParametersForYear(1981), null);
   assert.ok(U.fsaSourceMetadata().some((source) => source.id === "pl-119-21"));
   assert.throws(() => U.fsaParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
