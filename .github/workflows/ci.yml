@@ -28,6 +28,7 @@ jobs:
       - run: npm ci
       - run: npm run validate:data
       - run: npm run validate:evidence
+      - run: npm run check:attestations
       - run: npm run generate:check
       - run: npm run validate:manifests
       - run: npm run typecheck
