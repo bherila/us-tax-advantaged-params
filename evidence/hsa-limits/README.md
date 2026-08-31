@@ -7,7 +7,9 @@ retirement COLA notice, so they carry their own corpus and their own check.
 and `verifier-config.mjs` declares how each recorded field maps onto
 `data/hsa-parameters.json`. The shared engine `scripts/verify-evidence.mjs`
 does the comparing — the HSA figures have their own corpus, not their own
-checking logic.
+checking logic. What that comparison does and does not prove is set out in the
+retirement corpus README under "What this proves, and what it does not"; it
+holds identically here.
 
 ```
 npm run validate:evidence        # every corpus under evidence/
@@ -36,7 +38,11 @@ see `_policyFlagsComment` in `primary-values.json` for the full derivation.
 
 Twenty-six documents: the annual Rev. Proc. for every year from 2004 through
 2026, plus the statute text, which carries the 2006 amendment and
-effective-date notes the policy flags rest on. Fixed by `SHA256SUMS.txt`:
+effective-date notes the policy flags rest on. Fixed by `SHA256SUMS.txt`, which
+`npm run validate:evidence` verifies on every run — a listed file that is
+missing or has changed fails, and so does a file in `sources/` that nothing
+attests to. The manual form must run from inside `sources/`, since the manifest
+lists bare filenames:
 
 ```
 cd sources && shasum -a 256 -c ../SHA256SUMS.txt
@@ -65,9 +71,10 @@ the statute and compared in every year.
 ## Adding a year
 
 Take the amounts from the Rev. Proc. itself, never from a summary table. Add
-the document to `sources/`, extend `SHA256SUMS.txt`, add the year to
-`primary-values.json` citing the Rev. Proc., then update
-`data/hsa-parameters.json` until `npm run validate:evidence:hsa` passes.
+the document to `sources/`, extend `SHA256SUMS.txt` (a document with no entry
+now fails the run), add the year to `primary-values.json` citing the Rev. Proc.,
+then update `data/hsa-parameters.json` until `npm run validate:evidence:hsa`
+passes.
 
 A figure recorded in `primary-values.json` that is compared against nothing is
 reported as `UNCOVERED` and fails the run, so a new parameter cannot be

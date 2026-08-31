@@ -3,13 +3,32 @@
 The conformance vectors prove the TypeScript and PHP engines agree with each
 other. They cannot prove the encoded dollar amounts are the ones the IRS
 actually published: two engines reading the same mistyped table agree
-perfectly. This directory closes that gap.
+perfectly. This directory narrows that gap, and the next section says by how
+much.
 
 `primary-values.json` transcribes the figures from the notices in `sources/`,
 and `verifier-config.mjs` declares how each recorded field maps onto
 `data/retirement-parameters.json`. The shared engine
-`scripts/verify-evidence.mjs` does the comparing, so the shipped parameters are
-anchored to the documents that create them rather than merely self-consistent.
+`scripts/verify-evidence.mjs` does the comparing.
+
+## What this proves, and what it does not
+
+The comparison is JSON against JSON. The verifier never opens a PDF and cannot
+read a figure out of one. It proves three things:
+
+- every shipped parameter it covers equals the figure a human transcribed from
+  the notice, so the two files cannot drift apart afterwards;
+- no transcribed figure is quietly ignored — one compared against nothing fails
+  as `UNCOVERED`, and one outside what the package models has to be declared;
+- the documents in `sources/` are byte-for-byte the ones `SHA256SUMS.txt`
+  records, checked on every run rather than by an instruction someone might
+  follow.
+
+It does not prove the transcription is right. A figure misread from the notice
+and copied into `data/` in the same sitting passes with 0 mismatches, because
+both sides of the comparison carry the same mistake. Nothing here substitutes
+for reading the document — take the amounts from the notice text itself, never
+from a summary table, and expect a second reader to check them.
 
 ```
 npm run validate:evidence               # every corpus under evidence/
@@ -61,7 +80,11 @@ Twenty-one documents: IRS COLA notices from 2008 through 2025, the
 IR-series releases that carried the figures before the notice format, SSA
 Federal Register wage-base determinations, and the text of 26 U.S.C. §219 and
 §408A for the phase-out widths and zero applicable dollar amounts the notices
-never print. Every file is fixed by `SHA256SUMS.txt`:
+never print. Every file is fixed by `SHA256SUMS.txt`, which
+`npm run validate:evidence` verifies in both directions: a listed file that is
+missing or has changed fails, and so does a file in `sources/` that nothing
+attests to. The manual form, which reads only the bare filenames in the
+manifest and so must run from inside `sources/`:
 
 ```
 cd sources && shasum -a 256 -c ../SHA256SUMS.txt
@@ -92,9 +115,10 @@ regardless of prior-year wages. The mandate first bites for 2026.
 
 Take the amounts from the notice itself, never from a summary table — summary
 tables are where transcription errors originate. Add the document to
-`sources/`, extend `SHA256SUMS.txt`, add the year to `primary-values.json`
-citing the notice, then update `data/retirement-parameters.json` until
-`npm run validate:evidence:retirement` passes.
+`sources/`, extend `SHA256SUMS.txt` (a document with no entry now fails the
+run), add the year to `primary-values.json` citing the notice, then update
+`data/retirement-parameters.json` until `npm run validate:evidence:retirement`
+passes.
 
 Any figure recorded in `primary-values.json` that the verifier compares against
 nothing is reported as `UNCOVERED` and fails the run, so a new parameter cannot

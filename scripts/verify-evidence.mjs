@@ -6,8 +6,15 @@
  * The conformance vectors prove the TypeScript and PHP engines agree with each
  * other. They cannot prove the encoded dollar amounts are the ones Congress and
  * the IRS actually published — two engines reading the same mistyped table agree
- * perfectly. This closes that gap by comparing the shipped parameters against
- * figures transcribed from the notices and Revenue Procedures themselves.
+ * perfectly. This narrows that gap by comparing the shipped parameters against
+ * figures transcribed by hand from the notices and Revenue Procedures.
+ *
+ * What it proves and what it does not: the comparison is JSON against JSON. It
+ * does not read a PDF and it cannot check a transcription. What it does check is
+ * that the documents are the ones the corpus was transcribed from, by verifying
+ * every file in a corpus's sources/ against its SHA256SUMS.txt, and that every
+ * recorded figure is either compared or explicitly declared unmodelled. A
+ * transcription error that was copied into data/ at the same time still passes.
  *
  * Each corpus under evidence/ owns a `primary-values.json` transcription, taken
  * verbatim from the source text, and a `verifier-config.mjs` declaring how its
@@ -23,10 +30,11 @@
  * Usage: node scripts/verify-evidence.mjs [corpus...] [--json]
  *   corpus  Directory name under evidence/ (e.g. `retirement-limits`) or its
  *           leading segment (`retirement`). Default: every corpus.
- * Exits 0 when every comparable figure in every selected corpus matches,
- * 1 otherwise.
+ * Exits 0 when every source document matches its recorded digest and every
+ * comparable figure in every selected corpus matches, 1 otherwise.
  */
 
+import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
@@ -43,6 +51,64 @@ const METADATA = /^(source|_.*|.*_note|.*_source)$/;
 
 /** Resolve `path` against `obj`, tolerating a null or missing intermediate. */
 const at = (obj, path) => path.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+
+/**
+ * Verify a corpus's source documents against its SHA256SUMS.txt.
+ *
+ * SHA256SUMS.txt used to be an instruction in a README with no code path, which
+ * meant the corpus was bound to *some* document with the right name rather than
+ * to the bytes it was transcribed from. This makes it a check. It runs in both
+ * directions: a listed file that is missing or has drifted fails, and so does a
+ * file sitting in sources/ that nothing attests to.
+ *
+ * It does not read the documents' contents, so it proves provenance of the
+ * bytes, not fidelity of the transcription.
+ */
+function verifyDigests(corpusId) {
+  const dir = join(root, "evidence", corpusId);
+  const problems = [];
+  let manifest;
+  try {
+    manifest = readFileSync(join(dir, "SHA256SUMS.txt"), "utf8");
+  } catch (error) {
+    return { problems: [`SHA256SUMS.txt is unreadable: ${error.message}`], documents: 0 };
+  }
+
+  const recorded = new Map();
+  for (const line of manifest.split("\n")) {
+    if (line.trim() === "") continue;
+    // `shasum -a 256` writes "<hex>  <name>"; the binary form uses "<hex> *<name>".
+    const match = /^([0-9a-f]{64})\s[\s*](.+)$/.exec(line);
+    if (!match) {
+      problems.push(`SHA256SUMS.txt has an unparsable line: ${line}`);
+      continue;
+    }
+    recorded.set(match[2].trim(), match[1]);
+  }
+
+  let present;
+  try {
+    present = readdirSync(join(dir, "sources"), { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name !== ".DS_Store")
+      .map((entry) => entry.name);
+  } catch (error) {
+    return { problems: [`sources/ is unreadable: ${error.message}`], documents: 0 };
+  }
+
+  for (const [name, expected] of recorded) {
+    if (!present.includes(name)) {
+      problems.push(`${name} is listed in SHA256SUMS.txt but absent from sources/`);
+      continue;
+    }
+    const actual = createHash("sha256").update(readFileSync(join(dir, "sources", name))).digest("hex");
+    if (actual !== expected) problems.push(`${name} digest ${actual} does not match the recorded ${expected}`);
+  }
+  for (const name of present) {
+    if (!recorded.has(name)) problems.push(`${name} is in sources/ but nothing in SHA256SUMS.txt attests to it`);
+  }
+
+  return { problems, documents: recorded.size };
+}
 
 /** Load every corpus config under evidence/, sorted by directory name. */
 async function loadCorpora() {
@@ -176,11 +242,14 @@ function verifyCorpus(config) {
   }
 
   const years = Object.keys(blocks);
+  const digests = verifyDigests(config.id);
   return {
     corpus: config.id,
     comparisons: results.length,
     failures: results.filter((result) => !result.ok),
     uncovered,
+    documents: digests.documents,
+    digestProblems: digests.problems,
     range: `${years[0]}-${years[years.length - 1]}`,
   };
 }
@@ -208,7 +277,9 @@ const selected = requested.length === 0
     });
 
 const reports = selected.map(verifyCorpus);
-const clean = reports.every((report) => report.failures.length === 0 && report.uncovered.length === 0);
+const clean = reports.every(
+  (report) => report.failures.length === 0 && report.uncovered.length === 0 && report.digestProblems.length === 0,
+);
 
 if (asJson) {
   console.log(JSON.stringify({ corpora: reports }, null, 2));
@@ -222,10 +293,13 @@ if (asJson) {
     for (const key of report.uncovered) {
       console.error(`UNCOVERED ${report.corpus} ${key} is recorded in the evidence but compared against nothing`);
     }
+    for (const problem of report.digestProblems) {
+      console.error(`DIGEST ${report.corpus} ${problem}`);
+    }
     console.log(
-      report.failures.length === 0 && report.uncovered.length === 0
-        ? `Primary-source verification (${report.corpus}) passed: ${report.comparisons} comparisons over ${report.range}, 0 mismatches.`
-        : `Primary-source verification (${report.corpus}) FAILED: ${report.failures.length} mismatch(es), ${report.uncovered.length} uncovered field(s), of ${report.comparisons} comparisons.`,
+      report.failures.length === 0 && report.uncovered.length === 0 && report.digestProblems.length === 0
+        ? `Primary-source verification (${report.corpus}) passed: ${report.comparisons} comparisons over ${report.range}, 0 mismatches, ${report.documents} source documents hash-verified.`
+        : `Primary-source verification (${report.corpus}) FAILED: ${report.failures.length} mismatch(es), ${report.uncovered.length} uncovered field(s), ${report.digestProblems.length} document digest problem(s), of ${report.comparisons} comparisons.`,
     );
   }
 }
