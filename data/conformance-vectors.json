@@ -361,7 +361,7 @@
     },
     {
       "name": "1994 historical employer-plan limits",
-      "description": "The IRS Coda manual's historical table records the 1994 IRC 402(g) elective-deferral limit as 9240. IRC 415(c)(1) then limited annual additions to the lesser of 25000 and 25 percent of 100000 compensation, both 25000, so the stated statutory maximum is 25000.",
+      "description": "The IRS Coda manual's historical table records the 1994 IRC 402(g) elective-deferral limit as 9240 and the IRC 415(c)(1)(A) dollar limit as 30000. IRC 415(c)(1)(B) then capped annual additions at 25 percent of compensation, and 25 percent x 100000 = 25000 is below the 30000 dollar limit, so the percentage limit binds and the stated statutory maximum is 25000.",
       "input": {
         "taxYear": 1994,
         "filingStatus": "S",
@@ -428,7 +428,7 @@
     },
     {
       "name": "1982 nonworking spouse IRA",
-      "description": "The IRS SOI Bulletin describing the 1982 IRA rules records a 2000 individual limit but only a 250 individual contribution for a nonworking spouse, within a 2250 one-earner joint cap. The spouse has no compensation and the taxpayer's 20000 compensation supports the joint return, so the spouse's deductible contribution and maximum are 250.",
+      "description": "ERTA 1981 rewrote IRC 219(c) for 1982: the spousal deduction is limited to the lesser of 2250 or compensation, reduced under 219(c)(2)(B) by the amount allowed as a deduction for the working spouse's own IRA, and in no event more than 2000 to the spousal account. The IRS SOI Bulletin for 1982 states the same rule: a 2250 one-earner total with no more than 2000 contributed to either spouse's IRA. The working spouse here contributes nothing to an IRA of their own, so the 219(c)(2)(B) subtraction is zero and the nonworking spouse's account may receive the full 2000; the 2250 household cap binds only the couple's combined total.",
       "input": {
         "taxYear": 1982,
         "filingStatus": "MFJ",
@@ -461,8 +461,8 @@
         ]
       },
       "expect": {
-        "accounts.0.contributionComponents.deductibleIra": 250,
-        "accounts.0.maximumAnnualContributionBasedOnInputs": 250
+        "accounts.0.contributionComponents.deductibleIra": 2000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000
       }
     },
     {

@@ -318,12 +318,25 @@ test('1981 active participant is ineligible for IRA', function (): void {
     assertSameValue(CalculationStatus::INELIGIBLE->value, $ira['status']);
 });
 
-test('1982 one earner spousal IRA cap', function (): void {
+test('1982 one earner spousal IRA allows 2000 to the spousal account when the worker contributes nothing', function (): void {
+    // IRC 219(c)(2) (ERTA 1981): min(2250, compensation) minus the working
+    // spouse's own-IRA deduction, never more than 2000 to the spousal account.
     $result = scenario(1982, [
         ['id' => 't', 'role' => 'taxpayer', 'birthYear' => 1950, 'compensation' => ['iraCompensation' => 20000], 'coveredByEmployerRetirementPlan' => true],
         ['id' => 's', 'role' => 'spouse', 'birthYear' => 1950, 'compensation' => ['iraCompensation' => 0], 'coveredByEmployerRetirementPlan' => false],
     ], [['id' => 'spouse-ira', 'ownerId' => 's', 'type' => 'traditional_ira']], 'MFJ');
-    assertSameValue(250, accountResult($result, 'spouse-ira')['contributionComponents']['deductibleIra']);
+    assertSameValue(2000, accountResult($result, 'spouse-ira')['contributionComponents']['deductibleIra']);
+});
+
+test('1982 one earner spousal IRA is limited to the 2250 household residue after the worker uses 2000', function (): void {
+    $result = scenario(1982, [
+        ['id' => 't', 'role' => 'taxpayer', 'birthYear' => 1950, 'compensation' => ['iraCompensation' => 20000], 'coveredByEmployerRetirementPlan' => true],
+        ['id' => 's', 'role' => 'spouse', 'birthYear' => 1950, 'compensation' => ['iraCompensation' => 0], 'coveredByEmployerRetirementPlan' => false],
+    ], [
+        ['id' => 'own-ira', 'ownerId' => 't', 'type' => 'traditional_ira', 'existingContributions' => ['deductibleIra' => 2000]],
+        ['id' => 'spouse-ira', 'ownerId' => 's', 'type' => 'traditional_ira'],
+    ], 'MFJ');
+    assertSameValue(250, accountResult($result, 'spouse-ira')['maximumAnnualContributionBasedOnInputs']);
 });
 
 test('2019 traditional IRA age 70.5 restriction', function (): void {

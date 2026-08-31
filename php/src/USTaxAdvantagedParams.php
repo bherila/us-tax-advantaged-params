@@ -1388,7 +1388,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1468,7 +1468,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1548,7 +1548,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1628,7 +1628,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1708,7 +1708,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1788,7 +1788,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1890,7 +1890,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1992,7 +1992,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2094,7 +2094,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2196,7 +2196,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2298,7 +2298,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2400,7 +2400,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2502,7 +2502,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2604,7 +2604,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2706,7 +2706,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
