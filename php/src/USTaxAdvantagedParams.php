@@ -7710,11 +7710,16 @@ final class Engine
             $scenarioDiagnostics,
             array_key_exists('filingStatus', $input),
         );
+        self::booleanFlag($input, 'treatedAsUnmarriedUnderSection21e4', 'treatedAsUnmarriedUnderSection21e4');
+        $treatedAsUnmarriedUnderSection21e4 = array_key_exists('treatedAsUnmarriedUnderSection21e4', $input)
+            ? ($input['treatedAsUnmarriedUnderSection21e4'] === true)
+            : null;
         $persons = self::normalizePersons($input['persons'] ?? null);
         $accounts = self::normalizeAccounts($input['accounts'] ?? null, $persons);
         $context = self::createContext(
             $taxYear,
             $filingStatus,
+            $treatedAsUnmarriedUnderSection21e4,
             $parameters,
             $hsaParameters,
             $fsaParameters,
@@ -9366,6 +9371,7 @@ final class Engine
     private static function createContext(
         int $taxYear,
         string $filingStatus,
+        ?bool $treatedAsUnmarriedUnderSection21e4,
         array $parameters,
         ?array $hsaParameters,
         ?array $fsaParameters,
@@ -9383,6 +9389,7 @@ final class Engine
         $context = [
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
+            'treatedAsUnmarriedUnderSection21e4' => $treatedAsUnmarriedUnderSection21e4,
             'parameters' => $parameters,
             'hsaParameters' => $hsaParameters,
             'hsaSupportedTaxYears' => $hsaData['supportedTaxYears'],
@@ -10385,16 +10392,26 @@ final class Engine
 
         $taxYear = (int) $context['taxYear'];
         $yearParameters = $context['fsaParameters']['dependentCare'] ?? null;
-        $married = in_array($context['filingStatus'], [
-            FilingStatus::MARRIED_FILING_JOINTLY->value,
-            FilingStatus::MARRIED_FILING_SEPARATELY->value,
-        ], true);
+        // IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4),
+        // so the halved amount and the lesser-of earned income rule do not
+        // follow from the filing status alone. IRC 21(e)(4) treats a
+        // married-separate taxpayer as not married when they maintained a
+        // qualifying individual's principal place of abode for more than half
+        // the year, furnished over half its cost, and their spouse was not a
+        // member of the household for the last six months.
+        $separateReturn = $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+        $treatedAsUnmarried = $separateReturn
+            && ($context['treatedAsUnmarriedUnderSection21e4'] ?? null) === true;
+        $married = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
+            || ($separateReturn && !$treatedAsUnmarried);
         $statutoryExclusion = null;
         if ($yearParameters !== null) {
-            $statutoryExclusion = $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value
+            $statutoryExclusion = $separateReturn && !$treatedAsUnmarried
                 ? (float) $yearParameters['marriedFilingSeparatelyExclusionLimit']
                 : (float) $yearParameters['exclusionLimit'];
         }
+        $section21e4Undetermined = $separateReturn
+            && ($context['treatedAsUnmarriedUnderSection21e4'] ?? null) === null;
 
         foreach ($dcAccounts as $account) {
             $rules = $account['planRules']['dependentCareFsa'] ?? [];
@@ -10465,6 +10482,24 @@ final class Engine
                             . 'overstate it.',
                     "{$path}.planRules.dependentCareFsa.employeeEarnedIncome",
                     'IRC 129(b)(1)',
+                );
+            }
+            if ($section21e4Undetermined && !$indeterminate) {
+                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                $diagnostics[] = self::diagnostic(
+                    'DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE',
+                    DiagnosticSeverity::WARNING,
+                    'IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and IRC 21(e)(4) treats '
+                        . 'a married individual filing separately as not married when they maintained a household '
+                        . "that was a qualifying individual's principal place of abode for more than half the "
+                        . 'taxable year, furnished over half the cost of maintaining it, and their spouse was not a '
+                        . 'member of it during the last six months of the year. Those facts are not derivable from '
+                        . 'anything supplied here and treatedAsUnmarriedUnderSection21e4 was not stated, so the '
+                        . 'return has been treated as married: the halved IRC 129(a)(2)(A) amount and the '
+                        . 'IRC 129(b)(1)(B) lesser-of-earned-income rule are applied. A taxpayer who meets '
+                        . 'IRC 21(e)(4) takes the undivided amount and their own earned income instead.',
+                    'treatedAsUnmarriedUnderSection21e4',
+                    'IRC 129(a)(2)(C); IRC 21(e)(4)',
                 );
             }
             if (($rules['spouseIsStudentOrIncapableOfSelfCare'] ?? null) === true && !$indeterminate) {

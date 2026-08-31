@@ -578,6 +578,21 @@ export interface ScenarioInput {
   persons: PersonInput[];
   accounts: AccountInput[];
   conversions?: RothConversionInput[];
+  /**
+   * IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and
+   * IRC 21(e)(4) treats a married individual filing separately as **not**
+   * married when they maintained a household that was a qualifying
+   * individual's principal place of abode for more than half the year,
+   * furnished over half its cost, and their spouse was not a member of it
+   * during the last six months. Such a taxpayer takes the undivided
+   * IRC 129(a)(2)(A) amount and the IRC 129(b)(1)(A) own-earned-income
+   * limitation rather than the halved amount and the lesser-of rule.
+   *
+   * The three underlying facts are not derivable from anything else supplied,
+   * so this is the determination itself rather than the facts behind it. Absent
+   * on a married-separate return, the determination is reported as not made.
+   */
+  treatedAsUnmarriedUnderSection21e4?: boolean;
 }
 
 export interface ContributionComponents {
@@ -8423,6 +8438,8 @@ interface AnnualAdditionsPool extends LimitPool {
 interface CalculationContext {
   taxYear: number;
   filingStatus: FilingStatus;
+  /** The IRC 21(e)(4) determination, or null when it was not supplied. */
+  treatedAsUnmarriedUnderSection21e4: boolean | null;
   parameters: YearParameters;
   hsaParameters: HsaYearParameters | null;
   fsaParameters: FsaYearParameters | null;
@@ -9044,6 +9061,7 @@ function traditionalIraDeductionLimit(
 function createCalculationContext(
   taxYear: number,
   filingStatus: FilingStatus,
+  treatedAsUnmarriedUnderSection21e4: boolean | null,
   parameters: YearParameters,
   hsaParameters: HsaYearParameters | null,
   fsaParameters: FsaYearParameters | null,
@@ -9054,6 +9072,7 @@ function createCalculationContext(
   const context: CalculationContext = {
     taxYear,
     filingStatus,
+    treatedAsUnmarriedUnderSection21e4,
     parameters,
     hsaParameters,
     fsaParameters,
@@ -9776,15 +9795,23 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
   if (dcAccounts.length === 0) return;
 
   const yearParameters = context.fsaParameters?.dependentCare ?? null;
+  // IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), so
+  // the halved amount and the lesser-of earned income rule do not follow from
+  // the filing status alone. IRC 21(e)(4) treats a married-separate taxpayer as
+  // not married when they maintained a qualifying individual's principal place
+  // of abode for more than half the year, furnished over half its cost, and
+  // their spouse was not a member of the household for the last six months.
+  const separateReturn = context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY;
+  const treatedAsUnmarried = separateReturn && context.treatedAsUnmarriedUnderSection21e4 === true;
   const married =
-    context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
-    context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY;
+    context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY || (separateReturn && !treatedAsUnmarried);
   const statutoryExclusion =
     yearParameters === null
       ? null
-      : context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY
+      : separateReturn && !treatedAsUnmarried
         ? yearParameters.marriedFilingSeparatelyExclusionLimit
         : yearParameters.exclusionLimit;
+  const section21e4Undetermined = separateReturn && context.treatedAsUnmarriedUnderSection21e4 === null;
 
   for (const account of dcAccounts) {
     const rules: DependentCareFsaRulesInput = account.planRules.dependentCareFsa ?? {};
@@ -9845,6 +9872,18 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
             : "IRC 129(b)(1)(A) caps the exclusion at the employee's earned income for the taxable year. That is a caller-supplied fact and was not supplied, so the limitation has not been applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate it.",
           `${path}.planRules.dependentCareFsa.employeeEarnedIncome`,
           "IRC 129(b)(1)",
+        ),
+      );
+    }
+    if (section21e4Undetermined && !indeterminate) {
+      status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
+      diagnostics.push(
+        diagnostic(
+          "DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE",
+          DiagnosticSeverity.WARNING,
+          "IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4), and IRC 21(e)(4) treats a married individual filing separately as not married when they maintained a household that was a qualifying individual's principal place of abode for more than half the taxable year, furnished over half the cost of maintaining it, and their spouse was not a member of it during the last six months of the year. Those facts are not derivable from anything supplied here and treatedAsUnmarriedUnderSection21e4 was not stated, so the return has been treated as married: the halved IRC 129(a)(2)(A) amount and the IRC 129(b)(1)(B) lesser-of-earned-income rule are applied. A taxpayer who meets IRC 21(e)(4) takes the undivided amount and their own earned income instead.",
+          "treatedAsUnmarriedUnderSection21e4",
+          "IRC 129(a)(2)(C); IRC 21(e)(4)",
         ),
       );
     }
@@ -13102,6 +13141,11 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     scenarioDiagnostics,
     input.filingStatus !== undefined,
   );
+  booleanFlag(input.treatedAsUnmarriedUnderSection21e4, "treatedAsUnmarriedUnderSection21e4");
+  const treatedAsUnmarriedUnderSection21e4 =
+    input.treatedAsUnmarriedUnderSection21e4 === undefined
+      ? null
+      : input.treatedAsUnmarriedUnderSection21e4 === true;
   const persons = normalizePersons(input.persons);
   const accounts = normalizeAccounts(input.accounts, persons);
   const allocationOrder = [...accounts].sort(
@@ -13110,6 +13154,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const context = createCalculationContext(
     taxYear,
     filingStatus,
+    treatedAsUnmarriedUnderSection21e4,
     parameters,
     hsaParameters,
     fsaParameters,

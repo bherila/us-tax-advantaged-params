@@ -4959,7 +4959,7 @@
     },
     {
       "name": "2025 dependent care exclusion is halved on a married separate return",
-      "description": "The IRC 129(a)(2)(A) parenthetical sets the amount at 2500 in the case of a separate return by a married individual. Married separate spouses file separate returns, so each carries their own 2500 rather than dividing one 5000, which is why the amount is halved rather than shared. IRC 129(b)(1)(B) needs both spouses' earned income; 60000 and 55000 leave the statutory amount binding.",
+      "description": "The IRC 129(a)(2)(A) parenthetical sets the amount at 2500 in the case of a separate return by a married individual. Married separate spouses file separate returns, so each carries their own 2500 rather than dividing one 5000, which is why the amount is halved rather than shared. IRC 129(b)(1)(B) needs both spouses' earned income; 60000 and 55000 leave the statutory amount binding. IRC 129(a)(2)(C) takes marital status from IRC 21(e)(3) and (4) rather than from the filing status alone, and the IRC 21(e)(4) facts are not derivable from anything supplied, so the halved amount is applied and the undetermined status is reported rather than assumed away.",
       "input": {
         "taxYear": 2025,
         "filingStatus": "MFS",
@@ -4991,11 +4991,94 @@
         ]
       },
       "expect": {
-        "accounts.0.status": "determinate",
+        "accounts.0.status": "determinate_with_assumptions",
         "accounts.0.statutoryMaximumAnnualContribution": 2500,
         "accounts.0.dependentCareFsa.statutoryExclusion": 2500,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": 55000,
-        "accounts.0.dependentCareFsa.householdExclusionShared": false
+        "accounts.0.dependentCareFsa.householdExclusionShared": false,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_SECTION_21E4_DETERMINATION_NOT_MADE"
+      }
+    },
+    {
+      "name": "an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount",
+      "description": "IRC 129(a)(2)(C) determines marital status under IRC 21(e)(3) and (4). IRC 21(e)(4) treats a married individual filing separately as not married when they maintained a household that was a qualifying individual's principal place of abode for more than half the taxable year, furnished over half the cost of maintaining it, and their spouse was not a member of it during the last six months. Such a taxpayer is not married for IRC 129, so for 2026 they take the undivided 7500 rather than the halved 3750, and the IRC 129(b)(1)(A) limitation is their own 90000 earned income rather than the IRC 129(b)(1)(B) lesser of the two spouses' 3000. Both halves of the rule move together: applying one without the other reproduces neither the married nor the unmarried treatment.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "treatedAsUnmarriedUnderSection21e4": true,
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 90000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500
+      }
+    },
+    {
+      "name": "a separate return that states it is still married keeps the halved amount",
+      "description": "The contrast with the vector above. Stating treatedAsUnmarriedUnderSection21e4 as false is the IRC 21(e)(4) determination made and answered in the negative, so the halved 3750 and the IRC 129(b)(1)(B) lesser-of rule apply exactly as they do without the fact -- but the result is determinate rather than carrying the undetermined-status warning, because the caller has answered the question.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "treatedAsUnmarriedUnderSection21e4": false,
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e1",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000,
+                "spouseEarnedIncome": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.dependentCareFsa.statutoryExclusion": 3750,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 3000
       }
     },
     {
