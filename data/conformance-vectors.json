@@ -6331,6 +6331,344 @@
         "accounts.0.planTermDependentCapacity": 9500,
         "accounts.0.diagnostics.0.code": "PLAN_TERM_DEPENDENT_415C_CAPACITY"
       }
+    },
+    {
+      "name": "2026 pension-linked emergency savings account is capped by IRC 402A(e)(3)(A)(i)",
+      "description": "Notice 2025-67 states that 'The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,500 to $2,600', so the 2026 figure is $2,600; the notice is committed under evidence/retirement-limits and fixed by SHA256SUMS.txt. IRC 402A(e)(3)(A) caps the portion of the account balance attributable to participant contributions at the lesser of that figure and any lower amount the plan sponsor sets, so with $0 already attributable to the participant the whole $2,600 is available. It lands as a Roth deferral rather than a pre-tax one because IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account, and it consumes $2,600 of the $24,500 IRC 402(g)(1) limit the same notice states, because IRC 402A(e)(9) orders excess deferrals distributed under IRC 402(g)(2)(A) out of this account first, which only makes sense if its contributions count toward that limit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.sharedLimits.0.legalLimit": "IRC 402(g) aggregate elective-deferral limit",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.usedByAccount": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+        "accounts.0.diagnostics.0.severity": "info",
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": 2600
+      }
+    },
+    {
+      "name": "2025 pension-linked emergency savings room is the IRC 402A(e)(3)(A) cap less the participant contribution balance",
+      "description": "Notice 2024-80 states that 'The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans remains $2,500', so the 2025 figure is $2,500. IRC 402A(e)(3)(A) forbids a contribution 'to the extent such contribution would cause the portion of the account balance attributable to participant contributions to exceed' that amount. It is a ceiling on a balance carried across years, not an annual allowance, so with $1,000 already attributable to participant contributions only 2500 - 1000 = $1,500 may still be accepted. Nothing in the year restarts the count.",
+      "input": {
+        "taxYear": 2025,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 1500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1500,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1500,
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": 2500
+      }
+    },
+    {
+      "name": "a pension-linked emergency savings account already at the IRC 402A(e)(3)(A) cap accepts nothing",
+      "description": "IRC 402A(e)(3)(A) bars any contribution that 'would cause the portion of the account balance attributable to participant contributions to exceed' the limitation. A 2026 account whose participant-contribution balance already equals the $2,600 Notice 2025-67 states is therefore closed to further contributions: 2600 - 2600 = 0. The account is still determinate and still available — the answer is zero, not unknown — and no IRC 402(g) or IRC 415(c) capacity is consumed, leaving it for the participant's other accounts.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 2600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.contributionComponents.employeeRothDeferral": 0,
+        "accounts.0.sharedLimits.0.usedByAccount": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 24500
+      }
+    },
+    {
+      "name": "2024 pension-linked emergency savings uses the unadjusted statutory IRC 402A(e)(3)(A)(i) amount",
+      "description": "Notice 2023-75 states no pension-linked emergency savings figure at all, and no earlier or later notice may be substituted. The amount comes from the Code: IRC 402A(e)(3)(A)(i) fixes the limitation at '$2,500', and the flush text of IRC 402A(e)(3)(A) directs the Secretary to adjust it only '[i]n the case of contributions made in taxable years beginning after December 31, 2024'. 2024, the first year the account exists, is therefore governed by the unadjusted statutory amount rather than by an adjustment or by the $2,500 Notice 2024-80 separately states for 2025. The enacted text is committed as evidence/retirement-limits/sources/usc-26-402A.html and fixed by SHA256SUMS.txt.",
+      "input": {
+        "taxYear": 2024,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2500,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2500,
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": 2500,
+        "parameters.availability.pensionLinkedEmergencySavings": true
+      }
+    },
+    {
+      "name": "2023 has no pension-linked emergency savings account",
+      "description": "IRC 402A(e) was added by section 127(e)(1) of the SECURE 2.0 Act of 2022 (Pub. L. 117-328, div. T, title I), and section 127(g) applies the amendments made by that section to 'plan years beginning after December 31, 2023'. No such account could exist for 2023, so the account type is unavailable rather than merely uncapped, and the year carries no encoded limitation. Pinning the boundary is the point: 2024 is the first year, and neither the $2,500 the Code fixes for it nor any later adjusted figure may be reached back into 2023.",
+      "input": {
+        "taxYear": 2023,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.diagnostics.0.code": "ACCOUNT_TYPE_NOT_AVAILABLE_FOR_YEAR",
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": null,
+        "parameters.availability.pensionLinkedEmergencySavings": false
+      }
+    },
+    {
+      "name": "a pension-linked emergency savings account without a supplied participant contribution balance is indeterminate",
+      "description": "IRC 402A(e)(3)(A) caps 'the portion of the account balance attributable to participant contributions', a figure that spans every prior year and that IRC 402A(e)(7) — which requires the plan to allow withdrawal of the balance at least once per calendar month — can move downward mid-year. Nothing else in a scenario expresses it, and assuming an empty account would state a ceiling the statute may not allow, so the account is indeterminate with a null statutory maximum rather than defaulted to the full published figure. This mirrors the pre-2002 IRC 403(b)(2) treatment: a term the package cannot compute is declared, not omitted.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.contributionComponents.employeeRothDeferral": 0,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.0.diagnostics.0.severity": "error"
+      }
+    },
+    {
+      "name": "a pension-linked emergency savings account shares the IRC 402(g) limit with the plan's 401(k)",
+      "description": "IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account for purposes of the title, and IRC 402A(e)(9) provides that excess deferrals distributed under IRC 402(g)(2)(A) come first from the emergency account, which places its contributions inside the IRC 402(g)(1) limit rather than beside it. Notice 2025-67 sets that limit at $24,500 for 2026 and the IRC 415(c)(1)(A) annual-additions limit at $72,000. Taking the emergency account first by priority, it fills its own $2,600 IRC 402A(e)(3)(A)(i) ceiling and the 401(k) then takes the remaining 24500 - 2600 = $21,900 of elective-deferral room. Both amounts are annual additions in the one IRC 415(c) group, which is far from binding at $72,000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            }
+          },
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 200000,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 21900,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 21900,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 2600,
+        "accounts.1.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.1.sharedLimits.1.legalLimit": "IRC 415(c) annual-additions limit",
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 47500
+      }
+    },
+    {
+      "name": "a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds below the statutory figure",
+      "description": "IRC 402A(e)(3)(A) sets the ceiling at the lesser of '$2,500' as adjusted — $2,600 for 2026 under Notice 2025-67 — and 'an amount determined by the plan sponsor'. A sponsor that sets $1,000 therefore caps this participant at $1,000, supplied as the plan-document employee deferral limit. The statutory maximum stays at the $2,600 the Code and the notice fix, because it reports the legal ceiling rather than the plan's; only the amount supportable on the supplied facts falls to $1,000. Keeping the two apart is the point: a lower plan term is not a lower law.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1000,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1000
+      }
+    },
+    {
+      "name": "a pension-linked emergency savings account needs no birth year",
+      "description": "Age matters to an elective-deferral account only through IRC 414(v), which lets a participant who attains age 50 exceed an applicable limit. No catch-up reaches this account: IRC 402A(e)(3)(A) forbids any contribution that would push the participant-contribution balance past the ceiling, whatever the participant's age, and IRC 414(v)(3) does not displace that bar. A scenario supplying no birth year is therefore fully answerable — $2,600 for 2026 under Notice 2025-67 — and must not be downgraded by the missing-age diagnostic that a 401(k) or 403(b) in the same year would rightly raise.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
+      }
     }
   ]
 }

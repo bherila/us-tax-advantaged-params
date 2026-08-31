@@ -61,6 +61,26 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
 - **26 U.S.C. §402(g)(7)** — statutory annual, lifetime, and service-based limits for the special 403(b) 15-year catch-up.
   `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim`
 
+- **26 U.S.C. §402A(e)** — pension-linked emergency savings accounts, added by the SECURE
+  2.0 Act of 2022 (Pub. L. 117-328, div. T, title I, §127(e)(1)). §402A(e)(3)(A) caps the
+  portion of the account balance attributable to participant contributions at the lesser of
+  "$2,500" and "an amount determined by the plan sponsor", and its flush text directs the
+  Secretary to adjust the $2,500 "[i]n the case of contributions made in taxable years
+  beginning after December 31, 2024" — so 2024, the first effective year, carries the
+  unadjusted statutory amount, which no cost-of-living notice states. §127(g) applies the
+  section to "plan years beginning after December 31, 2023". The account is "treated for
+  purposes of this title as a designated Roth account" under §402A(e)(1)(A)(i), and
+  §402A(e)(9) coordinates it with the distribution of excess deferrals under §402(g)(2)(A),
+  which is the statutory confirmation that its contributions run against the §402(g) limit.
+  The 2025 and 2026 figures come from the annual notices instead: Notice 2024-80 says the
+  limitation "remains $2,500" and Notice 2025-67 says it "is increased from $2,500 to
+  $2,600". Each encoded year is recorded in `evidence/retirement-limits/primary-values.json`
+  as `plesaBalanceCap_402Ae3Ai` and compared against
+  `pensionLinkedEmergencySavingsBalanceCap402A` in the data file. The enacted text is
+  committed as `evidence/retirement-limits/sources/usc-26-402A.html` and fixed by
+  `SHA256SUMS.txt`.
+  `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim`
+
 ## Health savings account sources (IRC §223)
 
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement

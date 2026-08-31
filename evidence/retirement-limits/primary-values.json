@@ -55,6 +55,7 @@
     "usc-26-408": "26 U.S.C. 408(o), definitions and rules relating to nondeductible contributions to individual retirement plans",
     "usc-26-408A": "26 U.S.C. 408A, Roth IRAs (2023 edition of the United States Code), for the statutory phase-out width at 408A(c)(3)(A)(ii) and the zero applicable dollar amount at 408A(c)(3)(B)(ii)(III)",
     "usc-26-402": "26 U.S.C. 402(g)(7), special rule for certain organizations, for the statutory 403(b) 15-year catch-up limits",
+    "usc-26-402A": "26 U.S.C. 402A, optional treatment of elective deferrals as Roth contributions (2024 preliminary edition), subsection (e), pension-linked emergency savings accounts, for the 402A(e)(3)(A)(i) contribution limitation, its post-2024 adjustment rule, and the Pub. L. 117-328 section 127(g) effective date",
     "usc-26-457": "26 U.S.C. 457, deferred compensation plans of State and local governments and tax-exempt organizations (2024 preliminary edition)",
     "usc-5-8432": "5 U.S.C. 8432, contributions to Thrift Savings Fund (2024 preliminary edition), including 1987 implementation notes",
     "fr-2012-05-04": "Federal Retirement Thrift Investment Board, Roth Feature to the Thrift Savings Plan, 77 FR 26417 (May 4, 2012)"
@@ -1573,6 +1574,10 @@
       "rothCatchUpWageThreshold_source": "statutory; not stated in Notice 2023-75",
       "compensationLimit_401a17": 345000,
       "dbAnnualBenefit_415b1A": 275000,
+      "plesaBalanceCap_402Ae3Ai": 2500,
+      "plesaBalanceCap_source": "usc-26-402A. Notice 2023-75 does not state this figure. IRC 402A(e)(3)(A) fixes the limitation at \"$2,500\" and its flush text directs the Secretary to adjust it only \"[i]n the case of contributions made in taxable years beginning after December 31, 2024\", so 2024 — the first effective year — carries the unadjusted statutory amount rather than an adjusted or carried-forward one.",
+      "availabilityPensionLinkedEmergencySavings_402Ae": true,
+      "availabilityPensionLinkedEmergencySavings_source": "usc-26-402A. IRC 402A(e) was added by Pub. L. 117-328, div. T, title I, section 127(e)(1), and section 127(g) applies the amendments to \"plan years beginning after December 31, 2023\", making 2024 the first year a pension-linked emergency savings account may exist.",
       "iraContribution_219b5A": 7000,
       "iraCatchUp50_219b5Bii": 1000,
       "traditionalCoveredPhaseout": {
@@ -1636,6 +1641,8 @@
       "rothCatchUpWageThreshold_note": "Notice 2024-80 calls this 'the Roth catch-up wage threshold for 2024', applied to 2024 wages to determine whether 2025 catch-up contributions must be Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
       "compensationLimit_401a17": 350000,
       "dbAnnualBenefit_415b1A": 280000,
+      "plesaBalanceCap_402Ae3Ai": 2500,
+      "plesaBalanceCap_source": "n-24-80: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans remains $2,500.\"",
       "iraContribution_219b5A": 7000,
       "iraCatchUp50_219b5Bii": 1000,
       "traditionalCoveredPhaseout": {
@@ -1703,6 +1710,8 @@
       "special403bCatchUp_source": "usc-26-402",
       "compensationLimit_401a17": 360000,
       "dbAnnualBenefit_415b1A": 290000,
+      "plesaBalanceCap_402Ae3Ai": 2600,
+      "plesaBalanceCap_source": "n-25-67: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,500 to $2,600.\"",
       "iraContribution_219b5A": 7500,
       "iraCatchUp50_219b5Bii": 1100,
       "traditionalCoveredPhaseout": {

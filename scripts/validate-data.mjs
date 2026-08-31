@@ -126,6 +126,26 @@ if (parameters) {
     if (row && !("definedBenefitAnnualBenefit415b" in row)) {
       fail(`Year ${year} definedBenefitAnnualBenefit415b is required; use null where no figure is transcribed.`);
     }
+    // IRC 402A(e)(3)(A)(i) caps the portion of a pension-linked emergency
+    // savings account balance attributable to participant contributions. The
+    // field must exist on every row so a year without one is an explicit null
+    // rather than an absent key, and it must agree with the availability flag:
+    // an account type that does not exist for the year cannot carry a cap, and
+    // one that does exist must not carry a null that the engine would read as
+    // "no encoded figure".
+    if (row && !("pensionLinkedEmergencySavingsBalanceCap402A" in row)) {
+      fail(`Year ${year} pensionLinkedEmergencySavingsBalanceCap402A is required; use null before IRC 402A(e) took effect.`);
+    }
+    if (row && !(row.pensionLinkedEmergencySavingsBalanceCap402A === null
+      || (Number.isInteger(row.pensionLinkedEmergencySavingsBalanceCap402A) && row.pensionLinkedEmergencySavingsBalanceCap402A > 0))) {
+      fail(`Year ${year} pensionLinkedEmergencySavingsBalanceCap402A must be null or a positive whole-dollar amount.`);
+    }
+    if (row && typeof row.availability?.pensionLinkedEmergencySavings !== "boolean") {
+      fail(`Year ${year} availability.pensionLinkedEmergencySavings must be a boolean.`);
+    }
+    if (row && row.availability?.pensionLinkedEmergencySavings !== (row.pensionLinkedEmergencySavingsBalanceCap402A !== null)) {
+      fail(`Year ${year} availability.pensionLinkedEmergencySavings disagrees with pensionLinkedEmergencySavingsBalanceCap402A.`);
+    }
     for (const [field, value] of Object.entries(row?.special403b15YearCatchUp ?? {})) {
       requirePositiveAmount(value, `Year ${year} special403b15YearCatchUp.${field}`);
     }
@@ -141,6 +161,7 @@ if (parameters) {
     "irs-employee-plans-news-fall-2009",
     "irs-pub-535-2001",
     "usc-26-402",
+    "usc-26-402A",
   ]);
 
   const row1997 = parameters.years?.["1997"];
@@ -149,6 +170,21 @@ if (parameters) {
   }
   if (row1997?.sep?.maximumEmployerContributionRate !== 0.15) {
     fail("The 1997 SEP employer-rate regression fixture must be 0.15.");
+  }
+  // Pub. L. 117-328 section 127(g) applies IRC 402A(e) to plan years beginning
+  // after December 31, 2023, and the flush text of IRC 402A(e)(3)(A) adjusts the
+  // $2,500 only for contributions made in taxable years beginning after
+  // December 31, 2024. 2023 therefore has no account and no cap, and 2024 is
+  // pinned to the unadjusted statutory amount that no notice publishes.
+  const row2023 = parameters.years?.["2023"];
+  const row2024 = parameters.years?.["2024"];
+  if (row2023?.pensionLinkedEmergencySavingsBalanceCap402A !== null
+    || row2023?.availability?.pensionLinkedEmergencySavings !== false) {
+    fail("The 2023 row must record no pension-linked emergency savings account; IRC 402A(e) first applies to plan years beginning after December 31, 2023.");
+  }
+  if (row2024?.pensionLinkedEmergencySavingsBalanceCap402A !== 2500
+    || row2024?.availability?.pensionLinkedEmergencySavings !== true) {
+    fail("The 2024 row must carry the unadjusted statutory IRC 402A(e)(3)(A)(i) amount of 2500.");
   }
   const row2026 = parameters.years?.["2026"];
   if (

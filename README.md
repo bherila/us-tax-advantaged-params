@@ -291,7 +291,7 @@ cannot tell it apart from a JSON array, so neither engine may.
 |---|---|
 | Individual retirement arrangements | Traditional IRA, Roth IRA, rollover IRA, payroll-deduction IRA, deemed traditional/Roth IRA, inherited traditional/Roth IRA |
 | Small-employer arrangements | SEP IRA, Roth SEP IRA, SIMPLE IRA, Roth SIMPLE IRA, grandfathered SARSEP |
-| Qualified elective plans | Traditional/Roth 401(k), Solo/Roth Solo 401(k), SIMPLE/Roth SIMPLE 401(k), starter 401(k) |
+| Qualified elective plans | Traditional/Roth 401(k), Solo/Roth Solo 401(k), SIMPLE/Roth SIMPLE 401(k), starter 401(k), pension-linked emergency savings account (PLESA) |
 | Tax-sheltered annuities | Traditional/Roth 403(b), safe-harbor deferral-only 403(b) — see the §403(b)(2) note below for tax years 1987-2001 |
 | Deferred compensation | Governmental/Roth governmental 457(b), nongovernmental eligible 457(b), 457(f) |
 | Federal plan | Traditional and Roth TSP |
@@ -324,6 +324,55 @@ result.accounts[0].definedBenefit?.annualBenefitLimit; // 290000
 | §415(b)(2) and §415(b)(5) adjustments | **Not** applied. The published figure assumes a straight life annuity beginning between ages 62 and 65; adjusting it for another benefit form, another starting age, or fewer than ten years of participation or service is participant-specific |
 | Years with no transcribed figure | `null`. The encoded figures are those transcribed from the notices committed under `evidence/retirement-limits/`, which cover 2009, 2010, and 2013 onward. A year outside that set reports `null` rather than a carried-forward or extrapolated amount |
 | Contribution and funding | Still `indeterminate`; a benefit ceiling is not a contribution ceiling, and nothing here computes a funding requirement |
+
+## Pension-linked emergency savings accounts (IRC §402A(e))
+
+SECURE 2.0 §127 added §402A(e), effective for plan years beginning after
+December 31, 2023. A PLESA is not a new limit system: §402A(e)(1)(A)(i) treats
+it "for purposes of this title as a designated Roth account", so its
+contributions are Roth, share the §402(g) elective-deferral limit, and are
+annual additions under §415(c). Model it as its own account inside the plan,
+with the same `annualAdditionsGroupId` as the plan's other accounts.
+
+**The §402A(e)(3)(A)(i) figure is a cap on a balance, not an annual allowance.**
+The statute bars a contribution "to the extent such contribution would cause the
+portion of the account balance attributable to participant contributions to
+exceed" the lesser of that figure and an amount the plan sponsor sets. That
+portion of the balance carries across years, and §402A(e)(7) — which requires the
+plan to permit withdrawal at least monthly — moves it back down. So the balance
+must be supplied; the year alone does not determine what is left:
+
+```ts
+const result = USTaxAdvantagedParams.calculate({
+  taxYear: 2026,
+  filingStatus: "S",
+  persons: [{ id: "t", compensation: { w2Compensation: 90000 } }],
+  accounts: [{
+    id: "plesa",
+    ownerId: "t",
+    type: "pension_linked_emergency_savings",
+    employerId: "e",
+    planRules: { pensionLinkedEmergencySavingsParticipantContributionBalance: 1000 },
+  }],
+});
+result.accounts[0].statutoryMaximumAnnualContribution; // 1600 — 2600 less the 1000 balance
+result.accounts[0].contributionComponents.employeeRothDeferral; // 1600
+```
+
+| Rule | Treatment |
+|---|---|
+| §402A(e)(3)(A)(i) dollar figure | `parameters.pensionLinkedEmergencySavingsBalanceCap402A`. $2,500 for 2024 and 2025, $2,600 for 2026 |
+| §402A(e)(3)(A)(ii) plan sponsor amount | Supplied as `planRules.planDocumentEmployeeDeferralLimit`; it lowers the contributable amount but not the reported statutory maximum |
+| Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`; pass 0 for a new account. Omitted, the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` rather than defaulted to an empty account |
+| §402(g) and §415(c) | Consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools |
+| Age-based catch-up | None. §414(v) permits exceeding an applicable deferral limit; §402A(e)(3)(A) bars exceeding this one at any age. A PLESA needs no birth year |
+| Employer contributions | Never allocated here. §402A(e)(6)(A) directs any match earned on PLESA contributions to the participant's *other* account under the plan, and §402A(e)(8)(B) bars transfers in |
+| 2023 and earlier | `unavailable`. Pub. L. 117-328 §127(g) applies §127 to plan years beginning after December 31, 2023 |
+
+The 2024 figure comes from the Code rather than from a notice: Notice 2023-75
+does not state one, and the flush text of §402A(e)(3)(A) adjusts the $2,500 only
+"[i]n the case of contributions made in taxable years beginning after December
+31, 2024", leaving the first effective year on the unadjusted statutory amount.
 
 ## Health savings accounts (IRC §223)
 
@@ -873,6 +922,7 @@ The package does not calculate:
 - Full payroll, self-employment tax, or tax-return MAGI.
 - The pre-2002 §403(b)(2) maximum exclusion allowance and the §415(c)(4) alternative elections. Both are diagnosed and the affected years return `indeterminate`; neither is computed.
 - Defined-benefit or cash-balance actuarial funding, and the participant-specific §415(b)(2) and §415(b)(5) adjustments to the annual benefit limit. The flat §415(b)(1)(A) figure itself *is* reported.
+- Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. A PLESA held inside a governmental §457(b) plan — the third "applicable retirement plan" at §402A(f)(1)(C) — is likewise not modelled: its deferrals run against §457(e)(15) rather than §402(g), and §415(c) does not reach a §457(b) plan at all, so it is a different calculation and not merely a different label.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 
 ## License

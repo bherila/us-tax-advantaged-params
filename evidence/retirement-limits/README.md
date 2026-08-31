@@ -59,6 +59,15 @@ nonelective, and starter-plan dollar limits published in the notices. Section
 separate elective-deferral/457 series; the latter retains its wider treatment
 for the historical releases.
 
+2024 through 2026 also record the §402A(e)(3)(A)(i) pension-linked emergency
+savings account limitation. The notices state it for 2025 and 2026 only — Notice
+2023-75 is silent — so 2024 is transcribed from 26 U.S.C. §402A itself, whose
+flush text adjusts the amount only "[i]n the case of contributions made in taxable
+years beginning after December 31, 2024", leaving the first effective year on the
+unadjusted statutory $2,500. The 2024 block also records the availability flag,
+cited to Pub. L. 117-328 section 127(g), which applies §127 to "plan years
+beginning after December 31, 2023".
+
 All seven IRA phase-out bands, **both ends of each**: §219(g)(3) covered,
 §219(g)(7)(A) spouse-covered, and §408A(c)(3) Roth. A band's width is a
 convention rather than a published figure, so inferring the end from the start
@@ -91,7 +100,7 @@ IRS COLA notices and Bulletin publications from 1996 through 2025; annual IRS
 Publication 590 editions for 1995 through 2000 and 2002; IRS CODA and SEP/SARSEP
 technical guidance; the IR-series releases that carried the figures before the
 notice format; EGTRRA's enacted text; SSA Federal Register wage-base
-determinations; and the text of 26 U.S.C. §§219, 402, 408, and 408A for
+determinations; and the text of 26 U.S.C. §§219, 402, 402A, 408, and 408A for
 statutory amounts the notices never print. Every file is fixed by
 `SHA256SUMS.txt`, which
 `npm run validate:evidence` verifies in both directions: a listed file that is

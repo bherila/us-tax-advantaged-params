@@ -63,7 +63,7 @@ const ACCOUNT_TYPES = [
   "deemed_traditional_ira", "deemed_roth_ira", "inherited_traditional_ira", "inherited_roth_ira",
   "sep_ira", "roth_sep_ira", "simple_ira", "roth_simple_ira", "sarsep_ira",
   "traditional_401k", "roth_401k", "solo_401k", "roth_solo_401k",
-  "simple_401k", "roth_simple_401k", "starter_401k",
+  "simple_401k", "roth_simple_401k", "starter_401k", "pension_linked_emergency_savings",
   "traditional_403b", "roth_403b", "safe_harbor_403b_deferral_only",
   "governmental_457b", "roth_governmental_457b", "nongovernmental_457b", "section_457f",
   "traditional_tsp", "roth_tsp",
@@ -221,6 +221,12 @@ function randomPlanRules(type) {
   }
   if (chance(0.1)) rules.grandfatheredSarsep = chance(0.5);
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
+  // Present most of the time on a pension-linked emergency savings account and
+  // occasionally elsewhere, so both the supplied and the missing branch of the
+  // IRC 402A(e)(3)(A) balance rule are differentially tested.
+  if (type === "pension_linked_emergency_savings" ? chance(0.7) : chance(0.08)) {
+    rules.pensionLinkedEmergencySavingsParticipantContributionBalance = chance(0.05) ? junk() : money();
+  }
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
   if (type === "health_fsa" || chance(0.05)) rules.healthFsa = randomHealthFsaRules();
   if (type === "dependent_care_fsa" || chance(0.05)) rules.dependentCareFsa = randomDependentCareRules();

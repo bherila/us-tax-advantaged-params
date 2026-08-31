@@ -56,6 +56,14 @@ export enum AccountType {
   ROTH_SIMPLE_401K = "roth_simple_401k",
   STARTER_401K = "starter_401k",
 
+  /**
+   * IRC 402A(e) pension-linked emergency savings account, as included in a
+   * qualified trust under IRC 401(a) or a plan under IRC 403(b). Modeled as the
+   * designated Roth account IRC 402A(e)(1)(A)(i) says it is treated as, so its
+   * contributions run against IRC 402(g) and IRC 415(c).
+   */
+  PENSION_LINKED_EMERGENCY_SAVINGS = "pension_linked_emergency_savings",
+
   TRADITIONAL_403B = "traditional_403b",
   ROTH_403B = "roth_403b",
   SAFE_HARBOR_403B_DEFERRAL_ONLY = "safe_harbor_403b_deferral_only",
@@ -577,6 +585,16 @@ export interface PlanRulesInput {
   /** IRC 129 dependent care assistance facts. Only read for `dependent_care_fsa` accounts. */
   dependentCareFsa?: DependentCareFsaRulesInput;
 
+  /**
+   * Portion of an IRC 402A(e) pension-linked emergency savings account balance
+   * already attributable to participant contributions, before the contributions
+   * being calculated. IRC 402A(e)(3)(A) caps that portion of the *balance*, so
+   * the room left for the year cannot be derived from the tax year alone, and a
+   * withdrawal under IRC 402A(e)(7) restores room. Required for a
+   * `pension_linked_emergency_savings` account; supply 0 for a new one.
+   */
+  pensionLinkedEmergencySavingsParticipantContributionBalance?: Money;
+
   /** Grandfathered SARSEP established before 1997. */
   grandfatheredSarsep?: boolean;
   /** Used to surface the statutory 2024+ additional SIMPLE nonelective amount. */
@@ -826,6 +844,15 @@ export interface YearParameters {
    * whose figure is not transcribed in the evidence corpus.
    */
   definedBenefitAnnualBenefit415b: Money | null;
+  /**
+   * IRC 402A(e)(3)(A)(i) limitation on a pension-linked emergency savings
+   * account. It caps the portion of the account balance attributable to
+   * participant contributions, not the contributions of any one year, and it is
+   * the *lesser* of this figure and any lower amount the plan sponsor sets under
+   * IRC 402A(e)(3)(A)(ii). Null before Pub. L. 117-328 section 127(g) made the
+   * account available for plan years beginning after December 31, 2023.
+   */
+  pensionLinkedEmergencySavingsBalanceCap402A: Money | null;
   sep: {
     available: boolean;
     maximumEmployerContributionRate: number;
@@ -1066,6 +1093,12 @@ const RAW_PARAMETERS: ParameterData = {
       "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
       "authority": "U.S. Congress"
+    },
+    {
+      "id": "usc-26-402A",
+      "title": "26 U.S.C. § 402A(e), pension-linked emergency savings accounts, including the § 402A(e)(3)(A)(i) limitation and its post-2024 adjustment rule",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -1092,6 +1125,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1138,7 +1172,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1174,6 +1209,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1220,7 +1256,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1256,6 +1293,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1302,7 +1340,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1338,6 +1377,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1384,7 +1424,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1420,6 +1461,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1466,7 +1508,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1502,6 +1545,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1548,7 +1592,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1584,6 +1629,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1630,7 +1676,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1666,6 +1713,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1712,7 +1760,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1748,6 +1797,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1794,7 +1844,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1830,6 +1881,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1876,7 +1928,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1912,6 +1965,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1958,7 +2012,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -1994,6 +2049,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2040,7 +2096,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": false,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": null,
@@ -2076,6 +2133,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2122,7 +2180,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2180,6 +2239,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2226,7 +2286,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2284,6 +2345,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2330,7 +2392,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2388,6 +2451,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2434,7 +2498,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2492,6 +2557,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2538,7 +2604,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2596,6 +2663,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2642,7 +2710,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2700,6 +2769,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2746,7 +2816,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2804,6 +2875,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2850,7 +2922,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -2908,6 +2981,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2954,7 +3028,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3012,6 +3087,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3058,7 +3134,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3116,6 +3193,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3162,7 +3240,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3220,6 +3299,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3266,7 +3346,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3337,6 +3418,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3383,7 +3465,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3454,6 +3537,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3500,7 +3584,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3571,6 +3656,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3617,7 +3703,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3688,6 +3775,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3734,7 +3822,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3805,6 +3894,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3851,7 +3941,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -3922,6 +4013,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3968,7 +4060,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4039,6 +4132,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4085,7 +4179,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4156,6 +4251,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4202,7 +4298,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4273,6 +4370,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4319,7 +4417,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4390,6 +4489,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4436,7 +4536,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4507,6 +4608,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4553,7 +4655,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4624,6 +4727,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": 195000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4670,7 +4774,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4741,6 +4846,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4787,7 +4893,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": false,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4858,6 +4965,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
       "definedBenefitAnnualBenefit415b": null,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4904,7 +5012,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -4975,6 +5084,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
       "definedBenefitAnnualBenefit415b": 205000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5021,7 +5131,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5092,6 +5203,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5138,7 +5250,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5209,6 +5322,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5255,7 +5369,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5326,6 +5441,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "definedBenefitAnnualBenefit415b": 210000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5372,7 +5488,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5443,6 +5560,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
       "definedBenefitAnnualBenefit415b": 215000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5489,7 +5607,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5560,6 +5679,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
       "definedBenefitAnnualBenefit415b": 220000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5606,7 +5726,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5677,6 +5798,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
       "definedBenefitAnnualBenefit415b": 225000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5723,7 +5845,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5794,6 +5917,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5840,7 +5964,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -5911,6 +6036,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
       "definedBenefitAnnualBenefit415b": 230000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5957,7 +6083,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6028,6 +6155,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
       "definedBenefitAnnualBenefit415b": 245000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6074,7 +6202,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": false,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6145,6 +6274,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
       "definedBenefitAnnualBenefit415b": 265000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6191,7 +6321,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": false
+        "starter401kOrSafeHarbor403b": false,
+        "pensionLinkedEmergencySavings": false
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6262,6 +6393,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
       "definedBenefitAnnualBenefit415b": 275000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6308,7 +6440,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6379,6 +6512,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
       "definedBenefitAnnualBenefit415b": 280000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6425,7 +6559,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -6496,6 +6631,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
       "definedBenefitAnnualBenefit415b": 290000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6542,7 +6678,8 @@ const RAW_PARAMETERS: ParameterData = {
         "traditionalTsp": true,
         "rothTsp": true,
         "rothSimpleOrSep": true,
-        "starter401kOrSafeHarbor403b": true
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
       },
       "phaseouts": {
         "traditionalIraCovered": {
@@ -8099,6 +8236,7 @@ interface AccountTraits {
   governmental457: boolean;
   is403b: boolean;
   isStarter: boolean;
+  isPlesa: boolean;
   isSimple: boolean;
   isSarsep: boolean;
   employerOnly: boolean;
@@ -8127,6 +8265,7 @@ const ACCOUNT_TRAITS: Record<AccountType, AccountTraits> = {
   [AccountType.SIMPLE_401K]: simple401kTraits(false),
   [AccountType.ROTH_SIMPLE_401K]: simple401kTraits(true),
   [AccountType.STARTER_401K]: starterTraits(),
+  [AccountType.PENSION_LINKED_EMERGENCY_SAVINGS]: pensionLinkedEmergencySavingsTraits(),
 
   [AccountType.TRADITIONAL_403B]: qualified403bTraits(false),
   [AccountType.ROTH_403B]: qualified403bTraits(true),
@@ -8168,6 +8307,7 @@ function baseTraits(
     governmental457: false,
     is403b: false,
     isStarter: false,
+    isPlesa: false,
     isSimple: false,
     isSarsep: false,
     employerOnly: false,
@@ -8262,6 +8402,26 @@ function starter403bTraits(): AccountTraits {
   return { ...starterTraits(), is403b: true };
 }
 
+/**
+ * IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account as a
+ * designated Roth account for purposes of this title, so its contributions are
+ * elective deferrals sharing the IRC 402(g) limit — IRC 402A(e)(9) confirms it
+ * by ordering excess deferrals distributed under IRC 402(g)(2)(A) out of the
+ * emergency account first — and annual additions under IRC 415(c). No age-based
+ * catch-up attaches: IRC 414(v) lets a participant exceed an applicable limit on
+ * elective deferrals, while IRC 402A(e)(3)(A) forbids any contribution that would
+ * push the account balance past its cap.
+ */
+function pensionLinkedEmergencySavingsTraits(): AccountTraits {
+  return baseTraits("qualified_elective", {
+    availabilityKey: "pensionLinkedEmergencySavings",
+    designatedRoth: true,
+    shares402g: true,
+    uses415c: true,
+    isPlesa: true,
+  });
+}
+
 function section457Traits(roth: boolean, governmental: boolean): AccountTraits {
   return baseTraits("section457", {
     availabilityKey: governmental ? "governmental457b" : "nongovernmental457b",
@@ -8350,6 +8510,9 @@ const ACCOUNT_TYPE_ALIASES: Record<string, AccountType> = {
   SIMPLE_401K: AccountType.SIMPLE_401K,
   ROTH_SIMPLE_401K: AccountType.ROTH_SIMPLE_401K,
   STARTER_401K: AccountType.STARTER_401K,
+  PLESA: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
+  PENSION_LINKED_EMERGENCY_SAVINGS: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
+  PENSION_LINKED_EMERGENCY_SAVINGS_ACCOUNT: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
   "403B": AccountType.TRADITIONAL_403B,
   TRADITIONAL_403B: AccountType.TRADITIONAL_403B,
   ROTH_403B: AccountType.ROTH_403B,
@@ -9100,6 +9263,10 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   money(rules.simpleCustomEmployerContribution, `${path}.simpleCustomEmployerContribution`);
   money(rules.netEarningsFromSelfEmploymentAfterHalfSETax, `${path}.netEarningsFromSelfEmploymentAfterHalfSETax`);
   money(rules.simpleAdditionalNonelectiveContribution, `${path}.simpleAdditionalNonelectiveContribution`);
+  money(
+    rules.pensionLinkedEmergencySavingsParticipantContributionBalance,
+    `${path}.pensionLinkedEmergencySavingsParticipantContributionBalance`,
+  );
   rate(rules.employerMatchRate, `${path}.employerMatchRate`);
   rate(rules.employerMatchCompensationFraction, `${path}.employerMatchCompensationFraction`);
   rate(rules.employerNonelectiveRate, `${path}.employerNonelectiveRate`);
@@ -12255,11 +12422,42 @@ function accountPlanCatchUpLimit(
   return workplaceCatchUpLimit(context.parameters, person, traits);
 }
 
+/**
+ * Room left under IRC 402A(e)(3)(A) for a pension-linked emergency savings
+ * account, or null for a year with no encoded limitation. The statute caps the
+ * portion of the *account balance* attributable to participant contributions at
+ * the lesser of the published figure and any lower amount the plan sponsor sets,
+ * so what a participant may still contribute is the figure less the balance
+ * already attributable to their contributions. The sponsor's lower amount is
+ * supplied as `planDocumentEmployeeDeferralLimit` and applied with the other
+ * plan-document ceilings.
+ */
+function pensionLinkedEmergencySavingsRoom(
+  context: CalculationContext,
+  account: NormalizedAccount,
+): Money | null {
+  const cap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
+  if (cap === null) return null;
+  return nonnegative(
+    cap -
+      money(
+        account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance,
+        `${account.id}.pensionLinkedEmergencySavingsParticipantContributionBalance`,
+      ),
+  );
+}
+
 function baseDeferralLimitForAccount(
   context: CalculationContext,
   account: NormalizedAccount,
   traits: AccountTraits,
 ): Money | null {
+  if (traits.isPlesa) {
+    const room = pensionLinkedEmergencySavingsRoom(context, account);
+    const statutory = context.parameters.electiveDeferral402g;
+    if (room === null || statutory === null) return null;
+    return minMoney(statutory, room);
+  }
   if (traits.isStarter) return context.parameters.starterDeferralOnly.baseDeferralLimit;
   if (traits.isSimple) {
     if (
@@ -12387,7 +12585,11 @@ function allocateBaseAndCatchUp(
     context.parameters.generalAge50CatchUp > 0 ||
     context.parameters.simple.generalAge50CatchUp > 0 ||
     context.parameters.starterDeferralOnly.age50CatchUp > 0;
-  if (age === null && anyCatchUpAvailable) {
+  // Only an account that can take an age-based catch-up needs an age. Every
+  // family that reaches this function permits one by statute except the
+  // pension-linked emergency savings account, where IRC 402A(e)(3)(A) forbids a
+  // contribution past the balance cap outright and IRC 414(v) adds nothing.
+  if (age === null && anyCatchUpAvailable && traits.permitsAgeCatchUpByStatute) {
     diagnostics.push(
       diagnostic(
         "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
@@ -12757,6 +12959,50 @@ function allocateQualifiedElective(
     };
   }
 
+  // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
+  // participant contributions, not the contributions of any one year, and
+  // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
+  // room back. What may still be contributed therefore depends on a balance no
+  // other supplied fact expresses, and assuming an empty account would state a
+  // ceiling the statute may not allow.
+  if (traits.isPlesa) {
+    const balance = account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance;
+    if (balance === undefined) {
+      diagnostics.push(
+        diagnostic(
+          "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+          DiagnosticSeverity.ERROR,
+          "IRC 402A(e)(3)(A) caps the portion of a pension-linked emergency savings account balance attributable to participant contributions rather than the contributions of a single year, so the balance already attributable to them is required. Supply planRules.pensionLinkedEmergencySavingsParticipantContributionBalance, using 0 for a newly established account.",
+          `accounts.${account.id}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`,
+          "IRC 402A(e)(3)(A)",
+        ),
+      );
+      reportPoolWithoutConsuming(annualGroup, sharedLimits);
+      return {
+        status: CalculationStatus.INDETERMINATE,
+        statutoryMaximum: null,
+        annualComponents: annual,
+        additionalComponents: additional,
+        planTermDependentCapacity: 0,
+        sharedLimits,
+        diagnostics,
+      };
+    }
+    const cap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
+    const room = pensionLinkedEmergencySavingsRoom(context, account);
+    if (cap !== null && room !== null) {
+      diagnostics.push(
+        diagnostic(
+          "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+          DiagnosticSeverity.INFO,
+          `$${cap.toLocaleString()} is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $${money(balance, `accounts.${account.id}`).toLocaleString()} was supplied as already attributable to them, leaving $${room.toLocaleString()}. Contributions are Roth by IRC 402A(e)(1)(A)(i), count against IRC 402(g) and IRC 415(c), and take no age-based catch-up. Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7), and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.`,
+          `accounts.${account.id}`,
+          "IRC 402A(e)(3)(A)(i)",
+        ),
+      );
+    }
+  }
+
   const deferral = allocateBaseAndCatchUp(
     context,
     account,
@@ -12785,12 +13031,18 @@ function allocateQualifiedElective(
     planDocumentAnnualLimit ?? annualGroup.limit,
   );
   const employeeBase = baseElectiveDeferrals(annual);
-  let employerKnown = traits.isStarter;
+  // Starter 401(k) and deferral-only safe-harbor 403(b) plans take no employer
+  // contribution by plan type; a pension-linked emergency savings account takes
+  // none because IRC 402A(e)(6)(A) directs any match earned on its contributions
+  // to the participant's other account under the plan, and IRC 402A(e)(8)(B)
+  // forbids transfers into it from another account.
+  const deferralOnly = traits.isStarter || traits.isPlesa;
+  let employerKnown = deferralOnly;
   let employerDesired = 0;
   let statutoryEmployerPotential = 0;
 
-  if (traits.isStarter) {
-    // Starter 401(k) and deferral-only safe-harbor 403(b) plans do not accept employer contributions.
+  if (deferralOnly) {
+    // No employer contribution is allocated to this account.
   } else if (traits.isSimple) {
     const simpleEmployer = simpleEmployerContribution(context, account, employeeBase + ageCatchUpDeferrals(annual), true);
     diagnostics.push(...simpleEmployer.diagnostics);
@@ -12818,7 +13070,7 @@ function allocateQualifiedElective(
   }
   if (employerAdded > 0) addEmployerContribution(account, traits, annual, additional, employerAdded);
 
-  if (!traits.isStarter && account.planRules.permitsAfterTaxEmployeeContributions) {
+  if (!deferralOnly && account.planRules.permitsAfterTaxEmployeeContributions) {
     const afterTaxCapacity = minMoney(
       poolRemaining(annualGroup),
       nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
@@ -12832,7 +13084,7 @@ function allocateQualifiedElective(
   }
 
   let planTermDependentCapacity = 0;
-  if (!traits.isStarter && !employerKnown && !account.planRules.permitsAfterTaxEmployeeContributions) {
+  if (!deferralOnly && !employerKnown && !account.planRules.permitsAfterTaxEmployeeContributions) {
     planTermDependentCapacity = minMoney(
       poolRemaining(annualGroup),
       nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
@@ -12850,7 +13102,7 @@ function allocateQualifiedElective(
   }
 
   const planCatchUp = accountPlanCatchUpLimit(context, account, traits);
-  const statutoryMaximum = traits.isStarter
+  const statutoryMaximum = deferralOnly
     ? roundMoney((baseDeferralLimitForAccount(context, account, traits) ?? 0) + planCatchUp)
     : roundMoney(
         accountAnnualLimit +
@@ -14141,6 +14393,16 @@ export class AccountBuilder {
 
   public planDocumentAnnualAdditionsLimit(amount: Money): this {
     (this.value.planRules ??= {}).planDocumentAnnualAdditionsLimit = amount;
+    return this;
+  }
+
+  /**
+   * Portion of an IRC 402A(e) pension-linked emergency savings account balance
+   * already attributable to participant contributions. Required for a
+   * `pension_linked_emergency_savings` account; pass 0 for a new one.
+   */
+  public pensionLinkedEmergencySavingsBalance(amount: Money): this {
+    (this.value.planRules ??= {}).pensionLinkedEmergencySavingsParticipantContributionBalance = amount;
     return this;
   }
 
