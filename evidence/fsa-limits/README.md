@@ -21,7 +21,7 @@ npm run validate:evidence        # every corpus under evidence/
 npm run validate:evidence:fsa    # this corpus alone
 ```
 
-**108 comparisons over 1987–2026, 0 mismatches, 28 source documents
+**108 comparisons over 1987–2026, 0 mismatches, 29 source documents
 hash-verified.**
 
 ## What is compared
@@ -41,6 +41,15 @@ instead of the statute.
 health FSA fields, so nothing is compared for them and nothing is defaulted.
 
 ## Sources
+`usc-26-21.pdf` is committed because IRC 129(a)(2)(C) determines marital status
+by reference to IRC 21(e)(3) and (4), so the considered-unmarried rule the
+engine applies to a married-separate return is IRC 21's text rather than
+IRC 129's. The same document contains the IRC 21(d)(2) deemed-earned-income
+schedule, which is deliberately **not** encoded: it is not static across
+1987-2026 and this package does not derive income. Its presence here attests
+the marital-status rule only.
+
+
 
 Twenty-eight documents, fixed by `SHA256SUMS.txt`, which
 `npm run validate:evidence` verifies on every run — a listed file that is
