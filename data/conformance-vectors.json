@@ -2565,6 +2565,232 @@
         "accounts.0.hsa.sharedFamilyContributionLimit": null,
         "totals.hsaContribution": 4400
       }
+    },
+    {
+      "name": "persons entry that is not an object is rejected",
+      "description": "A non-object entry in persons has no id, but reporting it as a missing id hides the real defect and diverged between the two engines. Both reject the shape itself.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          "t"
+        ],
+        "accounts": []
+      },
+      "expectError": {
+        "code": "INVALID_PERSON"
+      }
+    },
+    {
+      "name": "accounts entry that is not an object is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          "a"
+        ]
+      },
+      "description": "As for persons: the shape is checked before any field of it is read.",
+      "expectError": {
+        "code": "INVALID_ACCOUNT"
+      }
+    },
+    {
+      "name": "conversions entry that is not an object is rejected",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          "c"
+        ]
+      },
+      "description": "As for persons and accounts: the shape is checked before any field of it is read.",
+      "expectError": {
+        "code": "INVALID_CONVERSION"
+      }
+    },
+    {
+      "name": "account without an ownerId is rejected",
+      "description": "ownerId is required in the same way id is. Falling through to the unknown-owner check produced a message naming a nonexistent owner, and the two engines rendered the absent value differently.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "ACCOUNT_OWNER_REQUIRED"
+      }
+    },
+    {
+      "name": "conversion without an ownerId is rejected",
+      "description": "ownerId is required in the same way id is, for the same reason as on an account.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "conversions": [
+          {
+            "id": "c",
+            "type": "ira_to_roth_ira",
+            "amount": 1000
+          }
+        ]
+      },
+      "expectError": {
+        "code": "CONVERSION_OWNER_REQUIRED"
+      }
+    },
+    {
+      "name": "unrecognized contributionPreference is rejected",
+      "description": "A stale or camel-cased enum such as \"rothFirst\" is not one of account_type, pretax_first, or roth_first. Accepting it and silently falling through to the pretax path returns a plausible but wrong allocation, so it is rejected.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 200000,
+              "permitsRothContributions": true,
+              "contributionPreference": "rothFirst"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_CONTRIBUTION_PREFERENCE"
+      }
+    },
+    {
+      "name": "unrecognized employerContributionTaxTreatment is rejected",
+      "description": "As for contributionPreference: \"PRETAX\" is not one of pretax or roth, and silently accepting it returns a number rather than an error.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 5000,
+              "employerContributionTaxTreatment": "PRETAX"
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT"
+      }
+    },
+    {
+      "name": "rate outside 0 through 1 is rejected",
+      "description": "employerNonelectiveRate is a fraction of compensation, so 1.5 is not a rate. Pinned here because the two engines worded the same rejection differently.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "planRules": {
+              "planCompensation": 100000,
+              "employerNonelectiveRate": 1.5
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_RATE"
+      }
+    },
+    {
+      "name": "existing contributions above the account ceiling name the amounts",
+      "description": "2026 IRC 219(b)(5)(A) caps a traditional IRA at 7500 for a taxpayer under 50 (Notice 2025-67), so a supplied 20000 exceeds it by 12500. The diagnostic states both figures; the message is asserted because the two engines carried different wording for the same finding.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 50000
+            },
+            "coveredByEmployerRetirementPlan": false,
+            "magi": {
+              "traditionalIraDeduction": 50000,
+              "rothIra": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "traditional_ira",
+            "existingContributions": {
+              "deductibleIra": 20000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.diagnostics.0.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
+        "accounts.0.diagnostics.0.message": "The annual amount $20,000 exceeds the calculated account ceiling of $7,500. Shared-limit records should also be reviewed for excess contributions across accounts."
+      }
     }
   ]
 }

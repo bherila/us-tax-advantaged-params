@@ -6780,7 +6780,9 @@ final class Engine
                 $diagnostics[] = self::diagnostic(
                     'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM',
                     DiagnosticSeverity::ERROR,
-                    'The annual amount exceeds the calculated account ceiling. Review supplied existing contributions and shared limits.',
+                    'The annual amount $' . self::localeNumber($annualMaximum) . ' exceeds the calculated account '
+                        . 'ceiling of $' . self::localeNumber((float) $outcome['statutoryMaximum']) . '. Shared-limit '
+                        . 'records should also be reviewed for excess contributions across accounts.',
                     "accounts.{$account['id']}.existingContributions",
                 );
             }
@@ -7224,11 +7226,11 @@ final class Engine
             return $default;
         }
         if (!is_int($value) && !is_float($value)) {
-            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be a number from 0 through 1.");
         }
         $number = (float) $value;
         if (!is_finite($number) || $number < 0 || $number > 1) {
-            throw new ParameterException('INVALID_RATE', "{$path} must be between zero and one.");
+            throw new ParameterException('INVALID_RATE', "{$path} must be a number from 0 through 1.");
         }
         return $number;
     }
@@ -7533,7 +7535,10 @@ final class Engine
                 throw new ParameterException('DUPLICATE_ACCOUNT_ID', "Duplicate account ID: {$id}");
             }
             $ids[$id] = true;
-            $ownerId = (string) ($input['ownerId'] ?? '');
+            $ownerId = is_string($input['ownerId'] ?? null) ? trim($input['ownerId']) : '';
+            if ($ownerId === '') {
+                throw new ParameterException('ACCOUNT_OWNER_REQUIRED', "accounts[{$index}].ownerId is required.");
+            }
             if (!isset($persons[$ownerId])) {
                 throw new ParameterException(
                     'UNKNOWN_ACCOUNT_OWNER',
@@ -10988,7 +10993,10 @@ final class Engine
                 throw new ParameterException('DUPLICATE_CONVERSION_ID', "Duplicate conversion ID: {$id}");
             }
             $ids[$id] = true;
-            $ownerId = (string) ($input['ownerId'] ?? '');
+            $ownerId = is_string($input['ownerId'] ?? null) ? trim($input['ownerId']) : '';
+            if ($ownerId === '') {
+                throw new ParameterException('CONVERSION_OWNER_REQUIRED', "conversions[{$index}].ownerId is required.");
+            }
             if (!isset($persons[$ownerId])) {
                 throw new ParameterException(
                     'UNKNOWN_CONVERSION_OWNER',

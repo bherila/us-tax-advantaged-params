@@ -7181,6 +7181,9 @@ function normalizePersons(persons: PersonInput[]): Map<string, NormalizedPerson>
   }
   const result = new Map<string, NormalizedPerson>();
   for (const [index, input] of persons.entries()) {
+    if (input === null || typeof input !== "object") {
+      throw new ParameterError("INVALID_PERSON", `persons[${index}] must be an object/associative array.`);
+    }
     if (!input.id?.trim()) {
       throw new ParameterError("PERSON_ID_REQUIRED", `persons[${index}].id is required.`);
     }
@@ -7257,6 +7260,9 @@ function normalizeAccounts(
 ): NormalizedAccount[] {
   const ids = new Set<string>();
   return accounts.map((input, index) => {
+    if (input === null || typeof input !== "object") {
+      throw new ParameterError("INVALID_ACCOUNT", `accounts[${index}] must be an object/associative array.`);
+    }
     if (!input.id?.trim()) {
       throw new ParameterError("ACCOUNT_ID_REQUIRED", `accounts[${index}].id is required.`);
     }
@@ -7264,6 +7270,9 @@ function normalizeAccounts(
       throw new ParameterError("DUPLICATE_ACCOUNT_ID", `Duplicate account ID: ${input.id}`);
     }
     ids.add(input.id);
+    if (!input.ownerId?.trim()) {
+      throw new ParameterError("ACCOUNT_OWNER_REQUIRED", `accounts[${index}].ownerId is required.`);
+    }
     if (!persons.has(input.ownerId)) {
       throw new ParameterError(
         "UNKNOWN_ACCOUNT_OWNER",
@@ -7309,8 +7318,26 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
       `${path}.section457SpecialCatchUp.unusedDeferralsFromPriorYears`,
     );
   }
+  if (
+    rules.contributionPreference !== undefined &&
+    !CONTRIBUTION_PREFERENCES.includes(rules.contributionPreference)
+  ) {
+    throw new ParameterError("INVALID_CONTRIBUTION_PREFERENCE", `${path}.contributionPreference is invalid.`);
+  }
+  if (
+    rules.employerContributionTaxTreatment !== undefined &&
+    !EMPLOYER_CONTRIBUTION_TAX_TREATMENTS.includes(rules.employerContributionTaxTreatment)
+  ) {
+    throw new ParameterError(
+      "INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT",
+      `${path}.employerContributionTaxTreatment is invalid.`,
+    );
+  }
   if (rules.hsa) validateHsaRules(rules.hsa, `${path}.hsa`);
 }
+
+const CONTRIBUTION_PREFERENCES: ContributionPreference[] = ["account_type", "pretax_first", "roth_first"];
+const EMPLOYER_CONTRIBUTION_TAX_TREATMENTS: EmployerContributionTaxTreatment[] = ["pretax", "roth"];
 
 const HSA_COVERAGE_TIERS: HsaCoverageTier[] = ["self_only", "family"];
 
@@ -10145,6 +10172,9 @@ function normalizeConversions(
 ): NormalizedConversion[] {
   const ids = new Set<string>();
   return conversions.map((input, index) => {
+    if (input === null || typeof input !== "object") {
+      throw new ParameterError("INVALID_CONVERSION", `conversions[${index}] must be an object/associative array.`);
+    }
     if (!input.id?.trim()) {
       throw new ParameterError("CONVERSION_ID_REQUIRED", `conversions[${index}].id is required.`);
     }
@@ -10152,6 +10182,9 @@ function normalizeConversions(
       throw new ParameterError("DUPLICATE_CONVERSION_ID", `Duplicate conversion ID: ${input.id}`);
     }
     ids.add(input.id);
+    if (!input.ownerId?.trim()) {
+      throw new ParameterError("CONVERSION_OWNER_REQUIRED", `conversions[${index}].ownerId is required.`);
+    }
     if (!persons.has(input.ownerId)) {
       throw new ParameterError(
         "UNKNOWN_CONVERSION_OWNER",

@@ -235,6 +235,26 @@ const result = USTaxAdvantagedParams.calculate({
 
 Filing-status aliases include `S`, `SINGLE`, `MFJ`, `MFS`, `HOH`, `QSS`, and `QW`. The alias `M` is accepted as MFJ but emits an ambiguity diagnostic. Canonical values are preferred in persisted data.
 
+### Input rejection
+
+The unified interface is where stale, mistyped, and cross-runtime data arrives, so an
+input it cannot honour is rejected rather than coerced. Both engines throw the same error
+code and the same message for the same bad input.
+
+| Code | Raised for |
+|---|---|
+| `INVALID_PERSON` / `INVALID_ACCOUNT` / `INVALID_CONVERSION` | An entry of `persons`, `accounts`, or `conversions` that is not an object |
+| `PERSON_ID_REQUIRED` / `ACCOUNT_ID_REQUIRED` / `CONVERSION_ID_REQUIRED` | A missing or blank `id` |
+| `ACCOUNT_OWNER_REQUIRED` / `CONVERSION_OWNER_REQUIRED` | A missing or blank `ownerId` |
+| `UNKNOWN_ACCOUNT_OWNER` / `UNKNOWN_CONVERSION_OWNER` | An `ownerId` that names no supplied person |
+| `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` |
+| `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
+| `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
+
+Enum-valued fields in particular are checked rather than compared loosely: a stale or
+camel-cased value such as `"rothFirst"` would otherwise fall through to a different branch
+and return a plausible but wrong allocation.
+
 ## Account coverage
 
 | Family | Account types |
