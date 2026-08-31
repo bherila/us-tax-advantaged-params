@@ -9213,6 +9213,35 @@ final class Engine
                         'IRC 223(b)(5)(B)(ii)',
                     );
                 }
+                /*
+                 * The other half of the same sentence. IRC 223(b)(5)(B)(ii) says the
+                 * limitation "shall be divided equally between them unless they agree on a
+                 * different division" — a division, not an allocation of part of it, so
+                 * shares that do not exhaust the limitation are as impossible as shares
+                 * that overrun it, and are reported at the same severity.
+                 *
+                 * Only when both spouses own an HSA and both supplied a share. An
+                 * incomplete supply is already HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES,
+                 * and where only one spouse owns an HSA the shares in hand cover one spouse,
+                 * so a share below 1 is a complete division whose remainder the other spouse
+                 * simply has no account to use.
+                 */
+                if (
+                    count($coupleMembersWithAccounts) > 1
+                    && count($explicitShareHolders) === count($coupleMembersWithAccounts)
+                    && $total < 1 - 1e-9
+                ) {
+                    $formatted = self::jsNumber($total);
+                    $sharingDiagnostics[] = self::diagnostic(
+                        'HSA_FAMILY_LIMIT_SHARES_BELOW_ONE',
+                        DiagnosticSeverity::ERROR,
+                        "The supplied family-limit shares total {$formatted}. IRC 223(b)(5)(B)(ii) divides one family "
+                            . 'limit between the spouses, so they must exhaust it: a total below 1 leaves part of the '
+                            . 'limitation allocated to neither spouse and would silently forfeit it.',
+                        'accounts',
+                        'IRC 223(b)(5)(B)(ii)',
+                    );
+                }
             } elseif (count($coupleMembersWithAccounts) > 1) {
                 foreach ($coupleMembersWithAccounts as $personId) {
                     $shareByOwner[$personId] = 1 / count($coupleMembersWithAccounts);

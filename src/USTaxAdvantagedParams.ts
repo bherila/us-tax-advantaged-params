@@ -8668,6 +8668,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           ),
         );
       }
+      /**
+       * The other half of the same sentence. IRC 223(b)(5)(B)(ii) says the
+       * limitation "shall be divided equally between them unless they agree on
+       * a different division" — a division, not an allocation of part of it, so
+       * shares that do not exhaust the limitation are as impossible as shares
+       * that overrun it, and are reported at the same severity.
+       *
+       * Only when both spouses own an HSA and both supplied a share. An
+       * incomplete supply is already HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES,
+       * and where only one spouse owns an HSA the shares in hand cover one
+       * spouse, so a share below 1 is a complete division whose remainder the
+       * other spouse simply has no account to use.
+       */
+      if (
+        coupleMembersWithAccounts.length > 1
+        && explicitShareHolders.length === coupleMembersWithAccounts.length
+        && total < 1 - 1e-9
+      ) {
+        sharingDiagnostics.push(
+          diagnostic(
+            "HSA_FAMILY_LIMIT_SHARES_BELOW_ONE",
+            DiagnosticSeverity.ERROR,
+            `The supplied family-limit shares total ${total}. IRC 223(b)(5)(B)(ii) divides one family limit between the spouses, so they must exhaust it: a total below 1 leaves part of the limitation allocated to neither spouse and would silently forfeit it.`,
+            "accounts",
+            "IRC 223(b)(5)(B)(ii)",
+          ),
+        );
+      }
     } else if (coupleMembersWithAccounts.length > 1) {
       for (const personId of coupleMembersWithAccounts) {
         shareByOwner.set(personId, 1 / coupleMembersWithAccounts.length);

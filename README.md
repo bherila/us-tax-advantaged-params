@@ -298,6 +298,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
+| §223(b)(5)(B)(ii) agreed division | An agreed division must exhaust the limitation. Shares that total more or less than 1 are both reported as errors and return `indeterminate` (see below) |
 | §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
 | §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
@@ -416,6 +417,34 @@ account's `hsa` detail reports `qualifiedHsaFundingDistributionsApplied` and
 `qualifiedHsaFundingLimitReduction`, and an
 `HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT` diagnostic states which ordering
 applied.
+
+### Agreed divisions must exhaust the family limitation
+
+`planRules.hsa.familyLimitShare` records a §223(b)(5)(B)(ii) agreement to divide the single
+family limitation other than equally. Supply it on **every** spouse who owns an HSA, and
+make the shares total exactly 1 — the statute divides the limitation "unless they agree on a
+different division", and an allocation that leaves part of it belonging to neither spouse is
+not a division.
+
+Both failures are `ERROR` diagnostics and both return `indeterminate`:
+
+| Shares | Diagnostic |
+|---|---|
+| Total above 1 | `HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE` — the couple would claim more than one family limitation |
+| Total below 1 | `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE` — capacity the couple is entitled to would be silently forfeited |
+| Supplied on one spouse but not the other | `HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES` |
+
+They are diagnosed rather than rejected, because a share is a caller-supplied fact and this
+package reports on facts rather than overriding them — but at `ERROR` severity, because
+unlike an unusual eligibility fact this one is arithmetically impossible, and a determinate
+number computed from it would assert a ceiling the statute does not produce. Two spouses at
+0.3 each for 2026 would otherwise return a confident 2625 apiece against an 8750 limitation,
+forfeiting 3500 with no signal at all.
+
+The constraint is on the **sum**, not on either share: 1 and 0 is a valid division that gives
+one spouse the whole limitation. And where only one spouse owns an HSA, the shares that can
+be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
+the other spouse has no account to use, and no error applies.
 
 Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
 coverage is required exactly when it could change the answer. On a married return, an HSA

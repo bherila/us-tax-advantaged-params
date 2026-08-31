@@ -3597,6 +3597,204 @@
         "accounts.0.hsa.testingPeriod.status": "satisfied",
         "totals.hsaContribution": 4200
       }
+    },
+    {
+      "name": "2026 family-limit shares that do not exhaust the limitation are not a division",
+      "description": "IRC 223(b)(5)(B)(ii) says the limitation \"shall be divided equally between them unless they agree on a different division\". Shares of 0.3 and 0.3 total 0.6 and divide nothing: they allocate 2625 and 2625 out of the 2026 family limitation of 8750 and leave 3500 belonging to neither spouse. That is the same defect as shares totalling more than 1, which HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE already reports at ERROR severity, so it is reported the same way and the result is indeterminate rather than a determinate 2625 that silently forfeits the difference.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986
+          },
+          {
+            "id": "s",
+            "birthYear": 1987
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.3
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.3
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.hsa.familyLimitShare": 0.3,
+        "accounts.0.diagnostics.0.code": "HSA_FAMILY_LIMIT_SHARES_BELOW_ONE",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_SHARES_BELOW_ONE"
+      ]
+    },
+    {
+      "name": "2026 family-limit shares totalling exactly one may still give a spouse nothing",
+      "description": "IRC 223(b)(5)(B)(ii) constrains the division, not either share within it, so an agreement of 1 and 0 divides the whole 2026 family limitation of 8750 to one spouse and leaves the other 0. The shares total exactly 1, so the division is complete and the result stays determinate: the guard is on the sum, not on any share being positive.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986
+          },
+          {
+            "id": "s",
+            "birthYear": 1987
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 1
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 0,
+        "accounts.1.hsa.familyLimitShare": 0,
+        "accounts.0.diagnostics.0.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 sole HSA-owning spouse may agree a share below one without forfeiting anything",
+      "description": "IRC 223(b)(5)(B)(ii) divides the limitation between the spouses, and the shares that can be supplied cover only spouses who own a health savings account. Where one spouse owns none, a share of 0.6 on the other is a complete division whose remaining 0.4 the first spouse has no account to use, not an under-allocation, so no shares-below-one error applies: 0.6 x 8750 = 5250. Pinning the first diagnostic as the general disclaimer proves neither HSA_FAMILY_LIMIT_SHARES_BELOW_ONE nor the equal-division default fired.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986
+          },
+          {
+            "id": "s",
+            "birthYear": 1987,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.6
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5250,
+        "accounts.0.hsa.familyLimitShare": 0.6,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.diagnostics.0.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "totals.hsaContribution": 5250
+      }
+    },
+    {
+      "name": "2026 incomplete family-limit shares report only the missing-share error",
+      "description": "When one spouse supplies a share of 0.6 and the other supplies none, the division is not incomplete in amount but unstated, which HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES already reports; treating the missing share as 0 and additionally reporting a total below 1 would name the same defect twice. Pinning both diagnostic positions proves no shares-below-one error is inserted between them.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986
+          },
+          {
+            "id": "s",
+            "birthYear": 1987
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.6
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.diagnostics.0.code": "HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.diagnostics.0.code": "HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES",
+        "accounts.1.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "totals.hsaContribution": 0
+      }
     }
   ]
 }
