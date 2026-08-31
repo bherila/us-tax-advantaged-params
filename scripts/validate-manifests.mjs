@@ -109,7 +109,6 @@ const requiredSourceFiles = [
   "README.md",
   "DESIGN.md",
   "SOURCES.md",
-  "CHANGELOG.md",
   "CONTRIBUTING.md",
   "SECURITY.md",
   "package.json",

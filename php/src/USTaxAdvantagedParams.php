@@ -58,6 +58,7 @@ enum AccountType: string
     case ESOP = 'esop';
     case DEFINED_BENEFIT_PLAN = 'defined_benefit_plan';
     case CASH_BALANCE_PLAN = 'cash_balance_plan';
+    case HSA = 'hsa';
 }
 
 enum ConversionType: string
@@ -398,6 +399,58 @@ final class AccountBuilder
         return $this;
     }
 
+    /** IRC 223 coverage tier, with an optional list of eligible months (1-12).
+     *  @param list<int>|null $eligibleMonths
+     */
+    public function hsaCoverage(string $tier, ?array $eligibleMonths = null): self
+    {
+        $this->value['planRules']['hsa']['coverageTier'] = $tier;
+        if ($eligibleMonths !== null) {
+            $this->value['planRules']['hsa']['eligibleMonths'] = array_values($eligibleMonths);
+        }
+        return $this;
+    }
+
+    /** IRC 223(b)(2) per-month coverage, for a year in which the tier changes.
+     *  @param list<array{month:int,coverage:string}> $coverage
+     */
+    public function hsaMonthlyCoverage(array $coverage): self
+    {
+        $this->value['planRules']['hsa']['monthlyCoverage'] = array_values($coverage);
+        return $this;
+    }
+
+    /** Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by the deductible. */
+    public function hsaHdhpAnnualDeductible(float|int $amount): self
+    {
+        $this->value['planRules']['hsa']['hdhpAnnualDeductible'] = $amount;
+        return $this;
+    }
+
+    /** Elect the IRC 223(b)(8) last-month rule. Omit the argument to leave the testing period unresolved. */
+    public function hsaLastMonthRule(?bool $testingPeriodSatisfied = null): self
+    {
+        $this->value['planRules']['hsa']['useLastMonthRule'] = true;
+        if ($testingPeriodSatisfied !== null) {
+            $this->value['planRules']['hsa']['testingPeriodSatisfied'] = $testingPeriodSatisfied;
+        }
+        return $this;
+    }
+
+    /** IRC 223(b)(8)(B)(ii): the testing period was failed because of death or disability. */
+    public function hsaTestingPeriodFailureByDeathOrDisability(bool $failed = true): self
+    {
+        $this->value['planRules']['hsa']['testingPeriodFailureByDeathOrDisability'] = $failed;
+        return $this;
+    }
+
+    /** IRC 223(b)(5)(B)(ii) agreed share of the single family limit, 0 through 1. */
+    public function hsaFamilyLimitShare(float $share): self
+    {
+        $this->value['planRules']['hsa']['familyLimitShare'] = $share;
+        return $this;
+    }
+
     public function grandfatheredSarsep(bool $grandfathered = true): self
     {
         $this->value['planRules']['grandfatheredSarsep'] = $grandfathered;
@@ -612,6 +665,9 @@ final class USTaxAdvantagedParams
     public const ENGINE_VERSION = '0.2.0';
 
     private static ?array $parameters = null;
+
+    /** @var array<string,mixed>|null */
+    private static ?array $hsaParameters = null;
 
     /* <generated-parameters> */
 private const PARAMETER_JSON = <<<'JSON'
@@ -5857,6 +5913,673 @@ private const PARAMETER_JSON = <<<'JSON'
 JSON;
 /* </generated-parameters> */
 
+    /* <generated-hsa-parameters> */
+private const HSA_PARAMETER_JSON = <<<'JSON'
+{
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 2004,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "proration": {
+    "method": "sum_annual_amounts_for_eligible_months_then_divide_by_twelve",
+    "monthsInYear": 12
+  },
+  "historicalCoveragePolicy": {
+    "description": "Health savings accounts were created by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. The table therefore starts at 2004 and is never extrapolated forward: a tax year with no published revenue procedure returns an unavailable status and a diagnostic rather than an inflation-projected amount.",
+    "preTaxRelief2006DeductibleCap": "For 2004 through 2006, IRC 223(b)(2) capped each month\u0027s limitation at 1/12 of the lesser of the plan\u0027s annual deductible and the statutory dollar amount. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for taxable years beginning after 2006. In the capped years the engine requires the plan\u0027s annual deductible and returns an indeterminate result without it.",
+    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. Electing it for an earlier year produces a diagnostic and the ordinary month-by-month limitation."
+  },
+  "sources": [
+    {
+      "id": "usc-26-223",
+      "title": "26 U.S.C. 223, Health savings accounts (2023 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2023-title26/pdf/USCODE-2023-title26-subtitleA-chap1-subchapB-partVII-sec223.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2004-2",
+      "title": "Notice 2004-2, Health Savings Accounts (2004 amounts and the IRC 223(b)(3) catch-up schedule)",
+      "url": "https://www.irs.gov/pub/irs-drop/n-04-2.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2004-71",
+      "title": "Rev. Proc. 2004-71, section 3.22, 2005 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-04-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2005-70",
+      "title": "Rev. Proc. 2005-70, section 3.22, 2006 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-05-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53, section 3.24, 2007 high deductible health plan amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2007-36",
+      "title": "Rev. Proc. 2007-36, restated 2007 and new 2008 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-07-36.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2008-29",
+      "title": "Rev. Proc. 2008-29, 2009 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-08-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2009-29",
+      "title": "Rev. Proc. 2009-29, 2010 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-09-29.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-22",
+      "title": "Rev. Proc. 2010-22, 2011 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-32",
+      "title": "Rev. Proc. 2011-32, 2012 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2012-26",
+      "title": "Rev. Proc. 2012-26, 2013 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-12-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-25",
+      "title": "Rev. Proc. 2013-25, 2014 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-30",
+      "title": "Rev. Proc. 2014-30, 2015 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-30",
+      "title": "Rev. Proc. 2015-30, 2016 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-28",
+      "title": "Rev. Proc. 2016-28, 2017 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-28.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-37",
+      "title": "Rev. Proc. 2017-37, 2018 health savings account amounts as first announced",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-37.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Rev. Proc. 2018-18 (Internal Revenue Bulletin 2018-10), which briefly reduced the 2018 family limit to $6,850",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-27",
+      "title": "Rev. Proc. 2018-27, restoring $6,900 as the operative 2018 family limit",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-27.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-30",
+      "title": "Rev. Proc. 2018-30, 2019 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-30.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-25",
+      "title": "Rev. Proc. 2019-25 (Internal Revenue Bulletin 2019-22), 2020 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb19-22.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-32",
+      "title": "Rev. Proc. 2020-32, 2021 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-25",
+      "title": "Rev. Proc. 2021-25, 2022 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-24",
+      "title": "Rev. Proc. 2022-24, 2023 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-24.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-23",
+      "title": "Rev. Proc. 2023-23, 2024 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-23.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-25",
+      "title": "Rev. Proc. 2024-25, 2025 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-19",
+      "title": "Rev. Proc. 2025-19, 2026 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "2004": {
+      "year": 2004,
+      "annualContributionLimit": {
+        "selfOnly": 2600,
+        "family": 5150
+      },
+      "additionalContributionAmountAge55": 500,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5000,
+          "family": 10000
+        }
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "annualContributionLimit": {
+        "selfOnly": 2650,
+        "family": 5250
+      },
+      "additionalContributionAmountAge55": 600,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1000,
+          "family": 2000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5100,
+          "family": 10200
+        }
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "annualContributionLimit": {
+        "selfOnly": 2700,
+        "family": 5450
+      },
+      "additionalContributionAmountAge55": 700,
+      "contributionLimitCappedByHdhpAnnualDeductible": true,
+      "lastMonthRuleAvailable": false,
+      "testingPeriodMonths": null,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1050,
+          "family": 2100
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5250,
+          "family": 10500
+        }
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "annualContributionLimit": {
+        "selfOnly": 2850,
+        "family": 5650
+      },
+      "additionalContributionAmountAge55": 800,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5500,
+          "family": 11000
+        }
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "annualContributionLimit": {
+        "selfOnly": 2900,
+        "family": 5800
+      },
+      "additionalContributionAmountAge55": 900,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1100,
+          "family": 2200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5600,
+          "family": 11200
+        }
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "annualContributionLimit": {
+        "selfOnly": 3000,
+        "family": 5950
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1150,
+          "family": 2300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5800,
+          "family": 11600
+        }
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "annualContributionLimit": {
+        "selfOnly": 3050,
+        "family": 6150
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 5950,
+          "family": 11900
+        }
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "annualContributionLimit": {
+        "selfOnly": 3100,
+        "family": 6250
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1200,
+          "family": 2400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6050,
+          "family": 12100
+        }
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "annualContributionLimit": {
+        "selfOnly": 3250,
+        "family": 6450
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6250,
+          "family": 12500
+        }
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "annualContributionLimit": {
+        "selfOnly": 3300,
+        "family": 6550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1250,
+          "family": 2500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6350,
+          "family": 12700
+        }
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6650
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6450,
+          "family": 12900
+        }
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "annualContributionLimit": {
+        "selfOnly": 3350,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "annualContributionLimit": {
+        "selfOnly": 3400,
+        "family": 6750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1300,
+          "family": 2600
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6550,
+          "family": 13100
+        }
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "annualContributionLimit": {
+        "selfOnly": 3450,
+        "family": 6900
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6650,
+          "family": 13300
+        }
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "annualContributionLimit": {
+        "selfOnly": 3500,
+        "family": 7000
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1350,
+          "family": 2700
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6750,
+          "family": 13500
+        }
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "annualContributionLimit": {
+        "selfOnly": 3550,
+        "family": 7100
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 6900,
+          "family": 13800
+        }
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "annualContributionLimit": {
+        "selfOnly": 3600,
+        "family": 7200
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7000,
+          "family": 14000
+        }
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "annualContributionLimit": {
+        "selfOnly": 3650,
+        "family": 7300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1400,
+          "family": 2800
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7050,
+          "family": 14100
+        }
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "annualContributionLimit": {
+        "selfOnly": 3850,
+        "family": 7750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1500,
+          "family": 3000
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 7500,
+          "family": 15000
+        }
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "annualContributionLimit": {
+        "selfOnly": 4150,
+        "family": 8300
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1600,
+          "family": 3200
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8050,
+          "family": 16100
+        }
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "annualContributionLimit": {
+        "selfOnly": 4300,
+        "family": 8550
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1650,
+          "family": 3300
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8300,
+          "family": 16600
+        }
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "annualContributionLimit": {
+        "selfOnly": 4400,
+        "family": 8750
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1700,
+          "family": 3400
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8500,
+          "family": 17000
+        }
+      }
+    }
+  }
+}
+JSON;
+/* </generated-hsa-parameters> */
+
     public static function forTaxYear(int $taxYear): ScenarioBuilder
     {
         return ScenarioBuilder::forTaxYear($taxYear);
@@ -5867,7 +6590,7 @@ JSON;
      */
     public static function calculate(array $input): array
     {
-        return Engine::calculate($input, self::data());
+        return Engine::calculate($input, self::data(), self::hsaData());
     }
 
     /** @return array<string,mixed> */
@@ -5911,6 +6634,27 @@ JSON;
         return Engine::copy(self::data()['sources']);
     }
 
+    /** IRC 223 parameters, or null for a year with no encoded revenue procedure.
+     *  @return array<string,mixed>|null
+     */
+    public static function hsaParametersForYear(int $taxYear): ?array
+    {
+        return Engine::hsaParametersForYear(self::hsaData(), $taxYear);
+    }
+
+    /** @return array{minimum:int,maximum:int} */
+    public static function supportedHsaTaxYears(): array
+    {
+        $supported = self::hsaData()['supportedTaxYears'];
+        return ['minimum' => (int) $supported['minimum'], 'maximum' => (int) $supported['maximum']];
+    }
+
+    /** @return list<array<string,string>> */
+    public static function hsaSourceMetadata(): array
+    {
+        return Engine::copy(self::hsaData()['sources']);
+    }
+
     /** @return array<string,mixed> */
     private static function data(): array
     {
@@ -5923,6 +6667,19 @@ JSON;
         }
         return self::$parameters;
     }
+
+    /** @return array<string,mixed> */
+    private static function hsaData(): array
+    {
+        if (self::$hsaParameters === null) {
+            try {
+                self::$hsaParameters = json_decode(self::HSA_PARAMETER_JSON, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $exception) {
+                throw new RuntimeException('Embedded HSA parameter JSON is invalid.', 0, $exception);
+            }
+        }
+        return self::$hsaParameters;
+    }
 }
 
 /** @internal */
@@ -5932,7 +6689,7 @@ final class Engine
      *  @param array<string,mixed> $data
      *  @return array<string,mixed>
      */
-    public static function calculate(array $input, array $data): array
+    public static function calculate(array $input, array $data, array $hsaData): array
     {
         $scenarioDiagnostics = [];
         $taxYear = (int) ($input['taxYear'] ?? 0);
@@ -5942,6 +6699,7 @@ final class Engine
             throw new UnsupportedTaxYearException($taxYear, $minimum, $maximum);
         }
         $parameters = self::copy($data['years'][(string) $taxYear]);
+        $hsaParameters = self::hsaParametersForYear($hsaData, $taxYear);
         $filingStatus = self::parseFilingStatus(
             $input['filingStatus'] ?? FilingStatus::SINGLE->value,
             $scenarioDiagnostics,
@@ -5952,10 +6710,12 @@ final class Engine
             $taxYear,
             $filingStatus,
             $parameters,
+            $hsaParameters,
             $persons,
             $accounts,
             $scenarioDiagnostics,
             $data,
+            $hsaData,
         );
 
         $allocationOrder = $accounts;
@@ -6029,6 +6789,9 @@ final class Engine
             if (isset($account['employerId'])) {
                 $result['employerId'] = $account['employerId'];
             }
+            if (isset($outcome['hsaDetail'])) {
+                $result['hsa'] = $outcome['hsaDetail'];
+            }
             $byId[$account['id']] = $result;
         }
 
@@ -6052,6 +6815,7 @@ final class Engine
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
             'parameters' => $parameters,
+            'hsaParameters' => $hsaParameters,
             'accounts' => $accountResults,
             'conversions' => $conversionResults,
             'totals' => self::totals($accountResults, $conversionResults),
@@ -6184,6 +6948,9 @@ final class Engine
             'DEFINED_BENEFIT_PLAN' => AccountType::DEFINED_BENEFIT_PLAN->value,
             'CASH_BALANCE' => AccountType::CASH_BALANCE_PLAN->value,
             'CASH_BALANCE_PLAN' => AccountType::CASH_BALANCE_PLAN->value,
+            'HSA' => AccountType::HSA->value,
+            'HEALTH_SAVINGS_ACCOUNT' => AccountType::HSA->value,
+            'SECTION_223' => AccountType::HSA->value,
         ];
         $token = self::normalizeToken($value);
         if (!isset($aliases[$token])) {
@@ -6362,6 +7129,9 @@ final class Engine
         if (in_array($type, [AccountType::DEFINED_BENEFIT_PLAN->value, AccountType::CASH_BALANCE_PLAN->value], true)) {
             return array_replace($base, ['family' => 'defined_benefit', 'employerOnly' => true]);
         }
+        if ($type === AccountType::HSA->value) {
+            return array_replace($base, ['family' => 'hsa']);
+        }
         throw new ParameterException('INVALID_ACCOUNT_TYPE', "Unsupported retirement account type: {$type}");
     }
 
@@ -6426,7 +7196,16 @@ final class Engine
 
     private static function roundMoney(float $value): float
     {
-        return round($value + PHP_FLOAT_EPSILON, 2);
+        /*
+         * Mirrors the TypeScript Math.round((value + Number.EPSILON) * 100) / 100
+         * exactly. PHP's round($value, 2) rounds the decimal value of the double
+         * and diverges from the JavaScript expression on third-decimal ties
+         * (for example 14643.575), so the scaling and the round-half-up toward
+         * positive infinity are reproduced operation for operation.
+         */
+        $scaled = ($value + PHP_FLOAT_EPSILON) * 100;
+        $floor = floor($scaled);
+        return ($scaled - $floor >= 0.5 ? $floor + 1.0 : $floor) / 100;
     }
 
     private static function floorMoney(float $value): float
@@ -6467,6 +7246,8 @@ final class Engine
             'special403bCatchUp' => 0.0,
             'special457CatchUp' => 0.0,
             'unclassifiedIra' => 0.0,
+            'hsaDeductible' => 0.0,
+            'hsaEmployerOrCafeteria' => 0.0,
         ];
     }
 
@@ -6552,10 +7333,17 @@ final class Engine
             ? self::roundMoney($pretaxEmployee + $components['employerPreTax'])
             : 0.0;
         $selfEmployedEmployer = !empty($planRules['isSelfEmployedOwner']) ? $components['employerPreTax'] : 0.0;
-        $result['formW2Box1WageReduction'] = !empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee;
+        $hsaDeduction = $components['hsaDeductible'];
+        $hsaExclusion = $components['hsaEmployerOrCafeteria'];
+        $result['formW2Box1WageReduction'] = self::roundMoney(
+            (!empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee) + $hsaExclusion,
+        );
         $result['selfEmployedRetirementDeduction'] = $selfEmployedPlanDeduction;
-        $result['federalAgiReduction'] = self::roundMoney($pretaxEmployee + $selfEmployedEmployer + $deductibleIra);
+        $result['federalAgiReduction'] = self::roundMoney(
+            $pretaxEmployee + $selfEmployedEmployer + $deductibleIra + $hsaDeduction,
+        );
         $result['federalTaxableIncomeReduction'] = $result['federalAgiReduction'];
+        $result['ficaWageReduction'] = $hsaExclusion;
         $result['nondeductibleContribution'] = self::roundMoney(
             $components['nondeductibleIra'] + $components['unclassifiedIra'],
         );
@@ -6578,6 +7366,14 @@ final class Engine
         }
         if ($result['afterTaxOrRothContribution'] > 0) {
             $result['notes'][] = 'Roth and voluntary after-tax contributions do not reduce current federal AGI.';
+        }
+        if ($hsaDeduction > 0) {
+            $result['notes'][] = 'An HSA contribution made by the account beneficiary is an above-the-line federal deduction under IRC 223(a).';
+        }
+        if ($hsaExclusion > 0) {
+            $result['notes'][] = 'Employer and cafeteria-plan HSA contributions are excluded from gross income under IRC 106(d) '
+                . 'and are outside Form W-2 box 1 and Social Security and Medicare wages (Notice 2004-2 A-19). They were never '
+                . 'included rather than reduced, and they reduce the IRC 223(a) deduction under IRC 223(b)(4)(B).';
         }
         return $result;
     }
@@ -6774,6 +7570,100 @@ final class Engine
                 'INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT',
                 "{$path}.employerContributionTaxTreatment is invalid.",
             );
+        }
+        if (isset($rules['hsa']) && is_array($rules['hsa'])) {
+            self::validateHsaRules($rules['hsa'], "{$path}.hsa");
+        }
+    }
+
+    private static function parseHsaCoverageTier(mixed $value, string $path): string
+    {
+        if (!is_string($value) || !in_array($value, ['self_only', 'family'], true)) {
+            throw new ParameterException(
+                'INVALID_HSA_COVERAGE_TIER',
+                "{$path} must be \"self_only\" or \"family\".",
+            );
+        }
+        return $value;
+    }
+
+    private static function validateHsaMonth(mixed $value, string $path): int
+    {
+        if (!is_int($value) && !is_float($value)) {
+            throw new ParameterException('INVALID_HSA_MONTH', "{$path} must be an integer from 1 through 12.");
+        }
+        $number = (float) $value;
+        if (!is_finite($number) || floor($number) !== $number || $number < 1 || $number > 12) {
+            throw new ParameterException('INVALID_HSA_MONTH', "{$path} must be an integer from 1 through 12.");
+        }
+        return (int) $number;
+    }
+
+    /** @param array<string,mixed> $rules */
+    private static function validateHsaRules(array $rules, string $path): void
+    {
+        $hasMonthly = array_key_exists('monthlyCoverage', $rules);
+        $hasTierForm = array_key_exists('coverageTier', $rules) || array_key_exists('eligibleMonths', $rules);
+        if ($hasMonthly && $hasTierForm) {
+            throw new ParameterException(
+                'INVALID_HSA_COVERAGE_INPUT',
+                "{$path} must supply either monthlyCoverage or coverageTier/eligibleMonths, not both.",
+            );
+        }
+        if (array_key_exists('coverageTier', $rules)) {
+            self::parseHsaCoverageTier($rules['coverageTier'], "{$path}.coverageTier");
+        }
+        if (array_key_exists('eligibleMonths', $rules)) {
+            if (!is_array($rules['eligibleMonths']) || !array_is_list($rules['eligibleMonths'])) {
+                throw new ParameterException('INVALID_HSA_ELIGIBLE_MONTHS', "{$path}.eligibleMonths must be an array.");
+            }
+            $seen = [];
+            foreach ($rules['eligibleMonths'] as $index => $month) {
+                $value = self::validateHsaMonth($month, "{$path}.eligibleMonths[{$index}]");
+                if (isset($seen[$value])) {
+                    throw new ParameterException(
+                        'DUPLICATE_HSA_MONTH',
+                        "{$path}.eligibleMonths lists month {$value} more than once.",
+                    );
+                }
+                $seen[$value] = true;
+            }
+        }
+        if ($hasMonthly) {
+            if (!is_array($rules['monthlyCoverage']) || !array_is_list($rules['monthlyCoverage'])) {
+                throw new ParameterException(
+                    'INVALID_HSA_MONTHLY_COVERAGE',
+                    "{$path}.monthlyCoverage must be an array.",
+                );
+            }
+            $seen = [];
+            foreach ($rules['monthlyCoverage'] as $index => $entry) {
+                if (!is_array($entry)) {
+                    throw new ParameterException(
+                        'INVALID_HSA_MONTHLY_COVERAGE',
+                        "{$path}.monthlyCoverage[{$index}] must be an object.",
+                    );
+                }
+                $month = self::validateHsaMonth(
+                    $entry['month'] ?? null,
+                    "{$path}.monthlyCoverage[{$index}].month",
+                );
+                if (isset($seen[$month])) {
+                    throw new ParameterException(
+                        'DUPLICATE_HSA_MONTH',
+                        "{$path}.monthlyCoverage lists month {$month} more than once.",
+                    );
+                }
+                $seen[$month] = true;
+                self::parseHsaCoverageTier(
+                    $entry['coverage'] ?? null,
+                    "{$path}.monthlyCoverage[{$index}].coverage",
+                );
+            }
+        }
+        self::money($rules['hdhpAnnualDeductible'] ?? null, "{$path}.hdhpAnnualDeductible");
+        if (array_key_exists('familyLimitShare', $rules)) {
+            self::rate($rules['familyLimitShare'], "{$path}.familyLimitShare");
         }
     }
 
@@ -7114,10 +8004,12 @@ final class Engine
         int $taxYear,
         string $filingStatus,
         array $parameters,
+        ?array $hsaParameters,
         array $persons,
         array $accounts,
         array &$scenarioDiagnostics,
         array $data,
+        array $hsaData,
     ): array {
         $accountsById = [];
         foreach ($accounts as $account) {
@@ -7127,6 +8019,8 @@ final class Engine
             'taxYear' => $taxYear,
             'filingStatus' => $filingStatus,
             'parameters' => $parameters,
+            'hsaParameters' => $hsaParameters,
+            'hsaSupportedTaxYears' => $hsaData['supportedTaxYears'],
             'persons' => $persons,
             'accountsById' => $accountsById,
             'scenarioDiagnostics' => &$scenarioDiagnostics,
@@ -7142,11 +8036,16 @@ final class Engine
             'section457BasePools' => [],
             'section457CatchUpPools' => [],
             'section457SpecialCatchUpPools' => [],
+            'hsaBasePools' => [],
+            'hsaCatchUpPools' => [],
+            'hsaFamilyPools' => [],
+            'hsaPlans' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
         self::initializeAnnualAdditionsPools($context, $accounts);
         self::initializeSection457Pools($context, $accounts);
+        self::initializeHsaPools($context, $accounts);
         return $context;
     }
 
@@ -7444,6 +8343,828 @@ final class Engine
         }
     }
 
+
+    private const HSA_MONTHS_IN_YEAR = 12;
+
+    /** IRC 223 parameters for the year, or null when no revenue procedure is encoded.
+     *  @param array<string,mixed> $hsaData
+     *  @return array<string,mixed>|null
+     */
+    public static function hsaParametersForYear(array $hsaData, int $taxYear): ?array
+    {
+        $row = $hsaData['years'][(string) $taxYear] ?? null;
+        return is_array($row) ? self::copy($row) : null;
+    }
+
+    /** Mirrors JavaScript Number.prototype.toLocaleString for a money amount. */
+    private static function localeNumber(float $value): string
+    {
+        $rounded = round($value, 2);
+        if ($rounded === floor($rounded)) {
+            return number_format($rounded, 0);
+        }
+        return rtrim(number_format($rounded, 2), '0');
+    }
+
+    /** Mirrors JavaScript template-literal number interpolation. */
+    private static function jsNumber(float $value): string
+    {
+        if (is_finite($value) && floor($value) === $value && abs($value) < 1.0e15) {
+            return (string) (int) $value;
+        }
+        return (string) json_encode($value);
+    }
+
+    /** Twelve coverage slots, or null when no coverage facts were supplied at all.
+     *  @param array<string,mixed> $rules
+     *  @return list<string|null>|null
+     */
+    private static function resolveHsaMonths(array $rules): ?array
+    {
+        $months = array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+        if (array_key_exists('monthlyCoverage', $rules)) {
+            foreach ((array) $rules['monthlyCoverage'] as $entry) {
+                $months[((int) $entry['month']) - 1] = (string) $entry['coverage'];
+            }
+            return $months;
+        }
+        if (!array_key_exists('coverageTier', $rules)) {
+            return null;
+        }
+        $eligible = array_key_exists('eligibleMonths', $rules)
+            ? (array) $rules['eligibleMonths']
+            : range(1, self::HSA_MONTHS_IN_YEAR);
+        foreach ($eligible as $month) {
+            $months[((int) $month) - 1] = (string) $rules['coverageTier'];
+        }
+        return $months;
+    }
+
+    /**
+     * The two spouses of a married couple, when both are present. IRC 223(b)(5)
+     * applies to "individuals who are married to each other", which covers a
+     * separate return as well as a joint one.
+     *
+     * @param array<string,mixed> $context
+     * @return array{0:string,1:string}|null
+     */
+    private static function hsaMarriedCouple(array $context): ?array
+    {
+        if (
+            $context['filingStatus'] !== FilingStatus::MARRIED_FILING_JOINTLY->value
+            && $context['filingStatus'] !== FilingStatus::MARRIED_FILING_SEPARATELY->value
+        ) {
+            return null;
+        }
+        $taxpayerId = null;
+        $spouseId = null;
+        foreach ($context['persons'] as $person) {
+            if (($person['role'] ?? null) === 'taxpayer' && $taxpayerId === null) {
+                $taxpayerId = (string) $person['id'];
+            }
+            if (($person['role'] ?? null) === 'spouse' && $spouseId === null) {
+                $spouseId = (string) $person['id'];
+            }
+        }
+        return $taxpayerId !== null && $spouseId !== null ? [$taxpayerId, $spouseId] : null;
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     */
+    private static function initializeHsaPools(array &$context, array $accounts): void
+    {
+        $hsaAccounts = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] === 'hsa') {
+                $hsaAccounts[] = $account;
+            }
+        }
+        if ($hsaAccounts === []) {
+            return;
+        }
+
+        $ownerIds = [];
+        $accountsByOwner = [];
+        foreach ($hsaAccounts as $account) {
+            $ownerId = (string) $account['ownerId'];
+            if (!isset($accountsByOwner[$ownerId])) {
+                $accountsByOwner[$ownerId] = [];
+                $ownerIds[] = $ownerId;
+            }
+            $accountsByOwner[$ownerId][] = $account;
+        }
+
+        $parameters = $context['hsaParameters'];
+        if ($parameters === null) {
+            $minimum = (int) $context['hsaSupportedTaxYears']['minimum'];
+            $maximum = (int) $context['hsaSupportedTaxYears']['maximum'];
+            $before = $context['taxYear'] < $minimum;
+            $entry = self::diagnostic(
+                $before ? 'HSA_NOT_AVAILABLE_FOR_TAX_YEAR' : 'HSA_PARAMETERS_NOT_PUBLISHED_FOR_TAX_YEAR',
+                DiagnosticSeverity::ERROR,
+                $before
+                    ? 'Health savings accounts were created for taxable years beginning after December 31, 2003, '
+                        . "so no IRC 223 limitation exists for tax year {$context['taxYear']}."
+                    : "No IRC 223 revenue procedure is encoded for tax year {$context['taxYear']}. "
+                        . "Encoded HSA years are {$minimum}-{$maximum}; a future year is never extrapolated.",
+                'taxYear',
+                'IRC 223',
+            );
+            foreach ($ownerIds as $ownerId) {
+                $context['hsaPlans'][$ownerId] = [
+                    'status' => CalculationStatus::UNAVAILABLE->value,
+                    'diagnostics' => [$entry],
+                    'statutoryMaximum' => 0.0,
+                    'detail' => null,
+                    'familyPoolKey' => null,
+                ];
+            }
+            return;
+        }
+
+        $facts = [];
+        foreach ($ownerIds as $ownerId) {
+            $rules = null;
+            $signature = null;
+            $conflict = false;
+            foreach ($accountsByOwner[$ownerId] as $account) {
+                if (!array_key_exists('hsa', $account['planRules'])) {
+                    continue;
+                }
+                $supplied = $account['planRules']['hsa'];
+                $encoded = (string) json_encode($supplied);
+                if ($signature === null) {
+                    $signature = $encoded;
+                    $rules = is_array($supplied) ? $supplied : [];
+                } elseif ($signature !== $encoded) {
+                    $conflict = true;
+                }
+            }
+            $facts[$ownerId] = [
+                'ownerId' => $ownerId,
+                'rules' => $rules,
+                'conflict' => $conflict,
+                'months' => $rules === null ? null : self::resolveHsaMonths($rules),
+            ];
+        }
+
+        $couple = self::hsaMarriedCouple($context);
+        $coupleMembersWithAccounts = [];
+        foreach ($couple ?? [] as $personId) {
+            if (isset($accountsByOwner[$personId])) {
+                $coupleMembersWithAccounts[] = $personId;
+            }
+        }
+        $familyMonth = [];
+        for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+            $any = false;
+            foreach ($coupleMembersWithAccounts as $personId) {
+                if (($facts[$personId]['months'][$month - 1] ?? null) === 'family') {
+                    $any = true;
+                }
+            }
+            $familyMonth[$month - 1] = $any;
+        }
+        $familySharingApplies = in_array(true, $familyMonth, true);
+        $recharacterized = [];
+        if ($familySharingApplies) {
+            // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
+            // as having only that family coverage. It does not make an otherwise
+            // ineligible month eligible, so only supplied months are rewritten.
+            foreach ($coupleMembersWithAccounts as $personId) {
+                if ($facts[$personId]['months'] === null) {
+                    continue;
+                }
+                for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                    if ($familyMonth[$month - 1] && $facts[$personId]['months'][$month - 1] === 'self_only') {
+                        $facts[$personId]['months'][$month - 1] = 'family';
+                        $recharacterized[$personId] = true;
+                    }
+                }
+            }
+        }
+
+        /**
+         * IRC 223(b)(5)(A) also treats spouses with family coverage under different
+         * plans as covered by the plan with the lowest annual deductible. That only
+         * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
+         * limitation by the deductible.
+         */
+        $coupleDeductibles = [];
+        foreach ($coupleMembersWithAccounts as $personId) {
+            $value = $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null;
+            if ($value !== null) {
+                $coupleDeductibles[] = (float) $value;
+            }
+        }
+        $lowestCoupleDeductible = $coupleDeductibles === [] ? null : min($coupleDeductibles);
+
+        $amountsByOwner = [];
+        foreach ($ownerIds as $ownerId) {
+            $owner = $facts[$ownerId];
+            $person = $context['persons'][$ownerId];
+            $diagnostics = [];
+            $indeterminate = false;
+
+            if ($owner['conflict']) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER',
+                    DiagnosticSeverity::ERROR,
+                    'Two health savings accounts owned by the same person supplied different IRC 223 coverage facts. '
+                        . 'Coverage is a fact about the person, so it must be identical on every one of that person\'s HSAs.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)',
+                );
+            }
+            if ($owner['rules'] === null || $owner['months'] === null) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_COVERAGE_FACTS_REQUIRED',
+                    DiagnosticSeverity::ERROR,
+                    'planRules.hsa with a coverage tier (or a monthlyCoverage list) is required. Whether a person is an '
+                        . 'eligible individual under IRC 223(c)(1), including Medicare entitlement under IRC 223(b)(7), '
+                        . 'is a caller-supplied fact.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(1)',
+                );
+            }
+
+            $months = $owner['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+            $eligibleMonthCount = 0;
+            foreach ($months as $tier) {
+                if ($tier !== null) {
+                    $eligibleMonthCount++;
+                }
+            }
+            $age = self::ageAtEndOfTaxYear($person, (int) $context['taxYear']);
+            if ($age === null) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Birth year or birth date is required to determine whether the IRC 223(b)(3) additional contribution '
+                        . 'amount for an individual who attains age 55 applies.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(3)(A)',
+                );
+            }
+
+            $ownDeductible = $owner['rules']['hdhpAnnualDeductible'] ?? null;
+            $deductibleMissing = false;
+            $deductibleFor = static function (string $tier) use (
+                $familySharingApplies,
+                $lowestCoupleDeductible,
+                $ownDeductible,
+            ): ?float {
+                if ($tier === 'family' && $familySharingApplies && $lowestCoupleDeductible !== null) {
+                    return $lowestCoupleDeductible;
+                }
+                return $ownDeductible === null ? null : (float) $ownDeductible;
+            };
+            $annualLimitFor = static function (string $tier) use (
+                $parameters,
+                $deductibleFor,
+                &$deductibleMissing,
+            ): float {
+                $statutory = (float) $parameters['annualContributionLimit'][$tier === 'family' ? 'family' : 'selfOnly'];
+                if ($parameters['contributionLimitCappedByHdhpAnnualDeductible'] !== true) {
+                    return $statutory;
+                }
+                $deductible = $deductibleFor($tier);
+                if ($deductible === null) {
+                    $deductibleMissing = true;
+                    return $statutory;
+                }
+                return self::minMoney($deductible, $statutory);
+            };
+
+            $monthlyAnnualLimits = [];
+            foreach ($months as $tier) {
+                $monthlyAnnualLimits[] = $tier === null ? null : $annualLimitFor($tier);
+            }
+            if ($deductibleMissing) {
+                $indeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED',
+                    DiagnosticSeverity::ERROR,
+                    "For tax year {$context['taxYear']} IRC 223(b)(2) limited each month to one twelfth of the lesser of "
+                        . 'the plan\'s annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible '
+                        . 'is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years '
+                        . 'after 2006.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(2)',
+                );
+            }
+
+            $tierPortion = static function (string $tier) use ($monthlyAnnualLimits, $months): float {
+                $sum = 0.0;
+                foreach ($monthlyAnnualLimits as $index => $value) {
+                    if ($months[$index] === $tier) {
+                        $sum += $value ?? 0.0;
+                    }
+                }
+                return $sum / self::HSA_MONTHS_IN_YEAR;
+            };
+            $familyPortionWithoutLastMonthRule = $tierPortion('family');
+            $selfPortionWithoutLastMonthRule = $tierPortion('self_only');
+            $sum = 0.0;
+            foreach ($monthlyAnnualLimits as $value) {
+                $sum += $value ?? 0.0;
+            }
+            $proratedWithoutLastMonthRule = self::roundMoney($sum / self::HSA_MONTHS_IN_YEAR);
+            $catchUpEligible = $age !== null && $age >= 55;
+            $catchUpWithoutLastMonthRule = $catchUpEligible
+                ? self::roundMoney(
+                    ((float) $parameters['additionalContributionAmountAge55'] * $eligibleMonthCount)
+                        / self::HSA_MONTHS_IN_YEAR,
+                )
+                : 0.0;
+
+            $lastMonthRuleApplied = false;
+            $appliedAnnualLimitByMonth = $monthlyAnnualLimits;
+            $proratedApplied = $proratedWithoutLastMonthRule;
+            $familyPortionApplied = $familyPortionWithoutLastMonthRule;
+            $selfPortionApplied = $selfPortionWithoutLastMonthRule;
+            $catchUpApplied = $catchUpWithoutLastMonthRule;
+
+            if (!empty($owner['rules']['useLastMonthRule'])) {
+                $decemberTier = $months[self::HSA_MONTHS_IN_YEAR - 1];
+                if ($parameters['lastMonthRuleAvailable'] !== true) {
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR',
+                        DiagnosticSeverity::WARNING,
+                        'IRC 223(b)(8) was added by the Tax Relief and Health Care Act of 2006 section 305 for taxable '
+                            . 'years beginning after December 31, 2006, so it does not apply to tax year '
+                            . "{$context['taxYear']}. The ordinary month-by-month limitation is used instead.",
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(8)',
+                    );
+                } elseif ($decemberTier === null) {
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_LAST_MONTH_RULE_REQUIRES_DECEMBER_ELIGIBILITY',
+                        DiagnosticSeverity::WARNING,
+                        'IRC 223(b)(8)(A) applies only to an individual who is an eligible individual during the last '
+                            . 'month of the taxable year. December is not an eligible month here, so the ordinary '
+                            . 'month-by-month limitation is used instead.',
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(8)(A)',
+                    );
+                } else {
+                    $lastMonthRuleApplied = true;
+                    $decemberAnnualLimit = $annualLimitFor($decemberTier);
+                    $appliedAnnualLimitByMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, $decemberAnnualLimit);
+                    $proratedApplied = self::roundMoney($decemberAnnualLimit);
+                    $familyPortionApplied = $decemberTier === 'family' ? (float) $decemberAnnualLimit : 0.0;
+                    $selfPortionApplied = $decemberTier === 'family' ? 0.0 : (float) $decemberAnnualLimit;
+                    $catchUpApplied = $catchUpEligible
+                        ? self::roundMoney((float) $parameters['additionalContributionAmountAge55'])
+                        : 0.0;
+                }
+            }
+
+            $amountsByOwner[$ownerId] = [
+                'proratedApplied' => $proratedApplied,
+                'proratedWithoutLastMonthRule' => $proratedWithoutLastMonthRule,
+                'familyPortionApplied' => $familyPortionApplied,
+                'selfPortionApplied' => $selfPortionApplied,
+                'familyPortionWithoutLastMonthRule' => $familyPortionWithoutLastMonthRule,
+                'selfPortionWithoutLastMonthRule' => $selfPortionWithoutLastMonthRule,
+                'catchUpApplied' => $catchUpApplied,
+                'catchUpWithoutLastMonthRule' => $catchUpWithoutLastMonthRule,
+                'appliedAnnualLimitByMonth' => $appliedAnnualLimitByMonth,
+                'eligibleMonthCount' => $eligibleMonthCount,
+                'lastMonthRuleApplied' => $lastMonthRuleApplied,
+                'diagnostics' => $diagnostics,
+                'indeterminate' => $indeterminate,
+            ];
+        }
+
+        /*
+         * The single IRC 223(b)(5) family limit the spouses divide is the limitation
+         * attributable to family-coverage months only. Self-only months stay outside
+         * the division (Form 8889 line 6, Steps 1-4).
+         */
+        $rawSharedFamilyLimit = null;
+        $sharedFamilyLimit = null;
+        if ($familySharingApplies) {
+            $candidates = [];
+            foreach ($coupleMembersWithAccounts as $personId) {
+                $candidates[] = $amountsByOwner[$personId]['familyPortionApplied'] ?? 0.0;
+            }
+            $rawSharedFamilyLimit = max($candidates);
+            $sharedFamilyLimit = self::roundMoney($rawSharedFamilyLimit);
+        }
+        $familyPoolKey = $couple === null ? null : "{$couple[0]}|{$couple[1]}";
+
+        $explicitShareHolders = [];
+        foreach ($coupleMembersWithAccounts as $personId) {
+            if (array_key_exists('familyLimitShare', $facts[$personId]['rules'] ?? [])) {
+                $explicitShareHolders[] = $personId;
+            }
+        }
+        $shareByOwner = [];
+        $sharingDiagnostics = [];
+        if ($familySharingApplies) {
+            if ($explicitShareHolders !== []) {
+                if (count($explicitShareHolders) !== count($coupleMembersWithAccounts)) {
+                    $sharingDiagnostics[] = self::diagnostic(
+                        'HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES',
+                        DiagnosticSeverity::ERROR,
+                        'When one spouse supplies planRules.hsa.familyLimitShare, every spouse with a health savings '
+                            . 'account must supply one, so that the agreed division of the single IRC 223(b)(5) family '
+                            . 'limit is complete.',
+                        'accounts',
+                        'IRC 223(b)(5)(B)(ii)',
+                    );
+                }
+                $total = 0.0;
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $share = (float) ($facts[$personId]['rules']['familyLimitShare'] ?? 0);
+                    $shareByOwner[$personId] = $share;
+                    $total += $share;
+                }
+                if ($total > 1 + 1e-9) {
+                    $formatted = self::jsNumber($total);
+                    $sharingDiagnostics[] = self::diagnostic(
+                        'HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE',
+                        DiagnosticSeverity::ERROR,
+                        "The supplied family-limit shares total {$formatted}. IRC 223(b)(5)(B)(ii) divides one family "
+                            . 'limit between the spouses, so the shares cannot exceed 1.',
+                        'accounts',
+                        'IRC 223(b)(5)(B)(ii)',
+                    );
+                }
+            } elseif (count($coupleMembersWithAccounts) > 1) {
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $shareByOwner[$personId] = 1 / count($coupleMembersWithAccounts);
+                }
+                $sharingDiagnostics[] = self::diagnostic(
+                    'HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT',
+                    DiagnosticSeverity::INFO,
+                    'IRC 223(b)(5)(B)(ii) divides the single family contribution limit equally between the spouses '
+                        . 'unless they agree on a different division. Supply planRules.hsa.familyLimitShare on each '
+                        . 'spouse\'s HSA to record a different agreement.',
+                    'accounts',
+                    'IRC 223(b)(5)(B)(ii)',
+                );
+            } else {
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $shareByOwner[$personId] = 1.0;
+                }
+                $sharingDiagnostics[] = self::diagnostic(
+                    'HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT',
+                    DiagnosticSeverity::INFO,
+                    'Only one spouse has a health savings account, so the whole IRC 223(b)(5) family limit is allocated '
+                        . 'to it. That is the division the spouses are assumed to have agreed on; the statutory default '
+                        . 'absent an agreement is an equal division.',
+                    'accounts',
+                    'IRC 223(b)(5)(B)(ii)',
+                );
+            }
+            if ($couple !== null && $familyPoolKey !== null) {
+                $undividedSelfPortions = 0.0;
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $undividedSelfPortions += $amountsByOwner[$personId]['selfPortionApplied'] ?? 0.0;
+                }
+                $context['hsaFamilyPools'][$familyPoolKey] = [
+                    'id' => "hsa223b5:{$familyPoolKey}",
+                    'legalLimit' => 'IRC 223(b)(5) single family contribution limit divided between the spouses, '
+                        . 'plus their undivided self-only-month limitations',
+                    'limit' => $rawSharedFamilyLimit === null
+                        ? $sharedFamilyLimit
+                        : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions),
+                    'used' => 0.0,
+                ];
+            }
+        }
+
+        foreach ($ownerIds as $ownerId) {
+            $amounts = $amountsByOwner[$ownerId];
+            $isSharingMember = $familySharingApplies && in_array($ownerId, $coupleMembersWithAccounts, true);
+            $share = $isSharingMember ? ($shareByOwner[$ownerId] ?? 1.0) : null;
+            $diagnostics = $amounts['diagnostics'];
+            if ($isSharingMember) {
+                array_push($diagnostics, ...$sharingDiagnostics);
+                if (isset($recharacterized[$ownerId])) {
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE',
+                        DiagnosticSeverity::INFO,
+                        'IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either '
+                            . 'of them has it, so self-only months were recharacterized as family months.',
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(5)(A)',
+                    );
+                }
+            }
+
+            $indeterminate = $amounts['indeterminate'] || self::hasError($diagnostics);
+
+            /*
+             * Form 8889 line 6: the spouse's agreed (or default equal) share applies to
+             * the family-coverage months' limitation only; self-only months are added
+             * back undivided. The same division is applied to the counterfactual
+             * without the IRC 223(b)(8) last-month rule so the amount attributable to
+             * that rule is measured against the limit that would actually have applied.
+             */
+            $divided = static function (float $familyPortion, float $selfPortion, float $undivided) use ($share): float {
+                return $share === null
+                    ? $undivided
+                    : self::roundMoney($share * $familyPortion + $selfPortion);
+            };
+            $baseLimit = $indeterminate
+                ? null
+                : $divided(
+                    (float) $amounts['familyPortionApplied'],
+                    (float) $amounts['selfPortionApplied'],
+                    (float) $amounts['proratedApplied'],
+                );
+            $baseLimitWithoutLastMonthRule = $indeterminate
+                ? null
+                : $divided(
+                    (float) $amounts['familyPortionWithoutLastMonthRule'],
+                    (float) $amounts['selfPortionWithoutLastMonthRule'],
+                    (float) $amounts['proratedWithoutLastMonthRule'],
+                );
+
+            $context['hsaBasePools'][$ownerId] = [
+                'id' => "hsa223b1:{$ownerId}",
+                'legalLimit' => 'IRC 223(b)(1) annual HSA contribution limit',
+                'limit' => $baseLimit,
+                'used' => 0.0,
+            ];
+            $context['hsaCatchUpPools'][$ownerId] = [
+                'id' => "hsa223b3:{$ownerId}",
+                'legalLimit' => 'IRC 223(b)(3) age 55 additional contribution amount',
+                'limit' => $indeterminate ? null : $amounts['catchUpApplied'],
+                'used' => 0.0,
+            ];
+
+            if (!$indeterminate && $amounts['catchUpApplied'] > 0 && $couple !== null) {
+                $diagnostics[] = self::diagnostic(
+                    'HSA_AGE_55_ADDITIONAL_CONTRIBUTION_IS_PER_SPOUSE',
+                    DiagnosticSeverity::INFO,
+                    'The IRC 223(b)(3) additional contribution amount belongs to the individual, is excluded from the '
+                        . 'IRC 223(b)(5) family division, and must be contributed to that spouse\'s own HSA. Two '
+                        . 'spouses aged 55 or older therefore have two of them.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(3); IRC 223(b)(5)(B)',
+                );
+            }
+
+            $status = $indeterminate
+                ? CalculationStatus::INDETERMINATE->value
+                : CalculationStatus::DETERMINATE->value;
+            $testingPeriod = null;
+            $attributable = $indeterminate || $baseLimit === null || $baseLimitWithoutLastMonthRule === null
+                ? 0.0
+                : self::nonnegative(self::roundMoney(
+                    $baseLimit
+                    + $amounts['catchUpApplied']
+                    - $baseLimitWithoutLastMonthRule
+                    - $amounts['catchUpWithoutLastMonthRule'],
+                ));
+
+            if ($amounts['lastMonthRuleApplied'] && !$indeterminate) {
+                $rules = $facts[$ownerId]['rules'];
+                $testingMonths = $parameters['testingPeriodMonths'] ?? 13;
+                if (array_key_exists('testingPeriodSatisfied', $rules) && $rules['testingPeriodSatisfied'] === true) {
+                    $testingStatus = 'satisfied';
+                } elseif (
+                    array_key_exists('testingPeriodSatisfied', $rules)
+                    && $rules['testingPeriodSatisfied'] === false
+                ) {
+                    $testingStatus = ($rules['testingPeriodFailureByDeathOrDisability'] ?? null) === true
+                        ? 'failed_exception_applies'
+                        : 'failed';
+                } else {
+                    $testingStatus = 'unresolved';
+                }
+                $exposed = $testingStatus === 'failed' || $testingStatus === 'unresolved' ? $attributable : 0.0;
+                $nextYear = $context['taxYear'] + 1;
+                $testingPeriod = [
+                    'months' => $testingMonths,
+                    'startMonth' => "{$context['taxYear']}-12",
+                    'endMonth' => "{$nextYear}-12",
+                    'status' => $testingStatus,
+                    'grossIncomeInclusionIfFailed' => $exposed,
+                    'additionalTaxIfFailed' => self::roundMoney($exposed * 0.1),
+                    'inclusionTaxYear' => $nextYear,
+                ];
+                if ($testingStatus === 'unresolved') {
+                    $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                    $formatted = self::localeNumber($attributable);
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED',
+                        DiagnosticSeverity::WARNING,
+                        "The IRC 223(b)(8) last-month rule was elected, so \${$formatted} of the calculated ceiling "
+                            . 'exists only because of IRC 223(b)(8)(A). Whether the '
+                            . "{$testingMonths}-month testing period ending {$nextYear}-12 is satisfied was not "
+                            . 'supplied, so compliance is not assumed. Failing it includes that amount in gross income '
+                            . "for {$nextYear} and adds a 10 percent tax under IRC 223(b)(8)(B)(i).",
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(8)(B)',
+                    );
+                } elseif ($testingStatus === 'failed') {
+                    $formatted = self::localeNumber($exposed);
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED',
+                        DiagnosticSeverity::WARNING,
+                        'The IRC 223(b)(8)(B)(iii) testing period is not satisfied. Under IRC 223(b)(8)(B)(i), '
+                            . "\${$formatted} is included in gross income for tax year {$nextYear} and an additional "
+                            . 'tax of 10 percent applies. The inclusion falls in the year of the failure, not the '
+                            . 'contribution year, so it is not reflected in this year\'s federal tax effects.',
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(8)(B)(i)',
+                    );
+                } elseif ($testingStatus === 'failed_exception_applies') {
+                    $diagnostics[] = self::diagnostic(
+                        'HSA_TESTING_PERIOD_FAILURE_EXCEPTED',
+                        DiagnosticSeverity::INFO,
+                        'The testing period was failed, but IRC 223(b)(8)(B)(ii) excepts a failure caused by the '
+                            . 'individual\'s death or disability, so there is no income inclusion and no additional tax.',
+                        "persons.{$ownerId}",
+                        'IRC 223(b)(8)(B)(ii)',
+                    );
+                }
+            }
+
+            $diagnostics[] = self::diagnostic(
+                'HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER',
+                DiagnosticSeverity::INFO,
+                'This calculation applies IRC 223(b) to the months and coverage supplied. It does not test '
+                    . 'eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health '
+                    . 'plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer\'s '
+                    . 'dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) and '
+                    . '223(b)(5)(B)(i) reductions for Archer MSA contributions.',
+                "persons.{$ownerId}",
+                'IRC 223',
+            );
+
+            $detail = [
+                'coverageTierByMonth' => $facts[$ownerId]['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                'eligibleMonthCount' => $amounts['eligibleMonthCount'],
+                'appliedAnnualLimitByMonth' => $amounts['appliedAnnualLimitByMonth'],
+                'proratedContributionLimit' => $amounts['proratedApplied'],
+                'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
+                'additionalContributionAmount' => $amounts['catchUpApplied'],
+                'familyLimitShare' => $share,
+                'sharedFamilyContributionLimit' => $isSharingMember ? $sharedFamilyLimit : null,
+                'lastMonthRuleApplied' => $amounts['lastMonthRuleApplied'],
+                'amountAttributableToLastMonthRule' => $attributable,
+                'testingPeriod' => $testingPeriod,
+            ];
+
+            $context['hsaPlans'][$ownerId] = [
+                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'diagnostics' => $diagnostics,
+                'statutoryMaximum' => $baseLimit === null
+                    ? null
+                    : self::roundMoney($baseLimit + $amounts['catchUpApplied']),
+                'detail' => $detail,
+                'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
+            ];
+        }
+
+        // Existing contributions consume the base limit first and then the IRC
+        // 223(b)(3) increase, which is the only ordering that never reports capacity
+        // the statute does not allow.
+        foreach ($hsaAccounts as $account) {
+            $existing = self::roundMoney(
+                $account['existingContributions']['hsaDeductible']
+                + $account['existingContributions']['hsaEmployerOrCafeteria'],
+            );
+            if ($existing <= 0) {
+                continue;
+            }
+            $ownerId = (string) $account['ownerId'];
+            if (
+                !isset($context['hsaBasePools'][$ownerId])
+                || !isset($context['hsaCatchUpPools'][$ownerId])
+                || $context['hsaBasePools'][$ownerId]['limit'] === null
+            ) {
+                continue;
+            }
+            $basePool =& $context['hsaBasePools'][$ownerId];
+            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['used']));
+            $basePool['used'] = self::roundMoney((float) $basePool['used'] + $toBase);
+            unset($basePool);
+            $context['hsaCatchUpPools'][$ownerId]['used'] = self::roundMoney(
+                (float) $context['hsaCatchUpPools'][$ownerId]['used'] + $existing - $toBase,
+            );
+            $poolKey = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
+            if ($poolKey !== null && isset($context['hsaFamilyPools'][$poolKey])) {
+                $context['hsaFamilyPools'][$poolKey]['used'] = self::roundMoney(
+                    (float) $context['hsaFamilyPools'][$poolKey]['used'] + $toBase,
+                );
+            }
+        }
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param array<string,mixed> $account
+     *  @return array<string,mixed>
+     */
+    private static function allocateHsa(array &$context, array $account): array
+    {
+        $ownerId = (string) $account['ownerId'];
+        $plan = $context['hsaPlans'][$ownerId];
+        $annual = $account['existingContributions'];
+        $additional = self::zeroComponents();
+        $sharedLimits = [];
+        $diagnostics = $plan['diagnostics'];
+        $hasBase = isset($context['hsaBasePools'][$ownerId]);
+        $hasCatchUp = isset($context['hsaCatchUpPools'][$ownerId]);
+        $familyPoolKey = $plan['familyPoolKey'];
+        $hasFamily = $familyPoolKey !== null && isset($context['hsaFamilyPools'][$familyPoolKey]);
+
+        if ($plan['status'] === CalculationStatus::UNAVAILABLE->value || !$hasBase || !$hasCatchUp) {
+            $outcome = [
+                'status' => CalculationStatus::UNAVAILABLE->value,
+                'statutoryMaximum' => 0.0,
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+            ];
+            if ($plan['detail'] !== null) {
+                $outcome['hsaDetail'] = $plan['detail'];
+            }
+            return $outcome;
+        }
+
+        if ($plan['status'] === CalculationStatus::INDETERMINATE->value) {
+            self::reportPoolWithoutConsuming($context['hsaBasePools'][$ownerId], $sharedLimits);
+            if ($hasFamily) {
+                self::reportPoolWithoutConsuming($context['hsaFamilyPools'][$familyPoolKey], $sharedLimits);
+            }
+            self::reportPoolWithoutConsuming($context['hsaCatchUpPools'][$ownerId], $sharedLimits);
+            $outcome = [
+                'status' => CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => $plan['statutoryMaximum'],
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+            ];
+            if ($plan['detail'] !== null) {
+                $outcome['hsaDetail'] = $plan['detail'];
+            }
+            return $outcome;
+        }
+
+        $refs = [['hsaBasePools', $ownerId]];
+        if ($hasFamily) {
+            $refs[] = ['hsaFamilyPools', $familyPoolKey];
+        }
+        $remaining = [];
+        foreach ($refs as [$category, $key]) {
+            $remaining[] = self::poolRemaining($context[$category][$key]);
+        }
+        $baseAmount = self::takeAcrossPools($context, $refs, self::minMoney(...$remaining), $sharedLimits);
+        $catchUpPool =& $context['hsaCatchUpPools'][$ownerId];
+        $catchUpAmount = self::takeFromPool(
+            $catchUpPool,
+            self::poolRemaining($catchUpPool) ?? 0.0,
+            $sharedLimits,
+        );
+        unset($catchUpPool);
+        $total = self::roundMoney($baseAmount + $catchUpAmount);
+
+        // IRC 106(d) employer and cafeteria-plan contributions are excluded from
+        // income rather than deducted, and IRC 223(b)(4)(B) makes them reduce the
+        // IRC 223(a) deduction, so they are filled first out of the same ceiling.
+        $employerTarget = self::money(
+            $account['planRules']['expectedEmployerContribution'] ?? null,
+            "accounts.{$account['id']}.planRules.expectedEmployerContribution",
+        );
+        $employerRemaining = self::nonnegative($employerTarget - $annual['hsaEmployerOrCafeteria']);
+        $toEmployer = self::minMoney($total, $employerRemaining);
+        $toDeductible = self::roundMoney($total - $toEmployer);
+
+        $additional['hsaEmployerOrCafeteria'] = $toEmployer;
+        $additional['hsaDeductible'] = $toDeductible;
+        $annual['hsaEmployerOrCafeteria'] = self::roundMoney($annual['hsaEmployerOrCafeteria'] + $toEmployer);
+        $annual['hsaDeductible'] = self::roundMoney($annual['hsaDeductible'] + $toDeductible);
+
+        $outcome = [
+            'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
+            'statutoryMaximum' => $plan['statutoryMaximum'],
+            'annualComponents' => $annual,
+            'additionalComponents' => $additional,
+            'planTermDependentCapacity' => 0.0,
+            'sharedLimits' => $sharedLimits,
+            'diagnostics' => $diagnostics,
+        ];
+        if ($plan['detail'] !== null) {
+            $outcome['hsaDetail'] = $plan['detail'];
+        }
+        return $outcome;
+    }
+
     /** @param array<string,float> $components */
     private static function regularIraContributionAmount(array $components): float
     {
@@ -7647,6 +9368,7 @@ final class Engine
             'annual_additions_only' => self::allocateAnnualAdditionsOnly($context, $account, $traits),
             'defined_benefit' => self::allocateDefinedBenefit($account),
             'section457f' => self::allocateSection457f($account),
+            'hsa' => self::allocateHsa($context, $account),
             default => throw new ParameterException(
                 'UNSUPPORTED_ACCOUNT_FAMILY',
                 "Unsupported account family {$traits['family']}.",
@@ -9541,6 +11263,7 @@ final class Engine
             'employerRothContribution' => 0.0,
             'deductibleIraContribution' => 0.0,
             'nondeductibleIraContribution' => 0.0,
+            'hsaContribution' => 0.0,
             'federalAgiReduction' => 0.0,
             'federalAgiIncrease' => 0.0,
             'taxableRothConversions' => 0.0,
@@ -9584,6 +11307,11 @@ final class Engine
                 $totals['nondeductibleIraContribution']
                 + $components['nondeductibleIra']
                 + $components['unclassifiedIra'],
+            );
+            $totals['hsaContribution'] = self::roundMoney(
+                $totals['hsaContribution']
+                + $components['hsaDeductible']
+                + $components['hsaEmployerOrCafeteria'],
             );
             $totals['federalAgiReduction'] = self::roundMoney(
                 $totals['federalAgiReduction'] + $account['federalTaxEffects']['federalAgiReduction'],

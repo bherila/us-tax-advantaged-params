@@ -3,14 +3,14 @@
 [![CI](https://github.com/bherila/us-tax-advantaged-params/actions/workflows/ci.yml/badge.svg)](https://github.com/bherila/us-tax-advantaged-params/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-`us-tax-advantaged-params` is a dependency-free calculation engine for historical and current U.S. tax-advantaged account parameters. Retirement accounts are the coverage today: it calculates account-level and household-level contribution capacity, IRA phase-outs, shared statutory limits, federal income effects, and Roth-conversion taxability.
+`us-tax-advantaged-params` is a dependency-free calculation engine for historical and current U.S. tax-advantaged account parameters. It calculates account-level and household-level contribution capacity, IRA phase-outs, shared statutory limits, federal income effects, and Roth-conversion taxability for retirement accounts, and contribution capacity for health savings accounts under IRC §223.
 
 The repository contains two native implementations with the same behavior:
 
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
 - **PHP 8.2+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
-Annual legal parameters are maintained once in `data/retirement-parameters.json` and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
+Annual legal parameters are maintained once in `data/retirement-parameters.json` and `data/hsa-parameters.json`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
 > **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, calculate self-employment tax, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
@@ -23,6 +23,16 @@ The 1975 starting point corresponds to the first generally available IRA contrib
 ```ts
 USTaxAdvantagedParams.supportedTaxYears();
 // { minimum: 1975, maximum: 2026 }
+```
+
+Health savings accounts have their own range, **2004 through 2026**, because IRC §223 was
+added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003
+effective for taxable years beginning after 2003. A year before 2004 returns an
+`unavailable` HSA result rather than an extrapolated one.
+
+```ts
+USTaxAdvantagedParams.supportedHsaTaxYears();
+// { minimum: 2004, maximum: 2026 }
 ```
 
 ## Installation
@@ -237,8 +247,46 @@ Filing-status aliases include `S`, `SINGLE`, `MFJ`, `MFS`, `HOH`, `QSS`, and `QW
 | Federal plan | Traditional and Roth TSP |
 | Employer-only defined-contribution plans | 401(a), profit-sharing, money-purchase, Keogh, ESOP |
 | Pension arrangements | Defined-benefit and cash-balance plans |
+| Health accounts | Health savings account (HSA) |
 
 Defined-benefit and cash-balance contributions are deliberately returned as `indeterminate`; their funding requires the plan formula, census, assets, actuarial assumptions, and funding rules.
+
+## Health savings accounts (IRC §223)
+
+HSA contribution capacity is calculated from caller-supplied coverage facts. Whether a
+person is an eligible individual under §223(c)(1) — including Medicare entitlement under
+§223(b)(7) — is an input, not something the engine infers.
+
+| Rule | Treatment |
+|---|---|
+| §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
+| §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
+| §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
+| §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months |
+| §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
+| Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
+| Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
+| §106(d) employer contributions | Excluded from income rather than deducted, reducing W-2 box 1 and FICA wages and reducing the §223(b)(4)(B) deduction |
+
+The testing period spans two tax years, so a caller who has not yet resolved it receives
+an explicit obligation in the result rather than an assumed outcome.
+
+Encoded HSA parameters are verified against the Revenue Procedure that published them —
+see [`evidence/hsa-limits/`](evidence/hsa-limits/).
+
+## Multiple employers
+
+Statutory pools are keyed to match the statute rather than to the taxpayer uniformly:
+
+- **§402(g)(1) elective deferrals** aggregate **per person** across every employer.
+- **§415(c) annual additions** apply **per employer**, so unrelated employers carry
+  independent limits. Set `annualAdditionsGroupId` on the plan rules to aggregate plans
+  of a controlled or affiliated service group under §414(b)/(c)/(m)/(o) and §415(h).
+- **§414(v)(7)(A)** Roth catch-up classification tests prior-year FICA wages from the
+  **sponsoring employer**, supplied through `priorYearFicaWages(employerId, amount)`.
+
+Whether two employers are a single employer for §415 is a legal determination about
+ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
 
 ## Result semantics
 
@@ -399,6 +447,7 @@ See [DESIGN.md](DESIGN.md), [SOURCES.md](SOURCES.md), and [CONTRIBUTING.md](CONT
 The package does not calculate:
 
 - State income-tax treatment.
+- Health and dependent-care FSAs, HRAs, and Archer MSAs, including §125 carryover and §129 dependent care. HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions for Archer MSA contributions are therefore not applied.
 - The retirement savings contributions credit.
 - Required minimum distributions or distribution penalties.
 - Plan eligibility, vesting, loans, or distributions generally.

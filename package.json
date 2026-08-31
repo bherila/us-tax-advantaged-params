@@ -19,14 +19,15 @@
       "default": "./dist/esm/USTaxAdvantagedParams.js"
     },
     "./data/retirement-parameters.json": "./data/retirement-parameters.json",
+    "./data/hsa-parameters.json": "./data/hsa-parameters.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "data/retirement-parameters.json",
+    "data/hsa-parameters.json",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
     "SOURCES.md"
   ],
   "sideEffects": false,
@@ -44,11 +45,12 @@
     "test:parity": "npm run build && node scripts/check-parity.mjs",
     "test": "npm run test:ts && npm run test:php && npm run test:parity",
     "check:types": "mkdir -p dist-tests && npm pack --ignore-scripts --no-dry-run --pack-destination dist-tests >/dev/null && attw dist-tests/us-tax-advantaged-params-$npm_package_version.tgz",
-    "verify": "npm run validate:data && npm run validate:evidence && npm run generate:check && npm run validate:manifests && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && node scripts/validate-manifests.mjs --built",
+    "verify": "npm run validate:data && npm run validate:evidence && npm run validate:evidence:hsa && npm run generate:check && npm run validate:manifests && npm run typecheck && npm run test:ts && npm run test:php && npm run build && node scripts/smoke-imports.mjs && npm run check:types && node scripts/check-parity.mjs && node scripts/validate-manifests.mjs --built",
     "validate:release": "node scripts/validate-release.mjs",
     "release:archives": "node scripts/create-release-archives.mjs",
     "prepack": "npm run verify",
-    "validate:evidence": "node scripts/verify-primary-sources.mjs"
+    "validate:evidence": "node scripts/verify-primary-sources.mjs",
+    "validate:evidence:hsa": "node scripts/verify-hsa-sources.mjs"
   },
   "keywords": [
     "tax-advantaged",

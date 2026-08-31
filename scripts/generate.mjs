@@ -6,21 +6,27 @@ import { dirname, join } from "node:path";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const checkOnly = process.argv.includes("--check");
-const dataPath = join(root, "data", "retirement-parameters.json");
 const tsPath = join(root, "src", "USTaxAdvantagedParams.ts");
 const phpPath = join(root, "php", "src", "USTaxAdvantagedParams.php");
 
-const raw = await readFile(dataPath, "utf8");
-const parameters = JSON.parse(raw);
-const canonical = `${JSON.stringify(parameters, null, 2)}\n`;
-if (canonical !== raw) {
-  if (checkOnly) {
-    console.error("data/retirement-parameters.json is not canonically formatted.");
-    process.exitCode = 1;
-  } else {
-    await writeFile(dataPath, canonical);
+async function readCanonical(relativePath) {
+  const path = join(root, relativePath);
+  const raw = await readFile(path, "utf8");
+  const parsed = JSON.parse(raw);
+  const canonical = `${JSON.stringify(parsed, null, 2)}\n`;
+  if (canonical !== raw) {
+    if (checkOnly) {
+      console.error(`${relativePath} is not canonically formatted.`);
+      process.exitCode = 1;
+    } else {
+      await writeFile(path, canonical);
+    }
   }
+  return parsed;
 }
+
+const parameters = await readCanonical("data/retirement-parameters.json");
+const hsaParameters = await readCanonical("data/hsa-parameters.json");
 
 function replaceGeneratedBlock(source, startMarker, endMarker, generated) {
   const start = source.indexOf(startMarker);
@@ -57,6 +63,9 @@ async function update(path, startMarker, endMarker, generated) {
   }
 }
 
+/** Single quotes cannot end a PHP nowdoc, but escaping them keeps the block inert either way. */
+const phpEmbed = (value) => JSON.stringify(value, null, 2).replaceAll("'", "\\u0027");
+
 await update(
   tsPath,
   "/* <generated-parameters> */",
@@ -64,10 +73,23 @@ await update(
   `const RAW_PARAMETERS: ParameterData = ${JSON.stringify(parameters, null, 2)} as ParameterData;`,
 );
 
-const phpJson = JSON.stringify(parameters, null, 2).replaceAll("'", "\\u0027");
+await update(
+  tsPath,
+  "/* <generated-hsa-parameters> */",
+  "/* </generated-hsa-parameters> */",
+  `const RAW_HSA_PARAMETERS: HsaParameterData = ${JSON.stringify(hsaParameters, null, 2)} as HsaParameterData;`,
+);
+
 await update(
   phpPath,
   "/* <generated-parameters> */",
   "/* </generated-parameters> */",
-  `private const PARAMETER_JSON = <<<'JSON'\n${phpJson}\nJSON;`,
+  `private const PARAMETER_JSON = <<<'JSON'\n${phpEmbed(parameters)}\nJSON;`,
+);
+
+await update(
+  phpPath,
+  "/* <generated-hsa-parameters> */",
+  "/* </generated-hsa-parameters> */",
+  `private const HSA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(hsaParameters)}\nJSON;`,
 );
