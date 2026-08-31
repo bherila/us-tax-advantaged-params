@@ -303,6 +303,8 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
 | Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
 | §106(d) employer contributions | Excluded from income rather than deducted, reducing W-2 box 1 and FICA wages and reducing the §223(b)(4)(B) deduction |
+| §223(b)(4)(A) Archer MSA reduction | The aggregate amount paid for the year to that individual's Archer MSAs reduces the whole subsection (b) limitation — the §223(b)(3) increase included — but not below zero |
+| §223(b)(5)(B)(i) Archer MSA reduction | For a married individual to whom §223(b)(5) applies, both spouses' aggregate reduces the single family limitation **before** §223(b)(5)(B)(ii) divides it, and never touches the §223(b)(3) amount |
 
 The testing period spans two tax years, so a caller who has not yet resolved it receives
 an explicit obligation in the result rather than an assumed outcome.
@@ -334,6 +336,42 @@ must be identical, and a contradiction returns
 **Supplying the key at all declares the fact known.** An empty object —
 `{ id: "s", hsaCoverage: {} }`, or `.noHsaCoverage()` on the builder — records that the
 spouse held no high deductible health plan coverage in any month.
+
+### Archer MSA contributions: `persons[].archerMsaContributions`
+
+§223(b)(4)(A) reduces the §223(b) limitation by "the aggregate amount paid for such taxable
+year to Archer MSAs of such individual", and §223(b)(5)(B)(i) reduces the single family
+limitation by "the aggregate amount paid to Archer MSAs of such spouses". Both take an
+amount **paid**, not a §220 limitation, so the amount is a caller-supplied fact in the same
+way eligible-individual status is, and no part of §220 is modelled or checked against it.
+
+```ts
+const result = USTaxAdvantagedParams.forTaxYear(2026)
+  .filingStatus(FilingStatus.SINGLE)
+  .taxpayer("taxpayer", (person) => person.bornIn(1986).archerMsaContributions(1200))
+  .account("taxpayer-hsa", "taxpayer", AccountType.HSA, (account) => {
+    account.hsaCoverage("self_only");
+  })
+  .calculate();
+// 4400 - 1200 = 3200
+```
+
+Because §223(b)(5)(B)(i) reads the *couple's* aggregate, the amount belongs to the person
+rather than to an account: a spouse who owns no HSA can still carry one, and it still
+reduces the limitation the other spouse divides.
+
+**The ordering is not cosmetic.** The §223(b)(4) flush text says "Subparagraph (A) shall not
+apply with respect to any individual to whom paragraph (5) applies", so a married individual
+with family coverage is reduced under §223(b)(5)(B)(i) — before the equal division, not
+after. Two spouses with a 2026 family limitation of 8750 and 3000 of aggregate Archer
+contributions get (8750 − 3000) ÷ 2 = 2875 each, not 4375 − 3000 = 1375 each, which would
+subtract the aggregate twice. §223(b)(5)(B) also operates "without regard to any additional
+contribution amount under paragraph (3)", so a married individual's age-55 amount survives a
+reduction that would have consumed it under §223(b)(4)(A).
+
+Each account's `hsa` detail reports `archerMsaContributionsApplied`,
+`archerMsaReductionPrecedesFamilyDivision`, and `archerMsaLimitReduction`, and an
+`HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied.
 
 Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
 coverage is required exactly when it could change the answer. On a married return, an HSA
@@ -538,7 +576,8 @@ See [DESIGN.md](DESIGN.md), [SOURCES.md](SOURCES.md), and [CONTRIBUTING.md](CONT
 The package does not calculate:
 
 - State income-tax treatment.
-- Health and dependent-care FSAs, HRAs, and Archer MSAs, including §125 carryover and §129 dependent care. HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions for Archer MSA contributions are therefore not applied.
+- Health and dependent-care FSAs, HRAs, and Archer MSAs themselves, including §125 carryover and §129 dependent care. The §220 Archer MSA limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
+- The §223(b)(4)(C) reduction for a qualified HSA funding distribution from an IRA under §408(d)(9).
 - The retirement savings contributions credit.
 - Required minimum distributions or distribution penalties.
 - Plan eligibility, vesting, loans, or distributions generally.
