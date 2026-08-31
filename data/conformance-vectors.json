@@ -2567,6 +2567,257 @@
       }
     },
     {
+      "name": "2026 unmarried Archer MSA contribution reduces the HSA limit under IRC 223(b)(4)(A)",
+      "description": "IRC 223(b)(4) reduces \"the limitation which would (but for this paragraph) apply under this subsection\" by \"(A) the aggregate amount paid for such taxable year to Archer MSAs of such individual\". Twelve self-only months give 12 x (4400/12) = 4400 under IRC 223(b)(2)(A) with the 2026 amount from Rev. Proc. 2025-19; the $1,200 paid to Archer MSAs reduces it to 4400 - 1200 = 3200. The individual is unmarried, so IRC 223(b)(5) does not apply and the IRC 223(b)(4) flush text does not withdraw subparagraph (A).",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 1200
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3200,
+        "accounts.0.hsa.archerMsaContributionsApplied": 1200,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": false,
+        "accounts.0.hsa.archerMsaLimitReduction": 1200,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "totals.hsaContribution": 3200
+      }
+    },
+    {
+      "name": "2026 married Archer MSA reduction is taken before the IRC 223(b)(5)(B)(ii) division",
+      "description": "The IRC 223(b)(4) flush text says \"Subparagraph (A) shall not apply with respect to any individual to whom paragraph (5) applies\", so a married individual with family coverage routes through IRC 223(b)(5)(B), whose limitation \"(i) shall be reduced by the aggregate amount paid to Archer MSAs of such spouses for the taxable year, and (ii) after such reduction, shall be divided equally between them\". The 2026 family limitation from Rev. Proc. 2025-19 is 8750; both spouses' Archer contributions aggregate to 2000 + 1000 = 3000; 8750 - 3000 = 5750 is divided equally, giving each spouse 2875. Dividing first and reducing afterwards would give 4375 - 3000 = 1375 each and would subtract the aggregate twice, which is why the ordering is pinned here.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 2000
+          },
+          {
+            "id": "s",
+            "birthYear": 1987,
+            "archerMsaContributions": 1000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2875,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 5750,
+        "accounts.0.hsa.archerMsaContributionsApplied": 3000,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": true,
+        "accounts.0.hsa.archerMsaLimitReduction": 1500,
+        "accounts.0.diagnostics.1.code": "HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT",
+        "accounts.1.statutoryMaximumAnnualContribution": 2875,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 5750,
+        "accounts.1.hsa.archerMsaContributionsApplied": 3000,
+        "totals.hsaContribution": 5750
+      }
+    },
+    {
+      "name": "2026 IRC 223(b)(4)(A) reduces the whole subsection (b) limitation including the age 55 amount",
+      "description": "IRC 223(b)(4) reduces the limitation \"under this subsection\", not under paragraph (1), so it reaches the IRC 223(b)(3) increase as well. An unmarried individual aged 55 or over with twelve family-coverage months has 8750 + 1000 = 9750 for 2026; $9,000 paid to Archer MSAs leaves 750. The IRC 223(b)(1) limitation absorbs 8750 and the remaining 250 comes off the additional contribution amount, leaving 1000 - 250 = 750. hsa.additionalContributionAmount reports the unreduced IRC 223(b)(3) figure of 1000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "archerMsaContributions": 9000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 750,
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.hsa.archerMsaContributionsApplied": 9000,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": false,
+        "accounts.0.hsa.archerMsaLimitReduction": 9000,
+        "totals.hsaContribution": 750
+      }
+    },
+    {
+      "name": "2026 IRC 223(b)(5)(B) leaves the age 55 additional contribution amount untouched",
+      "description": "Same person and same $9,000 paid to Archer MSAs as the unmarried case, but married to a spouse who has family coverage, so IRC 223(b)(5) applies and the IRC 223(b)(4) flush text withdraws subparagraph (A). IRC 223(b)(5)(B) reduces the limitation \"under paragraph (1) ... without regard to any additional contribution amount under paragraph (3)\", so only 8750 is exposed: 8750 - 9000 floors at 0, and the IRC 223(b)(3) amount of 1000 survives in full. The answer is 1000 rather than the 750 the same facts produce under IRC 223(b)(4)(A), which is exactly what the flush text does.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "archerMsaContributions": 9000
+          },
+          {
+            "id": "s",
+            "birthYear": 1962,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 1000,
+        "accounts.0.hsa.familyLimitShare": 1,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 0,
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.hsa.archerMsaContributionsApplied": 9000,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": true,
+        "accounts.0.hsa.archerMsaLimitReduction": 8750,
+        "totals.hsaContribution": 1000
+      }
+    },
+    {
+      "name": "2026 Archer MSA contribution above the HSA limit reduces it to zero, never below",
+      "description": "IRC 223(b)(4) reduces the limitation \"(but not below zero)\". Twelve self-only months give 4400 for 2026 and the individual is under 55, so there is no IRC 223(b)(3) amount to absorb the rest; $5,000 paid to Archer MSAs takes the limitation to 0 rather than -600. The reduction actually absorbed is therefore 4400, not the 5000 paid.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 5000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.hsa.archerMsaContributionsApplied": 5000,
+        "accounts.0.hsa.archerMsaLimitReduction": 4400,
+        "totals.hsaContribution": 0
+      }
+    },
+    {
+      "name": "2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule",
+      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\", and IRC 223(b)(4) then reduces \"the limitation which would (but for this paragraph) apply under this subsection\" — so the reduction is taken after the last-month rule, not before. December-only self-only coverage with the election gives the full 4400 for 2026; 4400 - 1000 paid to Archer MSAs is 3400. The counterfactual month-by-month limitation is 4400/12 = 366.67, which the same $1,000 reduces to 0, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is the whole 3400 rather than 3400 - 366.67. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67 counterfactual.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 1000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3400,
+        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 3400,
+        "accounts.0.hsa.archerMsaContributionsApplied": 1000,
+        "accounts.0.hsa.archerMsaLimitReduction": 1000,
+        "accounts.0.hsa.testingPeriod.status": "satisfied",
+        "totals.hsaContribution": 3400
+      }
+    },
+    {
       "name": "persons entry that is not an object is rejected",
       "description": "A non-object entry in persons has no id, but reporting it as a missing id hides the real defect and diverged between the two engines. Both reject the shape itself.",
       "input": {
