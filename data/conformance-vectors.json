@@ -427,6 +427,46 @@
       ]
     },
     {
+      "name": "1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule",
+      "description": "Former IRC 220(b)(1) (Tax Reform Act of 1976, Pub. L. 94-455 s.1501) allowed a one-earner couple the smallest of twice the amount paid to whichever account received the lesser amount, 15 percent of compensation, and $1,750. Subparagraph (A) makes the ceiling a joint figure keyed to how the couple split their contributions, not a cap on either account: a worker contributing nothing to their own account makes the spousal amount deductible only to zero, and the maximizing split is $875 to each. No single per-account number reproduces that, so the account reports no maximum and says why, rather than the $250 it once reported -- a figure matching no fact pattern, since a 1,500/250 split deducts only twice the lesser, or $500.",
+      "input": {
+        "taxYear": 1979,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1940,
+            "compensation": {
+              "iraCompensation": 20000
+            },
+            "coveredByEmployerRetirementPlan": false
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1940,
+            "compensation": {
+              "iraCompensation": 0
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "spouse-ira",
+            "ownerId": "s",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "SPOUSAL_IRA_LIMIT_INDETERMINATE_UNDER_SECTION_220"
+      }
+    },
+    {
       "name": "1982 nonworking spouse IRA",
       "description": "ERTA 1981 rewrote IRC 219(c) for 1982: the spousal deduction is limited to the lesser of 2250 or compensation, reduced under 219(c)(2)(B) by the amount allowed as a deduction for the working spouse's own IRA, and in no event more than 2000 to the spousal account. The IRS SOI Bulletin for 1982 states the same rule: a 2250 one-earner total with no more than 2000 contributed to either spouse's IRA. The working spouse here contributes nothing to an IRA of their own, so the 219(c)(2)(B) subtraction is zero and the nonworking spouse's account may receive the full 2000; the 2250 household cap binds only the couple's combined total.",
       "input": {

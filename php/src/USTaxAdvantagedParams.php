@@ -910,6 +910,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -990,6 +991,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1069,7 +1071,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1149,7 +1152,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1229,7 +1233,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1309,7 +1314,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1389,7 +1395,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1470,6 +1477,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1550,6 +1558,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1630,6 +1639,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1710,6 +1720,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1790,6 +1801,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1870,6 +1882,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1972,6 +1985,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2074,6 +2088,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2176,6 +2191,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2278,6 +2294,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2380,6 +2397,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2482,6 +2500,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2584,6 +2603,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2686,6 +2706,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2788,6 +2809,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2890,6 +2912,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2992,6 +3015,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3107,6 +3131,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3222,6 +3247,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3337,6 +3363,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3452,6 +3479,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3567,6 +3595,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3682,6 +3711,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3797,6 +3827,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3912,6 +3943,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4027,6 +4059,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4142,6 +4175,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4257,6 +4291,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4372,6 +4407,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4487,6 +4523,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4602,6 +4639,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4717,6 +4755,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4832,6 +4871,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4947,6 +4987,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5062,6 +5103,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5177,6 +5219,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5292,6 +5335,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5407,6 +5451,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5522,6 +5567,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5637,6 +5683,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5752,6 +5799,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5867,6 +5915,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5982,6 +6031,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6097,6 +6147,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6212,6 +6263,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -9420,6 +9472,7 @@ final class Engine
             'dependentCarePools' => [],
             'dependentCarePlans' => [],
             'dependentCareEarnedIncomeCeilings' => [],
+            'section220TwiceTheLesserOwners' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
@@ -9493,11 +9546,19 @@ final class Engine
             }
             $personalLimit = $statutory;
             if ($personalLimit !== null && $isHouseholdMember && $context['taxYear'] < 1997 && $ownCompensation === 0.0) {
+                // A null limit means "not encoded as a universal figure", which
+                // is not a limit of zero. Coercing it gave PHP a 0.0 ceiling
+                // where TypeScript carried the null through to indeterminate.
                 $personalLimit = $parameters['ira']['spousalIraAvailable']
                     ? ($parameters['ira']['nonworkingSpouseIndividualLimit'] === null
-                        ? 0.0
+                        ? null
                         : (float) $parameters['ira']['nonworkingSpouseIndividualLimit'])
                     : 0.0;
+                if ($parameters['ira']['spousalIraAvailable']
+                    && ($parameters['ira']['spousalDeductionIsTwiceTheLesserOfContributions'] ?? false)
+                ) {
+                    $context['section220TwiceTheLesserOwners'][(string) $person['id']] = true;
+                }
             }
             if ($personalLimit !== null && $isHouseholdMember && $context['taxYear'] < 1997 && $ownCompensation > 0.0) {
                 $personalLimit = self::minMoney(
@@ -12391,12 +12452,27 @@ final class Engine
 
         if ($ownerPool['limit'] === null || $context['iraCompensationPools'][$compensationPoolId]['limit'] === null) {
             $ownerPool['blocked'] = true;
-            $diagnostics[] = self::diagnostic(
-                'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT',
-                DiagnosticSeverity::ERROR,
-                'Birth year or birth date is required to determine the IRA catch-up limit.',
-                "persons.{$person['id']}",
-            );
+            $diagnostics[] = isset($context['section220TwiceTheLesserOwners'][(string) $person['id']])
+                ? self::diagnostic(
+                    'SPOUSAL_IRA_LIMIT_INDETERMINATE_UNDER_SECTION_220',
+                    DiagnosticSeverity::ERROR,
+                    "Former IRC 220(b)(1)(A) caps a one-earner couple's {$context['taxYear']} deduction at twice "
+                        . 'the amount paid to whichever of the two individual retirement accounts received the '
+                        . 'lesser amount, subject to the 15 percent and $1,750 ceilings in subparagraphs (B) and '
+                        . '(C). That is a joint ceiling keyed to how the couple split their contributions rather '
+                        . 'than a limit on this account: a worker who contributes nothing to their own account '
+                        . 'makes the spousal amount deductible only to zero, and the maximizing split is equal '
+                        . 'halves of $875. No per-account figure reproduces the rule, so no maximum is reported '
+                        . 'for this account rather than an invented one.',
+                    "persons.{$person['id']}",
+                    'Former IRC 220(b)(1)(A); Tax Reform Act of 1976, Pub. L. 94-455 s.1501',
+                )
+                : self::diagnostic(
+                    'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Birth year or birth date is required to determine the IRA catch-up limit.',
+                    "persons.{$person['id']}",
+                );
             self::reportPoolWithoutConsuming($ownerPool, $sharedLimits);
             self::reportPoolWithoutConsuming($context['iraCompensationPools'][$compensationPoolId], $sharedLimits);
             $result = [

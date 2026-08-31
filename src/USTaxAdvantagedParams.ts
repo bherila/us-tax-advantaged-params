@@ -754,6 +754,17 @@ export interface YearParameters {
     nondeductibleContributionAvailable: boolean;
     spousalIraAvailable: boolean;
     nonworkingSpouseIndividualLimit: Money | null;
+    /**
+     * Former IRC 220(b)(1)(A) (Tax Reform Act of 1976) capped the one-earner
+     * couple's deduction at twice the amount paid to whichever of the two
+     * accounts received the lesser amount. That is a joint ceiling keyed to how
+     * the couple split their contributions, not a per-account cap: if the
+     * worker contributes nothing to their own account the deductible spousal
+     * amount is zero, and the maximizing split is equal halves. No single
+     * per-account number reproduces it, so the years it governs report an
+     * indeterminate spousal limit rather than an invented one.
+     */
+    spousalDeductionIsTwiceTheLesserOfContributions: boolean;
     oneEarnerHouseholdCombinedLimit: Money | null;
     traditionalContributionAge70HalfRestriction: boolean;
     rothAvailable: boolean;
@@ -996,6 +1007,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1076,6 +1088,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1155,7 +1168,8 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1235,7 +1249,8 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1315,7 +1330,8 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1395,7 +1411,8 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1475,7 +1492,8 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1556,6 +1574,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1636,6 +1655,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1716,6 +1736,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1796,6 +1817,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1876,6 +1898,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1956,6 +1979,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2058,6 +2082,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2160,6 +2185,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2262,6 +2288,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2364,6 +2391,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2466,6 +2494,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2568,6 +2597,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2670,6 +2700,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2772,6 +2803,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2874,6 +2906,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2976,6 +3009,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -3078,6 +3112,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3193,6 +3228,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3308,6 +3344,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3423,6 +3460,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3538,6 +3576,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3653,6 +3692,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3768,6 +3808,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3883,6 +3924,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3998,6 +4040,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4113,6 +4156,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4228,6 +4272,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4343,6 +4388,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4458,6 +4504,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4573,6 +4620,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4688,6 +4736,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4803,6 +4852,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4918,6 +4968,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5033,6 +5084,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5148,6 +5200,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5263,6 +5316,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5378,6 +5432,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5493,6 +5548,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5608,6 +5664,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5723,6 +5780,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5838,6 +5896,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5953,6 +6012,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6068,6 +6128,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6183,6 +6244,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6298,6 +6360,7 @@ const RAW_PARAMETERS: ParameterData = {
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -8482,6 +8545,12 @@ interface CalculationContext {
    * pool the accounts share.
    */
   dependentCareEarnedIncomeCeilings: Map<string, Money>;
+  /**
+   * Owners whose IRA limit is indeterminate because former IRC 220(b)(1)(A)
+   * governs the year: the couple's deduction is twice the lesser of the two
+   * contributions, which no per-account figure reproduces.
+   */
+  section220TwiceTheLesserOwners: Set<string>;
 }
 
 interface AllocationOutcome {
@@ -9109,6 +9178,7 @@ function createCalculationContext(
     dependentCarePools: new Map(),
     dependentCarePlans: new Map(),
     dependentCareEarnedIncomeCeilings: new Map(),
+    section220TwiceTheLesserOwners: new Set(),
   };
 
   initializeIraPools(context, accounts);
@@ -9178,6 +9248,9 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       personalLimit = parameters.ira.spousalIraAvailable
         ? parameters.ira.nonworkingSpouseIndividualLimit
         : 0;
+      if (parameters.ira.spousalIraAvailable && parameters.ira.spousalDeductionIsTwiceTheLesserOfContributions) {
+        context.section220TwiceTheLesserOwners.add(person.id);
+      }
     }
     if (personalLimit !== null && isHouseholdMember && parameters.year < 1997 && ownCompensation > 0) {
       personalLimit = minMoney(personalLimit, ownCompensation * parameters.ira.compensationFraction);
@@ -11585,12 +11658,20 @@ function allocateTraditionalIra(
   if (ownerPool.limit === null || compensationPool.limit === null) {
     ownerPool.blocked = true;
     diagnostics.push(
-      diagnostic(
-        "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT",
-        DiagnosticSeverity.ERROR,
-        "Birth year or birth date is required to determine the IRA catch-up limit.",
-        `persons.${person.id}`,
-      ),
+      context.section220TwiceTheLesserOwners.has(person.id)
+        ? diagnostic(
+            "SPOUSAL_IRA_LIMIT_INDETERMINATE_UNDER_SECTION_220",
+            DiagnosticSeverity.ERROR,
+            `Former IRC 220(b)(1)(A) caps a one-earner couple's ${context.taxYear} deduction at twice the amount paid to whichever of the two individual retirement accounts received the lesser amount, subject to the 15 percent and $1,750 ceilings in subparagraphs (B) and (C). That is a joint ceiling keyed to how the couple split their contributions rather than a limit on this account: a worker who contributes nothing to their own account makes the spousal amount deductible only to zero, and the maximizing split is equal halves of $875. No per-account figure reproduces the rule, so no maximum is reported for this account rather than an invented one.`,
+            `persons.${person.id}`,
+            "Former IRC 220(b)(1)(A); Tax Reform Act of 1976, Pub. L. 94-455 s.1501",
+          )
+        : diagnostic(
+            "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT",
+            DiagnosticSeverity.ERROR,
+            "Birth year or birth date is required to determine the IRA catch-up limit.",
+            `persons.${person.id}`,
+          ),
     );
     reportPoolWithoutConsuming(ownerPool, sharedLimits);
     reportPoolWithoutConsuming(compensationPool, sharedLimits);

@@ -94,6 +94,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -174,6 +175,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -253,7 +255,8 @@
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -333,7 +336,8 @@
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -413,7 +417,8 @@
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -493,7 +498,8 @@
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -573,7 +579,8 @@
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -654,6 +661,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -734,6 +742,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -814,6 +823,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -894,6 +904,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -974,6 +985,7 @@
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1054,6 +1066,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1156,6 +1169,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1258,6 +1272,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1360,6 +1375,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1462,6 +1478,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1564,6 +1581,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1666,6 +1684,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1768,6 +1787,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1870,6 +1890,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1972,6 +1993,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2074,6 +2096,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2176,6 +2199,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2291,6 +2315,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2406,6 +2431,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2521,6 +2547,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2636,6 +2663,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2751,6 +2779,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2866,6 +2895,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -2981,6 +3011,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3096,6 +3127,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3211,6 +3243,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3326,6 +3359,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3441,6 +3475,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3556,6 +3591,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3671,6 +3707,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3786,6 +3823,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3901,6 +3939,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4016,6 +4055,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4131,6 +4171,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4246,6 +4287,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4361,6 +4403,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4476,6 +4519,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4591,6 +4635,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4706,6 +4751,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -4821,6 +4867,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -4936,6 +4983,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5051,6 +5099,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5166,6 +5215,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5281,6 +5331,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5396,6 +5447,7 @@
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
