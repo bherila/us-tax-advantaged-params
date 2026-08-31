@@ -3940,8 +3940,8 @@
       }
     },
     {
-      "name": "2012 carries no IRC 125(i) health FSA parameters",
-      "description": "IRC 125(i) was added by Pub. L. 111-148 section 9005 and Notice 2012-40 section III reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary-reduction ceiling existed for 2012 and healthFsa is null rather than a carried-back 2500. The IRC 129(a)(2)(A) exclusion is statutory and unindexed and was 5000, or 2500 on a married separate return, from the taxable year beginning in 1987 under Pub. L. 99-514 section 1163, so it is present for 2012 even though the health FSA block is not. Paired with the 2026 vector, this pins the effective date rather than merely the current figures.",
+      "name": "2012 health FSA exists with no statutory ceiling rather than not existing",
+      "description": "IRC 125(i) reaches plan years beginning after December 31, 2012, so 2012 has no statutory salary-reduction ceiling. The arrangement existed, though, so the row records the state rather than being absent: an absent row means the program did not exist, which is a different fact and produces a different result.",
       "input": {
         "taxYear": 2012,
         "filingStatus": "S",
@@ -3955,14 +3955,16 @@
       },
       "expect": {
         "fsaParameters.year": 2012,
-        "fsaParameters.healthFsa": null,
+        "fsaParameters.healthFsa.state": "available_without_statutory_dollar_limit",
+        "fsaParameters.healthFsa.salaryReductionLimit": null,
+        "fsaParameters.dependentCare.state": "statutory_dollar_limit",
         "fsaParameters.dependentCare.exclusionLimit": 5000,
         "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     {
-      "name": "1986 predates the IRC 129 dependent care exclusion limitation",
-      "description": "Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The 1986 amendment note in the Code quotes the prior text of subsection (a), which carried no dollar cap. The FSA parameter table therefore starts at 1987 and 1986 returns null rather than a back-projected 5000, while the retirement parameters for the year are unaffected.",
+      "name": "1986 has an IRC 129 row with no dollar ceiling; 1981 has no row at all",
+      "description": "Pub. L. 97-34 section 124 added IRC 129 for taxable years beginning after December 31, 1981, and Pub. L. 99-514 section 1163(a) added its dollar limitation for taxable years beginning after December 31, 1986. 1986 therefore sits in the middle state: the exclusion existed with no statutory ceiling, which the table records rather than omits. The unavailable years are the ones with no row, which is what makes the table minimum the statement of when IRC 129 began.",
       "input": {
         "taxYear": 1986,
         "filingStatus": "S",
@@ -3975,8 +3977,9 @@
         "accounts": []
       },
       "expect": {
-        "fsaParameters": null,
-        "parameters.year": 1986
+        "parameters.year": 1986,
+        "fsaParameters.dependentCare.state": "available_without_statutory_dollar_limit",
+        "fsaParameters.dependentCare.exclusionLimit": null
       }
     },
     {
@@ -4504,6 +4507,40 @@
         "accounts.0.contributionComponents.healthFsaSalaryReduction": 3000,
         "accounts.0.federalTaxEffects.formW2Box1WageReduction": 3000,
         "accounts.0.federalTaxEffects.ficaWageReduction": 3000
+      }
+    },
+    {
+      "name": "a pre-2013 health FSA with a supplied plan maximum reports that maximum",
+      "description": "IRC 125(i) reaches plan years beginning after December 31, 2012, so 2012 has no statutory salary-reduction ceiling. The arrangement existed and the ceiling was whatever the plan document imposed. Where the caller supplies that document, the maximum is knowable and is reported: the statutory maximum stays null because no statute set one, while the maximum the inputs support is the plan's own 2000. Refusing to answer here would discard a fact the caller gave, and a diagnostic records that the figure rests on the plan term alone.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "planDocumentLimit": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2000,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_LIMIT_RESTS_ENTIRELY_ON_PLAN_DOCUMENT"
       }
     },
     {
@@ -5608,8 +5645,8 @@
       }
     },
     {
-      "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
-      "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
+      "name": "1986 dependent care has no statutory ceiling, so the earned income limitation is the ceiling",
+      "description": "Pub. L. 99-514 section 1163(a) added the IRC 129(a)(2)(A) dollar limitation for taxable years beginning after December 31, 1986, so 1986 has none. IRC 129 existed and excluded the assistance, and IRC 129(b)(1) still capped it at the employee's earned income. With 40000 of earned income supplied that is the only ceiling there was, and it is a real answer: the statutory maximum is null while the maximum the inputs support is 40000. Reporting nothing here would discard a fact the caller gave.",
       "input": {
         "taxYear": 1986,
         "filingStatus": "S",
@@ -5630,11 +5667,41 @@
         ]
       },
       "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 40000,
+        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": 40000,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_LIMIT_RESTS_ENTIRELY_ON_SUPPLIED_FACTS"
+      }
+    },
+    {
+      "name": "1986 dependent care with no ceiling from any source stays indeterminate",
+      "description": "The contrast with the vector above. Without a statutory ceiling, and with neither the IRC 129(b)(1) earned income facts nor a plan maximum supplied, there is no ceiling from any source and no maximum is reported. The absence of a statutory figure is not by itself a reason to refuse; the absence of every figure is.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dcap",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": null,
-        "accounts.0.dependentCareFsa.statutoryExclusion": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
         "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
-        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987"
+        "accounts.0.diagnostics.1.code": "DEPENDENT_CARE_NO_EXCLUSION_LIMIT_BEFORE_1987"
       }
     },
     {

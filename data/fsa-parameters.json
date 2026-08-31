@@ -3,7 +3,7 @@
   "package": "us-tax-advantaged-params",
   "generatedThroughTaxYear": 2026,
   "supportedTaxYears": {
-    "minimum": 1987,
+    "minimum": 1982,
     "maximum": 2026
   },
   "moneyUnit": "USD",
@@ -183,213 +183,422 @@
       "title": "Rev. Proc. 2025-32, section 3.15, 2026 cafeteria plan amount and maximum carryover",
       "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
       "authority": "IRS"
+    },
+    {
+      "id": "pl-97-34",
+      "title": "Economic Recovery Tax Act of 1981, Pub. L. 97-34, section 124 (adds IRC 129; section 124(f) effective for taxable years beginning after December 31, 1981)",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-95/pdf/STATUTE-95-Pg172.pdf",
+      "authority": "U.S. Government Publishing Office",
+      "retrieval": "linked, not committed: the Statutes at Large volume is ~30 MB. The same file is committed in evidence/retirement-limits/sources/statute-95-pg172.pdf and is hash-verified there, so the bytes are attested in this repository without a second copy."
+    },
+    {
+      "id": "pl-99-514",
+      "title": "Tax Reform Act of 1986, Pub. L. 99-514, section 1163(a) (adds the IRC 129(a)(2)(A) dollar limitation for taxable years beginning after December 31, 1986)",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-100/pdf/STATUTE-100-Pg2085.pdf",
+      "authority": "U.S. Government Publishing Office",
+      "retrieval": "linked, not committed: the Statutes at Large volume is ~138 MB, which is disproportionate to one effective-date sentence. The same effective date is carried by the amendment notes in the committed usc-26-129.pdf, which is what the corpus verifies against."
     }
   ],
   "years": {
+    "1982": {
+      "year": 1982,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1983": {
+      "year": 1983,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1984": {
+      "year": 1984,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1985": {
+      "year": 1985,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
+    "1986": {
+      "year": 1986,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
+      "dependentCare": {
+        "state": "available_without_statutory_dollar_limit",
+        "exclusionLimit": null,
+        "marriedFilingSeparatelyExclusionLimit": null
+      }
+    },
     "1987": {
       "year": 1987,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1988": {
       "year": 1988,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1989": {
       "year": 1989,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1990": {
       "year": 1990,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1991": {
       "year": 1991,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1992": {
       "year": 1992,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1993": {
       "year": 1993,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1994": {
       "year": 1994,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1995": {
       "year": 1995,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1996": {
       "year": 1996,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1997": {
       "year": 1997,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1998": {
       "year": 1998,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "1999": {
       "year": 1999,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2000": {
       "year": 2000,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2001": {
       "year": 2001,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2002": {
       "year": 2002,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2003": {
       "year": 2003,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2004": {
       "year": 2004,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2005": {
       "year": 2005,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2006": {
       "year": 2006,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2007": {
       "year": 2007,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2008": {
       "year": 2008,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2009": {
       "year": 2009,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2010": {
       "year": 2010,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2011": {
       "year": 2011,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
     },
     "2012": {
       "year": 2012,
-      "healthFsa": null,
+      "healthFsa": {
+        "state": "available_without_statutory_dollar_limit",
+        "salaryReductionLimit": null,
+        "carryoverLimit": null
+      },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -397,10 +606,12 @@
     "2013": {
       "year": 2013,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2500,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -408,10 +619,12 @@
     "2014": {
       "year": 2014,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2500,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -419,10 +632,12 @@
     "2015": {
       "year": 2015,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2550,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -430,10 +645,12 @@
     "2016": {
       "year": 2016,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2550,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -441,10 +658,12 @@
     "2017": {
       "year": 2017,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2600,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -452,10 +671,12 @@
     "2018": {
       "year": 2018,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2650,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -463,10 +684,12 @@
     "2019": {
       "year": 2019,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2700,
         "carryoverLimit": 500
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -474,10 +697,12 @@
     "2020": {
       "year": 2020,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2750,
         "carryoverLimit": 550
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -485,10 +710,12 @@
     "2021": {
       "year": 2021,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2750,
         "carryoverLimit": 550
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 10500,
         "marriedFilingSeparatelyExclusionLimit": 5250
       }
@@ -496,10 +723,12 @@
     "2022": {
       "year": 2022,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 2850,
         "carryoverLimit": 570
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -507,10 +736,12 @@
     "2023": {
       "year": 2023,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3050,
         "carryoverLimit": 610
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -518,10 +749,12 @@
     "2024": {
       "year": 2024,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3200,
         "carryoverLimit": 640
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -529,10 +762,12 @@
     "2025": {
       "year": 2025,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3300,
         "carryoverLimit": 660
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 5000,
         "marriedFilingSeparatelyExclusionLimit": 2500
       }
@@ -540,13 +775,20 @@
     "2026": {
       "year": 2026,
       "healthFsa": {
+        "state": "statutory_dollar_limit",
         "salaryReductionLimit": 3400,
         "carryoverLimit": 680
       },
       "dependentCare": {
+        "state": "statutory_dollar_limit",
         "exclusionLimit": 7500,
         "marriedFilingSeparatelyExclusionLimit": 3750
       }
     }
+  },
+  "dollarLimitStates": {
+    "unavailable": "The program did not exist for the tax year. A year below supportedTaxYears.minimum is unavailable by absence: IRC 129 was added by Pub. L. 97-34 section 124 for taxable years beginning after December 31, 1981.",
+    "available_without_statutory_dollar_limit": "The program existed and its exclusion applied, but no universal statutory dollar ceiling did. The statutory maximum is null; a maximum computed from caller-supplied plan terms or earned income is still a real answer and is reported as such.",
+    "statutory_dollar_limit": "A published statutory dollar ceiling applies and is encoded."
   }
 }

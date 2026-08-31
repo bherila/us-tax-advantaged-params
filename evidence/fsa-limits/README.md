@@ -21,7 +21,7 @@ npm run validate:evidence        # every corpus under evidence/
 npm run validate:evidence:fsa    # this corpus alone
 ```
 
-**108 comparisons over 1987–2026, 0 mismatches, 29 source documents
+**116 comparisons over 1986–2026, 0 mismatches, 29 source documents
 hash-verified.**
 
 ## What is compared
@@ -41,6 +41,25 @@ instead of the statute.
 health FSA fields, so nothing is compared for them and nothing is defaulted.
 
 ## Sources
+The corpus also binds the two **state transitions** rather than only the dollar
+amounts. Each program's year block records whether a statutory ceiling existed,
+and the transitions are asserted on both sides: dependent care carries no
+statutory ceiling in 1986 and does from 1987 (Pub. L. 99-514 §1163(a)), and the
+health FSA carries none in 2012 and does from 2013 (IRC 125(i), Pub. L. 111-148
+§9005 as read by Notice 2012-40). Conformance vectors exercised those boundaries
+before, but a vector is the engines agreeing with each other; these make the
+effective dates a claim the corpus checks against the shipped data.
+
+Two enrolled acts are **linked rather than committed**. Pub. L. 97-34 §124,
+which adds IRC 129, is the Statutes at Large volume already committed as
+`evidence/retirement-limits/sources/statute-95-pg172.pdf`; copying it here would
+put two `SHA256SUMS.txt` entries behind identical bytes and weaken the
+unattested-file check. Pub. L. 99-514 §1163(a) is a ~138 MB volume, which is
+disproportionate to one effective-date sentence that the committed
+`usc-26-129.pdf` amendment notes already carry — and those notes are what the
+1986/1987 transition is actually verified against.
+
+
 `usc-26-21.pdf` is committed because IRC 129(a)(2)(C) determines marital status
 by reference to IRC 21(e)(3) and (4), so the considered-unmarried rule the
 engine applies to a married-separate return is IRC 21's text rather than
