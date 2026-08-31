@@ -5311,6 +5311,367 @@
         "totals.dependentCareAssistanceExclusion": 7500,
         "totals.federalAgiReduction": 0
       }
+    },
+    {
+      "name": "a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures",
+      "description": "Rev. Rul. 2004-45 Situation 1 holds that an individual covered by an HDHP and by a health FSA paying or reimbursing section 213(d) medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible individual not be covered by a plan that is not an HDHP and that provides coverage for a benefit the HDHP covers. The conflict is reported and not enforced: eligible-individual status is a caller-supplied fact everywhere in this engine and no rule overrides one, so the caller who has already accounted for it still gets the answer their months imply. Rev. Proc. 2025-19 sets the 2026 IRC 223(b)(2)(A) self-only limitation at 4400, and that figure and the amount the inputs support must both survive untouched - asserting them is the whole point, since a rule that zeroed or reduced the limit would still pass a vector that only checked the diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4400,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.contributionComponents.hsaDeductible": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": true,
+        "totals.hsaContribution": 4400
+      }
+    },
+    {
+      "name": "a limited-purpose health FSA raises no IRC 223 conflict",
+      "description": "Rev. Rul. 2004-45 Situation 2 holds that where the medical expenses paid or reimbursed include only vision and dental benefits, which are permitted coverage, and preventive care, the individual is an eligible individual. No conflict diagnostic is emitted and the account stays determinate, which is what separates this from the general-purpose case on otherwise identical inputs.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": false
+      }
+    },
+    {
+      "name": "a post-deductible health FSA raises no IRC 223 conflict",
+      "description": "Rev. Rul. 2004-45 Situation 4 holds that where the health FSA pays or reimburses medical expenses only after the HDHP's minimum annual deductible has been satisfied, including coinsurance the HDHP does not cover, the individual is an eligible individual. The third of the three Rev. Rul. 2004-45 classifications, encoded because it produces the opposite answer from the first on the same account type.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "post_deductible"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": false
+      }
+    },
+    {
+      "name": "a health FSA of unstated purpose makes the IRC 223 limitation indeterminate",
+      "description": "The three Rev. Rul. 2004-45 classifications give two opposite IRC 223(c)(1)(A)(ii) answers, and which applies is a plan-design fact this engine cannot read. Unlike the general-purpose case, where the conflict is known and the caller's own figures are returned, here nothing about IRC 223 is known, so a confident 4400 would be the defect rather than the diagnostic. The limitation is refused and the purpose is asked for. The health FSA's own disqualifiesHsaEligibility is null for the same reason.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
+        "accounts.1.healthFsa.disqualifiesHsaEligibility": null,
+        "totals.hsaContribution": 0
+      }
+    },
+    {
+      "name": "a spouse's general-purpose health FSA disqualifies the other spouse's HSA",
+      "description": "Rev. Rul. 2004-45 states expressly, after the Situation 1 holding, that the result is the same if the individual is covered by a health FSA sponsored by the employer of the individual's spouse, because such an arrangement can reimburse this individual's own section 213(d) medical expenses. The conflict is household-level, not per-person. The diagnostic lands on the HSA owner's account even though the arrangement belongs to the other spouse, and the IRC 223(b) figures are unchanged for the same reason they are in the individual case. The spouse's empty persons[].hsaCoverage records that they held no HDHP coverage, which is what IRC 223(b)(5)(A) needs to know.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "s",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 4400,
+        "accounts.0.diagnostics.0.code": "SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "a general-purpose health FSA carryover disqualifies the whole receiving plan year",
+      "description": "Notice 2013-71 makes the carried-over amount available to pay medical expenses incurred during the entire plan year to which it is carried. Carried-over general-purpose funds are therefore general-purpose coverage for that whole year, not just until they are spent, so the Rev. Rul. 2004-45 disqualification reaches the receiving year rather than a part of it. Rev. Proc. 2024-40 section 3.16 caps the carryover out of 2025 at 660, and the diagnostic says so; the IRC 223 figures are unchanged as in every other branch of this interaction.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "offersCarryover": true,
+                "priorYearUnusedAmount": 900
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.1.healthFsa.carryoverFromPriorYear": 660
+      }
+    },
+    {
+      "name": "a general-purpose health FSA grace period extends the IRC 223 disqualification",
+      "description": "Notice 2005-86 holds that an individual participating in a health FSA who is covered by the grace period is generally not eligible to contribute to an HSA until the first day of the first month following the end of that grace period, even where the participant's health FSA has no unused benefits at the end of the prior plan year. The grace-period months fall in the following plan year, which this year's eligible-month input cannot express, so the extension is reported as information alongside the disqualification rather than folded into the month list.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "f",
+            "ownerId": "t",
+            "type": "health_fsa",
+            "employerId": "e",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "general_purpose",
+                "offersGracePeriod": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+        "accounts.0.diagnostics.1.code": "HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION",
+        "accounts.0.diagnostics.2.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER"
+      }
+    },
+    {
+      "name": "a dependent care FSA raises no IRC 223 conflict at all",
+      "description": "IRC 223(c)(1)(A)(ii) reaches coverage providing a benefit the high deductible health plan covers, and an IRC 129 dependent care assistance program reimburses dependent care expenses rather than section 213(d) medical expenses, so Rev. Rul. 2004-45 has nothing to say about it. A dependent care FSA alongside an HSA is therefore an ordinary determinate scenario, which is worth pinning because the two account types were added together and a purpose check written against the wrong family would fire here.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e",
+            "planRules": {
+              "dependentCareFsa": {
+                "employeeEarnedIncome": 90000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.diagnostics.0.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
+        "accounts.1.statutoryMaximumAnnualContribution": 7500,
+        "totals.hsaContribution": 4400,
+        "totals.dependentCareAssistanceExclusion": 7500
+      }
     }
   ]
 }

@@ -9925,6 +9925,66 @@ function allocateDependentCareFsa(
   };
 }
 
+/**
+ * What the health flexible spending arrangements in a scenario mean for IRC 223
+ * eligibility, collected per person.
+ *
+ * Rev. Rul. 2004-45 turns the answer entirely on what the arrangement may
+ * reimburse: a general-purpose health FSA that pays section 213(d) medical
+ * expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is
+ * satisfied is coverage that is not a high deductible health plan and that
+ * provides a benefit the HDHP covers, so IRC 223(c)(1)(A)(ii) is failed; a
+ * limited-purpose arrangement reimbursing only vision, dental and preventive
+ * care, or a post-deductible one reimbursing only after the deductible is met,
+ * is not.
+ */
+interface HealthFsaSection223Facts {
+  generalPurpose: boolean;
+  purposeUnstated: boolean;
+  hsaCompatible: boolean;
+  generalPurposeCarryover: boolean;
+  generalPurposeGracePeriod: boolean;
+}
+
+function emptyHealthFsaSection223Facts(): HealthFsaSection223Facts {
+  return {
+    generalPurpose: false,
+    purposeUnstated: false,
+    hsaCompatible: false,
+    generalPurposeCarryover: false,
+    generalPurposeGracePeriod: false,
+  };
+}
+
+function healthFsaSection223FactsByOwner(
+  context: CalculationContext,
+  accounts: NormalizedAccount[],
+): Map<string, HealthFsaSection223Facts> {
+  const byOwner = new Map<string, HealthFsaSection223Facts>();
+  for (const account of accounts) {
+    if (ACCOUNT_TRAITS[account.type].family !== "health_fsa") continue;
+    const detail = context.healthFsaPlans.get(account.id)?.detail;
+    if (!detail) continue;
+    let facts = byOwner.get(account.ownerId);
+    if (!facts) {
+      facts = emptyHealthFsaSection223Facts();
+      byOwner.set(account.ownerId, facts);
+    }
+    if (detail.purpose === null) {
+      facts.purposeUnstated = true;
+    } else if (detail.purpose === "general_purpose") {
+      facts.generalPurpose = true;
+      if (detail.carryoverFromPriorYear > 0) facts.generalPurposeCarryover = true;
+      if (account.planRules.healthFsa?.offersGracePeriod === true) {
+        facts.generalPurposeGracePeriod = true;
+      }
+    } else {
+      facts.hsaCompatible = true;
+    }
+  }
+  return byOwner;
+}
+
 const HSA_MONTHS_IN_YEAR = 12;
 const HSA_ALL_MONTHS: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
@@ -10112,6 +10172,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   }
 
   const couple = hsaMarriedCouple(context);
+  const section223FsaFacts = healthFsaSection223FactsByOwner(context, accounts);
+  const spouseIdOf = (ownerId: string): string | null => {
+    if (couple === null) return null;
+    if (couple[0] === ownerId) return couple[1];
+    if (couple[1] === ownerId) return couple[0];
+    return null;
+  };
   const coupleMembersWithAccounts = couple
     ? couple.filter((personId) => accountsByOwner.has(personId))
     : [];
@@ -10374,6 +10441,36 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         familyPortionApplied = decemberTier === "family" ? decemberAnnualLimit : 0;
         selfPortionApplied = decemberTier === "family" ? 0 : decemberAnnualLimit;
         catchUpApplied = catchUpEligible ? roundMoney(parameters.additionalContributionAmountAge55) : 0;
+      }
+    }
+
+    // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
+    // 223 answer unknown rather than merely unusual: general-purpose coverage
+    // is disqualifying and limited-purpose or post-deductible coverage is not,
+    // and the engine cannot read a plan document to tell which this is. A
+    // confident ceiling computed from a fact nobody supplied would be the bug,
+    // so this is the one part of the interaction that refuses to compute.
+    {
+      const spouseId = spouseIdOf(ownerId);
+      const own = section223FsaFacts.get(ownerId) ?? emptyHealthFsaSection223Facts();
+      const spouse = spouseId === null
+        ? emptyHealthFsaSection223Facts()
+        : section223FsaFacts.get(spouseId) ?? emptyHealthFsaSection223Facts();
+      if (own.purposeUnstated || spouse.purposeUnstated) {
+        // Belt and braces: the ERROR severity below already forces the result
+        // indeterminate through the ordinary rule, and the flag keeps the
+        // refusal if that severity is ever softened. They are redundant on
+        // purpose, so no mutation distinguishes them individually.
+        indeterminate = true;
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
+            DiagnosticSeverity.ERROR,
+            `A health flexible spending arrangement ${own.purposeUnstated ? "held by this individual" : "held by this individual's spouse"} states no Rev. Rul. 2004-45 purpose. A general-purpose arrangement is coverage that fails IRC 223(c)(1)(A)(ii) and a limited-purpose or post-deductible one is not, so the IRC 223 answer turns on a plan-design fact this engine cannot read and no limitation is reported. Supply planRules.healthFsa.purpose.`,
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
       }
     }
 
@@ -10772,11 +10869,79 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
+    // The IRC 125 / IRC 223 conflict is diagnosed and never enforced, so the
+    // plan status is fixed before these diagnostics are attached. Eligible-
+    // individual status is a caller-supplied fact everywhere else in this
+    // engine and no rule here overrides one; a caller who has already accounted
+    // for the conflict, by ending the arrangement mid-year and supplying the
+    // correct eligible months, must still get the answer their facts imply.
+    // Every IRC 223(b) figure therefore survives intact and only the account's
+    // reported status reflects the ERROR, through the ordinary rule that an
+    // error makes a result indeterminate.
+    const planStatus = accountStatusFromDiagnostics(status, diagnostics);
+    {
+      const spouseId = spouseIdOf(ownerId);
+      const own = section223FsaFacts.get(ownerId) ?? emptyHealthFsaSection223Facts();
+      const spouse = spouseId === null
+        ? emptyHealthFsaSection223Facts()
+        : section223FsaFacts.get(spouseId) ?? emptyHealthFsaSection223Facts();
+      if (own.generalPurpose) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+            DiagnosticSeverity.ERROR,
+            `This individual holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 holds that an individual covered by a health FSA paying or reimbursing section 213(d) medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible individual not be covered by a health plan that is not a high deductible health plan and that provides coverage for a benefit the HDHP covers.${own.generalPurposeCarryover ? " Amounts carried over from the preceding plan year are general-purpose funds in the year they land, so the disqualification reaches that whole plan year." : ""} The IRC 223(b) figures reported here are unchanged: eligible-individual status is supplied by the caller and is never overridden, so this reports the conflict rather than enforcing it.`,
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+      if (spouse.generalPurpose) {
+        diagnostics.push(
+          diagnostic(
+            "SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY",
+            DiagnosticSeverity.ERROR,
+            "This individual's spouse holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 states that the result is the same where the individual is covered by a health FSA sponsored by the employer of the individual's spouse, because such an arrangement can reimburse this individual's own section 213(d) medical expenses, so it is disqualifying coverage under IRC 223(c)(1)(A)(ii) for both of them. As with an individual's own arrangement, the IRC 223(b) figures are unchanged and the conflict is reported rather than enforced.",
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+      if (own.generalPurposeGracePeriod || spouse.generalPurposeGracePeriod) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION",
+            DiagnosticSeverity.INFO,
+            "The disqualifying arrangement offers a Prop. Treas. Reg. 1.125-1(e) grace period. Notice 2005-86 holds that an individual covered by a general-purpose health FSA during a grace period is generally not eligible to contribute to a health savings account until the first day of the month following the end of that grace period, even where the arrangement has no unused benefits left. The grace-period months of the following plan year are therefore affected as well, which this year's eligible-month input cannot express.",
+            `persons.${ownerId}`,
+            "Notice 2005-86",
+          ),
+        );
+      }
+      if (
+        !own.generalPurpose &&
+        !spouse.generalPurpose &&
+        !own.purposeUnstated &&
+        !spouse.purposeUnstated &&
+        (own.hsaCompatible || spouse.hsaCompatible)
+      ) {
+        diagnostics.push(
+          diagnostic(
+            "HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE",
+            DiagnosticSeverity.INFO,
+            "Every health flexible spending arrangement in this scenario is limited-purpose or post-deductible. Rev. Rul. 2004-45 holds that an arrangement reimbursing only vision and dental benefits, which are permitted coverage, and preventive care, or reimbursing only expenses incurred after the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied, leaves the individual an eligible individual, so IRC 223(c)(1)(A)(ii) is not failed.",
+            `persons.${ownerId}`,
+            "IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45",
+          ),
+        );
+      }
+    }
+
     diagnostics.push(
       diagnostic(
         "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         DiagnosticSeverity.INFO,
-        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not tested.",
+        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not tested. Where the scenario also holds a health flexible spending arrangement, the IRC 223(c)(1)(A)(ii) consequence of its Rev. Rul. 2004-45 purpose is reported and never enforced: the figures here are the ones the supplied months and coverage produce.",
         `persons.${ownerId}`,
         "IRC 223",
       ),
@@ -10804,7 +10969,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     };
 
     context.hsaPlans.set(ownerId, {
-      status: accountStatusFromDiagnostics(status, diagnostics),
+      status: planStatus,
       diagnostics,
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
       detail,

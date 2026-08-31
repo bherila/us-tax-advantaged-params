@@ -10586,6 +10586,84 @@ final class Engine
         ];
     }
 
+    /**
+     * What the health flexible spending arrangements in a scenario mean for IRC
+     * 223 eligibility, collected per person.
+     *
+     * Rev. Rul. 2004-45 turns the answer entirely on what the arrangement may
+     * reimburse: a general-purpose health FSA that pays section 213(d) medical
+     * expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is
+     * satisfied is coverage that is not a high deductible health plan and that
+     * provides a benefit the HDHP covers, so IRC 223(c)(1)(A)(ii) is failed; a
+     * limited-purpose arrangement reimbursing only vision, dental and
+     * preventive care, or a post-deductible one reimbursing only after the
+     * deductible is met, is not.
+     *
+     * @return array{generalPurpose:bool,purposeUnstated:bool,hsaCompatible:bool,generalPurposeCarryover:bool,generalPurposeGracePeriod:bool}
+     */
+    private static function emptyHealthFsaSection223Facts(): array
+    {
+        return [
+            'generalPurpose' => false,
+            'purposeUnstated' => false,
+            'hsaCompatible' => false,
+            'generalPurposeCarryover' => false,
+            'generalPurposeGracePeriod' => false,
+        ];
+    }
+
+    /** @param array<string,mixed> $context
+     *  @param list<array<string,mixed>> $accounts
+     *  @return array<string,array<string,bool>>
+     */
+    private static function healthFsaSection223FactsByOwner(array $context, array $accounts): array
+    {
+        $byOwner = [];
+        foreach ($accounts as $account) {
+            if (self::traits($account['type'])['family'] !== 'health_fsa') {
+                continue;
+            }
+            $detail = $context['healthFsaPlans'][(string) $account['id']]['detail'] ?? null;
+            if ($detail === null) {
+                continue;
+            }
+            $ownerId = (string) $account['ownerId'];
+            $byOwner[$ownerId] ??= self::emptyHealthFsaSection223Facts();
+            $purpose = $detail['purpose'];
+            if ($purpose === null) {
+                $byOwner[$ownerId]['purposeUnstated'] = true;
+            } elseif ($purpose === 'general_purpose') {
+                $byOwner[$ownerId]['generalPurpose'] = true;
+                if ((float) $detail['carryoverFromPriorYear'] > 0) {
+                    $byOwner[$ownerId]['generalPurposeCarryover'] = true;
+                }
+                if (($account['planRules']['healthFsa']['offersGracePeriod'] ?? null) === true) {
+                    $byOwner[$ownerId]['generalPurposeGracePeriod'] = true;
+                }
+            } else {
+                $byOwner[$ownerId]['hsaCompatible'] = true;
+            }
+        }
+        return $byOwner;
+    }
+
+    /** @param array<string,string>|null $couple
+     *  @return string|null
+     */
+    private static function hsaSpouseIdOf(?array $couple, string $ownerId): ?string
+    {
+        if ($couple === null) {
+            return null;
+        }
+        if ($couple[0] === $ownerId) {
+            return $couple[1];
+        }
+        if ($couple[1] === $ownerId) {
+            return $couple[0];
+        }
+        return null;
+    }
+
     /** @param array<string,mixed> $context
      *  @param list<array<string,mixed>> $accounts
      */
@@ -10671,6 +10749,7 @@ final class Engine
         }
 
         $couple = self::hsaMarriedCouple($context);
+        $section223FsaFacts = self::healthFsaSection223FactsByOwner($context, $accounts);
         $coupleMembersWithAccounts = [];
         foreach ($couple ?? [] as $personId) {
             if (isset($accountsByOwner[$personId])) {
@@ -10963,6 +11042,39 @@ final class Engine
                         ? self::roundMoney((float) $parameters['additionalContributionAmountAge55'])
                         : 0.0;
                 }
+            }
+
+            // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
+            // the IRC 223 answer unknown rather than merely unusual:
+            // general-purpose coverage is disqualifying and limited-purpose or
+            // post-deductible coverage is not, and the engine cannot read a plan
+            // document to tell which this is. A confident ceiling computed from a
+            // fact nobody supplied would be the bug, so this is the one part of
+            // the interaction that refuses to compute.
+            $spouseId = self::hsaSpouseIdOf($couple, $ownerId);
+            $ownFsa = $section223FsaFacts[$ownerId] ?? self::emptyHealthFsaSection223Facts();
+            $spouseFsa = $spouseId === null
+                ? self::emptyHealthFsaSection223Facts()
+                : ($section223FsaFacts[$spouseId] ?? self::emptyHealthFsaSection223Facts());
+            if ($ownFsa['purposeUnstated'] || $spouseFsa['purposeUnstated']) {
+                // Belt and braces: the ERROR severity below already forces the
+                // result indeterminate through the ordinary rule, and the flag
+                // keeps the refusal if that severity is ever softened. They are
+                // redundant on purpose, so no mutation distinguishes them
+                // individually.
+                $indeterminate = true;
+                $whose = $ownFsa['purposeUnstated'] ? 'held by this individual' : "held by this individual's spouse";
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION',
+                    DiagnosticSeverity::ERROR,
+                    "A health flexible spending arrangement {$whose} states no Rev. Rul. 2004-45 purpose. A "
+                        . 'general-purpose arrangement is coverage that fails IRC 223(c)(1)(A)(ii) and a '
+                        . 'limited-purpose or post-deductible one is not, so the IRC 223 answer turns on a plan-design '
+                        . 'fact this engine cannot read and no limitation is reported. Supply '
+                        . 'planRules.healthFsa.purpose.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
             }
 
             $amountsByOwner[$ownerId] = [
@@ -11445,6 +11557,91 @@ final class Engine
                 );
             }
 
+            // The IRC 125 / IRC 223 conflict is diagnosed and never enforced,
+            // so the plan status is fixed before these diagnostics are attached.
+            // Eligible-individual status is a caller-supplied fact everywhere
+            // else in this engine and no rule here overrides one; a caller who
+            // has already accounted for the conflict, by ending the arrangement
+            // mid-year and supplying the correct eligible months, must still get
+            // the answer their facts imply. Every IRC 223(b) figure therefore
+            // survives intact and only the account's reported status reflects
+            // the ERROR, through the ordinary rule that an error makes a result
+            // indeterminate.
+            $planStatus = self::accountStatusFromDiagnostics($status, $diagnostics);
+            $spouseId = self::hsaSpouseIdOf($couple, $ownerId);
+            $ownFsa = $section223FsaFacts[$ownerId] ?? self::emptyHealthFsaSection223Facts();
+            $spouseFsa = $spouseId === null
+                ? self::emptyHealthFsaSection223Facts()
+                : ($section223FsaFacts[$spouseId] ?? self::emptyHealthFsaSection223Facts());
+            if ($ownFsa['generalPurpose']) {
+                $carryoverSentence = $ownFsa['generalPurposeCarryover']
+                    ? ' Amounts carried over from the preceding plan year are general-purpose funds in the year they '
+                        . 'land, so the disqualification reaches that whole plan year.'
+                    : '';
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY',
+                    DiagnosticSeverity::ERROR,
+                    'This individual holds a general-purpose health flexible spending arrangement. Rev. Rul. 2004-45 '
+                        . 'holds that an individual covered by a health FSA paying or reimbursing section 213(d) '
+                        . 'medical expenses before the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied is '
+                        . 'not an eligible individual, because IRC 223(c)(1)(A)(ii) requires that an eligible '
+                        . 'individual not be covered by a health plan that is not a high deductible health plan and '
+                        . 'that provides coverage for a benefit the HDHP covers.' . $carryoverSentence
+                        . ' The IRC 223(b) figures reported here are unchanged: eligible-individual status is supplied '
+                        . 'by the caller and is never overridden, so this reports the conflict rather than enforcing '
+                        . 'it.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+            if ($spouseFsa['generalPurpose']) {
+                $diagnostics[] = self::diagnostic(
+                    'SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY',
+                    DiagnosticSeverity::ERROR,
+                    "This individual's spouse holds a general-purpose health flexible spending arrangement. Rev. Rul. "
+                        . '2004-45 states that the result is the same where the individual is covered by a health FSA '
+                        . "sponsored by the employer of the individual's spouse, because such an arrangement can "
+                        . "reimburse this individual's own section 213(d) medical expenses, so it is disqualifying "
+                        . 'coverage under IRC 223(c)(1)(A)(ii) for both of them. As with an individual\'s own '
+                        . 'arrangement, the IRC 223(b) figures are unchanged and the conflict is reported rather than '
+                        . 'enforced.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+            if ($ownFsa['generalPurposeGracePeriod'] || $spouseFsa['generalPurposeGracePeriod']) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_GRACE_PERIOD_EXTENDS_HSA_DISQUALIFICATION',
+                    DiagnosticSeverity::INFO,
+                    'The disqualifying arrangement offers a Prop. Treas. Reg. 1.125-1(e) grace period. Notice 2005-86 '
+                        . 'holds that an individual covered by a general-purpose health FSA during a grace period is '
+                        . 'generally not eligible to contribute to a health savings account until the first day of the '
+                        . 'month following the end of that grace period, even where the arrangement has no unused '
+                        . 'benefits left. The grace-period months of the following plan year are therefore affected as '
+                        . "well, which this year's eligible-month input cannot express.",
+                    "persons.{$ownerId}",
+                    'Notice 2005-86',
+                );
+            }
+            if (!$ownFsa['generalPurpose']
+                && !$spouseFsa['generalPurpose']
+                && !$ownFsa['purposeUnstated']
+                && !$spouseFsa['purposeUnstated']
+                && ($ownFsa['hsaCompatible'] || $spouseFsa['hsaCompatible'])
+            ) {
+                $diagnostics[] = self::diagnostic(
+                    'HEALTH_FSA_TREATED_AS_HSA_COMPATIBLE',
+                    DiagnosticSeverity::INFO,
+                    'Every health flexible spending arrangement in this scenario is limited-purpose or '
+                        . 'post-deductible. Rev. Rul. 2004-45 holds that an arrangement reimbursing only vision and '
+                        . 'dental benefits, which are permitted coverage, and preventive care, or reimbursing only '
+                        . 'expenses incurred after the IRC 223(c)(2)(A)(i) minimum annual deductible is satisfied, '
+                        . 'leaves the individual an eligible individual, so IRC 223(c)(1)(A)(ii) is not failed.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(1)(A)(ii); Rev. Rul. 2004-45',
+                );
+            }
+
             $diagnostics[] = self::diagnostic(
                 'HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER',
                 DiagnosticSeverity::INFO,
@@ -11457,7 +11654,9 @@ final class Engine
                     . 'The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied '
                     . 'on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC '
                     . '408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are '
-                    . 'not tested.',
+                    . 'not tested. Where the scenario also holds a health flexible spending arrangement, the IRC '
+                    . '223(c)(1)(A)(ii) consequence of its Rev. Rul. 2004-45 purpose is reported and never enforced: '
+                    . 'the figures here are the ones the supplied months and coverage produce.',
                 "persons.{$ownerId}",
                 'IRC 223',
             );
@@ -11488,7 +11687,7 @@ final class Engine
             ];
 
             $context['hsaPlans'][$ownerId] = [
-                'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
+                'status' => $planStatus,
                 'diagnostics' => $diagnostics,
                 'statutoryMaximum' => $baseLimit === null
                     ? null

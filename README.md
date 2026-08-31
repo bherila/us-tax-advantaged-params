@@ -567,6 +567,47 @@ package's evidence corpus and an unattested figure is never encoded. Asserting
 supplied is the deemed amount, and emits a diagnostic saying the schedule is not
 applied for you.
 
+## The §125 / §223 interaction: diagnose, do not enforce
+
+A general-purpose health FSA and an HSA cannot both be right. The engine says
+so and **returns the §223 figures the inputs imply, unchanged**.
+
+| Health FSA `purpose` | Effect on the HSA in the same scenario |
+|---|---|
+| `general_purpose` | `ERROR` `HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY` citing §223(c)(1)(A)(ii) and Rev. Rul. 2004-45. **Every §223(b) figure is unchanged** — the limitation, the prorated amount, the components, the totals |
+| `general_purpose` held by the **spouse** | `ERROR` `SPOUSE_HEALTH_FSA_DISQUALIFIES_HSA_ELIGIBILITY`. Rev. Rul. 2004-45 says the result is the same where the arrangement is sponsored by the spouse's employer, because it can reimburse this individual's expenses. Figures again unchanged |
+| `limited_purpose` or `post_deductible` | No conflict. An `INFO` records that the arrangement was treated as HSA-compatible |
+| **absent** | `ERROR` `HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION`, and the §223 limitation is **`indeterminate`** |
+
+The last row is the one that differs, and deliberately. With a stated
+`general_purpose` the conflict is *known*, and reporting the caller's own
+figures is the whole point: eligible-individual status is caller-supplied
+everywhere in this engine, so someone who ended the arrangement mid-year and
+supplied the correct eligible months must still get the answer their facts
+imply. With the purpose *unstated* nothing about §223 is known — the two
+classifications give opposite answers — so a confident number would be the
+defect rather than the diagnostic.
+
+Two consequences worth stating:
+
+- **A carryover of general-purpose funds disqualifies the whole receiving plan
+  year.** Notice 2013-71 makes the carried amount available for expenses
+  incurred during the entire plan year it is carried to, so it is
+  general-purpose coverage for that year and not merely until it is spent.
+- **A grace period extends the disqualification into the following plan year.**
+  Notice 2005-86: coverage during the grace period blocks eligibility until the
+  first day of the month after it ends, even at a zero balance. Those months
+  fall outside the year being calculated, so it is reported as `INFO` rather
+  than folded into the month list.
+
+The account's reported `status` still becomes `indeterminate` when an `ERROR` is
+attached — that is the engine's uniform rule, not an enforcement of §223. What
+"diagnose, do not enforce" means here is that **no number moves**.
+
+A dependent care FSA never raises this: §129 assistance reimburses dependent
+care rather than §213(d) medical expenses, so it is not coverage §223(c)(1)(A)(ii)
+reaches.
+
 ## Multiple employers
 
 Statutory pools are keyed to match the statute rather than to the taxpayer uniformly:
