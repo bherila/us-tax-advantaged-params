@@ -188,6 +188,20 @@ final class PersonBuilder
         return $this;
     }
 
+    /** IRC 129(b)(1) earned income of this person for the taxable year. */
+    public function dependentCareEarnedIncome(float|int $amount): self
+    {
+        $this->value['dependentCareEarnedIncome'] = (float) $amount;
+        return $this;
+    }
+
+    /** IRC 129(b)(2): this person is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
+    public function studentOrIncapableOfSelfCare(bool $applies = true): self
+    {
+        $this->value['isStudentOrIncapableOfSelfCare'] = $applies;
+        return $this;
+    }
+
     public function coveredByEmployerPlan(bool $covered = true): self
     {
         $this->value['coveredByEmployerRetirementPlan'] = $covered;
@@ -572,22 +586,11 @@ final class AccountBuilder
         return $this;
     }
 
-    /** IRC 129(b)(1) earned income. The spouse's amount is required whenever the employee is married. */
-    public function dependentCareEarnedIncome(float|int $employee, float|int|null $spouse = null): self
+    /** A lower dependent care maximum the employer's plan itself allows. */
+    public function dependentCarePlanDocumentLimit(float|int $limit): self
     {
         $this->value['planRules']['dependentCareFsa'] ??= [];
-        $this->value['planRules']['dependentCareFsa']['employeeEarnedIncome'] = (float) $employee;
-        if ($spouse !== null) {
-            $this->value['planRules']['dependentCareFsa']['spouseEarnedIncome'] = (float) $spouse;
-        }
-        return $this;
-    }
-
-    /** IRC 129(b)(2): the spouse is a student or incapable of self-care, so IRC 21(d)(2) deems earned income. */
-    public function dependentCareSpouseIsStudentOrIncapableOfSelfCare(bool $applies = true): self
-    {
-        $this->value['planRules']['dependentCareFsa'] ??= [];
-        $this->value['planRules']['dependentCareFsa']['spouseIsStudentOrIncapableOfSelfCare'] = $applies;
+        $this->value['planRules']['dependentCareFsa']['planDocumentLimit'] = (float) $limit;
         return $this;
     }
 
@@ -910,6 +913,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -990,6 +994,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": false,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1069,7 +1074,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1149,7 +1155,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1229,7 +1236,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1309,7 +1317,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1389,7 +1398,8 @@ private const PARAMETER_JSON = <<<'JSON'
         "universalEligibility": false,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": true,
         "oneEarnerHouseholdCombinedLimit": 1750,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1470,6 +1480,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1550,6 +1561,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1630,6 +1642,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1710,6 +1723,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1790,6 +1804,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1870,6 +1885,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1972,6 +1988,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2074,6 +2091,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2176,6 +2194,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2278,6 +2297,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2380,6 +2400,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2482,6 +2503,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2584,6 +2606,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2686,6 +2709,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2788,6 +2812,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": 2000,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2890,6 +2915,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2992,6 +3018,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3107,6 +3134,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3222,6 +3250,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3337,6 +3366,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3452,6 +3482,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3567,6 +3598,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3682,6 +3714,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3797,6 +3830,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -3912,6 +3946,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4027,6 +4062,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4142,6 +4178,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4257,6 +4294,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4372,6 +4410,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4487,6 +4526,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4602,6 +4642,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4717,6 +4758,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4832,6 +4874,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -4947,6 +4990,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5062,6 +5106,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5177,6 +5222,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5292,6 +5338,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5407,6 +5454,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": true
@@ -5522,6 +5570,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5637,6 +5686,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5752,6 +5802,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5867,6 +5918,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -5982,6 +6034,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6097,6 +6150,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -6212,6 +6266,7 @@ private const PARAMETER_JSON = <<<'JSON'
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
         "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
         "oneEarnerHouseholdCombinedLimit": null,
         "traditionalContributionAge70HalfRestriction": false,
         "rothAvailable": true
@@ -8405,7 +8460,7 @@ final class Engine
             'hsaDeductible' => 0.0,
             'hsaEmployerOrCafeteria' => 0.0,
             'healthFsaSalaryReduction' => 0.0,
-            'dependentCareSalaryReduction' => 0.0,
+            'dependentCareAssistanceProvided' => 0.0,
             'dependentCareIncludibleInIncome' => 0.0,
         ];
     }
@@ -8563,7 +8618,7 @@ final class Engine
         // absent from federalAgiReduction, because the money was never included
         // rather than reduced.
         $cafeteriaExclusion = self::roundMoney(
-            $components['healthFsaSalaryReduction'] + $components['dependentCareSalaryReduction'],
+            $components['healthFsaSalaryReduction'] + $components['dependentCareAssistanceProvided'],
         );
         $result['formW2Box1WageReduction'] = self::roundMoney(
             (!empty($planRules['isSelfEmployedOwner']) ? 0.0 : $pretaxEmployee) + $hsaExclusion + $cafeteriaExclusion,
@@ -8611,7 +8666,7 @@ final class Engine
                 . '(IRC 3121(a)(5)(G)). They are an exclusion rather than a deduction - the money never entered gross '
                 . 'income - so they do not appear in federalAgiReduction.';
         }
-        if ($components['dependentCareSalaryReduction'] > 0) {
+        if ($components['dependentCareAssistanceProvided'] > 0) {
             $result['notes'][] = 'Dependent care assistance within the IRC 129(a)(2) limitation is excluded from gross '
                 . 'income under IRC 129(a)(1) and is outside Form W-2 box 1 and Social Security and Medicare wages '
                 . '(IRC 3121(a)(18)); it is reported in Form W-2 box 10. It is an exclusion rather than a deduction, '
@@ -8689,6 +8744,12 @@ final class Engine
                 "persons[{$index}].coveredByEmployerRetirementPlan",
             );
             self::booleanFlag($input, 'livedWithSpouseDuringYear', "persons[{$index}].livedWithSpouseDuringYear");
+            self::booleanFlag(
+                $input,
+                'isStudentOrIncapableOfSelfCare',
+                "persons[{$index}].isStudentOrIncapableOfSelfCare",
+            );
+            self::money($input['dependentCareEarnedIncome'] ?? null, "persons[{$index}].dependentCareEarnedIncome");
             $role = $input['role'] ?? ($index === 0 ? 'taxpayer' : ($index === 1 ? 'spouse' : 'other'));
             if (!in_array($role, ['taxpayer', 'spouse', 'other'], true)) {
                 throw new ParameterException(
@@ -8900,13 +8961,7 @@ final class Engine
     /** @param array<string,mixed> $rules */
     private static function validateDependentCareFsaRules(array $rules, string $path): void
     {
-        self::money($rules['employeeEarnedIncome'] ?? null, "{$path}.employeeEarnedIncome");
-        self::money($rules['spouseEarnedIncome'] ?? null, "{$path}.spouseEarnedIncome");
-        self::booleanFlag(
-            $rules,
-            'spouseIsStudentOrIncapableOfSelfCare',
-            "{$path}.spouseIsStudentOrIncapableOfSelfCare",
-        );
+        self::money($rules['planDocumentLimit'] ?? null, "{$path}.planDocumentLimit");
     }
 
     /** @param array<string,mixed> $rules */
@@ -9420,6 +9475,7 @@ final class Engine
             'dependentCarePools' => [],
             'dependentCarePlans' => [],
             'dependentCareEarnedIncomeCeilings' => [],
+            'section220TwiceTheLesserOwners' => [],
         ];
         self::initializeIraPools($context, $accounts);
         self::initializeElectiveDeferralPools($context, $accounts);
@@ -9493,11 +9549,19 @@ final class Engine
             }
             $personalLimit = $statutory;
             if ($personalLimit !== null && $isHouseholdMember && $context['taxYear'] < 1997 && $ownCompensation === 0.0) {
+                // A null limit means "not encoded as a universal figure", which
+                // is not a limit of zero. Coercing it gave PHP a 0.0 ceiling
+                // where TypeScript carried the null through to indeterminate.
                 $personalLimit = $parameters['ira']['spousalIraAvailable']
                     ? ($parameters['ira']['nonworkingSpouseIndividualLimit'] === null
-                        ? 0.0
+                        ? null
                         : (float) $parameters['ira']['nonworkingSpouseIndividualLimit'])
                     : 0.0;
+                if ($parameters['ira']['spousalIraAvailable']
+                    && ($parameters['ira']['spousalDeductionIsTwiceTheLesserOfContributions'] ?? false)
+                ) {
+                    $context['section220TwiceTheLesserOwners'][(string) $person['id']] = true;
+                }
             }
             if ($personalLimit !== null && $isHouseholdMember && $context['taxYear'] < 1997 && $ownCompensation > 0.0) {
                 $personalLimit = self::minMoney(
@@ -10423,8 +10487,9 @@ final class Engine
             $status = CalculationStatus::DETERMINATE->value;
             $indeterminate = false;
             $unavailable = false;
+            $earnedIncomeFactsMissing = false;
 
-            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+            $elected = (float) $account['existingContributions']['dependentCareAssistanceProvided'];
 
             if ($yearParameters === null) {
                 $indeterminate = true;
@@ -10455,22 +10520,26 @@ final class Engine
             // income, or, for a married employee, the lesser of the employee's
             // and the spouse's. Both figures are caller-supplied; this package
             // does not derive income.
-            $employeeEarnedIncome = array_key_exists('employeeEarnedIncome', $rules)
-                ? self::money($rules['employeeEarnedIncome'], "{$path}.planRules.dependentCareFsa.employeeEarnedIncome")
-                : null;
-            $spouseEarnedIncome = array_key_exists('spouseEarnedIncome', $rules)
-                ? self::money($rules['spouseEarnedIncome'], "{$path}.planRules.dependentCareFsa.spouseEarnedIncome")
-                : null;
+            $owner = $context['persons'][(string) $account['ownerId']] ?? null;
+            $ownerSpouse = $owner === null ? null : self::spouseForPerson($context['persons'], $owner);
+            $employeeEarnedIncome = $owner['dependentCareEarnedIncome'] ?? null;
+            $spouseEarnedIncome = $ownerSpouse['dependentCareEarnedIncome'] ?? null;
             $earnedIncomeLimitation = null;
             if ($employeeEarnedIncome !== null && (!$married || $spouseEarnedIncome !== null)) {
                 $earnedIncomeLimitation = $married
                     ? self::minMoney($employeeEarnedIncome, $spouseEarnedIncome)
                     : $employeeEarnedIncome;
             } elseif (!$indeterminate) {
-                $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
+                // IRC 129(b)(1) is a mandatory ceiling, not an optional
+                // refinement. Reporting the IRC 129(a)(2)(A) amount as the
+                // maximum the inputs support would assume earned income of at
+                // least that amount, which the statute never permits. The
+                // statutory figure is still reported separately, so failing
+                // closed withholds an assumption rather than information.
+                $earnedIncomeFactsMissing = true;
                 $diagnostics[] = self::diagnostic(
                     'DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED',
-                    DiagnosticSeverity::WARNING,
+                    DiagnosticSeverity::ERROR,
                     $married
                         ? "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned "
                             . 'income for the taxable year. Both are caller-supplied facts and at least one was not '
@@ -10480,7 +10549,7 @@ final class Engine
                             . 'That is a caller-supplied fact and was not supplied, so the limitation has not been '
                             . 'applied and the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may '
                             . 'overstate it.',
-                    "{$path}.planRules.dependentCareFsa.employeeEarnedIncome",
+                    "persons.{$account['ownerId']}.dependentCareEarnedIncome",
                     'IRC 129(b)(1)',
                 );
             }
@@ -10502,7 +10571,8 @@ final class Engine
                     'IRC 129(a)(2)(C); IRC 21(e)(4)',
                 );
             }
-            if (($rules['spouseIsStudentOrIncapableOfSelfCare'] ?? null) === true && !$indeterminate) {
+            if ((($owner['isStudentOrIncapableOfSelfCare'] ?? null) === true
+                || ($ownerSpouse['isStudentOrIncapableOfSelfCare'] ?? null) === true) && !$indeterminate) {
                 $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
                 $diagnostics[] = self::diagnostic(
                     'DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED',
@@ -10510,9 +10580,9 @@ final class Engine
                     'IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or '
                         . 'incapable of caring for himself. The IRC 21(d)(2) monthly schedule is not encoded here, '
                         . "because no primary source for it is committed to this package's evidence corpus and an "
-                        . 'unattested figure is never encoded. Any spouseEarnedIncome supplied is used exactly as '
+                        . 'unattested figure is never encoded. Any dependentCareEarnedIncome supplied for the person is used exactly as '
                         . 'stated, so supply the deemed amount if the deeming applies.',
-                    "{$path}.planRules.dependentCareFsa.spouseIsStudentOrIncapableOfSelfCare",
+                    "persons.{$account['ownerId']}.isStudentOrIncapableOfSelfCare",
                     'IRC 129(b)(2); IRC 21(d)(2)',
                 );
             }
@@ -10521,7 +10591,7 @@ final class Engine
                 ? self::money($rules['planDocumentLimit'], "{$path}.planRules.dependentCareFsa.planDocumentLimit")
                 : null;
             $applicableLimit = null;
-            if (!$indeterminate && $statutoryExclusion !== null) {
+            if (!$indeterminate && $statutoryExclusion !== null && !$earnedIncomeFactsMissing) {
                 $applicableCandidates = [$statutoryExclusion];
                 if ($earnedIncomeLimitation !== null) {
                     $applicableCandidates[] = $earnedIncomeLimitation;
@@ -10586,7 +10656,11 @@ final class Engine
             $context['dependentCarePlans'][(string) $account['id']] = [
                 'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
                 'diagnostics' => $diagnostics,
-                'statutoryMaximum' => $applicableLimit,
+                // The IRC 129(a)(2)(A) figure itself. What the supplied facts
+                // allow within it is the applicable limit, reported separately,
+                // exactly as the health FSA path separates the IRC 125(i)
+                // ceiling from a plan document.
+                'statutoryMaximum' => $indeterminate ? null : $statutoryExclusion,
                 'detail' => $detail,
                 'poolKey' => $poolKey,
                 'earnedIncomeLimitation' => $earnedIncomeLimitation,
@@ -10610,68 +10684,23 @@ final class Engine
             }
         }
 
-        // IRC 129(b)(1) caps "the amount excluded from the income of an employee
-        // under subsection (a) for any taxable year", which is that year's
-        // aggregate rather than a per-plan figure, and Form 2441 Part III
-        // computes a single excluded-benefits amount for the return from the
-        // smaller of the benefits, the earned incomes, and the IRC 129(a)(2)(A)
-        // amount. The ceiling therefore belongs to the pool the accounts share.
-        // Applied per account it would let a return exclude the limitation once
-        // for every dependent care FSA it holds.
-        $earnedIncomeCeilingsByPool = [];
+        // IRC 129(b)(1) caps "the amount excluded from the income of an
+        // employee under subsection (a) for any taxable year", which is that
+        // year's aggregate rather than a per-plan figure, and Form 2441 Part III
+        // computes a single excluded-benefits amount for the return. The
+        // ceiling therefore belongs to the pool the accounts share.
+        //
+        // Every plan in a pool derives it from the same two people, so they
+        // cannot disagree about it. That was not true while the figures lived
+        // on each account's plan rules, and the contradiction then had to be
+        // reported as an error; moving them onto the person removed the
+        // possibility instead.
         foreach ($context['dependentCarePlans'] as $plan) {
             if ($plan['poolKey'] === null || $plan['earnedIncomeLimitation'] === null) {
                 continue;
             }
-            $poolKey = $plan['poolKey'];
-            $value = (float) $plan['earnedIncomeLimitation'];
-            if (!isset($earnedIncomeCeilingsByPool[$poolKey])) {
-                $earnedIncomeCeilingsByPool[$poolKey] = [];
-            }
-            if (!in_array($value, $earnedIncomeCeilingsByPool[$poolKey], true)) {
-                $earnedIncomeCeilingsByPool[$poolKey][] = $value;
-            }
-        }
-        foreach ($earnedIncomeCeilingsByPool as $poolKey => $ceilings) {
-            if (count($ceilings) === 1) {
-                $context['dependentCareEarnedIncomeCeilings'][$poolKey] = $ceilings[0];
-                continue;
-            }
-            // The earned income facts describe one return, so accounts sharing
-            // an IRC 129(a)(2)(A) amount reporting different ceilings is a
-            // contradiction in the supplied facts. Choosing one of them would
-            // invent a fact, so no exclusion is computed for any account
-            // drawing on that amount.
-            $sorted = $ceilings;
-            sort($sorted);
-            $reported = implode(', ', array_map(
-                static fn (float $value): string => '$' . self::localeNumber($value),
-                $sorted,
-            ));
-            foreach ($context['dependentCarePlans'] as $accountId => $plan) {
-                if ($plan['poolKey'] !== $poolKey) {
-                    continue;
-                }
-                $context['dependentCarePlans'][$accountId]['diagnostics'][] = self::diagnostic(
-                    'DEPENDENT_CARE_EARNED_INCOME_FACTS_CONFLICT',
-                    DiagnosticSeverity::ERROR,
-                    'IRC 129(b)(1) caps the amount excluded for the taxable year at the employee\'s earned income, '
-                        . 'or for a married employee at the lesser of the employee\'s and the spouse\'s. That is one '
-                        . 'figure for the return, but the dependent care flexible spending arrangements sharing this '
-                        . 'IRC 129(a)(2)(A) amount report different ceilings (' . $reported . '). The contradiction is '
-                        . 'in the supplied facts rather than in the statute, and resolving it by choosing one of them '
-                        . 'would invent a fact, so no exclusion is computed.',
-                    'accounts.' . $accountId . '.planRules.dependentCareFsa.employeeEarnedIncome',
-                    'IRC 129(b)(1)',
-                );
-                $context['dependentCarePlans'][$accountId]['status'] = CalculationStatus::INDETERMINATE->value;
-                $context['dependentCarePlans'][$accountId]['statutoryMaximum'] = null;
-                $context['dependentCarePlans'][$accountId]['detail']['applicableExclusionLimit'] = null;
-                // Detaching from the pool keeps the contradiction from consuming
-                // the household amount, matching how every other indeterminate
-                // plan behaves.
-                $context['dependentCarePlans'][$accountId]['poolKey'] = null;
-            }
+            $context['dependentCareEarnedIncomeCeilings'][$plan['poolKey']] =
+                (float) $plan['earnedIncomeLimitation'];
         }
 
         // Assistance actually supplied draws on the household amount before any
@@ -10687,7 +10716,7 @@ final class Engine
             if ($plan['poolKey'] === null || !isset($context['dependentCarePools'][$plan['poolKey']])) {
                 continue;
             }
-            $elected = (float) $account['existingContributions']['dependentCareSalaryReduction'];
+            $elected = (float) $account['existingContributions']['dependentCareAssistanceProvided'];
             if ($elected <= 0) {
                 continue;
             }
@@ -10725,7 +10754,7 @@ final class Engine
                             . 'the dependent care services were provided. The IRC 129(a)(2)(A) amount is a per-return '
                             . 'figure rather than a per-person one, so two employees on one return draw on a single '
                             . 'amount rather than one each.',
-                        "accounts.{$account['id']}.existingContributions.dependentCareSalaryReduction",
+                        "accounts.{$account['id']}.existingContributions.dependentCareAssistanceProvided",
                         'IRC 129(a)(2)(B)',
                     ),
                 );
@@ -10764,7 +10793,7 @@ final class Engine
             // plan that has just said it cannot determine the exclusion. No
             // amount is substantiated here, and the detail already carries
             // zero for both halves.
-            $annual['dependentCareSalaryReduction'] = 0.0;
+            $annual['dependentCareAssistanceProvided'] = 0.0;
             $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
             return [
                 'status' => $plan['status'] === CalculationStatus::UNAVAILABLE->value
@@ -10805,10 +10834,10 @@ final class Engine
             $sharedLimits,
         );
 
-        $annual['dependentCareSalaryReduction'] = self::roundMoney($alreadyExcluded + $additionalExcludable);
+        $annual['dependentCareAssistanceProvided'] = self::roundMoney($alreadyExcluded + $additionalExcludable);
         $annual['dependentCareIncludibleInIncome'] = (float) $detail['includibleInIncome'];
-        $additional['dependentCareSalaryReduction'] = $additionalExcludable;
-        $detail['excludableAmount'] = $annual['dependentCareSalaryReduction'];
+        $additional['dependentCareAssistanceProvided'] = $additionalExcludable;
+        $detail['excludableAmount'] = $annual['dependentCareAssistanceProvided'];
 
         return [
             'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
@@ -12391,12 +12420,27 @@ final class Engine
 
         if ($ownerPool['limit'] === null || $context['iraCompensationPools'][$compensationPoolId]['limit'] === null) {
             $ownerPool['blocked'] = true;
-            $diagnostics[] = self::diagnostic(
-                'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT',
-                DiagnosticSeverity::ERROR,
-                'Birth year or birth date is required to determine the IRA catch-up limit.',
-                "persons.{$person['id']}",
-            );
+            $diagnostics[] = isset($context['section220TwiceTheLesserOwners'][(string) $person['id']])
+                ? self::diagnostic(
+                    'SPOUSAL_IRA_LIMIT_INDETERMINATE_UNDER_SECTION_220',
+                    DiagnosticSeverity::ERROR,
+                    "Former IRC 220(b)(1)(A) caps a one-earner couple's {$context['taxYear']} deduction at twice "
+                        . 'the amount paid to whichever of the two individual retirement accounts received the '
+                        . 'lesser amount, subject to the 15 percent and $1,750 ceilings in subparagraphs (B) and '
+                        . '(C). That is a joint ceiling keyed to how the couple split their contributions rather '
+                        . 'than a limit on this account: a worker who contributes nothing to their own account '
+                        . 'makes the spousal amount deductible only to zero, and the maximizing split is equal '
+                        . 'halves of $875. No per-account figure reproduces the rule, so no maximum is reported '
+                        . 'for this account rather than an invented one.',
+                    "persons.{$person['id']}",
+                    'Former IRC 220(b)(1)(A); Tax Reform Act of 1976, Pub. L. 94-455 s.1501',
+                )
+                : self::diagnostic(
+                    'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_IRA_LIMIT',
+                    DiagnosticSeverity::ERROR,
+                    'Birth year or birth date is required to determine the IRA catch-up limit.',
+                    "persons.{$person['id']}",
+                );
             self::reportPoolWithoutConsuming($ownerPool, $sharedLimits);
             self::reportPoolWithoutConsuming($context['iraCompensationPools'][$compensationPoolId], $sharedLimits);
             $result = [
@@ -14247,7 +14291,7 @@ final class Engine
                 $totals['healthFsaSalaryReduction'] + $components['healthFsaSalaryReduction'],
             );
             $totals['dependentCareAssistanceExclusion'] = self::roundMoney(
-                $totals['dependentCareAssistanceExclusion'] + $components['dependentCareSalaryReduction'],
+                $totals['dependentCareAssistanceExclusion'] + $components['dependentCareAssistanceProvided'],
             );
             $totals['dependentCareIncludibleInIncome'] = self::roundMoney(
                 $totals['dependentCareIncludibleInIncome'] + $components['dependentCareIncludibleInIncome'],

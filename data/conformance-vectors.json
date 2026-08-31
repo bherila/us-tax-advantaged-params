@@ -427,6 +427,46 @@
       ]
     },
     {
+      "name": "1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule",
+      "description": "Former IRC 220(b)(1) (Tax Reform Act of 1976, Pub. L. 94-455 s.1501) allowed a one-earner couple the smallest of twice the amount paid to whichever account received the lesser amount, 15 percent of compensation, and $1,750. Subparagraph (A) makes the ceiling a joint figure keyed to how the couple split their contributions, not a cap on either account: a worker contributing nothing to their own account makes the spousal amount deductible only to zero, and the maximizing split is $875 to each. No single per-account number reproduces that, so the account reports no maximum and says why, rather than the $250 it once reported -- a figure matching no fact pattern, since a 1,500/250 split deducts only twice the lesser, or $500.",
+      "input": {
+        "taxYear": 1979,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1940,
+            "compensation": {
+              "iraCompensation": 20000
+            },
+            "coveredByEmployerRetirementPlan": false
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1940,
+            "compensation": {
+              "iraCompensation": 0
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "spouse-ira",
+            "ownerId": "s",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "SPOUSAL_IRA_LIMIT_INDETERMINATE_UNDER_SECTION_220"
+      }
+    },
+    {
       "name": "1982 nonworking spouse IRA",
       "description": "ERTA 1981 rewrote IRC 219(c) for 1982: the spousal deduction is limited to the lesser of 2250 or compensation, reduced under 219(c)(2)(B) by the amount allowed as a deduction for the working spouse's own IRA, and in no event more than 2000 to the spousal account. The IRS SOI Bulletin for 1982 states the same rule: a 2250 one-earner total with no more than 2000 contributed to either spouse's IRA. The working spouse here contributes nothing to an IRA of their own, so the 219(c)(2)(B) subtraction is zero and the nonworking spouse's account may receive the full 2000; the 2250 household cap binds only the couple's combined total.",
       "input": {
@@ -4923,7 +4963,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 60000
-            }
+            },
+            "dependentCareEarnedIncome": 60000
           }
         ],
         "accounts": [
@@ -4931,12 +4972,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -4967,12 +5003,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 60000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 55000
           }
         ],
         "accounts": [
@@ -4980,13 +5018,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000,
-                "spouseEarnedIncome": 55000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5010,12 +5042,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5023,13 +5057,7 @@
             "id": "a",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e1"
           }
         ]
       },
@@ -5051,12 +5079,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5064,13 +5094,7 @@
             "id": "a",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e1"
           }
         ]
       },
@@ -5091,12 +5115,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 70000
           }
         ],
         "accounts": [
@@ -5104,13 +5130,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 70000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5131,12 +5151,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 70000
           }
         ],
         "accounts": [
@@ -5144,13 +5166,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 70000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5173,7 +5189,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 60000
-            }
+            },
+            "dependentCareEarnedIncome": 60000
           }
         ],
         "accounts": [
@@ -5181,12 +5198,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 60000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5198,7 +5210,7 @@
     },
     {
       "name": "the IRC 129(b)(1) earned income limitation binds below the statutory amount",
-      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income.",
+      "description": "IRC 129(b)(1)(B) caps the amount excluded at the lesser of the employee's and the spouse's earned income for the taxable year. A spouse with 3000 of earned income against the employee's 90000 therefore caps the exclusion at 3000, well below the 7500 that IRC 129(a)(2)(A) allows for 2026. Both figures are caller-supplied, which is what keeps this inside a package that does not derive income. The two ceilings are reported separately: statutoryMaximumAnnualContribution is the IRC 129(a)(2)(A) amount and maximumAnnualContributionBasedOnInputs is what the supplied earned income allows within it.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -5206,12 +5218,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5219,19 +5233,13 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
       "expect": {
         "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
         "accounts.0.maximumAnnualContributionBasedOnInputs": 3000,
         "accounts.0.dependentCareFsa.statutoryExclusion": 7500,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": 3000,
@@ -5240,7 +5248,7 @@
     },
     {
       "name": "the IRC 129(b)(1) limitation is asked for when the earned income facts are absent",
-      "description": "IRC 129(b)(1) is a hard ceiling, not an optional refinement, so leaving it out cannot be silent. Nothing is assumed about the employee's income: the reported ceiling is the IRC 129(a)(2)(A) amount alone, which may overstate the exclusion, and the status records the assumption. Married employees need both figures under IRC 129(b)(1)(B), so supplying only the employee's is still incomplete.",
+      "description": "IRC 129(b)(1)(B) caps the exclusion at the lesser of the employee's and the spouse's earned income, and on a joint return both are needed. Only the employee's is supplied here. The ceiling is mandatory rather than an optional refinement, so reporting the IRC 129(a)(2)(A) amount as what the inputs support would assume the missing spouse's earned income is at least 7500 -- an assumption the statute never permits. The result fails closed: the statutory amount is still reported, the amount the inputs support is null, and the diagnostic names the missing fact.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -5248,7 +5256,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
@@ -5261,62 +5270,55 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000
-              }
-            }
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 7500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.dependentCareFsa.earnedIncomeLimitation": null,
+        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED"
+      }
+    },
+    {
+      "name": "the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled",
+      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in. Both earned income figures are supplied, so the result stays determinate with assumptions rather than failing closed; what is disclosed is that the supplied 500 is used exactly as stated rather than derived from the IRC 21(d)(2) schedule.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 500,
+            "isStudentOrIncapableOfSelfCare": true
+          }
+        ],
+        "accounts": [
+          {
+            "id": "d",
+            "ownerId": "t",
+            "type": "dependent_care_fsa",
+            "employerId": "e"
           }
         ]
       },
       "expect": {
         "accounts.0.status": "determinate_with_assumptions",
         "accounts.0.statutoryMaximumAnnualContribution": 7500,
-        "accounts.0.dependentCareFsa.earnedIncomeLimitation": null,
-        "accounts.0.dependentCareFsa.applicableExclusionLimit": 7500,
-        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_EARNED_INCOME_FACTS_REQUIRED"
-      }
-    },
-    {
-      "name": "the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled",
-      "description": "IRC 129(b)(2) applies IRC 21(d)(2) to deem earned income for a spouse who is a student or incapable of caring for himself. The IRC 21(d)(2) monthly schedule is a figure this package does not encode, because no primary source for it is committed to the evidence corpus and an unattested amount is never encoded. The supplied spouse figure of 500 is therefore used exactly as stated - as the deemed amount - and the divergence is disclosed rather than silently filled in.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "MFJ",
-        "persons": [
-          {
-            "id": "t",
-            "role": "taxpayer",
-            "birthYear": 1985
-          },
-          {
-            "id": "s",
-            "role": "spouse",
-            "birthYear": 1986
-          }
-        ],
-        "accounts": [
-          {
-            "id": "d",
-            "ownerId": "t",
-            "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 500,
-                "spouseIsStudentOrIncapableOfSelfCare": true
-              }
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.status": "determinate_with_assumptions",
-        "accounts.0.statutoryMaximumAnnualContribution": 500,
         "accounts.0.dependentCareFsa.earnedIncomeLimitation": 500,
-        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED"
+        "accounts.0.diagnostics.0.code": "DEPENDENT_CARE_DEEMED_SPOUSE_EARNED_INCOME_NOT_MODELLED",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 500
       }
     },
     {
@@ -5329,12 +5331,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 80000
           }
         ],
         "accounts": [
@@ -5344,13 +5348,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 80000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           },
           {
@@ -5359,13 +5357,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 80000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           }
         ]
@@ -5395,12 +5387,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 80000
           }
         ],
         "accounts": [
@@ -5410,13 +5404,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3750
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 80000
-              }
+              "dependentCareAssistanceProvided": 3750
             }
           },
           {
@@ -5425,13 +5413,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3750
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 80000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 3750
             }
           }
         ]
@@ -5458,12 +5440,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5473,13 +5457,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           },
           {
@@ -5488,13 +5466,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 3000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 5000
             }
           }
         ]
@@ -5519,7 +5491,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -5530,8 +5503,6 @@
             "employerId": "e1",
             "planRules": {
               "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null,
                 "planDocumentLimit": 4000
               }
             }
@@ -5555,7 +5526,8 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -5566,8 +5538,6 @@
             "employerId": "e1",
             "planRules": {
               "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null,
                 "planDocumentLimit": 2000
               }
             }
@@ -5576,13 +5546,7 @@
             "id": "b",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e2",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": null
-              }
-            }
+            "employerId": "e2"
           }
         ]
       },
@@ -5602,12 +5566,14 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986
+            "birthYear": 1986,
+            "dependentCareEarnedIncome": 3000
           }
         ],
         "accounts": [
@@ -5617,13 +5583,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e1",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3500
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
+              "dependentCareAssistanceProvided": 3500
             }
           },
           {
@@ -5632,13 +5592,7 @@
             "type": "dependent_care_fsa",
             "employerId": "e2",
             "existingContributions": {
-              "dependentCareSalaryReduction": 3500
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 3000,
-                "spouseEarnedIncome": 90000
-              }
+              "dependentCareAssistanceProvided": 3500
             }
           }
         ]
@@ -5654,66 +5608,6 @@
       }
     },
     {
-      "name": "dependent care FSAs sharing one exclusion may not report different IRC 129(b)(1) ceilings",
-      "description": "The IRC 129(b)(1) ceiling is one figure for the return, so two dependent care FSAs drawing on the same IRC 129(a)(2)(A) amount cannot each be right about it. Here one reports a spouse earning 3000 and the other a spouse earning 5000. Resolving the disagreement by taking either figure, or the lesser of them, would invent a fact the caller did not supply, so the contradiction is reported and no exclusion is computed for either arrangement.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "MFJ",
-        "persons": [
-          {
-            "id": "t",
-            "role": "taxpayer",
-            "birthYear": 1985
-          },
-          {
-            "id": "s",
-            "role": "spouse",
-            "birthYear": 1986
-          }
-        ],
-        "accounts": [
-          {
-            "id": "a",
-            "ownerId": "t",
-            "type": "dependent_care_fsa",
-            "employerId": "e1",
-            "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 3000
-              }
-            }
-          },
-          {
-            "id": "b",
-            "ownerId": "s",
-            "type": "dependent_care_fsa",
-            "employerId": "e2",
-            "existingContributions": {
-              "dependentCareSalaryReduction": 5000
-            },
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000,
-                "spouseEarnedIncome": 5000
-              }
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.status": "indeterminate",
-        "accounts.0.statutoryMaximumAnnualContribution": null,
-        "accounts.0.dependentCareFsa.applicableExclusionLimit": null,
-        "accounts.1.status": "indeterminate",
-        "accounts.1.statutoryMaximumAnnualContribution": null,
-        "totals.dependentCareAssistanceExclusion": 0
-      }
-    },
-    {
       "name": "1986 predates the IRC 129(a)(2)(A) limitation of exclusion",
       "description": "The Tax Reform Act of 1986, Pub. L. 99-514 section 1163(a), amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The Code's 1986 amendment note quotes the prior text of subsection (a), which excluded employer-provided dependent care assistance with no dollar cap at all. So 1986 is indeterminate with a null limit rather than unavailable with a zero: the exclusion existed, the ceiling did not.",
       "input": {
@@ -5722,7 +5616,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1950
+            "birthYear": 1950,
+            "dependentCareEarnedIncome": 40000
           }
         ],
         "accounts": [
@@ -5730,12 +5625,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dcap",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 40000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5756,7 +5646,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1950
+            "birthYear": 1950,
+            "dependentCareEarnedIncome": 40000
           }
         ],
         "accounts": [
@@ -5764,12 +5655,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dcap",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 40000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -5792,7 +5678,8 @@
             "birthYear": 1985,
             "compensation": {
               "w2Compensation": 120000
-            }
+            },
+            "dependentCareEarnedIncome": 120000
           }
         ],
         "accounts": [
@@ -5806,12 +5693,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 120000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },
@@ -6148,7 +6030,8 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985
+            "birthYear": 1985,
+            "dependentCareEarnedIncome": 90000
           }
         ],
         "accounts": [
@@ -6166,12 +6049,7 @@
             "id": "d",
             "ownerId": "t",
             "type": "dependent_care_fsa",
-            "employerId": "e",
-            "planRules": {
-              "dependentCareFsa": {
-                "employeeEarnedIncome": 90000
-              }
-            }
+            "employerId": "e"
           }
         ]
       },

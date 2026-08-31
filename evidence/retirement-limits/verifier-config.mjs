@@ -53,6 +53,7 @@ export default {
     ["iraNondeductibleContributionAvailable_408o", ["ira", "nondeductibleContributionAvailable"], "IRC 408(o)(1)"],
     ["iraSpousalIraAvailable_219cHistorical", ["ira", "spousalIraAvailable"], "IRS SOI Bulletin, one-earner spousal IRA rule"],
     ["iraNonworkingSpouseIndividualLimit_219c", ["ira", "nonworkingSpouseIndividualLimit"], "IRC 219(c)(2), 2000-dollar per-account ceiling on the spousal IRA; null once SBJPA gave each spouse a full limit for 1997"],
+    ["iraSpousalDeductionTwiceTheLesser_220b1A", ["ira", "spousalDeductionIsTwiceTheLesserOfContributions"], "Former IRC 220(b)(1)(A): the one-earner deduction is twice the amount paid to whichever account received the lesser amount, so no per-account ceiling exists for the years it governs"],
     ["iraOneEarnerHouseholdCombinedLimit_219c", ["ira", "oneEarnerHouseholdCombinedLimit"], "IRC 219(c), no fixed one-earner household cap"],
     ["iraTraditionalContributionAge70HalfRestriction_219d1", ["ira", "traditionalContributionAge70HalfRestriction"], "IRC 219(d)(1), repealed for years after 2019"],
     ["iraRothAvailable_408A", ["ira", "rothAvailable"], "IRC 408A, effective for years after 1997"],

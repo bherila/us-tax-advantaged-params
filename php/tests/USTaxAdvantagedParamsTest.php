@@ -709,20 +709,30 @@ test('the health FSA builder reaches every IRC 125(i) plan fact', function (): v
 });
 
 test('validates IRC 129 earned income facts before calculating anything', function (): void {
-    $cases = [
-        'INVALID_MONEY' => ['employeeEarnedIncome' => -1],
-        'INVALID_BOOLEAN' => ['spouseIsStudentOrIncapableOfSelfCare' => 'yes'],
+    // The IRC 129(b)(1) facts describe the people on the return, not the
+    // program, so they are validated on the person rather than on plan rules.
+    $personCases = [
+        'INVALID_MONEY' => ['dependentCareEarnedIncome' => -1],
+        'INVALID_BOOLEAN' => ['isStudentOrIncapableOfSelfCare' => 'yes'],
     ];
-    foreach ($cases as $expectedCode => $rules) {
+    foreach ($personCases as $expectedCode => $extra) {
         try {
-            scenario(2026, [['id' => 't', 'birthYear' => 1985]], [[
+            scenario(2026, [array_merge(['id' => 't', 'birthYear' => 1985], $extra)], [[
                 'id' => 'd', 'ownerId' => 't', 'type' => 'dependent_care_fsa',
-                'planRules' => ['dependentCareFsa' => $rules],
             ]]);
             failTest("Expected ParameterException {$expectedCode}");
         } catch (ParameterException $error) {
             assertSameValue($expectedCode, $error->errorCode);
         }
+    }
+    try {
+        scenario(2026, [['id' => 't', 'birthYear' => 1985]], [[
+            'id' => 'd', 'ownerId' => 't', 'type' => 'dependent_care_fsa',
+            'planRules' => ['dependentCareFsa' => ['planDocumentLimit' => -1]],
+        ]]);
+        failTest('Expected ParameterException INVALID_MONEY');
+    } catch (ParameterException $error) {
+        assertSameValue('INVALID_MONEY', $error->errorCode);
     }
     assertSameValue(AccountType::DEPENDENT_CARE_FSA->value, U::normalizeAccountType('DCAP'));
     assertSameValue(AccountType::DEPENDENT_CARE_FSA->value, U::normalizeAccountType('dependent care assistance'));
@@ -731,17 +741,19 @@ test('validates IRC 129 earned income facts before calculating anything', functi
 test('the dependent care builder reaches the IRC 129(b) earned income facts', function (): void {
     $result = ScenarioBuilder::forTaxYear(2026)
         ->filingStatus(FilingStatus::MARRIED_FILING_JOINTLY)
-        ->taxpayer('t', static fn ($person) => $person->bornIn(1985))
-        ->spouse('s', static fn ($person) => $person->bornIn(1986))
+        ->taxpayer('t', static fn ($person) => $person->bornIn(1985)->dependentCareEarnedIncome(90000))
+        ->spouse('s', static fn ($person) => $person->bornIn(1986)->dependentCareEarnedIncome(4000))
         ->addAccount(
             (new AccountBuilder('d', 't', AccountType::DEPENDENT_CARE_FSA))
-                ->employer('e')
-                ->dependentCareEarnedIncome(90000, 4000),
+                ->employer('e'),
         )
         ->calculate();
     $dc = accountResult($result, 'd');
     assertSameValue(CalculationStatus::DETERMINATE->value, $dc['status']);
-    assertSameValue(4000.0, $dc['statutoryMaximumAnnualContribution']);
+    // The statutory maximum is the IRC 129(a)(2)(A) amount; what the supplied
+    // earned income allows within it is the input-based maximum.
+    assertSameValue(7500.0, $dc['statutoryMaximumAnnualContribution']);
+    assertSameValue(4000.0, $dc['maximumAnnualContributionBasedOnInputs']);
     assertSameValue(7500.0, $dc['dependentCareFsa']['statutoryExclusion']);
     assertSameValue(4000.0, $dc['dependentCareFsa']['earnedIncomeLimitation']);
     assertSameValue(0.0, $dc['federalTaxEffects']['federalAgiReduction']);

@@ -696,6 +696,15 @@ test("the health FSA builder reaches every IRC 125(i) plan fact", () => {
 });
 
 test("validates IRC 129 earned income facts before calculating anything", () => {
+  // The IRC 129(b)(1) facts describe the people on the return, not the program,
+  // so they are validated on the person rather than on plan rules.
+  const buildPerson = (person: Record<string, unknown>) => () =>
+    U.calculate({
+      taxYear: 2026,
+      filingStatus: "S",
+      persons: [{ id: "t", birthYear: 1985, ...person }],
+      accounts: [{ id: "d", ownerId: "t", type: "dependent_care_fsa" }],
+    });
   const build = (dependentCareFsa: Record<string, unknown>) => () =>
     U.calculate({
       taxYear: 2026,
@@ -708,9 +717,10 @@ test("validates IRC 129 earned income facts before calculating anything", () => 
   const codeIs = (code: string) => (error: unknown) =>
     error instanceof ParameterError && error.code === code;
 
-  assert.throws(build({ employeeEarnedIncome: -1 }), codeIs("INVALID_MONEY"));
-  assert.throws(build({ spouseEarnedIncome: "60000" }), codeIs("INVALID_MONEY"));
-  assert.throws(build({ spouseIsStudentOrIncapableOfSelfCare: "yes" }), codeIs("INVALID_BOOLEAN"));
+  assert.throws(buildPerson({ dependentCareEarnedIncome: -1 }), codeIs("INVALID_MONEY"));
+  assert.throws(buildPerson({ dependentCareEarnedIncome: "60000" }), codeIs("INVALID_MONEY"));
+  assert.throws(buildPerson({ isStudentOrIncapableOfSelfCare: "yes" }), codeIs("INVALID_BOOLEAN"));
+  assert.throws(build({ planDocumentLimit: -1 }), codeIs("INVALID_MONEY"));
   assert.equal(U.normalizeAccountType("DCAP"), AccountType.DEPENDENT_CARE_FSA);
   assert.equal(U.normalizeAccountType("dependent care assistance"), AccountType.DEPENDENT_CARE_FSA);
 });
@@ -718,15 +728,16 @@ test("validates IRC 129 earned income facts before calculating anything", () => 
 test("the dependent care builder reaches the IRC 129(b) earned income facts", () => {
   const result = U.forTaxYear(2026)
     .filingStatus(FilingStatus.MARRIED_FILING_JOINTLY)
-    .taxpayer("t", (person) => person.bornIn(1985))
-    .spouse("s", (person) => person.bornIn(1986))
-    .account("d", "t", AccountType.DEPENDENT_CARE_FSA, (plan) =>
-      plan.employer("e").dependentCareEarnedIncome(90_000, 4_000),
-    )
+    .taxpayer("t", (person) => person.bornIn(1985).dependentCareEarnedIncome(90_000))
+    .spouse("s", (person) => person.bornIn(1986).dependentCareEarnedIncome(4_000))
+    .account("d", "t", AccountType.DEPENDENT_CARE_FSA, (plan) => plan.employer("e"))
     .calculate();
   const dc = account(result, "d");
   assert.equal(dc.status, CalculationStatus.DETERMINATE);
-  assert.equal(dc.statutoryMaximumAnnualContribution, 4_000);
+  // The statutory maximum is the IRC 129(a)(2)(A) amount; what the supplied
+  // earned income allows within it is the input-based maximum.
+  assert.equal(dc.statutoryMaximumAnnualContribution, 7_500);
+  assert.equal(dc.maximumAnnualContributionBasedOnInputs, 4_000);
   assert.equal(dc.dependentCareFsa?.statutoryExclusion, 7_500);
   assert.equal(dc.dependentCareFsa?.earnedIncomeLimitation, 4_000);
   assert.equal(dc.federalTaxEffects.federalAgiReduction, 0);
