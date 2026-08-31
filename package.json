@@ -20,12 +20,14 @@
     },
     "./data/retirement-parameters.json": "./data/retirement-parameters.json",
     "./data/hsa-parameters.json": "./data/hsa-parameters.json",
+    "./data/fsa-parameters.json": "./data/fsa-parameters.json",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "data/retirement-parameters.json",
     "data/hsa-parameters.json",
+    "data/fsa-parameters.json",
     "README.md",
     "LICENSE",
     "SOURCES.md"
@@ -52,7 +54,8 @@
     "prepack": "npm run verify",
     "validate:evidence": "node scripts/verify-evidence.mjs",
     "validate:evidence:retirement": "node scripts/verify-evidence.mjs retirement-limits",
-    "validate:evidence:hsa": "node scripts/verify-evidence.mjs hsa-limits"
+    "validate:evidence:hsa": "node scripts/verify-evidence.mjs hsa-limits",
+    "validate:evidence:fsa": "node scripts/verify-evidence.mjs fsa-limits"
   },
   "keywords": [
     "tax-advantaged",

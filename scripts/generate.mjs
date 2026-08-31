@@ -27,6 +27,7 @@ async function readCanonical(relativePath) {
 
 const parameters = await readCanonical("data/retirement-parameters.json");
 const hsaParameters = await readCanonical("data/hsa-parameters.json");
+const fsaParameters = await readCanonical("data/fsa-parameters.json");
 
 function replaceGeneratedBlock(source, startMarker, endMarker, generated) {
   const start = source.indexOf(startMarker);
@@ -81,6 +82,13 @@ await update(
 );
 
 await update(
+  tsPath,
+  "/* <generated-fsa-parameters> */",
+  "/* </generated-fsa-parameters> */",
+  `const RAW_FSA_PARAMETERS: FsaParameterData = ${JSON.stringify(fsaParameters, null, 2)} as FsaParameterData;`,
+);
+
+await update(
   phpPath,
   "/* <generated-parameters> */",
   "/* </generated-parameters> */",
@@ -92,4 +100,11 @@ await update(
   "/* <generated-hsa-parameters> */",
   "/* </generated-hsa-parameters> */",
   `private const HSA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(hsaParameters)}\nJSON;`,
+);
+
+await update(
+  phpPath,
+  "/* <generated-fsa-parameters> */",
+  "/* </generated-fsa-parameters> */",
+  `private const FSA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(fsaParameters)}\nJSON;`,
 );

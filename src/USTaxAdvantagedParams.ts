@@ -555,6 +555,8 @@ export interface ScenarioResult {
   parameters: YearParameters;
   /** IRC 223 parameters for the year, or null when HSAs did not exist or no revenue procedure is encoded. */
   hsaParameters: HsaYearParameters | null;
+  /** IRC 125 and IRC 129 flexible spending arrangement parameters, or null for a year with no encoded figures. */
+  fsaParameters: FsaYearParameters | null;
   accounts: AccountCalculationResult[];
   conversions: ConversionCalculationResult[];
   totals: ScenarioTotals;
@@ -681,6 +683,46 @@ interface HsaParameterData {
   historicalCoveragePolicy: Record<string, string>;
   sources: Array<Record<string, string>>;
   years: Record<string, HsaYearParameters>;
+}
+
+/** IRC 125(i) health flexible spending arrangement amounts for one year. */
+export interface HealthFsaYearParameters {
+  /** IRC 125(i)(1) dollar limitation on salary reduction contributions, as indexed under IRC 125(i)(2). */
+  salaryReductionLimit: Money;
+  /**
+   * The maximum unused amount from *this* year that a plan permitting a
+   * carryover may carry into the immediately following year. Notice 2013-71
+   * fixed it at $500; Notice 2020-33 raised it to 20 percent of that year's
+   * IRC 125(i) limit. Both are phrased as the amount carried *from* a plan
+   * year, so it belongs to the source year and never to the receiving one.
+   */
+  carryoverLimit: Money;
+}
+
+/** IRC 129(a)(2)(A) dependent care assistance exclusion amounts for one year. */
+export interface DependentCareYearParameters {
+  /** IRC 129(a)(2)(A) exclusion for a return other than a married separate one. */
+  exclusionLimit: Money;
+  /** IRC 129(a)(2)(A) parenthetical amount for a separate return by a married individual. */
+  marriedFilingSeparatelyExclusionLimit: Money;
+}
+
+export interface FsaYearParameters {
+  year: number;
+  /** Null for a year before IRC 125(i) existed, when no statutory salary-reduction ceiling applied. */
+  healthFsa: HealthFsaYearParameters | null;
+  dependentCare: DependentCareYearParameters;
+}
+
+interface FsaParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, FsaYearParameters>;
 }
 
 /* <generated-parameters> */
@@ -6856,6 +6898,561 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
 } as HsaParameterData;
 /* </generated-hsa-parameters> */
 
+/* <generated-fsa-parameters> */
+const RAW_FSA_PARAMETERS: FsaParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1987,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "IRC 129(a)(2)(A) fixes the dependent care assistance exclusion, and IRC 125(i) fixes the health flexible spending arrangement salary-reduction limit. The table starts at 1987, the first taxable year for which Pub. L. 99-514 section 1163 supplied a dependent care dollar limitation, and is never extrapolated forward: a tax year with no published figure returns an unavailable or indeterminate status and a diagnostic rather than a projected amount.",
+    "healthFsaFirstYear": "IRC 125(i) was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, amended by section 10902 of that Act and by section 1403(b) of the Health Care and Education Reconciliation Act of 2010, Pub. L. 111-152. Notice 2012-40 reads its effective date as applying to plan years beginning after December 31, 2012. Before that there was no statutory salary-reduction ceiling at all, only whatever the plan document imposed, so healthFsa is null for 1987 through 2012 and the engine returns an indeterminate result rather than a fabricated ceiling.",
+    "planYearVersusTaxYear": "Notice 2012-40 section III holds that the term \"taxable year\" in IRC 125(i) refers to the plan year of the cafeteria plan, so the statutory limit runs on a plan-year basis. Every annual revenue procedure nonetheless publishes the figure \"for taxable years beginning in\" the year, and this package is keyed by tax year throughout. Rows are therefore keyed by tax year and are exact for a calendar-year plan. For a non-calendar plan year the applicable figure depends on the plan year start date, which is a fact this engine does not hold, so it diagnoses rather than assuming.",
+    "healthFsaCarryoverBelongsToSourceYear": "Notice 2013-71 section III created the carryover as a plan option at a fixed $500, and Notice 2020-33 section III.A raised it to 20 percent of the IRC 125(i) limit for the plan year and indexed it with that limit. Both phrase it as the maximum unused amount FROM a plan year carried to the immediately following plan year, so carryoverLimit belongs to the year the funds came from and never to the year they land in. Notice 2013-71 also holds that the carryover does not count against or otherwise affect the IRC 125(i) limit of the receiving year, and that a plan may offer a carryover or a grace period but not both.",
+    "section214ReliefNotModelled": "Section 214 of the Consolidated Appropriations Act, 2021, Pub. L. 116-260, implemented by Notice 2021-15, permitted a plan to carry over ALL unused amounts from plan years ending in 2020 and in 2021, and permitted a dependent care carryover that is otherwise forbidden. It is entirely a plan option that the engine cannot read, so it is not modelled; a carryover computed out of a 2020 or 2021 plan year carries a diagnostic saying so rather than silently applying the ordinary cap.",
+    "dependentCareNotIndexed": "The IRC 129(a)(2)(A) amounts are statutory and carry no inflation adjustment, which is why they never appear in the annual revenue procedures. They changed twice: Pub. L. 117-2 section 9632 substituted $10,500 (half that for a married separate return) for taxable years beginning after December 31, 2020 and before January 1, 2022, and Pub. L. 119-21 section 70404 substituted $7,500 ($3,750) for taxable years beginning after December 31, 2025. Each year is encoded as its own row so the 2021 increase and its reversion are both data rather than a rule."
+  },
+  "sources": [
+    {
+      "id": "usc-26-125",
+      "title": "26 U.S.C. 125, Cafeteria plans (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec125.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "usc-26-129",
+      "title": "26 U.S.C. 129, Dependent care assistance programs (2024 edition of the United States Code)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec129.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-117-2",
+      "title": "American Rescue Plan Act of 2021, Pub. L. 117-2, section 9632 (2021-only dependent care exclusion)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-117publ2/pdf/PLAW-117publ2.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70404 (dependent care exclusion raised for taxable years beginning after 2025)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-notice-2012-40",
+      "title": "Notice 2012-40, the $2,500 IRC 125(i) limit, its plan-year basis, and the per-employer rule",
+      "url": "https://www.irs.gov/pub/irs-drop/n-12-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2013-71",
+      "title": "Notice 2013-71, modification of the use-or-lose rule to permit a $500 health FSA carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/n-13-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2020-33",
+      "title": "Notice 2020-33, carryover indexed at 20 percent of the IRC 125(i) limit",
+      "url": "https://www.irs.gov/pub/irs-drop/n-20-33.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-42",
+      "title": "Notice 2005-42, the grace period of up to two months and 15 days",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-42.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-86",
+      "title": "Notice 2005-86, health savings account eligibility during a cafeteria plan grace period",
+      "url": "https://www.irs.gov/pub/irs-drop/n-05-86.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-15",
+      "title": "Notice 2021-15, the Consolidated Appropriations Act, 2021 section 214 temporary carryover relief",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-15.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-26",
+      "title": "Notice 2021-26, the ARPA section 9632 dependent care increase and its interaction with section 214 carryovers",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-26.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-rul-2004-45",
+      "title": "Rev. Rul. 2004-45, general-purpose, limited-purpose, and post-deductible health FSAs under IRC 223(c)(1)(A)(ii)",
+      "url": "https://www.irs.gov/pub/irs-drop/rr-04-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "fr-72-43938",
+      "title": "72 Fed. Reg. 43938 (Aug. 6, 2007), proposed regulations under IRC 125, including Prop. Treas. Reg. 1.125-1(e) and 1.125-5(b)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2007-08-06/pdf/E7-14827.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "irs-rev-proc-2012-41",
+      "title": "Internal Revenue Bulletin 2012-45, carrying Rev. Proc. 2012-41, whose 2013 adjusted items contain no Cafeteria Plans entry",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb12-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-35",
+      "title": "Rev. Proc. 2013-35, section 3.15, 2014 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61, section 3.16, 2015 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53, section 3.16, 2016 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55, section 3.16, 2017 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58, section 3.16, 2018 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-18",
+      "title": "Internal Revenue Bulletin 2018-10, carrying Rev. Proc. 2018-18, which reissued 2018 figures after the Tax Cuts and Jobs Act without touching section 3.16",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb18-10.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57, section 3.17, 2019 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44, section 3.17, 2020 cafeteria plan amount",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45, section 3.17, 2021 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45, section 3.16, 2022 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38, section 3.16, 2023 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34, section 3.16, 2024 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40, section 3.16, 2025 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32, section 3.15, 2026 cafeteria plan amount and maximum carryover",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1987": {
+      "year": 1987,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1988": {
+      "year": 1988,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1989": {
+      "year": 1989,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1990": {
+      "year": 1990,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1991": {
+      "year": 1991,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1992": {
+      "year": 1992,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1993": {
+      "year": 1993,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1994": {
+      "year": 1994,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1995": {
+      "year": 1995,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1996": {
+      "year": 1996,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1997": {
+      "year": 1997,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "healthFsa": null,
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "healthFsa": {
+        "salaryReductionLimit": 2500,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "healthFsa": {
+        "salaryReductionLimit": 2550,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "healthFsa": {
+        "salaryReductionLimit": 2600,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "healthFsa": {
+        "salaryReductionLimit": 2650,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "healthFsa": {
+        "salaryReductionLimit": 2700,
+        "carryoverLimit": 500
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "healthFsa": {
+        "salaryReductionLimit": 2750,
+        "carryoverLimit": 550
+      },
+      "dependentCare": {
+        "exclusionLimit": 10500,
+        "marriedFilingSeparatelyExclusionLimit": 5250
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "healthFsa": {
+        "salaryReductionLimit": 2850,
+        "carryoverLimit": 570
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "healthFsa": {
+        "salaryReductionLimit": 3050,
+        "carryoverLimit": 610
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "healthFsa": {
+        "salaryReductionLimit": 3200,
+        "carryoverLimit": 640
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "healthFsa": {
+        "salaryReductionLimit": 3300,
+        "carryoverLimit": 660
+      },
+      "dependentCare": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "healthFsa": {
+        "salaryReductionLimit": 3400,
+        "carryoverLimit": 680
+      },
+      "dependentCare": {
+        "exclusionLimit": 7500,
+        "marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    }
+  }
+} as FsaParameterData;
+/* </generated-fsa-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -7555,6 +8152,7 @@ interface CalculationContext {
   filingStatus: FilingStatus;
   parameters: YearParameters;
   hsaParameters: HsaYearParameters | null;
+  fsaParameters: FsaYearParameters | null;
   persons: Map<string, NormalizedPerson>;
   accountsById: Map<string, NormalizedAccount>;
   scenarioDiagnostics: Diagnostic[];
@@ -8122,6 +8720,7 @@ function createCalculationContext(
   filingStatus: FilingStatus,
   parameters: YearParameters,
   hsaParameters: HsaYearParameters | null,
+  fsaParameters: FsaYearParameters | null,
   persons: Map<string, NormalizedPerson>,
   accounts: NormalizedAccount[],
   scenarioDiagnostics: Diagnostic[],
@@ -8131,6 +8730,7 @@ function createCalculationContext(
     filingStatus,
     parameters,
     hsaParameters,
+    fsaParameters,
     persons,
     accountsById: new Map(accounts.map((account) => [account.id, account])),
     scenarioDiagnostics,
@@ -8432,6 +9032,11 @@ interface HsaPersonCoverage {
 
 function hsaParametersForYear(year: number): HsaYearParameters | null {
   const row = RAW_HSA_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+function fsaParametersForYear(year: number): FsaYearParameters | null {
+  const row = RAW_FSA_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
 }
 
@@ -11241,6 +11846,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const taxYear = input.taxYear;
   const parameters = getParametersForYear(taxYear);
   const hsaParameters = hsaParametersForYear(taxYear);
+  const fsaParameters = fsaParametersForYear(taxYear);
   const filingStatus = parseFilingStatus(
     input.filingStatus,
     scenarioDiagnostics,
@@ -11256,6 +11862,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     filingStatus,
     parameters,
     hsaParameters,
+    fsaParameters,
     persons,
     accounts,
     scenarioDiagnostics,
@@ -11346,6 +11953,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     filingStatus,
     parameters,
     hsaParameters,
+    fsaParameters,
     accounts: accountResults,
     conversions: conversionResults,
     totals: calculateScenarioTotals(accountResults, conversionResults),
@@ -11965,6 +12573,22 @@ export class USTaxAdvantagedParams {
 
   public static hsaSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_HSA_PARAMETERS.sources);
+  }
+
+  /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */
+  public static fsaParametersForYear(taxYear: number): FsaYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return fsaParametersForYear(taxYear);
+  }
+
+  public static supportedFsaTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_FSA_PARAMETERS.supportedTaxYears };
+  }
+
+  public static fsaSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_FSA_PARAMETERS.sources);
   }
 }
 

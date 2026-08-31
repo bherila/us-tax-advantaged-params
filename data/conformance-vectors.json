@@ -3876,6 +3876,68 @@
         "accounts.1.diagnostics.1.code": "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         "totals.hsaContribution": 0
       }
+    },
+    {
+      "name": "2026 flexible spending arrangement parameters are published in the result",
+      "description": "Rev. Proc. 2025-32 section 3.15 sets the 2026 IRC 125(i) dollar limitation on health FSA salary reduction contributions at 3400 and states that where the cafeteria plan permits a carryover the maximum carryover amount is 680, which is 20 percent of 3400 under Notice 2020-33. Pub. L. 119-21 section 70404 struck \"$5,000 ($2,500\" from IRC 129(a)(2)(A) and inserted \"$7,500 ($3,750\" for taxable years beginning after December 31, 2025, so the 2026 dependent care exclusion is 7500 and 3750 on a married separate return. The scenario result carries these alongside hsaParameters whether or not the scenario holds any flexible spending arrangement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters.year": 2026,
+        "fsaParameters.healthFsa.salaryReductionLimit": 3400,
+        "fsaParameters.healthFsa.carryoverLimit": 680,
+        "fsaParameters.dependentCare.exclusionLimit": 7500,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    },
+    {
+      "name": "2012 carries no IRC 125(i) health FSA parameters",
+      "description": "IRC 125(i) was added by Pub. L. 111-148 section 9005 and Notice 2012-40 section III reads its effective date as reaching plan years beginning after December 31, 2012, so no statutory salary-reduction ceiling existed for 2012 and healthFsa is null rather than a carried-back 2500. The IRC 129(a)(2)(A) exclusion is statutory and unindexed and was 5000, or 2500 on a married separate return, from the taxable year beginning in 1987 under Pub. L. 99-514 section 1163, so it is present for 2012 even though the health FSA block is not. Paired with the 2026 vector, this pins the effective date rather than merely the current figures.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters.year": 2012,
+        "fsaParameters.healthFsa": null,
+        "fsaParameters.dependentCare.exclusionLimit": 5000,
+        "fsaParameters.dependentCare.marriedFilingSeparatelyExclusionLimit": 2500
+      }
+    },
+    {
+      "name": "1986 predates the IRC 129 dependent care exclusion limitation",
+      "description": "Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, and section 1163(c) applies that amendment to taxable years beginning after December 31, 1986. The 1986 amendment note in the Code quotes the prior text of subsection (a), which carried no dollar cap. The FSA parameter table therefore starts at 1987 and 1986 returns null rather than a back-projected 5000, while the retirement parameters for the year are unaffected.",
+      "input": {
+        "taxYear": 1986,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1950
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "fsaParameters": null,
+        "parameters.year": 1986
+      }
     }
   ]
 }

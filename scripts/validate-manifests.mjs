@@ -63,6 +63,14 @@ if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USTaxAdvantaged
 if (packageJson.exports?.["./data/retirement-parameters.json"] !== "./data/retirement-parameters.json") {
   fail("data file export target is incorrect");
 }
+for (const dataFile of ["hsa-parameters.json", "fsa-parameters.json"]) {
+  if (packageJson.exports?.[`./data/${dataFile}`] !== `./data/${dataFile}`) {
+    fail(`data/${dataFile} export target is incorrect`);
+  }
+  if (!packageJson.files?.includes(`data/${dataFile}`)) {
+    fail(`data/${dataFile} is missing from the package files allowlist`);
+  }
+}
 for (const script of [
   "build",
   "test:ts",
@@ -126,12 +134,17 @@ const requiredSourceFiles = [
   "php/tests/USTaxAdvantagedParamsTest.php",
   "php/tests/ConformanceVectorsTest.php",
   "data/retirement-parameters.json",
+  "data/hsa-parameters.json",
+  "data/fsa-parameters.json",
   "data/conformance-vectors.json",
   "scripts/generate.mjs",
   "scripts/validate-data.mjs",
   "scripts/verify-evidence.mjs",
   "evidence/retirement-limits/verifier-config.mjs",
   "evidence/hsa-limits/verifier-config.mjs",
+  "evidence/fsa-limits/verifier-config.mjs",
+  "evidence/fsa-limits/primary-values.json",
+  "evidence/fsa-limits/SHA256SUMS.txt",
   "scripts/check-parity.mjs",
   "scripts/php-parity-runner.php",
   "scripts/smoke-imports.mjs",

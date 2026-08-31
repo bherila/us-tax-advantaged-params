@@ -1,0 +1,439 @@
+{
+  "_comment": "IRC 125(i) health flexible spending arrangement and IRC 129 dependent care assistance dollar amounts taken verbatim from the annual IRS inflation-adjustment revenue procedures, the named notices, and the statutes in sources/. Verified 2026-08-30. Amounts are dollars. See README.md for method.",
+  "_sources": {
+    "usc-26-125": "26 U.S.C. s.125 (U.S. Government Publishing Office, 2024 edition of the United States Code); s.125(i)(1)-(2) carry the $2,500 base amount and the indexing formula",
+    "usc-26-129": "26 U.S.C. s.129 (U.S. Government Publishing Office, 2024 edition of the United States Code); s.129(a)(2)(A) carries $5,000 ($2,500), s.129(a)(2)(D) the 2021 rule, s.129(b) the earned income limitation",
+    "pl-117-2": "American Rescue Plan Act of 2021, Pub. L. 117-2, s.9632, temporary 2021 increase in the s.129 exclusion",
+    "pl-119-21": "Pub. L. 119-21, s.70404, increase in the s.129 exclusion for taxable years beginning after December 31, 2025",
+    "irs-notice-2012-40": "Notice 2012-40, the first-year $2,500 s.125(i) limit, its plan-year basis, and the employee-by-employee and per-unrelated-employer rules",
+    "irs-notice-2013-71": "Notice 2013-71, modification of the use-or-lose rule to permit a $500 carryover of unused health FSA amounts, mutually exclusive with a grace period",
+    "irs-notice-2020-33": "Notice 2020-33, carryover raised to 20 percent of the s.125(i) limit and indexed with it",
+    "irs-rev-proc-2012-41": "Internal Revenue Bulletin 2012-45, carrying Rev. Proc. 2012-41; its section 3 list of 2013 adjusted items has no Cafeteria Plans entry (negative evidence for 2013)",
+    "irs-rev-proc-2013-35": "Rev. Proc. 2013-35, 2014 inflation adjusted items, section 3.15 (Cafeteria Plans)",
+    "irs-rev-proc-2014-61": "Rev. Proc. 2014-61, 2015 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2015-53": "Rev. Proc. 2015-53, 2016 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2016-55": "Rev. Proc. 2016-55, 2017 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2017-58": "Rev. Proc. 2017-58, 2018 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2018-18": "Internal Revenue Bulletin 2018-10, carrying Rev. Proc. 2018-18, which modified and superseded named sections of Rev. Proc. 2017-58 after the Tax Cuts and Jobs Act; section 3.16 is not among them",
+    "irs-rev-proc-2018-57": "Rev. Proc. 2018-57, 2019 inflation adjusted items, section 3.17 (Cafeteria Plans)",
+    "irs-rev-proc-2019-44": "Rev. Proc. 2019-44, 2020 inflation adjusted items, section 3.17 (Cafeteria Plans)",
+    "irs-rev-proc-2020-45": "Rev. Proc. 2020-45, 2021 inflation adjusted items, section 3.17 (Cafeteria Plans); the first annual procedure in this sequence to state a carryover amount",
+    "irs-rev-proc-2021-45": "Rev. Proc. 2021-45, 2022 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2022-38": "Rev. Proc. 2022-38, 2023 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2023-34": "Rev. Proc. 2023-34, 2024 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2024-40": "Rev. Proc. 2024-40, 2025 inflation adjusted items, section 3.16 (Cafeteria Plans)",
+    "irs-rev-proc-2025-32": "Rev. Proc. 2025-32, 2026 inflation adjusted items, section 3.15 (Cafeteria Plans)",
+    "irs-notice-2005-42": "Notice 2005-42, the grace period of up to two months and 15 days following the end of a plan year",
+    "irs-notice-2005-86": "Notice 2005-86, health savings account eligibility during a cafeteria plan grace period",
+    "irs-notice-2021-15": "Notice 2021-15, the Consolidated Appropriations Act, 2021 section 214 temporary carryover relief for plan years ending in 2020 and 2021",
+    "irs-notice-2021-26": "Notice 2021-26, the ARPA section 9632 dependent care increase and its interaction with section 214 carryovers",
+    "irs-rev-rul-2004-45": "Rev. Rul. 2004-45, general-purpose health FSA coverage is disqualifying under IRC 223(c)(1)(A)(ii) while limited-purpose and post-deductible coverage is not",
+    "fr-72-43938": "72 Fed. Reg. 43938 (Aug. 6, 2007), notice of proposed rulemaking under IRC 125; Prop. Treas. Reg. 1.125-1(e) grace period and 1.125-5(b) flex credits. Proposed, not final, regulations."
+  },
+  "_dependentCareComment": "The IRC 129(a)(2)(A) amounts are not inflation adjusted, so no annual revenue procedure states them and they are cited to the Code and to the acts that changed them, the same way the HSA corpus cites the IRC 223(b)(3)(B) age-55 amount to the statute. The series starts at 1987 because Pub. L. 99-514 section 1163(a) added the limitation of exclusion applicable to taxable years beginning after December 31, 1986; before that IRC 129(a) carried no dollar cap, which the 1986 amendment note in usc-26-129 shows by quoting the prior text. The 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures, so the amounts ran unbroken from 1987 to 2020 and again from 2022 to 2025.",
+  "_healthFsaCarryoverComment": "The carryover is an IRS-created plan option, not a statutory one, and it belongs to the plan year the amounts are carried FROM. Notice 2013-71 created it at a fixed $500; Notice 2020-33 raised it to 20 percent of the IRC 125(i) limit for that plan year. Rev. Proc. 2013-35 through Rev. Proc. 2019-44 state the IRC 125(i) limit and no carryover figure, so 2013 through 2019 are cited to Notice 2013-71 and 2020 to Notice 2020-33. Rev. Proc. 2020-45 is the first annual procedure here to state a carryover amount itself.",
+  "planYears": {
+    "1987": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1988": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1989": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1990": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1991": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1992": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1993": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1994": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1995": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1996": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1997": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1998": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "1999": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2000": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2001": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2002": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2003": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2004": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2005": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2006": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2007": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2008": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2009": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2010": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2011": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2012": {
+      "source": "usc-26-129",
+      "healthFsa_note": "IRC 125(i) did not exist for this year. It was added by the Patient Protection and Affordable Care Act, Pub. L. 111-148, section 9005, and applies to plan years beginning after December 31, 2012 (Notice 2012-40 section III), so no statutory salary-reduction ceiling is recorded and none is compared.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2013": {
+      "source": "irs-notice-2012-40",
+      "healthFsaSalaryReductionLimit_125i": 2500,
+      "healthFsaSalaryReductionLimit_125i_source": "Notice 2012-40 section III, the unindexed statutory $2,500 amount at IRC 125(i)(1); no annual revenue procedure states a 2013 figure. Rev. Proc. 2012-41 (irb12-45) lists the 2013 adjusted items and has no Cafeteria Plans entry, because IRC 125(i)(2) indexes only for years beginning after December 31, 2013.",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2014": {
+      "source": "irs-rev-proc-2013-35",
+      "healthFsaSalaryReductionLimit_125i": 2500,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2013-35 section 3.15 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2015": {
+      "source": "irs-rev-proc-2014-61",
+      "healthFsaSalaryReductionLimit_125i": 2550,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2014-61 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2016": {
+      "source": "irs-rev-proc-2015-53",
+      "healthFsaSalaryReductionLimit_125i": 2550,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2015-53 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2017": {
+      "source": "irs-rev-proc-2016-55",
+      "healthFsaSalaryReductionLimit_125i": 2600,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2016-55 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2018": {
+      "source": "irs-rev-proc-2017-58",
+      "healthFsaSalaryReductionLimit_125i": 2650,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2017-58 section 3.16 (Cafeteria Plans). Rev. Proc. 2018-18 (irb18-10) reissued the 2018 figures after the Tax Cuts and Jobs Act changed the indexing measure, but its sections 3 and 5 list the modified and superseded sections of Rev. Proc. 2017-58 as running 3.14, 3.15, 3.18 - section 3.16 is absent - so the Cafeteria Plans figure was neither restated nor changed.",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2019": {
+      "source": "irs-rev-proc-2018-57",
+      "healthFsaSalaryReductionLimit_125i": 2700,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2018-57 section 3.17 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 500,
+      "healthFsaCarryoverLimit_source": "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2020": {
+      "source": "irs-rev-proc-2019-44",
+      "healthFsaSalaryReductionLimit_125i": 2750,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2019-44 section 3.17 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 550,
+      "healthFsaCarryoverLimit_source": "Notice 2020-33 section III.A raised the carryover to 20 percent of the IRC 125(i) limit for that plan year and states $550 for a plan year starting in 2020 (20 percent of $2,750). Rev. Proc. 2019-44 states no carryover figure.",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2021": {
+      "source": "irs-rev-proc-2020-45",
+      "healthFsaSalaryReductionLimit_125i": 2750,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2020-45 section 3.17 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 550,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $550\" for taxable years beginning in 2021; the 20-percent rule itself is Notice 2020-33 (20 percent of $2750).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 10500,
+        "marriedFilingSeparatelyExclusionLimit": 5250
+      },
+      "dependentCareExclusion_129a2A_source": "American Rescue Plan Act of 2021, Pub. L. 117-2, section 9632(a), adding IRC 129(a)(2)(D): for a taxable year beginning after December 31, 2020 and before January 1, 2022, subparagraph (A) is applied by substituting \"$10,500 (half such dollar amount\" for \"$5,000 ($2,500\". Half of $10,500 is $5,250. Section 9632(b) applies the amendment to taxable years beginning after December 31, 2020. This is not an inflation adjustment, so no revenue procedure carries it; Rev. Proc. 2020-45 predates the March 2021 enactment and could not."
+    },
+    "2022": {
+      "source": "irs-rev-proc-2021-45",
+      "healthFsaSalaryReductionLimit_125i": 2850,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2021-45 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 570,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $570\" for taxable years beginning in 2022; the 20-percent rule itself is Notice 2020-33 (20 percent of $2850).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2023": {
+      "source": "irs-rev-proc-2022-38",
+      "healthFsaSalaryReductionLimit_125i": 3050,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2022-38 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 610,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $610\" for taxable years beginning in 2023; the 20-percent rule itself is Notice 2020-33 (20 percent of $3050).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2024": {
+      "source": "irs-rev-proc-2023-34",
+      "healthFsaSalaryReductionLimit_125i": 3200,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2023-34 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 640,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $640\" for taxable years beginning in 2024; the 20-percent rule itself is Notice 2020-33 (20 percent of $3200).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2025": {
+      "source": "irs-rev-proc-2024-40",
+      "healthFsaSalaryReductionLimit_125i": 3300,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2024-40 section 3.16 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 660,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $660\" for taxable years beginning in 2025; the 20-percent rule itself is Notice 2020-33 (20 percent of $3300).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 5000,
+        "marriedFilingSeparatelyExclusionLimit": 2500
+      },
+      "dependentCareExclusion_129a2A_source": "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures."
+    },
+    "2026": {
+      "source": "irs-rev-proc-2025-32",
+      "healthFsaSalaryReductionLimit_125i": 3400,
+      "healthFsaSalaryReductionLimit_125i_source": "Rev. Proc. 2025-32 section 3.15 (Cafeteria Plans).",
+      "healthFsaCarryoverLimit": 680,
+      "healthFsaCarryoverLimit_source": "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $680\" for taxable years beginning in 2026; the 20-percent rule itself is Notice 2020-33 (20 percent of $3400).",
+      "dependentCareExclusion_129a2A": {
+        "exclusionLimit": 7500,
+        "marriedFilingSeparatelyExclusionLimit": 3750
+      },
+      "dependentCareExclusion_129a2A_source": "Pub. L. 119-21, section 70404(a), striking \"$5,000 ($2,500\" from IRC 129(a)(2)(A) and inserting \"$7,500 ($3,750\"; section 70404(b) applies the amendment to taxable years beginning after December 31, 2025. A fixed-dollar substitution with no indexing mechanism, so no revenue procedure carries it. usc-26-129 is the 2024 edition of the Code and still prints $5,000/$2,500."
+    }
+  }
+}

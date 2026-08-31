@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const parameterPath = join(root, "data", "retirement-parameters.json");
 const hsaPath = join(root, "data", "hsa-parameters.json");
+const fsaPath = join(root, "data", "fsa-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -97,6 +98,7 @@ function requirePositiveAmount(value, label) {
 
 const parameters = await parseCanonicalJson(parameterPath, "data/retirement-parameters.json");
 const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
+const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
 if (parameters) {
@@ -205,6 +207,51 @@ if (hsa) {
   }
 }
 
+if (fsa) {
+  walk(fsa, "fsa");
+  const years = validateYearSpan(fsa, "data/fsa-parameters.json");
+  for (const year of years ?? []) {
+    const label = `FSA year ${year}`;
+    const row = fsa.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+
+    // §125(i) did not exist before 2013, so a null health FSA block is a real
+    // historical state rather than a gap. What is forbidden is a *partial* one.
+    if (row.healthFsa !== null) {
+      requirePositiveAmount(row.healthFsa?.salaryReductionLimit, `${label} healthFsa.salaryReductionLimit`);
+      if (!Number.isInteger(row.healthFsa?.carryoverLimit) || row.healthFsa.carryoverLimit < 0) {
+        fail(`${label} healthFsa.carryoverLimit must be a whole-dollar amount of at least zero.`);
+      }
+      if (row.healthFsa?.carryoverLimit > row.healthFsa?.salaryReductionLimit) {
+        fail(`${label} healthFsa carryover limit exceeds the §125(i) salary-reduction limit.`);
+      }
+    }
+
+    requirePositiveAmount(row.dependentCare?.exclusionLimit, `${label} dependentCare.exclusionLimit`);
+    requirePositiveAmount(
+      row.dependentCare?.marriedFilingSeparatelyExclusionLimit,
+      `${label} dependentCare.marriedFilingSeparatelyExclusionLimit`,
+    );
+    if (row.dependentCare?.marriedFilingSeparatelyExclusionLimit > row.dependentCare?.exclusionLimit) {
+      fail(`${label} married-separate §129 exclusion exceeds the general exclusion.`);
+    }
+  }
+
+  validateSources(fsa.sources, "data/fsa-parameters.json", ["usc-26-125", "usc-26-129", "pl-117-2", "pl-119-21"]);
+
+  // The two §125(i) boundaries the engine reads: 2012 has no statutory
+  // salary-reduction ceiling at all, and 2013 is the first year one exists.
+  if (fsa.years?.["2012"]?.healthFsa !== null) {
+    fail("The 2012 FSA row must carry no §125(i) health FSA block; the limit applies only to plan years beginning after 2012.");
+  }
+  if (fsa.years?.["2013"]?.healthFsa?.salaryReductionLimit !== 2500) {
+    fail("The 2013 FSA row must carry the unindexed statutory §125(i) amount of $2,500.");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -262,6 +309,7 @@ if (errors.length > 0) {
 console.log(
   `Canonical data validation passed: ${Object.keys(parameters.years).length} contiguous retirement tax years, ` +
     `${Object.keys(hsa.years).length} contiguous HSA tax years, ` +
-    `${parameters.sources.length + hsa.sources.length} sources, ` +
+    `${Object.keys(fsa.years).length} contiguous FSA tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );
