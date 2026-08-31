@@ -155,7 +155,8 @@ raising or lowering one means changing it in `composer.json` /
 `package.json`, in `scripts/validate-manifests.mjs`, in
 `.github/workflows/ci.yml`, and in `README.md` together.
 
-`npm run verify` rewrites `VALIDATION.md`, `RELEASE_STATUS.md`, and
+`npm run validate:release` — not `npm run verify` — rewrites `VALIDATION.md`,
+`RELEASE_STATUS.md`, and
 `validation-status.json`; commit those regenerated files with the change that
 produced them.
 
