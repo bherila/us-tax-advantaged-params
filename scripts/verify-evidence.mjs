@@ -77,7 +77,11 @@ async function loadCorpora() {
  *              would verify an assumption rather than the source document.
  * - `bands`    a {start, end} range recorded per member against a [start, end]
  *              pair in the data. Both ends are compared: a band's width is a
- *              convention, not a published figure.
+ *              convention, not a published figure. A member maps to a data
+ *              member name, or to `{ data, citation }` when that member rests
+ *              on a different authority than the rest of the band — a band the
+ *              annual notice publishes can still have one member the notice
+ *              never mentions because the Code fixes it.
  *
  * plus `series`, for a transcription section keyed by year outside the main
  * year blocks.
@@ -136,12 +140,14 @@ function verifyCorpus(config) {
     for (const [field, path, members, citation] of config.bands ?? []) {
       const recorded = block[field];
       if (!recorded) continue;
-      for (const [evidenceMember, dataMember] of Object.entries(members)) {
+      for (const [evidenceMember, target] of Object.entries(members)) {
         const expected = recorded[evidenceMember];
         if (!expected) continue;
+        const dataMember = typeof target === "string" ? target : target.data;
+        const memberCitation = typeof target === "string" ? citation : target.citation;
         const actual = at(year, [...path, dataMember]);
-        record(yearKey, field, `${field}.${evidenceMember}.start`, expected.start, actual?.[0], citation);
-        record(yearKey, field, `${field}.${evidenceMember}.end`, expected.end, actual?.[1], citation);
+        record(yearKey, field, `${field}.${evidenceMember}.start`, expected.start, actual?.[0], memberCitation);
+        record(yearKey, field, `${field}.${evidenceMember}.end`, expected.end, actual?.[1], memberCitation);
       }
     }
   }

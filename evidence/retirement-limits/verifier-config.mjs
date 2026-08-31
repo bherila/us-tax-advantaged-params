@@ -55,7 +55,19 @@ export default {
     [
       "traditionalSpouseCoveredPhaseout_219g7A",
       ["phaseouts", "traditionalIraSpouseCovered"],
-      { marriedFilingJointly: "marriedFilingJointly" },
+      {
+        marriedFilingJointly: "marriedFilingJointly",
+        // No notice publishes this band. §219(g)(7)(A) replaces only the joint
+        // applicable dollar amount, so a married individual filing separately
+        // keeps the zero at §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a
+        // $10,000 width for §219(g)(2)(A)(ii). Until this entry existed the data
+        // carried the band and the verifier compared nothing: UNCOVERED scans
+        // evidence keys, not data keys, so the gap was silent.
+        marriedFilingSeparately: {
+          data: "marriedFilingSeparatelyLivingTogether",
+          citation: "IRC 219(g)(3)(B)(iii), 219(g)(7)(B)",
+        },
+      },
       "IRC 219(g)(7)(A)",
     ],
     [

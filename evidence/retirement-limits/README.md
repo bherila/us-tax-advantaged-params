@@ -31,10 +31,16 @@ SIMPLE catch-up, and §408(k)(2)(C) SEP compensation. The 2013–2026 notices
 publish them too and those blocks do not yet record them — backfilling is a
 coverage gain, not a correction.
 
-All six IRA phase-out bands, **both ends of each**: §219(g)(3) covered,
+All seven IRA phase-out bands, **both ends of each**: §219(g)(3) covered,
 §219(g)(7)(A) spouse-covered, and §408A(c)(3) Roth. A band's width is a
 convention rather than a published figure, so inferring the end from the start
 would verify an assumption instead of the notice.
+
+Seven, not six: the spouse-covered family has a married-filing-separately band
+as well as a joint one. The data has always carried it and the verifier used to
+compare only the joint member, so it went unchecked in every year — silently,
+because `UNCOVERED` scans evidence keys and this gap was a missing evidence key,
+not an unused one.
 
 That holds from 2013 on, where the notice prints the range itself. Notice
 2008-102 and Notice 2009-94 print only the applicable dollar amount — the band
