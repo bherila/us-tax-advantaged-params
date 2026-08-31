@@ -279,9 +279,14 @@ export interface HsaAccountDetail {
   /** IRC 223(b)(5)(B)(ii) share of the one family limit, or null when no family limit is shared. */
   familyLimitShare: number | null;
   /**
-   * The single IRC 223(b)(5) family limit the spouses divide — the limitation
-   * attributable to family-coverage months only, excluding any self-only
-   * months, which stay with each individual — or null.
+   * The IRC 223(b)(5) family limitation *this owner* divides: the limitation
+   * refigured for the months this owner was treated as having family coverage
+   * (Form 8889 line 6, Step 1), excluding any self-only months, which stay
+   * with the individual. It is per-owner rather than couple-wide because
+   * spouses with unequal family-coverage months refigure different amounts, so
+   * `familyLimitShare` times this figure plus the owner's undivided
+   * self-only-month limitation is the owner's IRC 223(b)(1) limit. Null when
+   * no family limit is shared.
    */
   sharedFamilyContributionLimit: Money | null;
   lastMonthRuleApplied: boolean;
@@ -8317,9 +8322,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   }
 
   /**
-   * The single IRC 223(b)(5) family limit the spouses divide is the limitation
-   * attributable to family-coverage months only. Self-only months stay outside
-   * the division (Form 8889 line 6, Steps 1-4).
+   * The couple-wide ceiling on family-month capacity: no division of the one
+   * family limit can put more than the largest refigured family limitation
+   * into the two HSAs combined. Each spouse divides their *own* refigured
+   * amount (Form 8889 line 6, Steps 1-4), which is what
+   * `sharedFamilyContributionLimit` reports per owner; this maximum is the
+   * aggregate guard, and self-only months are added to it undivided.
    */
   const rawSharedFamilyLimit = familySharingApplies
     ? Math.max(
@@ -8558,7 +8566,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
       familyLimitShare: share,
-      sharedFamilyContributionLimit: isSharingMember ? sharedFamilyLimit : null,
+      sharedFamilyContributionLimit: isSharingMember ? roundMoney(amounts.familyPortionApplied) : null,
       lastMonthRuleApplied: amounts.lastMonthRuleApplied,
       amountAttributableToLastMonthRule: attributable,
       testingPeriod,

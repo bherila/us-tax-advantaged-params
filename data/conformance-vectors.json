@@ -2326,7 +2326,7 @@
     },
     {
       "name": "2026 spouses with unequal family-coverage months each divide their own refigured family limit",
-      "description": "Form 8889 line 6 has each spouse refigure the limitation for the months that spouse was treated as having family coverage (Step 1) and divide that refigured amount (Steps 2-3). Twelve family months give the taxpayer 8750 x 1/2 = 4375; the spouse's six family months give 4375 x 1/2 = 2187.50. The spouse's limit is not raised to the taxpayer's share, so the couple's total is 6562.50, not 8750.",
+      "description": "Form 8889 line 6 has each spouse refigure the limitation for the months that spouse was treated as having family coverage (Step 1) and divide that refigured amount (Steps 2-3). The refigured amount is therefore per spouse, not one couple-wide figure: the taxpayer's twelve family months refigure to 8750 and the spouse's six refigure to 6 x (8750/12) = 4375. An equal division gives the taxpayer 8750 x 1/2 = 4375 and the spouse 4375 x 1/2 = 2187.50. The spouse's limit is not raised to the taxpayer's share, so the couple's total is 6562.50, not 8750.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -2375,6 +2375,9 @@
         "accounts.0.statutoryMaximumAnnualContribution": 4375,
         "accounts.1.statutoryMaximumAnnualContribution": 2187.5,
         "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 4375,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.1.hsa.familyLimitShare": 0.5,
         "totals.hsaContribution": 6562.5
       },
       "expectDiagnosticCodes": [

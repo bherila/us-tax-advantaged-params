@@ -8897,9 +8897,12 @@ final class Engine
         }
 
         /*
-         * The single IRC 223(b)(5) family limit the spouses divide is the limitation
-         * attributable to family-coverage months only. Self-only months stay outside
-         * the division (Form 8889 line 6, Steps 1-4).
+         * The couple-wide ceiling on family-month capacity: no division of the one
+         * family limit can put more than the largest refigured family limitation into
+         * the two HSAs combined. Each spouse divides their *own* refigured amount
+         * (Form 8889 line 6, Steps 1-4), which is what sharedFamilyContributionLimit
+         * reports per owner; this maximum is the aggregate guard, and self-only months
+         * are added to it undivided.
          */
         $rawSharedFamilyLimit = null;
         $sharedFamilyLimit = null;
@@ -9165,7 +9168,9 @@ final class Engine
                 'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
                 'familyLimitShare' => $share,
-                'sharedFamilyContributionLimit' => $isSharingMember ? $sharedFamilyLimit : null,
+                'sharedFamilyContributionLimit' => $isSharingMember
+                    ? self::roundMoney($amounts['familyPortionApplied'])
+                    : null,
                 'lastMonthRuleApplied' => $amounts['lastMonthRuleApplied'],
                 'amountAttributableToLastMonthRule' => $attributable,
                 'testingPeriod' => $testingPeriod,
