@@ -300,7 +300,30 @@ cannot tell it apart from a JSON array, so neither engine may.
 | Health accounts | Health savings account (HSA), health flexible spending arrangement (health FSA) |
 | Dependent care | Dependent care assistance program (dependent care FSA) |
 
-Defined-benefit and cash-balance contributions are deliberately returned as `indeterminate`; their funding requires the plan formula, census, assets, actuarial assumptions, and funding rules.
+Defined-benefit and cash-balance *contributions* are deliberately returned as `indeterminate`;
+their funding requires the plan formula, census, assets, actuarial assumptions, and funding
+rules. The §415(b)(1)(A) limitation on the annual *benefit* is a different thing — a flat
+statutory ceiling published in the same annual notice as the defined-contribution figures,
+requiring no actuary — so it is reported alongside that indeterminate contribution status:
+
+```ts
+const result = USTaxAdvantagedParams.calculate({
+  taxYear: 2026,
+  filingStatus: "S",
+  persons: [{ id: "t", birthYear: 1970 }],
+  accounts: [{ id: "db", ownerId: "t", type: "defined_benefit_plan", employerId: "e" }],
+});
+result.accounts[0].status;                             // "indeterminate"
+result.accounts[0].statutoryMaximumAnnualContribution; // null
+result.accounts[0].definedBenefit?.annualBenefitLimit; // 290000
+```
+
+| Rule | Treatment |
+|---|---|
+| §415(b)(1)(A) annual benefit | Reported on `definedBenefit.annualBenefitLimit` for both defined-benefit and cash-balance accounts, with an `info` diagnostic stating it |
+| §415(b)(2) and §415(b)(5) adjustments | **Not** applied. The published figure assumes a straight life annuity beginning between ages 62 and 65; adjusting it for another benefit form, another starting age, or fewer than ten years of participation or service is participant-specific |
+| Years with no transcribed figure | `null`. The encoded figures are those transcribed from the notices committed under `evidence/retirement-limits/`, which cover 2009, 2010, and 2013 onward. A year outside that set reports `null` rather than a carried-forward or extrapolated amount |
+| Contribution and funding | Still `indeterminate`; a benefit ceiling is not a contribution ceiling, and nothing here computes a funding requirement |
 
 ## Health savings accounts (IRC §223)
 
@@ -825,7 +848,7 @@ The package does not calculate:
 - ADP, ACP, coverage, top-heavy, or other nondiscrimination testing.
 - Employer controlled-group ownership from raw entity records.
 - Full payroll, self-employment tax, or tax-return MAGI.
-- Defined-benefit or cash-balance actuarial funding.
+- Defined-benefit or cash-balance actuarial funding, and the participant-specific §415(b)(2) and §415(b)(5) adjustments to the annual benefit limit. The flat §415(b)(1)(A) figure itself *is* reported.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 
 ## License

@@ -31,6 +31,7 @@ export default {
     ["catchUp60To63_414v2Ei", ["age60To63CatchUp"], "IRC 414(v)(2)(E)(i)"],
     ["rothCatchUpWageThreshold_414v7A", ["rothCatchUpPriorYearFicaWageThreshold"], "IRC 414(v)(7)(A)"],
     ["compensationLimit_401a17", ["annualCompensation401a17"], "IRC 401(a)(17)"],
+    ["dbAnnualBenefit_415b1A", ["definedBenefitAnnualBenefit415b"], "IRC 415(b)(1)(A)"],
     ["iraContribution_219b5A", ["ira", "baseContributionLimit"], "IRC 219(b)(5)(A)"],
     ["iraContribution_219b1", ["ira", "baseContributionLimit"], "IRC 219(b)(1) (historical text)"],
     ["iraCompensationFraction_219b1", ["ira", "compensationFraction"], "IRC 219(b)(1) (historical text)"],
@@ -156,7 +157,6 @@ export default {
 
   /** Recorded in the evidence but outside what this package encodes. */
   unmodelled: [
-    "dbAnnualBenefit_415b1A", // defined-benefit annual benefit; no DB plan modelling
     "socialSecurityWageBase", // OASDI wage base; not a contribution parameter
   ],
 

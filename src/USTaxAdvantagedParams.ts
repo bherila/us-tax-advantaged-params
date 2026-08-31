@@ -342,6 +342,28 @@ export interface HealthFsaRulesInput {
   planYearIsCalendarYear?: boolean;
 }
 
+/**
+ * IRC 415(b) facts reported for a defined-benefit or cash-balance account.
+ *
+ * The contribution remains `indeterminate` — sizing it needs the plan formula,
+ * census, assets, assumptions and the funding rules, none of which this package
+ * models. IRC 415(b)(1)(A) is a different thing: a flat statutory ceiling on the
+ * annual benefit the plan may pay, adjusted under IRC 415(d) and published in
+ * the same annual notice as the defined-contribution figures. It is reported
+ * because it is knowable from the year alone.
+ */
+export interface DefinedBenefitAccountDetail {
+  /**
+   * IRC 415(b)(1)(A) dollar limitation on the annual benefit for the year, or
+   * null where no figure is encoded. The limit is stated for a benefit in the
+   * form of a straight life annuity beginning between ages 62 and 65; IRC
+   * 415(b)(2) adjusts it for other forms and starting ages, and IRC 415(b)(5)
+   * reduces it for fewer than ten years of participation or service. Those
+   * adjustments are participant-specific and are not applied here.
+   */
+  annualBenefitLimit: Money | null;
+}
+
 export interface HealthFsaAccountDetail {
   /** Rev. Rul. 2004-45 classification supplied by the caller, or null when unstated. */
   purpose: HealthFsaPurpose | null;
@@ -691,6 +713,8 @@ export interface AccountCalculationResult {
   sharedLimits: SharedLimitUse[];
   /** IRC 223 detail; present only for `hsa` accounts. */
   hsa?: HsaAccountDetail;
+  /** IRC 415(b) detail; present only for `defined_benefit_plan` and `cash_balance_plan` accounts. */
+  definedBenefit?: DefinedBenefitAccountDetail;
   /** IRC 125(i) detail; present only for `health_fsa` accounts. */
   healthFsa?: HealthFsaAccountDetail;
   /** IRC 129 detail; present only for `dependent_care_fsa` accounts. */
@@ -794,6 +818,14 @@ export interface YearParameters {
   annualAdditions415c: Money | null;
   annualAdditionsCompensationFraction: number | null;
   annualCompensation401a17: Money | null;
+  /**
+   * IRC 415(b)(1)(A) dollar limitation on the annual benefit payable by a
+   * defined-benefit plan. It is a ceiling on the *benefit*, published in the
+   * same annual notice as every other figure here, and needs no actuary; it is
+   * not a contribution limit and says nothing about funding. Null for a year
+   * whose figure is not transcribed in the evidence corpus.
+   */
+  definedBenefitAnnualBenefit415b: Money | null;
   sep: {
     available: boolean;
     maximumEmployerContributionRate: number;
@@ -1047,6 +1079,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1128,6 +1161,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1209,6 +1243,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1290,6 +1325,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": false,
         "maximumEmployerContributionRate": 0.15,
@@ -1371,6 +1407,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1452,6 +1489,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1533,6 +1571,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1614,6 +1653,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1695,6 +1735,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1776,6 +1817,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1857,6 +1899,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -1938,6 +1981,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2019,6 +2063,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2122,6 +2167,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2225,6 +2271,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2328,6 +2375,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2431,6 +2479,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2534,6 +2583,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2637,6 +2687,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2740,6 +2791,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2843,6 +2895,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -2946,6 +2999,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3049,6 +3103,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3152,6 +3207,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3268,6 +3324,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3384,6 +3441,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3500,6 +3558,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 35000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.15,
@@ -3616,6 +3675,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3732,6 +3792,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3848,6 +3909,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 41000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -3964,6 +4026,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 42000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4080,6 +4143,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 44000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4196,6 +4260,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 45000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4312,6 +4377,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 46000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4428,6 +4494,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": 195000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4544,6 +4611,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": 195000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4660,6 +4728,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4776,6 +4845,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
+      "definedBenefitAnnualBenefit415b": null,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -4892,6 +4962,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 51000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
+      "definedBenefitAnnualBenefit415b": 205000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5008,6 +5079,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 52000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5124,6 +5196,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5240,6 +5313,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "definedBenefitAnnualBenefit415b": 210000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5356,6 +5430,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 54000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
+      "definedBenefitAnnualBenefit415b": 215000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5472,6 +5547,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 55000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
+      "definedBenefitAnnualBenefit415b": 220000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5588,6 +5664,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 56000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
+      "definedBenefitAnnualBenefit415b": 225000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5704,6 +5781,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 57000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
+      "definedBenefitAnnualBenefit415b": 230000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5820,6 +5898,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 58000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
+      "definedBenefitAnnualBenefit415b": 230000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -5936,6 +6015,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 61000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
+      "definedBenefitAnnualBenefit415b": 245000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6052,6 +6132,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 66000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
+      "definedBenefitAnnualBenefit415b": 265000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6168,6 +6249,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 69000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
+      "definedBenefitAnnualBenefit415b": 275000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6284,6 +6366,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 70000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
+      "definedBenefitAnnualBenefit415b": 280000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -6400,6 +6483,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 72000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
+      "definedBenefitAnnualBenefit415b": 290000,
       "sep": {
         "available": true,
         "maximumEmployerContributionRate": 0.25,
@@ -8832,6 +8916,7 @@ interface AllocationOutcome {
   sharedLimits: SharedLimitUse[];
   diagnostics: Diagnostic[];
   hsaDetail?: HsaAccountDetail;
+  definedBenefitDetail?: DefinedBenefitAccountDetail;
   healthFsaDetail?: HealthFsaAccountDetail;
   dependentCareDetail?: DependentCareFsaAccountDetail;
 }
@@ -11855,7 +11940,7 @@ function allocateAccount(context: CalculationContext, account: NormalizedAccount
     case "annual_additions_only":
       return allocateAnnualAdditionsOnly(context, account, traits);
     case "defined_benefit":
-      return allocateDefinedBenefit(account);
+      return allocateDefinedBenefit(context, account);
     case "section457f":
       return allocateSection457f(account);
     case "hsa":
@@ -13126,8 +13211,9 @@ function allocateSection457(
   };
 }
 
-function allocateDefinedBenefit(account: NormalizedAccount): AllocationOutcome {
-  return emptyOutcome(account, CalculationStatus.INDETERMINATE, null, [
+function allocateDefinedBenefit(context: CalculationContext, account: NormalizedAccount): AllocationOutcome {
+  const annualBenefitLimit = context.parameters.definedBenefitAnnualBenefit415b ?? null;
+  const diagnostics = [
     diagnostic(
       "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
       DiagnosticSeverity.ERROR,
@@ -13135,7 +13221,22 @@ function allocateDefinedBenefit(account: NormalizedAccount): AllocationOutcome {
       `accounts.${account.id}`,
       "IRC 404, 412, 415(b); ERISA funding rules",
     ),
-  ]);
+  ];
+  if (annualBenefitLimit !== null) {
+    diagnostics.push(
+      diagnostic(
+        "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        DiagnosticSeverity.INFO,
+        `The IRC 415(b)(1)(A) limitation on the annual benefit for ${context.taxYear} is $${annualBenefitLimit.toLocaleString()}. It caps the benefit the plan may pay, stated as a straight life annuity beginning between ages 62 and 65, and is neither a contribution ceiling nor a funding figure. IRC 415(b)(2) adjusts it for another benefit form or starting age and IRC 415(b)(5) reduces it for fewer than ten years; neither adjustment is applied here.`,
+        `accounts.${account.id}`,
+        "IRC 415(b)(1)(A), 415(d)",
+      ),
+    );
+  }
+  return {
+    ...emptyOutcome(account, CalculationStatus.INDETERMINATE, null, diagnostics),
+    definedBenefitDetail: { annualBenefitLimit },
+  };
 }
 
 function allocateSection457f(account: NormalizedAccount): AllocationOutcome {
@@ -13646,6 +13747,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       federalTaxEffects: accountTaxEffects(outcome, traits, account.planRules, diagnostics),
       sharedLimits: outcome.sharedLimits,
       ...(outcome.hsaDetail ? { hsa: outcome.hsaDetail } : {}),
+      ...(outcome.definedBenefitDetail ? { definedBenefit: outcome.definedBenefitDetail } : {}),
       ...(outcome.healthFsaDetail ? { healthFsa: outcome.healthFsaDetail } : {}),
       ...(outcome.dependentCareDetail ? { dependentCareFsa: outcome.dependentCareDetail } : {}),
       diagnostics,

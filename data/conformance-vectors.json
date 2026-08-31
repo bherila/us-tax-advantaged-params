@@ -6128,6 +6128,68 @@
         "totals.hsaContribution": 4400,
         "totals.dependentCareAssistanceExclusion": 7500
       }
+    },
+    {
+      "name": "2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit",
+      "description": "Notice 2025-67 states that effective January 1, 2026 'the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from ,000 to ,000', so the 2026 annual benefit limit is ,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "db",
+            "ownerId": "t",
+            "type": "defined_benefit_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 290000,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 290000
+      }
+    },
+    {
+      "name": "a cash balance plan in a year with no transcribed IRC 415(b)(1)(A) figure reports no annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. IRC 415(b)(1)(A) is adjusted annually under IRC 415(d), but this package encodes only the figures transcribed from the notices committed under evidence/retirement-limits, and no dbAnnualBenefit_415b1A figure is recorded there for 2012. SOURCES.md forbids reusing a prior year published amount or inflation-extrapolating an unrecorded one, so the limit is reported as null rather than carried forward from the 195000 recorded for 2010 or interpolated toward the 205000 recorded for 2013. Absence of the figure is also not a reason to add a claim: the actuarial-valuation diagnostic is still the first diagnostic on the account, because no benefit-limit diagnostic is issued where there is no published amount to state.",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "cb",
+            "ownerId": "t",
+            "type": "cash_balance_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": null,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "parameters.definedBenefitAnnualBenefit415b": null
+      }
     }
   ]
 }

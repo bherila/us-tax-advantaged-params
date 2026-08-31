@@ -26,6 +26,16 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
 - **U.S. Department of Labor 401(k) history** — contextual history of 401(k) plans and their development.  
   `https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/faqs/401k-plans`
 
+- **IRC §415(b)(1)(A)** — the limitation on the annual benefit payable by a defined benefit
+  plan, adjusted under §415(d) and stated in the same annual cost-of-living notice as the
+  §415(c), §402(g) and IRA figures. Notice 2025-67 states it directly: "Effective January 1,
+  2026, the limitation on the annual benefit under a defined benefit plan under section
+  415(b)(1)(A) of the Code is increased from $280,000 to $290,000." Each encoded year is
+  recorded in `evidence/retirement-limits/primary-values.json` as `dbAnnualBenefit_415b1A`
+  and compared against `definedBenefitAnnualBenefit415b` in the data file. Only the flat
+  figure is encoded; the §415(b)(2) benefit-form and starting-age adjustments and the
+  §415(b)(5) short-service reduction are participant-specific and are not modelled.
+
 - **26 U.S.C. §402(g)(7)** — statutory annual, lifetime, and service-based limits for the special 403(b) 15-year catch-up.
   `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim`
 
