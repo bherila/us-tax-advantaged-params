@@ -79,7 +79,7 @@
   },
   "homepage": "https://github.com/bherila/us-tax-advantaged-params#readme",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public",

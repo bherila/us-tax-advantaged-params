@@ -141,8 +141,13 @@ Two traps, both hit in practice:
   cd evidence/<corpus>/sources && shasum -a 256 -c ../SHA256SUMS.txt
   ```
 
-PHP 8.5+ and Node 20+ are required locally; CI runs Node 20/22/24 and PHP 8.5
-on GitHub-hosted arm64 runners (`ubuntu-24.04-arm`).
+PHP 8.5+ and Node 22+ are required locally, and are the declared floors:
+`composer.json` requires `php >=8.5` and `package.json` declares
+`engines.node >=22`. CI runs Node 22 and 24 and PHP 8.5 on GitHub-hosted arm64
+runners (`ubuntu-24.04-arm`). `validate:manifests` asserts both floors, so
+raising or lowering one means changing it in `composer.json` /
+`package.json`, in `scripts/validate-manifests.mjs`, in
+`.github/workflows/ci.yml`, and in `README.md` together.
 
 `npm run verify` rewrites `VALIDATION.md`, `RELEASE_STATUS.md`, and
 `validation-status.json`; commit those regenerated files with the change that
