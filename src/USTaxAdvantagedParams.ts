@@ -167,6 +167,25 @@ export interface PersonInput {
    * Archer MSA contribution limitation.
    */
   archerMsaContributions?: Money;
+  /**
+   * The aggregate amount contributed to health savings accounts of this person
+   * for the taxable year under IRC 408(d)(9) — a qualified HSA funding
+   * distribution rolled over from an IRA. IRC 223(b)(4)(C) reduces that
+   * person's IRC 223(b) limitation by it.
+   *
+   * Unlike the IRC 223(b)(4)(A) Archer MSA reduction it is never withdrawn: the
+   * IRC 223(b)(4) flush text names subparagraph (A) alone, so (C) applies to a
+   * married individual to whom IRC 223(b)(5) applies as much as to anyone else.
+   * It is an amount of "such individual" and never of the couple, so it reduces
+   * that spouse's own limitation *after* the IRC 223(b)(5)(B)(ii) division
+   * rather than the family limitation before it.
+   *
+   * It is caller-supplied, exactly like eligible-individual status. The IRC
+   * 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D)
+   * testing period are not modelled, and the amount is not tested against the
+   * IRA it was distributed from.
+   */
+  qualifiedHsaFundingDistributions?: Money;
 }
 
 export interface ExistingContributionInput {
@@ -305,7 +324,8 @@ export interface HsaAccountDetail {
    * spouses with unequal family-coverage months refigure different amounts, so
    * `familyLimitShare` times this figure plus the owner's undivided
    * self-only-month limitation is the owner's IRC 223(b)(1) limit. Null when
-   * no family limit is shared.
+   * no family limit is shared. The IRC 223(b)(4)(C) reduction does not appear
+   * in it: that reduction is an individual one taken after the division.
    */
   sharedFamilyContributionLimit: Money | null;
   /**
@@ -324,6 +344,23 @@ export interface HsaAccountDetail {
   archerMsaReductionPrecedesFamilyDivision: boolean;
   /** The fall in this owner's IRC 223(b) ceiling caused by that reduction. */
   archerMsaLimitReduction: Money;
+  /**
+   * The aggregate amount contributed to health savings accounts of this owner
+   * under IRC 408(d)(9) that reduced their IRC 223(b) limitation under IRC
+   * 223(b)(4)(C). It is always this individual's own amount and never a couple
+   * aggregate, and the reduction is never taken before the IRC 223(b)(5)(B)(ii)
+   * division, so it has no counterpart to
+   * `archerMsaReductionPrecedesFamilyDivision`.
+   */
+  qualifiedHsaFundingDistributionsApplied: Money;
+  /**
+   * The fall in this owner's IRC 223(b) ceiling caused by that reduction. IRC
+   * 223(b)(4) reduces by "the sum of" its subparagraphs but not below zero, so
+   * when both reductions apply and together exceed the ceiling the fall is
+   * attributed in subparagraph order: (A) is reported in full and this reports
+   * only what was left for (C) to reach.
+   */
+  qualifiedHsaFundingLimitReduction: Money;
   lastMonthRuleApplied: boolean;
   /**
    * The part of this owner's ceiling that exists only because of IRC
@@ -7638,6 +7675,9 @@ function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPe
       archerMsaContributions: input.archerMsaContributions === undefined
         ? undefined
         : money(input.archerMsaContributions, `persons[${index}].archerMsaContributions`),
+      qualifiedHsaFundingDistributions: input.qualifiedHsaFundingDistributions === undefined
+        ? undefined
+        : money(input.qualifiedHsaFundingDistributions, `persons[${index}].qualifiedHsaFundingDistributions`),
     });
   }
   for (const role of ["taxpayer", "spouse"] as const) {
@@ -8462,6 +8502,19 @@ function archerReducedPortions(familyPortion: number, selfPortion: number, amoun
   ];
 }
 
+/**
+ * IRC 223(b)(4) reduces "the limitation which would (but for this paragraph)
+ * apply under this subsection" — the whole of subsection (b) — "but not below
+ * zero". The paragraph (1) limitation absorbs the reduction first, and only
+ * what paragraph (1) cannot absorb reaches the paragraph (3) additional
+ * contribution amount, because the subsection is reduced once as a whole.
+ *
+ * @returns the reduced paragraph (1) limitation and the reduced paragraph (3) amount.
+ */
+function subsectionBReducedBy(baseLimit: number, catchUp: number, amount: Money): [Money, Money] {
+  return [nonnegative(baseLimit - amount), nonnegative(catchUp - Math.max(0, amount - baseLimit))];
+}
+
 function initializeHsaPools(context: CalculationContext, accounts: NormalizedAccount[]): void {
   const hsaAccounts = accounts.filter((account) => ACCOUNT_TRAITS[account.type].family === "hsa");
   if (hsaAccounts.length === 0) return;
@@ -8822,6 +8875,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    */
   const archerForPerson = (personId: string): Money =>
     context.persons.get(personId)?.archerMsaContributions ?? 0;
+  /**
+   * IRC 223(b)(4)(C) reduces the limitation by "the aggregate amount
+   * contributed to health savings accounts of such individual for such taxable
+   * year under section 408(d)(9)". It is read per individual in every case, so
+   * unlike the Archer amount it has no couple-wide aggregate.
+   */
+  const qualifiedHsaFundingFor = (personId: string): Money =>
+    context.persons.get(personId)?.qualifiedHsaFundingDistributions ?? 0;
   const coupleArcherAggregate = roundMoney(
     (couple ?? []).reduce<number>((sum, personId) => sum + archerForPerson(personId), 0),
   );
@@ -8876,6 +8937,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
             "HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE",
             DiagnosticSeverity.ERROR,
             `The supplied family-limit shares total ${total}. IRC 223(b)(5)(B)(ii) divides one family limit between the spouses, so the shares cannot exceed 1.`,
+            "accounts",
+            "IRC 223(b)(5)(B)(ii)",
+          ),
+        );
+      }
+      /**
+       * The other half of the same sentence. IRC 223(b)(5)(B)(ii) says the
+       * limitation "shall be divided equally between them unless they agree on
+       * a different division" — a division, not an allocation of part of it, so
+       * shares that do not exhaust the limitation are as impossible as shares
+       * that overrun it, and are reported at the same severity.
+       *
+       * Only when both spouses own an HSA and both supplied a share. An
+       * incomplete supply is already HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES,
+       * and where only one spouse owns an HSA the shares in hand cover one
+       * spouse, so a share below 1 is a complete division whose remainder the
+       * other spouse simply has no account to use.
+       */
+      if (
+        coupleMembersWithAccounts.length > 1
+        && explicitShareHolders.length === coupleMembersWithAccounts.length
+        && total < 1 - 1e-9
+      ) {
+        sharingDiagnostics.push(
+          diagnostic(
+            "HSA_FAMILY_LIMIT_SHARES_BELOW_ONE",
+            DiagnosticSeverity.ERROR,
+            `The supplied family-limit shares total ${total}. IRC 223(b)(5)(B)(ii) divides one family limit between the spouses, so they must exhaust it: a total below 1 leaves part of the limitation allocated to neither spouse and would silently forfeit it.`,
             "accounts",
             "IRC 223(b)(5)(B)(ii)",
           ),
@@ -8970,10 +9059,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       const [family, self] = archerReducedPortions(familyPortion, selfPortion, archerAmount);
       return roundMoney(share * family + self);
     };
-    const baseLimit = indeterminate
+    const baseLimitAfterArcher = indeterminate
       ? null
       : reducedDivided(amounts.familyPortionApplied, amounts.selfPortionApplied, amounts.proratedApplied);
-    const baseLimitWithoutLastMonthRule = indeterminate
+    const baseLimitWithoutLastMonthRuleAfterArcher = indeterminate
       ? null
       : reducedDivided(
           amounts.familyPortionWithoutLastMonthRule,
@@ -8987,19 +9076,48 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * absorb, since the subsection (b) limitation is reduced once as a whole.
      */
     const catchUpArcherResidual = share === null ? Math.max(0, archerAmount - amounts.proratedApplied) : 0;
-    const catchUpApplied = nonnegative(amounts.catchUpApplied - catchUpArcherResidual);
-    const catchUpWithoutLastMonthRule = nonnegative(
+    const catchUpAfterArcher = nonnegative(amounts.catchUpApplied - catchUpArcherResidual);
+    const catchUpWithoutLastMonthRuleAfterArcher = nonnegative(
       amounts.catchUpWithoutLastMonthRule
         - (share === null ? Math.max(0, archerAmount - amounts.proratedWithoutLastMonthRule) : 0),
     );
-    const archerMsaLimitReduction = indeterminate || baseLimit === null
+    const archerMsaLimitReduction = indeterminate || baseLimitAfterArcher === null
       ? 0
       : nonnegative(
           divided(amounts.familyPortionApplied, amounts.selfPortionApplied, amounts.proratedApplied)
             + amounts.catchUpApplied
-            - baseLimit
-            - catchUpApplied,
+            - baseLimitAfterArcher
+            - catchUpAfterArcher,
         );
+
+    /**
+     * IRC 223(b)(4)(C) then reduces what is left by "the aggregate amount
+     * contributed to health savings accounts of such individual for such
+     * taxable year under section 408(d)(9)". The IRC 223(b)(4) flush text
+     * withdraws subparagraph (A) — and only (A) — from an individual to whom
+     * IRC 223(b)(5) applies, and IRC 223(b)(5)(B)(i) reduces the family
+     * limitation by the Archer amount alone, so nothing routes (C) through
+     * paragraph (5). It therefore reduces this individual's own subsection (b)
+     * limitation in every case: for a married individual, the share the IRC
+     * 223(b)(5)(B)(ii) division left them, and the IRC 223(b)(3) amount with
+     * whatever the paragraph (1) limitation could not absorb — which the
+     * Archer reduction never reaches for that individual.
+     */
+    const fundingAmount = qualifiedHsaFundingFor(ownerId);
+    const [baseLimit, catchUpApplied] = baseLimitAfterArcher === null
+      ? [null, catchUpAfterArcher]
+      : subsectionBReducedBy(baseLimitAfterArcher, catchUpAfterArcher, fundingAmount);
+    const [baseLimitWithoutLastMonthRule, catchUpWithoutLastMonthRule] =
+      baseLimitWithoutLastMonthRuleAfterArcher === null
+        ? [null, catchUpWithoutLastMonthRuleAfterArcher]
+        : subsectionBReducedBy(
+            baseLimitWithoutLastMonthRuleAfterArcher,
+            catchUpWithoutLastMonthRuleAfterArcher,
+            fundingAmount,
+          );
+    const qualifiedHsaFundingLimitReduction = indeterminate || baseLimitAfterArcher === null || baseLimit === null
+      ? 0
+      : nonnegative(baseLimitAfterArcher + catchUpAfterArcher - baseLimit - catchUpApplied);
 
     context.hsaBasePools.set(ownerId, {
       id: `hsa223b1:${ownerId}`,
@@ -9112,11 +9230,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
+    if (!indeterminate && fundingAmount > 0) {
+      diagnostics.push(
+        diagnostic(
+          "HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT",
+          DiagnosticSeverity.INFO,
+          share === null
+            ? `IRC 223(b)(4)(C) reduces the IRC 223(b) limitation, but not below zero, by the $${fundingAmount.toLocaleString()} aggregate amount contributed to health savings accounts of this individual for the taxable year under IRC 408(d)(9), which took $${qualifiedHsaFundingLimitReduction.toLocaleString()} off the ceiling. The amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not modelled.`
+            : `The IRC 223(b)(4) flush text withdraws subparagraph (A) alone from an individual to whom IRC 223(b)(5) applies, so IRC 223(b)(4)(C) still applies to this spouse. The $${fundingAmount.toLocaleString()} contributed under IRC 408(d)(9) is an amount of this individual and not of the couple, and IRC 223(b)(5)(B)(i) reduces the family limitation by the Archer MSA amount alone, so it reduces this spouse's own limitation after the IRC 223(b)(5)(B)(ii) division rather than the family limitation before it. That took $${qualifiedHsaFundingLimitReduction.toLocaleString()} off the ceiling, reaching the IRC 223(b)(3) additional contribution amount with whatever the IRC 223(b)(1) limitation could not absorb. The amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not modelled.`,
+          `persons.${ownerId}`,
+          "IRC 223(b)(4)(C)",
+        ),
+      );
+    }
+
     diagnostics.push(
       diagnostic(
         "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         DiagnosticSeverity.INFO,
-        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction for a qualified HSA funding distribution under IRC 408(d)(9) is not applied.",
+        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not tested.",
         `persons.${ownerId}`,
         "IRC 223",
       ),
@@ -9136,6 +9268,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       archerMsaContributionsApplied: archerAmount,
       archerMsaReductionPrecedesFamilyDivision: share !== null,
       archerMsaLimitReduction,
+      qualifiedHsaFundingDistributionsApplied: fundingAmount,
+      qualifiedHsaFundingLimitReduction,
       lastMonthRuleApplied: amounts.lastMonthRuleApplied,
       amountAttributableToLastMonthRule: attributable,
       testingPeriod,
@@ -11429,6 +11563,17 @@ export class PersonBuilder {
    */
   public archerMsaContributions(amount: Money): this {
     this.value.archerMsaContributions = amount;
+    return this;
+  }
+
+  /**
+   * The aggregate amount contributed to this person's health savings accounts
+   * for the taxable year under IRC 408(d)(9), which IRC 223(b)(4)(C) subtracts
+   * from that person's own HSA limitation — married or not, and after any IRC
+   * 223(b)(5)(B)(ii) division.
+   */
+  public qualifiedHsaFundingDistributions(amount: Money): this {
+    this.value.qualifiedHsaFundingDistributions = amount;
     return this;
   }
 

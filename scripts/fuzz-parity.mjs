@@ -207,6 +207,12 @@ function randomPerson(id, role, taxYear) {
   if (chance(0.2)) person.yearEndTraditionalSepSimpleIraValue = money();
   if (chance(0.1)) person.otherTraditionalSepSimpleIraDistributions = money();
   if (chance(0.3)) person.archerMsaContributions = chance(0.05) ? junk() : pick([0, 1, 750, 2400, 5150, 12000, money()]);
+  // IRC 223(b)(4)(C). Values straddle the IRC 223(b)(1) limitation so the
+  // reduction lands wholly inside it, spills into the IRC 223(b)(3) amount, and
+  // exhausts both.
+  if (chance(0.3)) {
+    person.qualifiedHsaFundingDistributions = chance(0.05) ? junk() : pick([0, 1, 900, 3400, 4400, 8750, 20000, money()]);
+  }
   // Person-level IRC 223(c)(2) coverage. randomHsaRules() also emits the
   // account-only keys, which both engines must ignore identically here.
   if (chance(0.3)) person.hsaCoverage = chance(0.1) ? {} : randomHsaRules();

@@ -298,6 +298,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
+| §223(b)(5)(B)(ii) agreed division | An agreed division must exhaust the limitation. Shares that total more or less than 1 are both reported as errors and return `indeterminate` (see below) |
 | §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
 | §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
@@ -305,6 +306,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §106(d) employer contributions | Excluded from income rather than deducted, reducing W-2 box 1 and FICA wages and reducing the §223(b)(4)(B) deduction |
 | §223(b)(4)(A) Archer MSA reduction | The aggregate amount paid for the year to that individual's Archer MSAs reduces the whole subsection (b) limitation — the §223(b)(3) increase included — but not below zero |
 | §223(b)(5)(B)(i) Archer MSA reduction | For a married individual to whom §223(b)(5) applies, both spouses' aggregate reduces the single family limitation **before** §223(b)(5)(B)(ii) divides it, and never touches the §223(b)(3) amount |
+| §223(b)(4)(C) qualified HSA funding distribution | The amount contributed under §408(d)(9) reduces that individual's own subsection (b) limitation — the §223(b)(3) increase included — but not below zero. It is never withdrawn by the flush text and never taken before the §223(b)(5)(B)(ii) division |
 
 The testing period spans two tax years, so a caller who has not yet resolved it receives
 an explicit obligation in the result rather than an assumed outcome.
@@ -372,6 +374,77 @@ reduction that would have consumed it under §223(b)(4)(A).
 Each account's `hsa` detail reports `archerMsaContributionsApplied`,
 `archerMsaReductionPrecedesFamilyDivision`, and `archerMsaLimitReduction`, and an
 `HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied.
+
+### Qualified HSA funding distributions: `persons[].qualifiedHsaFundingDistributions`
+
+§223(b)(4)(C) reduces the §223(b) limitation by "the aggregate amount contributed to health
+savings accounts of such individual for such taxable year under section 408(d)(9)" — a
+once-in-a-lifetime IRA-to-HSA rollover. Like the Archer amount it is a fact about the
+person, taken as supplied: the §408(d)(9)(C) once-per-lifetime limitation and the separate
+§408(d)(9)(D) testing period are **not** modelled, and the amount is not checked against the
+IRA it came from.
+
+```ts
+const result = USTaxAdvantagedParams.forTaxYear(2026)
+  .filingStatus(FilingStatus.SINGLE)
+  .taxpayer("taxpayer", (person) => person.bornIn(1986).qualifiedHsaFundingDistributions(1500))
+  .account("taxpayer-hsa", "taxpayer", AccountType.HSA, (account) => {
+    account.hsaCoverage("self_only");
+  })
+  .calculate();
+// 4400 - 1500 = 2900
+```
+
+**It behaves the opposite way to the Archer reduction for a married couple, and the flush
+text is why.** "Subparagraph (A) shall not apply with respect to any individual to whom
+paragraph (5) applies" names subparagraph (A) alone, and §223(b)(5)(B)(i) reduces the family
+limitation only by the Archer amount, so nothing routes (C) through paragraph (5). It stays
+an amount of "such individual" reducing the limitation applying to that individual under
+subsection (b) — which for a married spouse is the share left by the §223(b)(5)(B)(ii)
+division, **after** the division rather than before it, plus their own §223(b)(3) amount.
+
+Two spouses with the 2026 family limitation of 8750 divide it to 4375 each. A $2,000
+rollover by one spouse leaves 2375 and 4375; the same $2,000 paid to an Archer MSA instead
+leaves 3375 and 3375, because that reduction comes off the 8750 first. And since (C) is not
+governed by §223(b)(5)(B)'s "without regard to any additional contribution amount under
+paragraph (3)", it reaches a married individual's age-55 amount where the Archer reduction
+cannot.
+
+When both reductions apply, §223(b)(4) reduces by "the sum of" them but not below zero. The
+fall is attributed in subparagraph order, so `archerMsaLimitReduction` is reported in full
+and `qualifiedHsaFundingLimitReduction` reports only what was left for (C) to reach. Each
+account's `hsa` detail reports `qualifiedHsaFundingDistributionsApplied` and
+`qualifiedHsaFundingLimitReduction`, and an
+`HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT` diagnostic states which ordering
+applied.
+
+### Agreed divisions must exhaust the family limitation
+
+`planRules.hsa.familyLimitShare` records a §223(b)(5)(B)(ii) agreement to divide the single
+family limitation other than equally. Supply it on **every** spouse who owns an HSA, and
+make the shares total exactly 1 — the statute divides the limitation "unless they agree on a
+different division", and an allocation that leaves part of it belonging to neither spouse is
+not a division.
+
+Both failures are `ERROR` diagnostics and both return `indeterminate`:
+
+| Shares | Diagnostic |
+|---|---|
+| Total above 1 | `HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE` — the couple would claim more than one family limitation |
+| Total below 1 | `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE` — capacity the couple is entitled to would be silently forfeited |
+| Supplied on one spouse but not the other | `HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES` |
+
+They are diagnosed rather than rejected, because a share is a caller-supplied fact and this
+package reports on facts rather than overriding them — but at `ERROR` severity, because
+unlike an unusual eligibility fact this one is arithmetically impossible, and a determinate
+number computed from it would assert a ceiling the statute does not produce. Two spouses at
+0.3 each for 2026 would otherwise return a confident 2625 apiece against an 8750 limitation,
+forfeiting 3500 with no signal at all.
+
+The constraint is on the **sum**, not on either share: 1 and 0 is a valid division that gives
+one spouse the whole limitation. And where only one spouse owns an HSA, the shares that can
+be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
+the other spouse has no account to use, and no error applies.
 
 Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
 coverage is required exactly when it could change the answer. On a married return, an HSA
@@ -578,7 +651,7 @@ The package does not calculate:
 
 - State income-tax treatment.
 - Health and dependent-care FSAs, HRAs, and Archer MSAs themselves, including §125 carryover and §129 dependent care. The §220 Archer MSA limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
-- The §223(b)(4)(C) reduction for a qualified HSA funding distribution from an IRA under §408(d)(9).
+- The §408(d)(9)(C) once-per-lifetime limitation on a qualified HSA funding distribution and the separate §408(d)(9)(D) testing period. The §223(b)(4)(C) reduction itself *is* applied, from the amount supplied as `persons[].qualifiedHsaFundingDistributions`, which is taken as stated.
 - The retirement savings contributions credit.
 - Required minimum distributions or distribution penalties.
 - Plan eligibility, vesting, loans, or distributions generally.
