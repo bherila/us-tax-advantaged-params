@@ -2213,6 +2213,236 @@
         "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
         "HSA_AGE_55_ADDITIONAL_CONTRIBUTION_IS_PER_SPOUSE"
       ]
+    },
+    {
+      "name": "2026 spouse family and self-only months divide only the family portion",
+      "description": "IRC 223(b)(5)(B)(ii) divides only the limitation attributable to family-coverage months (Form 8889 line 6, Steps 1-4). The taxpayer has six family months and six self-only months while the spouse has six family months. Only the 6 x 8750 / 12 = 4375 family portion is divided equally; the taxpayer keeps the undivided 6 x 4400 / 12 = 2200 of self-only months, so the limits are 2187.50 + 2200 = 4387.50 and 2187.50.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4387.5,
+        "accounts.1.statutoryMaximumAnnualContribution": 2187.5,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 4375,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 4375,
+        "accounts.0.hsa.proratedContributionLimit": 6575,
+        "accounts.1.hsa.proratedContributionLimit": 4375,
+        "totals.hsaContribution": 6575
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT"
+      ]
+    },
+    {
+      "name": "2026 spouses with unequal family-coverage months each divide their own refigured family limit",
+      "description": "Form 8889 line 6 has each spouse refigure the limitation for the months that spouse was treated as having family coverage (Step 1) and divide that refigured amount (Steps 2-3). Twelve family months give the taxpayer 8750 x 1/2 = 4375; the spouse's six family months give 4375 x 1/2 = 2187.50. The spouse's limit is not raised to the taxpayer's share, so the couple's total is 6562.50, not 8750.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.statutoryMaximumAnnualContribution": 2187.5,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "totals.hsaContribution": 6562.5
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT"
+      ]
+    },
+    {
+      "name": "2026 married last-month rule measures the attributable amount against the divided limit",
+      "description": "Both spouses are eligible with family coverage only in December and elect IRC 223(b)(8). Each spouse's ceiling is an equal share of the family limit, 8750 / 2 = 4375. Without the last-month rule the same division would have applied to the one-month limitation, giving 1/2 x 8750/12 = 364.58, so the amount attributable to the rule under IRC 223(b)(8)(B)(i) is 4375 - 364.58 = 4010.42 per spouse, with a 10 percent additional tax of 401.04 on failure.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": false
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4010.42,
+        "accounts.0.hsa.testingPeriod.status": "failed",
+        "accounts.0.hsa.testingPeriod.grossIncomeInclusionIfFailed": 4010.42,
+        "accounts.0.hsa.testingPeriod.additionalTaxIfFailed": 401.04,
+        "accounts.0.hsa.testingPeriod.inclusionTaxYear": 2027,
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED"
+      ]
     }
   ]
 }

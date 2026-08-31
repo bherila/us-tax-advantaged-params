@@ -256,7 +256,11 @@ export interface HsaAccountDetail {
   additionalContributionAmount: Money;
   /** IRC 223(b)(5)(B)(ii) share of the one family limit, or null when no family limit is shared. */
   familyLimitShare: number | null;
-  /** The single IRC 223(b)(5) family limit shared by the spouses, or null. */
+  /**
+   * The single IRC 223(b)(5) family limit the spouses divide — the limitation
+   * attributable to family-coverage months only, excluding any self-only
+   * months, which stay with each individual — or null.
+   */
   sharedFamilyContributionLimit: Money | null;
   lastMonthRuleApplied: boolean;
   /**
@@ -8007,6 +8011,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   interface HsaOwnerAmounts {
     proratedApplied: Money;
     proratedWithoutLastMonthRule: Money;
+    /** Unrounded twelfth-summed portion of the limit from family-coverage months. Only this portion is divided between spouses under IRC 223(b)(5)(B)(ii). */
+    familyPortionApplied: number;
+    /** Unrounded twelfth-summed portion from self-only months, which stays with the individual (Form 8889 line 6, Step 4). */
+    selfPortionApplied: number;
+    familyPortionWithoutLastMonthRule: number;
+    selfPortionWithoutLastMonthRule: number;
     catchUpApplied: Money;
     catchUpWithoutLastMonthRule: Money;
     appliedAnnualLimitByMonth: Array<Money | null>;
@@ -8098,6 +8108,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
+    const tierPortion = (tier: HsaCoverageTier): number =>
+      monthlyAnnualLimits.reduce<number>(
+        (sum, value, index) => (months[index] === tier ? sum + (value ?? 0) : sum),
+        0,
+      ) / HSA_MONTHS_IN_YEAR;
+    const familyPortionWithoutLastMonthRule = tierPortion("family");
+    const selfPortionWithoutLastMonthRule = tierPortion("self_only");
     const proratedWithoutLastMonthRule = roundMoney(
       monthlyAnnualLimits.reduce<number>((sum, value) => sum + (value ?? 0), 0) / HSA_MONTHS_IN_YEAR,
     );
@@ -8109,6 +8126,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     let lastMonthRuleApplied = false;
     let appliedAnnualLimitByMonth = monthlyAnnualLimits;
     let proratedApplied = proratedWithoutLastMonthRule;
+    let familyPortionApplied = familyPortionWithoutLastMonthRule;
+    let selfPortionApplied = selfPortionWithoutLastMonthRule;
     let catchUpApplied = catchUpWithoutLastMonthRule;
 
     if (owner.rules?.useLastMonthRule) {
@@ -8138,6 +8157,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         const decemberAnnualLimit = annualLimitFor(decemberTier);
         appliedAnnualLimitByMonth = HSA_ALL_MONTHS.map(() => decemberAnnualLimit);
         proratedApplied = roundMoney(decemberAnnualLimit);
+        familyPortionApplied = decemberTier === "family" ? decemberAnnualLimit : 0;
+        selfPortionApplied = decemberTier === "family" ? 0 : decemberAnnualLimit;
         catchUpApplied = catchUpEligible ? roundMoney(parameters.additionalContributionAmountAge55) : 0;
       }
     }
@@ -8145,6 +8166,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     amountsByOwner.set(ownerId, {
       proratedApplied,
       proratedWithoutLastMonthRule,
+      familyPortionApplied,
+      selfPortionApplied,
+      familyPortionWithoutLastMonthRule,
+      selfPortionWithoutLastMonthRule,
       catchUpApplied,
       catchUpWithoutLastMonthRule,
       appliedAnnualLimitByMonth,
@@ -8155,13 +8180,17 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     });
   }
 
-  const sharedFamilyLimit = familySharingApplies
-    ? roundMoney(
-        Math.max(
-          ...coupleMembersWithAccounts.map((personId) => amountsByOwner.get(personId)?.proratedApplied ?? 0),
-        ),
+  /**
+   * The single IRC 223(b)(5) family limit the spouses divide is the limitation
+   * attributable to family-coverage months only. Self-only months stay outside
+   * the division (Form 8889 line 6, Steps 1-4).
+   */
+  const rawSharedFamilyLimit = familySharingApplies
+    ? Math.max(
+        ...coupleMembersWithAccounts.map((personId) => amountsByOwner.get(personId)?.familyPortionApplied ?? 0),
       )
     : null;
+  const sharedFamilyLimit = rawSharedFamilyLimit === null ? null : roundMoney(rawSharedFamilyLimit);
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
   const explicitShareHolders = coupleMembersWithAccounts.filter(
@@ -8225,10 +8254,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
     if (couple && familyPoolKey) {
+      const undividedSelfPortions = coupleMembersWithAccounts.reduce<number>(
+        (sum, personId) => sum + (amountsByOwner.get(personId)?.selfPortionApplied ?? 0),
+        0,
+      );
       context.hsaFamilyPools.set(familyPoolKey, {
         id: `hsa223b5:${familyPoolKey}`,
-        legalLimit: "IRC 223(b)(5) single family contribution limit shared by spouses",
-        limit: sharedFamilyLimit,
+        legalLimit:
+          "IRC 223(b)(5) single family contribution limit divided between the spouses, plus their undivided self-only-month limitations",
+        limit: rawSharedFamilyLimit === null ? sharedFamilyLimit : roundMoney(rawSharedFamilyLimit + undividedSelfPortions),
         used: 0,
       });
     }
@@ -8257,12 +8291,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const indeterminate =
       amounts.indeterminate || diagnostics.some((entry) => entry.severity === DiagnosticSeverity.ERROR);
 
-    const cap = (value: Money): Money =>
-      share === null || sharedFamilyLimit === null
-        ? value
-        : roundMoney(minMoney(value, share * sharedFamilyLimit));
-    const baseLimit = indeterminate ? null : cap(amounts.proratedApplied);
-    const baseLimitWithoutLastMonthRule = indeterminate ? null : cap(amounts.proratedWithoutLastMonthRule);
+    /**
+     * Form 8889 line 6: the spouse's agreed (or default equal) share applies to
+     * the family-coverage months' limitation only; self-only months are added
+     * back undivided. The same division is applied to the counterfactual
+     * without the IRC 223(b)(8) last-month rule so the amount attributable to
+     * that rule is measured against the limit that would actually have applied.
+     */
+    const divided = (familyPortion: number, selfPortion: number, undivided: Money): Money =>
+      share === null ? undivided : roundMoney(share * familyPortion + selfPortion);
+    const baseLimit = indeterminate
+      ? null
+      : divided(amounts.familyPortionApplied, amounts.selfPortionApplied, amounts.proratedApplied);
+    const baseLimitWithoutLastMonthRule = indeterminate
+      ? null
+      : divided(
+          amounts.familyPortionWithoutLastMonthRule,
+          amounts.selfPortionWithoutLastMonthRule,
+          amounts.proratedWithoutLastMonthRule,
+        );
 
     context.hsaBasePools.set(ownerId, {
       id: `hsa223b1:${ownerId}`,
@@ -8361,7 +8408,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       diagnostic(
         "HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER",
         DiagnosticSeverity.INFO,
-        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) reduction for Archer MSA contributions.",
+        "This calculation applies IRC 223(b) to the months and coverage supplied. It does not test eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer's dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) and 223(b)(5)(B)(i) reductions for Archer MSA contributions.",
         `persons.${ownerId}`,
         "IRC 223",
       ),

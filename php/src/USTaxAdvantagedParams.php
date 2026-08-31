@@ -8649,6 +8649,17 @@ final class Engine
                 );
             }
 
+            $tierPortion = static function (string $tier) use ($monthlyAnnualLimits, $months): float {
+                $sum = 0.0;
+                foreach ($monthlyAnnualLimits as $index => $value) {
+                    if ($months[$index] === $tier) {
+                        $sum += $value ?? 0.0;
+                    }
+                }
+                return $sum / self::HSA_MONTHS_IN_YEAR;
+            };
+            $familyPortionWithoutLastMonthRule = $tierPortion('family');
+            $selfPortionWithoutLastMonthRule = $tierPortion('self_only');
             $sum = 0.0;
             foreach ($monthlyAnnualLimits as $value) {
                 $sum += $value ?? 0.0;
@@ -8665,6 +8676,8 @@ final class Engine
             $lastMonthRuleApplied = false;
             $appliedAnnualLimitByMonth = $monthlyAnnualLimits;
             $proratedApplied = $proratedWithoutLastMonthRule;
+            $familyPortionApplied = $familyPortionWithoutLastMonthRule;
+            $selfPortionApplied = $selfPortionWithoutLastMonthRule;
             $catchUpApplied = $catchUpWithoutLastMonthRule;
 
             if (!empty($owner['rules']['useLastMonthRule'])) {
@@ -8694,6 +8707,8 @@ final class Engine
                     $decemberAnnualLimit = $annualLimitFor($decemberTier);
                     $appliedAnnualLimitByMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, $decemberAnnualLimit);
                     $proratedApplied = self::roundMoney($decemberAnnualLimit);
+                    $familyPortionApplied = $decemberTier === 'family' ? (float) $decemberAnnualLimit : 0.0;
+                    $selfPortionApplied = $decemberTier === 'family' ? 0.0 : (float) $decemberAnnualLimit;
                     $catchUpApplied = $catchUpEligible
                         ? self::roundMoney((float) $parameters['additionalContributionAmountAge55'])
                         : 0.0;
@@ -8703,6 +8718,10 @@ final class Engine
             $amountsByOwner[$ownerId] = [
                 'proratedApplied' => $proratedApplied,
                 'proratedWithoutLastMonthRule' => $proratedWithoutLastMonthRule,
+                'familyPortionApplied' => $familyPortionApplied,
+                'selfPortionApplied' => $selfPortionApplied,
+                'familyPortionWithoutLastMonthRule' => $familyPortionWithoutLastMonthRule,
+                'selfPortionWithoutLastMonthRule' => $selfPortionWithoutLastMonthRule,
                 'catchUpApplied' => $catchUpApplied,
                 'catchUpWithoutLastMonthRule' => $catchUpWithoutLastMonthRule,
                 'appliedAnnualLimitByMonth' => $appliedAnnualLimitByMonth,
@@ -8713,13 +8732,20 @@ final class Engine
             ];
         }
 
+        /*
+         * The single IRC 223(b)(5) family limit the spouses divide is the limitation
+         * attributable to family-coverage months only. Self-only months stay outside
+         * the division (Form 8889 line 6, Steps 1-4).
+         */
+        $rawSharedFamilyLimit = null;
         $sharedFamilyLimit = null;
         if ($familySharingApplies) {
             $candidates = [];
             foreach ($coupleMembersWithAccounts as $personId) {
-                $candidates[] = $amountsByOwner[$personId]['proratedApplied'] ?? 0.0;
+                $candidates[] = $amountsByOwner[$personId]['familyPortionApplied'] ?? 0.0;
             }
-            $sharedFamilyLimit = self::roundMoney(max($candidates));
+            $rawSharedFamilyLimit = max($candidates);
+            $sharedFamilyLimit = self::roundMoney($rawSharedFamilyLimit);
         }
         $familyPoolKey = $couple === null ? null : "{$couple[0]}|{$couple[1]}";
 
@@ -8789,10 +8815,17 @@ final class Engine
                 );
             }
             if ($couple !== null && $familyPoolKey !== null) {
+                $undividedSelfPortions = 0.0;
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $undividedSelfPortions += $amountsByOwner[$personId]['selfPortionApplied'] ?? 0.0;
+                }
                 $context['hsaFamilyPools'][$familyPoolKey] = [
                     'id' => "hsa223b5:{$familyPoolKey}",
-                    'legalLimit' => 'IRC 223(b)(5) single family contribution limit shared by spouses',
-                    'limit' => $sharedFamilyLimit,
+                    'legalLimit' => 'IRC 223(b)(5) single family contribution limit divided between the spouses, '
+                        . 'plus their undivided self-only-month limitations',
+                    'limit' => $rawSharedFamilyLimit === null
+                        ? $sharedFamilyLimit
+                        : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions),
                     'used' => 0.0,
                 ];
             }
@@ -8819,15 +8852,32 @@ final class Engine
 
             $indeterminate = $amounts['indeterminate'] || self::hasError($diagnostics);
 
-            $cap = static function (float $value) use ($share, $sharedFamilyLimit): float {
-                return $share === null || $sharedFamilyLimit === null
-                    ? $value
-                    : self::roundMoney(self::minMoney($value, $share * $sharedFamilyLimit));
+            /*
+             * Form 8889 line 6: the spouse's agreed (or default equal) share applies to
+             * the family-coverage months' limitation only; self-only months are added
+             * back undivided. The same division is applied to the counterfactual
+             * without the IRC 223(b)(8) last-month rule so the amount attributable to
+             * that rule is measured against the limit that would actually have applied.
+             */
+            $divided = static function (float $familyPortion, float $selfPortion, float $undivided) use ($share): float {
+                return $share === null
+                    ? $undivided
+                    : self::roundMoney($share * $familyPortion + $selfPortion);
             };
-            $baseLimit = $indeterminate ? null : $cap($amounts['proratedApplied']);
+            $baseLimit = $indeterminate
+                ? null
+                : $divided(
+                    (float) $amounts['familyPortionApplied'],
+                    (float) $amounts['selfPortionApplied'],
+                    (float) $amounts['proratedApplied'],
+                );
             $baseLimitWithoutLastMonthRule = $indeterminate
                 ? null
-                : $cap($amounts['proratedWithoutLastMonthRule']);
+                : $divided(
+                    (float) $amounts['familyPortionWithoutLastMonthRule'],
+                    (float) $amounts['selfPortionWithoutLastMonthRule'],
+                    (float) $amounts['proratedWithoutLastMonthRule'],
+                );
 
             $context['hsaBasePools'][$ownerId] = [
                 'id' => "hsa223b1:{$ownerId}",
@@ -8937,8 +8987,8 @@ final class Engine
                 'This calculation applies IRC 223(b) to the months and coverage supplied. It does not test '
                     . 'eligible-individual status under IRC 223(c)(1), whether the plan is a high deductible health '
                     . 'plan under IRC 223(c)(2), the IRC 223(b)(6) denial for a person claimed as another taxpayer\'s '
-                    . 'dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) reduction for '
-                    . 'Archer MSA contributions.',
+                    . 'dependent, Medicare entitlement under IRC 223(b)(7), or the IRC 223(b)(4)(A) and '
+                    . '223(b)(5)(B)(i) reductions for Archer MSA contributions.',
                 "persons.{$ownerId}",
                 'IRC 223',
             );
