@@ -484,10 +484,29 @@ data/retirement-parameters.json
            ├── generated PHP parameter block
            └── shared conformance vectors
                          │
-                         └── complete serialized-output parity test
+                         ├── complete serialized-output parity test
+                         └── seeded randomized differential test
 ```
 
 This gives npm consumers an idiomatic TypeScript package and Packagist consumers an idiomatic PHP package without duplicating annual parameter maintenance.
+
+`npm run test:parity` compares complete serialized output for every conformance vector.
+That set is fixed, so `npm run test:fuzz` compares the two engines on randomized scenarios
+instead — varying tax year across the supported range, account types, HSA coverage shapes
+and monthly patterns, existing contributions, conversions, filing statuses, and
+deliberately malformed inputs — and diffs the full output including thrown error codes and
+messages. It is deterministic: every run prints its seed, and `--seed=<n>` replays a
+failure exactly.
+
+```bash
+npm run test:fuzz                            # 5,000 scenarios, random seed
+node scripts/fuzz-parity.mjs --seed=1234      # replay
+node scripts/fuzz-parity.mjs --cases=50000    # deeper sweep
+```
+
+It runs in `npm run verify` and in CI because it is cheap — 10,000 scenarios take under
+three seconds, since the PHP side is batched into one process. Nine of the input-validation
+divergences fixed in this package were found by it rather than by the vectors.
 
 ## Development
 
@@ -499,6 +518,7 @@ npm run typecheck
 npm run test:ts
 npm run test:php
 npm run test:parity
+npm run test:fuzz
 npm run verify
 ```
 
