@@ -71,7 +71,19 @@ const nodeVersion = version("node", ["--version"]);
 const npmVersion = version("npm", ["--version"]);
 const tscVersion = version("tsc", ["--version"]);
 const composerVersion = version("composer", ["--version"]);
-const phpTargetValidatedLocally = phpVersion !== null && /^8\.(?:[2-9]|\d{2,})\./.test(phpVersion);
+// The floor is whatever composer.json declares, read rather than restated. A
+// hardcoded pattern here accepted PHP 8.2 through 8.4 as satisfying the
+// requirement long after the package moved to >=8.5, so the publication gate
+// would report a runtime as supported that cannot install the package at all.
+const composerJson = JSON.parse(await readFile(join(root, "composer.json"), "utf8"));
+const phpFloor = (composerJson.require?.php ?? "").match(/(\d+)\.(\d+)/);
+const phpFloorLabel = phpFloor ? `${phpFloor[1]}.${phpFloor[2]}` : "unknown";
+const phpParts = phpVersion?.match(/^(\d+)\.(\d+)/) ?? null;
+const phpTargetValidatedLocally =
+  phpParts !== null &&
+  phpFloor !== null &&
+  (Number(phpParts[1]) > Number(phpFloor[1]) ||
+    (Number(phpParts[1]) === Number(phpFloor[1]) && Number(phpParts[2]) >= Number(phpFloor[2])));
 const finishedAt = new Date();
 
 const status = {
@@ -126,7 +138,7 @@ const validationLines = [
   "",
   phpTargetValidatedLocally
     ? "The local PHP run satisfied the Composer PHP requirement."
-    : `The local container provides PHP ${phpVersion ?? "unknown"}, below the declared PHP 8.2 floor. The GitHub Actions workflow tests PHP 8.2 through 8.5. Do not publish without a green PHP CI matrix.`,
+    : `The local container provides PHP ${phpVersion ?? "unknown"}, below the PHP ${phpFloorLabel} floor composer.json declares. The GitHub Actions workflow tests the supported matrix. Do not publish without a green PHP CI matrix.`,
   "",
   "## Detailed output",
   "",
@@ -161,7 +173,7 @@ const releaseLines = [
     : `${failed.length} local validation check(s) failed; the package is not ready for publication.`,
   phpTargetValidatedLocally
     ? "The PHP target was validated locally on a supported PHP version."
-    : `The local runtime is PHP ${phpVersion ?? "unknown"}; the PHP 8.2-8.5 CI matrix remains a publication gate.`,
+    : `The local runtime is PHP ${phpVersion ?? "unknown"}, below the PHP ${phpFloorLabel} floor; the PHP CI matrix remains a publication gate.`,
   composerVersion
     ? "Composer manifest validation ran locally."
     : "Composer was not installed locally; `composer validate --strict` and `composer test` are configured in CI.",
