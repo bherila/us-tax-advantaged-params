@@ -3280,6 +3280,323 @@
       "expectError": {
         "code": "INVALID_BOOLEAN"
       }
+    },
+    {
+      "name": "2026 unmarried qualified HSA funding distribution reduces the limit under IRC 223(b)(4)(C)",
+      "description": "IRC 223(b)(4) reduces \"the limitation which would (but for this paragraph) apply under this subsection\" by the sum of its subparagraphs, of which \"(C) the aggregate amount contributed to health savings accounts of such individual for such taxable year under section 408(d)(9)\". Twelve self-only months give 12 x (4400/12) = 4400 under IRC 223(b)(2)(A) with the 2026 amount from Rev. Proc. 2025-19; the $1,500 rolled over from an IRA under IRC 408(d)(9) reduces it to 4400 - 1500 = 2900.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "qualifiedHsaFundingDistributions": 1500
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2900,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 1500,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 1500,
+        "accounts.0.hsa.archerMsaContributionsApplied": 0,
+        "accounts.0.contributionComponents.hsaDeductible": 2900,
+        "totals.hsaContribution": 2900
+      },
+      "expectDiagnosticCodes": [
+        "HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 qualified HSA funding distribution reaches the IRC 223(b)(3) additional contribution amount",
+      "description": "IRC 223(b)(4) reduces the limitation applying \"under this subsection\", which for an individual who attained 55 before the close of the year is the IRC 223(b)(1) limitation as increased by IRC 223(b)(3). Twelve self-only months in 2026 give 4400 and the IRC 223(b)(3)(B) table gives 1000 for 2009 and thereafter, so subsection (b) allows 5400; a $5,000 IRC 408(d)(9) contribution reduces it to 400. The subsection is reduced once as a whole, so paragraph (1) absorbs 4400 and only the 600 it could not absorb reaches the 1000, leaving 400. hsa.additionalContributionAmount reports the unreduced statutory 1000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1968,
+            "qualifiedHsaFundingDistributions": 5000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 400,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 5000,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 5000,
+        "accounts.0.contributionComponents.hsaDeductible": 400,
+        "totals.hsaContribution": 400
+      }
+    },
+    {
+      "name": "2026 IRC 223(b)(4) reduces by the sum of subparagraphs (A) and (C) but not below zero",
+      "description": "IRC 223(b)(4) reduces the limitation \"(but not below zero) by the sum of\" its subparagraphs, so 1200 paid to Archer MSAs and 3400 contributed under IRC 408(d)(9) reduce the 2026 twelve-month self-only limitation of 4400 by 4600 and leave 0 rather than -200. The fall is attributed in subparagraph order: (A) takes the first 1200 in full, leaving 3200, and (C) can only reach that 3200 of the remaining ceiling even though 3400 was contributed.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 1200,
+            "qualifiedHsaFundingDistributions": 3400
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.archerMsaContributionsApplied": 1200,
+        "accounts.0.hsa.archerMsaLimitReduction": 1200,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 3400,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 3200,
+        "totals.hsaContribution": 0
+      }
+    },
+    {
+      "name": "2026 married qualified HSA funding distribution is taken after the IRC 223(b)(5)(B)(ii) division",
+      "description": "The IRC 223(b)(4) flush text says \"Subparagraph (A) shall not apply with respect to any individual to whom paragraph (5) applies\" and names subparagraph (A) alone, so subparagraph (C) survives for a married individual; and IRC 223(b)(5)(B)(i) reduces the family limitation only \"by the aggregate amount paid to Archer MSAs of such spouses\", so nothing routes (C) through paragraph (5). It is an amount of \"such individual\", so it reduces that spouse's own subsection (b) limitation after the division. The 2026 family limitation of 8750 divides equally to 4375 each; the taxpayer's $2,000 IRC 408(d)(9) contribution leaves the taxpayer 2375 and the spouse untouched at 4375. Taken before the division like the Archer reduction it would have given (8750 - 2000) / 2 = 3375 to each and charged the spouse for the taxpayer's rollover.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "qualifiedHsaFundingDistributions": 2000
+          },
+          {
+            "id": "s",
+            "birthYear": 1987
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2375,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 2000,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 2000,
+        "accounts.0.diagnostics.1.code": "HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT",
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.hsa.qualifiedHsaFundingDistributionsApplied": 0,
+        "accounts.1.hsa.qualifiedHsaFundingLimitReduction": 0,
+        "totals.hsaContribution": 6750
+      }
+    },
+    {
+      "name": "2026 matched Archer MSA contribution of the same amount is taken before the division instead",
+      "description": "The same couple and the same $2,000, paid to Archer MSAs instead of contributed under IRC 408(d)(9), goes through IRC 223(b)(5)(B)(i) and reduces the single family limitation before (ii) divides it: 8750 - 2000 = 6750 divided equally is 3375 each. Pairing this with the IRC 408(d)(9) vector isolates the ordering rather than the amount — 2375/4375 under subparagraph (C) against 3375/3375 under IRC 223(b)(5)(B)(i) — which is what the flush text naming only subparagraph (A) produces.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "archerMsaContributions": 2000
+          },
+          {
+            "id": "s",
+            "birthYear": 1987
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3375,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 6750,
+        "accounts.0.hsa.archerMsaContributionsApplied": 2000,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": true,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 0,
+        "accounts.1.statutoryMaximumAnnualContribution": 3375,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 6750,
+        "accounts.1.hsa.archerMsaContributionsApplied": 2000,
+        "totals.hsaContribution": 6750
+      }
+    },
+    {
+      "name": "2026 married qualified HSA funding distribution reaches that spouse's IRC 223(b)(3) amount",
+      "description": "IRC 223(b)(5)(B) reduces and divides the paragraph (1) limitation \"without regard to any additional contribution amount under paragraph (3)\", so the Archer reduction can never reach a married individual's age-55 amount. Subparagraph (C) is not part of paragraph (5): it reduces the limitation applying to the individual \"under this subsection\", which after the division is that spouse's 4375 share plus their own 1000, so it does reach it. A $5,000 IRC 408(d)(9) contribution by a taxpayer aged 55 or over takes the 4375 to 0 and the remaining 625 off the 1000, leaving 375; the spouse keeps 4375 + 1000 = 5375.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1968,
+            "qualifiedHsaFundingDistributions": 5000
+          },
+          {
+            "id": "s",
+            "birthYear": 1967
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 375,
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 5000,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 5000,
+        "accounts.0.contributionComponents.hsaDeductible": 375,
+        "accounts.1.statutoryMaximumAnnualContribution": 5375,
+        "totals.hsaContribution": 5750
+      }
+    },
+    {
+      "name": "2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides",
+      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\" and IRC 223(b)(4) reduces \"the limitation which would (but for this paragraph) apply under this subsection\", so the reduction follows the last-month rule. December-only self-only coverage with the election gives 4400, less the $200 contributed under IRC 408(d)(9) is 4200. The counterfactual month-by-month limitation is 4400/12 = 366.67, and the same 200 reduces it to 166.67, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is 4200 - 166.67 = 4033.33. Measuring it against the unreduced 366.67 counterfactual would understate it by the 200 that never applied. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1986,
+            "qualifiedHsaFundingDistributions": 200
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4200,
+        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.proratedContributionLimit": 4400,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4033.33,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 200,
+        "accounts.0.hsa.testingPeriod.status": "satisfied",
+        "totals.hsaContribution": 4200
+      }
     }
   ]
 }

@@ -272,6 +272,18 @@ final class PersonBuilder
         return $this;
     }
 
+    /**
+     * The aggregate amount contributed to this person's health savings accounts
+     * for the taxable year under IRC 408(d)(9), which IRC 223(b)(4)(C) subtracts
+     * from that person's own HSA limitation — married or not, and after any IRC
+     * 223(b)(5)(B)(ii) division.
+     */
+    public function qualifiedHsaFundingDistributions(float|int $amount): self
+    {
+        $this->value['qualifiedHsaFundingDistributions'] = $amount;
+        return $this;
+    }
+
     /** @return array<string,mixed> */
     public function build(): array
     {
@@ -7611,6 +7623,7 @@ final class Engine
                     'yearEndTraditionalSepSimpleIraValue',
                     'otherTraditionalSepSimpleIraDistributions',
                     'archerMsaContributions',
+                    'qualifiedHsaFundingDistributions',
                 ]
                 as $key
             ) {
@@ -8697,6 +8710,23 @@ final class Engine
         ];
     }
 
+    /**
+     * IRC 223(b)(4) reduces "the limitation which would (but for this paragraph)
+     * apply under this subsection" — the whole of subsection (b) — "but not below
+     * zero". The paragraph (1) limitation absorbs the reduction first, and only
+     * what paragraph (1) cannot absorb reaches the paragraph (3) additional
+     * contribution amount, because the subsection is reduced once as a whole.
+     *
+     * @return array{0:float,1:float} the reduced paragraph (1) limitation and the reduced paragraph (3) amount
+     */
+    private static function subsectionBReducedBy(float $baseLimit, float $catchUp, float $amount): array
+    {
+        return [
+            self::nonnegative($baseLimit - $amount),
+            self::nonnegative($catchUp - max(0.0, $amount - $baseLimit)),
+        ];
+    }
+
     /** @param array<string,mixed> $context
      *  @param list<array<string,mixed>> $accounts
      */
@@ -9103,6 +9133,15 @@ final class Engine
         $archerForPerson = static function (string $personId) use ($context): float {
             return (float) ($context['persons'][$personId]['archerMsaContributions'] ?? 0.0);
         };
+        /*
+         * IRC 223(b)(4)(C) reduces the limitation by "the aggregate amount
+         * contributed to health savings accounts of such individual for such taxable
+         * year under section 408(d)(9)". It is read per individual in every case, so
+         * unlike the Archer amount it has no couple-wide aggregate.
+         */
+        $qualifiedHsaFundingFor = static function (string $personId) use ($context): float {
+            return (float) ($context['persons'][$personId]['qualifiedHsaFundingDistributions'] ?? 0.0);
+        };
         $coupleArcherAggregateRaw = 0.0;
         foreach ($couple ?? [] as $personId) {
             $coupleArcherAggregateRaw += $archerForPerson($personId);
@@ -9274,14 +9313,14 @@ final class Engine
                 [$family, $self] = self::archerReducedPortions($familyPortion, $selfPortion, $archerAmount);
                 return self::roundMoney($share * $family + $self);
             };
-            $baseLimit = $indeterminate
+            $baseLimitAfterArcher = $indeterminate
                 ? null
                 : $reducedDivided(
                     (float) $amounts['familyPortionApplied'],
                     (float) $amounts['selfPortionApplied'],
                     (float) $amounts['proratedApplied'],
                 );
-            $baseLimitWithoutLastMonthRule = $indeterminate
+            $baseLimitWithoutLastMonthRuleAfterArcher = $indeterminate
                 ? null
                 : $reducedDivided(
                     (float) $amounts['familyPortionWithoutLastMonthRule'],
@@ -9297,14 +9336,14 @@ final class Engine
             $catchUpArcherResidual = $share === null
                 ? max(0.0, $archerAmount - (float) $amounts['proratedApplied'])
                 : 0.0;
-            $catchUpApplied = self::nonnegative((float) $amounts['catchUpApplied'] - $catchUpArcherResidual);
-            $catchUpWithoutLastMonthRule = self::nonnegative(
+            $catchUpAfterArcher = self::nonnegative((float) $amounts['catchUpApplied'] - $catchUpArcherResidual);
+            $catchUpWithoutLastMonthRuleAfterArcher = self::nonnegative(
                 (float) $amounts['catchUpWithoutLastMonthRule']
                 - ($share === null
                     ? max(0.0, $archerAmount - (float) $amounts['proratedWithoutLastMonthRule'])
                     : 0.0),
             );
-            $archerMsaLimitReduction = $indeterminate || $baseLimit === null
+            $archerMsaLimitReduction = $indeterminate || $baseLimitAfterArcher === null
                 ? 0.0
                 : self::nonnegative(
                     $divided(
@@ -9313,9 +9352,50 @@ final class Engine
                         (float) $amounts['proratedApplied'],
                     )
                     + (float) $amounts['catchUpApplied']
-                    - $baseLimit
-                    - $catchUpApplied,
+                    - $baseLimitAfterArcher
+                    - $catchUpAfterArcher,
                 );
+
+            /*
+             * IRC 223(b)(4)(C) then reduces what is left by "the aggregate amount
+             * contributed to health savings accounts of such individual for such taxable
+             * year under section 408(d)(9)". The IRC 223(b)(4) flush text withdraws
+             * subparagraph (A) — and only (A) — from an individual to whom IRC 223(b)(5)
+             * applies, and IRC 223(b)(5)(B)(i) reduces the family limitation by the Archer
+             * amount alone, so nothing routes (C) through paragraph (5). It therefore
+             * reduces this individual's own subsection (b) limitation in every case: for a
+             * married individual, the share the IRC 223(b)(5)(B)(ii) division left them,
+             * and the IRC 223(b)(3) amount with whatever the paragraph (1) limitation
+             * could not absorb — which the Archer reduction never reaches for that
+             * individual.
+             */
+            $fundingAmount = $qualifiedHsaFundingFor($ownerId);
+            if ($baseLimitAfterArcher === null) {
+                $baseLimit = null;
+                $catchUpApplied = $catchUpAfterArcher;
+            } else {
+                [$baseLimit, $catchUpApplied] = self::subsectionBReducedBy(
+                    $baseLimitAfterArcher,
+                    $catchUpAfterArcher,
+                    $fundingAmount,
+                );
+            }
+            if ($baseLimitWithoutLastMonthRuleAfterArcher === null) {
+                $baseLimitWithoutLastMonthRule = null;
+                $catchUpWithoutLastMonthRule = $catchUpWithoutLastMonthRuleAfterArcher;
+            } else {
+                [$baseLimitWithoutLastMonthRule, $catchUpWithoutLastMonthRule] = self::subsectionBReducedBy(
+                    $baseLimitWithoutLastMonthRuleAfterArcher,
+                    $catchUpWithoutLastMonthRuleAfterArcher,
+                    $fundingAmount,
+                );
+            }
+            $qualifiedHsaFundingLimitReduction =
+                $indeterminate || $baseLimitAfterArcher === null || $baseLimit === null
+                    ? 0.0
+                    : self::nonnegative(
+                        $baseLimitAfterArcher + $catchUpAfterArcher - $baseLimit - $catchUpApplied,
+                    );
 
             $context['hsaBasePools'][$ownerId] = [
                 'id' => "hsa223b1:{$ownerId}",
@@ -9449,6 +9529,34 @@ final class Engine
                     );
             }
 
+            if (!$indeterminate && $fundingAmount > 0) {
+                $fundedFormatted = self::localeNumber($fundingAmount);
+                $fundingTakenFormatted = self::localeNumber($qualifiedHsaFundingLimitReduction);
+                $diagnostics[] = self::diagnostic(
+                    'HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT',
+                    DiagnosticSeverity::INFO,
+                    $share === null
+                        ? 'IRC 223(b)(4)(C) reduces the IRC 223(b) limitation, but not below zero, by the '
+                            . "\${$fundedFormatted} aggregate amount contributed to health savings accounts of this "
+                            . 'individual for the taxable year under IRC 408(d)(9), which took '
+                            . "\${$fundingTakenFormatted} off the ceiling. The amount is taken as supplied; the IRC "
+                            . '408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing '
+                            . 'period are not modelled.'
+                        : 'The IRC 223(b)(4) flush text withdraws subparagraph (A) alone from an individual to whom '
+                            . 'IRC 223(b)(5) applies, so IRC 223(b)(4)(C) still applies to this spouse. The '
+                            . "\${$fundedFormatted} contributed under IRC 408(d)(9) is an amount of this individual "
+                            . 'and not of the couple, and IRC 223(b)(5)(B)(i) reduces the family limitation by the '
+                            . 'Archer MSA amount alone, so it reduces this spouse\'s own limitation after the IRC '
+                            . '223(b)(5)(B)(ii) division rather than the family limitation before it. That took '
+                            . "\${$fundingTakenFormatted} off the ceiling, reaching the IRC 223(b)(3) additional "
+                            . 'contribution amount with whatever the IRC 223(b)(1) limitation could not absorb. The '
+                            . 'amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the '
+                            . 'separate IRC 408(d)(9)(D) testing period are not modelled.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(4)(C)',
+                );
+            }
+
             $diagnostics[] = self::diagnostic(
                 'HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER',
                 DiagnosticSeverity::INFO,
@@ -9458,8 +9566,10 @@ final class Engine
                     . 'dependent, or Medicare entitlement under IRC 223(b)(7). The IRC 223(b)(4)(A) and '
                     . '223(b)(5)(B)(i) reductions are applied from the Archer MSA contributions supplied on '
                     . 'persons[].archerMsaContributions, which are taken as stated and not tested against IRC 220. '
-                    . 'The IRC 223(b)(4)(C) reduction for a qualified HSA funding distribution under IRC 408(d)(9) '
-                    . 'is not applied.',
+                    . 'The IRC 223(b)(4)(C) reduction is applied from the qualified HSA funding distribution supplied '
+                    . 'on persons[].qualifiedHsaFundingDistributions, which is likewise taken as stated: the IRC '
+                    . '408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are '
+                    . 'not tested.',
                 "persons.{$ownerId}",
                 'IRC 223',
             );
@@ -9482,6 +9592,8 @@ final class Engine
                 'archerMsaContributionsApplied' => $archerAmount,
                 'archerMsaReductionPrecedesFamilyDivision' => $share !== null,
                 'archerMsaLimitReduction' => $archerMsaLimitReduction,
+                'qualifiedHsaFundingDistributionsApplied' => $fundingAmount,
+                'qualifiedHsaFundingLimitReduction' => $qualifiedHsaFundingLimitReduction,
                 'lastMonthRuleApplied' => $amounts['lastMonthRuleApplied'],
                 'amountAttributableToLastMonthRule' => $attributable,
                 'testingPeriod' => $testingPeriod,
