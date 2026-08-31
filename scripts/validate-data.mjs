@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const parameterPath = join(root, "data", "retirement-parameters.json");
+const hsaPath = join(root, "data", "hsa-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -36,64 +37,87 @@ function walk(value, path) {
   }
 }
 
+/**
+ * Shared shape check for a `sources` array: every record complete, ids unique,
+ * every url HTTPS, and any id the file is required to keep actually present.
+ */
+function validateSources(sources, label, requiredIds = []) {
+  if (!Array.isArray(sources) || sources.length === 0) {
+    fail(`${label}: at least one source record is required.`);
+    return;
+  }
+  const ids = new Set();
+  for (const [index, source] of sources.entries()) {
+    const prefix = `${label} sources[${index}]`;
+    for (const key of ["id", "title", "url", "authority"]) {
+      if (typeof source?.[key] !== "string" || source[key].trim() === "") {
+        fail(`${prefix}.${key} must be a nonempty string.`);
+      }
+    }
+    if (ids.has(source.id)) fail(`${label}: duplicate source id: ${source.id}`);
+    ids.add(source.id);
+    if (typeof source.url === "string" && !source.url.startsWith("https://")) {
+      fail(`${prefix}.url must use HTTPS.`);
+    }
+  }
+  for (const required of requiredIds) {
+    if (!ids.has(required)) fail(`${label}: required provenance source is missing: ${required}`);
+  }
+}
+
+/**
+ * Contiguity of the year table against the declared supported range, shared by
+ * both parameter files. Returns the year list when it is usable, else null.
+ */
+function validateYearSpan(file, label) {
+  if (!Number.isInteger(file.schemaVersion) || file.schemaVersion < 1) {
+    fail(`${label}: schemaVersion must be a positive integer.`);
+  }
+  const minimum = file.supportedTaxYears?.minimum;
+  const maximum = file.supportedTaxYears?.maximum;
+  if (!Number.isInteger(minimum) || !Number.isInteger(maximum) || minimum > maximum) {
+    fail(`${label}: supportedTaxYears must contain an ordered integer minimum and maximum.`);
+    return null;
+  }
+  if (file.generatedThroughTaxYear !== maximum) {
+    fail(`${label}: generatedThroughTaxYear must equal supportedTaxYears.maximum.`);
+  }
+  const keys = Object.keys(file.years ?? {}).map(Number).sort((a, b) => a - b);
+  const expected = Array.from({ length: maximum - minimum + 1 }, (_, index) => minimum + index);
+  if (JSON.stringify(keys) !== JSON.stringify(expected)) {
+    fail(`${label}: year rows must be contiguous from ${minimum} through ${maximum}.`);
+  }
+  return expected;
+}
+
+/** A whole-dollar amount that must be present and above zero. */
+function requirePositiveAmount(value, label) {
+  if (!Number.isInteger(value) || value <= 0) fail(`${label} must be a positive whole-dollar amount.`);
+}
+
 const parameters = await parseCanonicalJson(parameterPath, "data/retirement-parameters.json");
+const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
 if (parameters) {
   walk(parameters, "parameters");
-  if (!Number.isInteger(parameters.schemaVersion) || parameters.schemaVersion < 1) {
-    fail("Parameter schemaVersion must be a positive integer.");
-  }
-  const minimum = parameters.supportedTaxYears?.minimum;
-  const maximum = parameters.supportedTaxYears?.maximum;
-  if (!Number.isInteger(minimum) || !Number.isInteger(maximum) || minimum > maximum) {
-    fail("supportedTaxYears must contain an ordered integer minimum and maximum.");
-  } else {
-    if (parameters.generatedThroughTaxYear !== maximum) {
-      fail("generatedThroughTaxYear must equal supportedTaxYears.maximum.");
+  const years = validateYearSpan(parameters, "data/retirement-parameters.json");
+  for (const year of years ?? []) {
+    const row = parameters.years?.[String(year)];
+    if (!row || row.year !== year) fail(`Year row ${year} is missing or has a mismatched year field.`);
+    if (row && row.annualCompensation401a17 !== null && row.annualCompensation401a17 <= 0) {
+      fail(`Year ${year} has an invalid annualCompensation401a17 value.`);
     }
-    const keys = Object.keys(parameters.years ?? {}).map(Number).sort((a, b) => a - b);
-    const expected = Array.from({ length: maximum - minimum + 1 }, (_, index) => minimum + index);
-    if (JSON.stringify(keys) !== JSON.stringify(expected)) {
-      fail(`Year rows must be contiguous from ${minimum} through ${maximum}.`);
-    }
-    for (const year of expected) {
-      const row = parameters.years?.[String(year)];
-      if (!row || row.year !== year) fail(`Year row ${year} is missing or has a mismatched year field.`);
-      if (row && row.annualCompensation401a17 !== null && row.annualCompensation401a17 <= 0) {
-        fail(`Year ${year} has an invalid annualCompensation401a17 value.`);
-      }
-      if (row && row.annualAdditions415c !== null && row.annualAdditions415c <= 0) {
-        fail(`Year ${year} has an invalid annualAdditions415c value.`);
-      }
+    if (row && row.annualAdditions415c !== null && row.annualAdditions415c <= 0) {
+      fail(`Year ${year} has an invalid annualAdditions415c value.`);
     }
   }
 
-  if (!Array.isArray(parameters.sources) || parameters.sources.length === 0) {
-    fail("At least one source record is required.");
-  } else {
-    const ids = new Set();
-    for (const [index, source] of parameters.sources.entries()) {
-      const prefix = `sources[${index}]`;
-      for (const key of ["id", "title", "url", "authority"]) {
-        if (typeof source?.[key] !== "string" || source[key].trim() === "") {
-          fail(`${prefix}.${key} must be a nonempty string.`);
-        }
-      }
-      if (ids.has(source.id)) fail(`Duplicate source id: ${source.id}`);
-      ids.add(source.id);
-      if (typeof source.url === "string" && !source.url.startsWith("https://")) {
-        fail(`${prefix}.url must use HTTPS.`);
-      }
-    }
-    for (const required of [
-      "irs-notice-2001-56",
-      "irs-employee-plans-news-fall-2009",
-      "irs-pub-535-2001",
-    ]) {
-      if (!ids.has(required)) fail(`Required §401(a)(17) provenance source is missing: ${required}`);
-    }
-  }
+  validateSources(parameters.sources, "data/retirement-parameters.json", [
+    "irs-notice-2001-56",
+    "irs-employee-plans-news-fall-2009",
+    "irs-pub-535-2001",
+  ]);
 
   const row1997 = parameters.years?.["1997"];
   if (row1997?.annualCompensation401a17 !== 160000) {
@@ -101,6 +125,66 @@ if (parameters) {
   }
   if (row1997?.sep?.maximumEmployerContributionRate !== 0.15) {
     fail("The 1997 SEP employer-rate regression fixture must be 0.15.");
+  }
+}
+
+if (hsa) {
+  walk(hsa, "hsa");
+  const years = validateYearSpan(hsa, "data/hsa-parameters.json");
+  for (const year of years ?? []) {
+    const label = `HSA year ${year}`;
+    const row = hsa.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+
+    requirePositiveAmount(row.annualContributionLimit?.selfOnly, `${label} annualContributionLimit.selfOnly`);
+    requirePositiveAmount(row.annualContributionLimit?.family, `${label} annualContributionLimit.family`);
+    if (row.annualContributionLimit?.family < row.annualContributionLimit?.selfOnly) {
+      fail(`${label} family contribution limit is below the self-only limit.`);
+    }
+    if (!Number.isInteger(row.additionalContributionAmountAge55) || row.additionalContributionAmountAge55 < 0) {
+      fail(`${label} additionalContributionAmountAge55 must be a whole-dollar amount of at least zero.`);
+    }
+
+    for (const tier of ["selfOnly", "family"]) {
+      const deductible = row.hdhp?.minimumAnnualDeductible?.[tier];
+      const outOfPocket = row.hdhp?.maximumAnnualOutOfPocket?.[tier];
+      requirePositiveAmount(deductible, `${label} hdhp.minimumAnnualDeductible.${tier}`);
+      requirePositiveAmount(outOfPocket, `${label} hdhp.maximumAnnualOutOfPocket.${tier}`);
+      if (Number.isInteger(deductible) && Number.isInteger(outOfPocket) && outOfPocket < deductible) {
+        fail(`${label} hdhp maximum out-of-pocket (${tier}) is below the minimum annual deductible.`);
+      }
+    }
+
+    for (const flag of ["contributionLimitCappedByHdhpAnnualDeductible", "lastMonthRuleAvailable"]) {
+      if (typeof row[flag] !== "boolean") fail(`${label} ${flag} must be a boolean.`);
+    }
+    // §223(b)(8)(B)(iii) defines the testing period only as part of the
+    // last-month rule, so the two fields cannot disagree about whether that
+    // rule exists in a year.
+    if (row.lastMonthRuleAvailable === true && row.testingPeriodMonths !== 13) {
+      fail(`${label} has the §223(b)(8) last-month rule available but no 13-month testing period.`);
+    }
+    if (row.lastMonthRuleAvailable === false && row.testingPeriodMonths !== null) {
+      fail(`${label} records a testing period for a year without the §223(b)(8) last-month rule.`);
+    }
+  }
+
+  validateSources(hsa.sources, "data/hsa-parameters.json", ["usc-26-223"]);
+
+  // The 2006/2007 boundary is the one historical HSA rule change the engine
+  // reads: §303 of the Tax Relief and Health Care Act of 2006 removed the
+  // deductible cap and §305 added the last-month rule, both for taxable years
+  // beginning after 2006.
+  const row2006 = hsa.years?.["2006"];
+  const row2007 = hsa.years?.["2007"];
+  if (row2006?.contributionLimitCappedByHdhpAnnualDeductible !== true || row2006?.lastMonthRuleAvailable !== false) {
+    fail("The 2006 HSA regression fixture must carry the deductible cap and no last-month rule.");
+  }
+  if (row2007?.contributionLimitCappedByHdhpAnnualDeductible !== false || row2007?.lastMonthRuleAvailable !== true) {
+    fail("The 2007 HSA regression fixture must carry no deductible cap and the last-month rule.");
   }
 }
 
@@ -159,6 +243,8 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Canonical data validation passed: ${Object.keys(parameters.years).length} contiguous tax years, ` +
-    `${parameters.sources.length} sources, ${conformance.vectors.length} conformance vectors.`,
+  `Canonical data validation passed: ${Object.keys(parameters.years).length} contiguous retirement tax years, ` +
+    `${Object.keys(hsa.years).length} contiguous HSA tax years, ` +
+    `${parameters.sources.length + hsa.sources.length} sources, ` +
+    `${conformance.vectors.length} conformance vectors.`,
 );

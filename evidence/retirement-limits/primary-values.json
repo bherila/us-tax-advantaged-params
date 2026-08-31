@@ -19,9 +19,129 @@
     "fr-2023-23317": "SSA, Cost-of-Living Increase and Other Determinations for 2024, 88 FR (Oct. 23, 2023)",
     "ir-12-077": "IRS News Release IR-2012-77, IRS Announces 2013 Pension Plan Limitations (file carries an IR-2011-103 page footer; it sets the 2013 limits)",
     "n-09-94": "IRS Notice 2009-94, 2010 Limitations Adjusted as Provided in Section 415(d), etc.",
-    "n-08-102": "IRS Notice 2008-102, 2009 Limitations Adjusted as Provided in Section 415(d), etc."
+    "n-08-102": "IRS Notice 2008-102, 2009 Limitations Adjusted as Provided in Section 415(d), etc.",
+    "usc-26-219": "26 U.S.C. 219, Retirement savings (2023 edition of the United States Code), for the statutory phase-out widths at 219(g)(2)(A)(ii) and 219(g)(7)(B) and the zero applicable dollar amount at 219(g)(3)(B)(iii)",
+    "usc-26-408A": "26 U.S.C. 408A, Roth IRAs (2023 edition of the United States Code), for the statutory phase-out width at 408A(c)(3)(A)(ii) and the zero applicable dollar amount at 408A(c)(3)(B)(ii)(III)"
   },
   "planYears": {
+    "2009": {
+      "source": "n-08-102",
+      "annualAdditions_415c1A": 49000,
+      "electiveDeferral_402g1": 16500,
+      "section457b_457e15": 16500,
+      "catchUp50_414v2Bi": 5500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 245000,
+      "dbAnnualBenefit_415b1A": 195000,
+      "iraContribution_219b5A": 5000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "simpleSalaryReduction_408p2E": 11500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 55000,
+          "end": 65000
+        },
+        "marriedFilingJointly": {
+          "start": 89000,
+          "end": 109000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalCoveredPhaseout_source": "Notice 2008-102 publishes the applicable dollar amounts under \u00a7219(g)(3)(B)(i) (joint return or qualifying widow(er)) and \u00a7219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by \u00a7219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at \u00a7219(g)(3)(B)(iii). See usc-26-219.",
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 166000,
+          "end": 176000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_source": "Start from Notice 2008-102 (\u00a7219(g)(7)(A)); the end is the start plus the $10,000 width that \u00a7219(g)(7)(B) substitutes for \u00a7219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 105000,
+          "end": 120000
+        },
+        "marriedFilingJointly": {
+          "start": 166000,
+          "end": 176000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "rothPhaseout_source": "Starts from Notice 2008-102, which cites them as \u00a7408A(c)(3)(C)(ii)(I) and (II); the same limits are \u00a7408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by \u00a7408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under \u00a7408A(c)(3)(B)(ii)(III). See usc-26-408A."
+    },
+    "2010": {
+      "source": "n-09-94",
+      "annualAdditions_415c1A": 49000,
+      "electiveDeferral_402g1": 16500,
+      "section457b_457e15": 16500,
+      "catchUp50_414v2Bi": 5500,
+      "catchUp60To63_414v2Ei": null,
+      "rothCatchUpWageThreshold_414v7A": null,
+      "rothCatchUpWageThreshold_source": "\u00a7414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+      "compensationLimit_401a17": 245000,
+      "dbAnnualBenefit_415b1A": 195000,
+      "iraContribution_219b5A": 5000,
+      "iraCatchUp50_219b5Bii": 1000,
+      "iraCatchUp50_source": "statutory flat $1,000 under \u00a7219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+      "simpleSalaryReduction_408p2E": 11500,
+      "simpleCatchUp50_414v2Bii": 2500,
+      "sepCompensation_408k2C": 550,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 56000,
+          "end": 66000
+        },
+        "marriedFilingJointly": {
+          "start": 89000,
+          "end": 109000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalCoveredPhaseout_source": "Notice 2009-94 publishes the applicable dollar amounts under \u00a7219(g)(3)(B)(i) (joint return or qualifying widow(er)) and \u00a7219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by \u00a7219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at \u00a7219(g)(3)(B)(iii). See usc-26-219.",
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 167000,
+          "end": 177000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_source": "Start from Notice 2009-94 (\u00a7219(g)(7)(A)); the end is the start plus the $10,000 width that \u00a7219(g)(7)(B) substitutes for \u00a7219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 105000,
+          "end": 120000
+        },
+        "marriedFilingJointly": {
+          "start": 167000,
+          "end": 177000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "rothPhaseout_source": "Starts from Notice 2009-94, which cites them as \u00a7408A(c)(3)(C)(ii)(I) and (II); the same limits are \u00a7408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by \u00a7408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under \u00a7408A(c)(3)(B)(ii)(III). See usc-26-408A."
+    },
     "2013": {
       "source": "ir-12-077",
       "annualAdditions_415c1A": 51000,
@@ -54,8 +174,13 @@
         "marriedFilingJointly": {
           "start": 178000,
           "end": 188000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 112000,
@@ -103,8 +228,13 @@
         "marriedFilingJointly": {
           "start": 181000,
           "end": 191000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 114000,
@@ -152,8 +282,13 @@
         "marriedFilingJointly": {
           "start": 183000,
           "end": 193000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 116000,
@@ -201,8 +336,13 @@
         "marriedFilingJointly": {
           "start": 184000,
           "end": 194000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 117000,
@@ -250,8 +390,13 @@
         "marriedFilingJointly": {
           "start": 186000,
           "end": 196000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 118000,
@@ -299,8 +444,13 @@
         "marriedFilingJointly": {
           "start": 189000,
           "end": 199000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 120000,
@@ -348,8 +498,13 @@
         "marriedFilingJointly": {
           "start": 193000,
           "end": 203000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 122000,
@@ -397,8 +552,13 @@
         "marriedFilingJointly": {
           "start": 196000,
           "end": 206000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 124000,
@@ -446,8 +606,13 @@
         "marriedFilingJointly": {
           "start": 198000,
           "end": 208000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 125000,
@@ -495,8 +660,13 @@
         "marriedFilingJointly": {
           "start": 204000,
           "end": 214000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 129000,
@@ -544,8 +714,13 @@
         "marriedFilingJointly": {
           "start": 218000,
           "end": 228000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 138000,
@@ -592,8 +767,13 @@
         "marriedFilingJointly": {
           "start": 230000,
           "end": 240000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 146000,
@@ -642,8 +822,13 @@
         "marriedFilingJointly": {
           "start": 236000,
           "end": 246000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 150000,
@@ -692,8 +877,13 @@
         "marriedFilingJointly": {
           "start": 242000,
           "end": 252000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
         }
       },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. \u00a7219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by \u00a7219(g)(3)(B)(iii), and \u00a7219(g)(7)(B) substitutes a $10,000 width for \u00a7219(g)(2)(A)(ii). \u00a7219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
       "rothPhaseout_408Ac3": {
         "singleOrHeadOfHousehold": {
           "start": 153000,

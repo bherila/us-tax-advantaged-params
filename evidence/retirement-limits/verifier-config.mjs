@@ -28,6 +28,9 @@ export default {
     ["compensationLimit_401a17", ["annualCompensation401a17"], "IRC 401(a)(17)"],
     ["iraContribution_219b5A", ["ira", "baseContributionLimit"], "IRC 219(b)(5)(A)"],
     ["iraCatchUp50_219b5Bii", ["ira", "age50CatchUp"], "IRC 219(b)(5)(B)(ii)"],
+    ["simpleSalaryReduction_408p2E", ["simple", "salaryReductionLimit"], "IRC 408(p)(2)(E)"],
+    ["simpleCatchUp50_414v2Bii", ["simple", "generalAge50CatchUp"], "IRC 414(v)(2)(B)(ii)"],
+    ["sepCompensation_408k2C", ["sep", "minimumEligibleCompensation"], "IRC 408(k)(2)(C)"],
   ],
 
   /**
@@ -52,7 +55,19 @@ export default {
     [
       "traditionalSpouseCoveredPhaseout_219g7A",
       ["phaseouts", "traditionalIraSpouseCovered"],
-      { marriedFilingJointly: "marriedFilingJointly" },
+      {
+        marriedFilingJointly: "marriedFilingJointly",
+        // No notice publishes this band. §219(g)(7)(A) replaces only the joint
+        // applicable dollar amount, so a married individual filing separately
+        // keeps the zero at §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a
+        // $10,000 width for §219(g)(2)(A)(ii). Until this entry existed the data
+        // carried the band and the verifier compared nothing: UNCOVERED scans
+        // evidence keys, not data keys, so the gap was silent.
+        marriedFilingSeparately: {
+          data: "marriedFilingSeparatelyLivingTogether",
+          citation: "IRC 219(g)(3)(B)(iii), 219(g)(7)(B)",
+        },
+      },
       "IRC 219(g)(7)(A)",
     ],
     [
