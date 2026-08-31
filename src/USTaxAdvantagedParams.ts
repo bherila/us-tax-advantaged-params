@@ -1339,7 +1339,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1419,7 +1419,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1499,7 +1499,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1579,7 +1579,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1659,7 +1659,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": false,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1739,7 +1739,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1841,7 +1841,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -1943,7 +1943,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2045,7 +2045,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2147,7 +2147,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2249,7 +2249,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2351,7 +2351,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2453,7 +2453,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2555,7 +2555,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false
@@ -2657,7 +2657,7 @@ const RAW_PARAMETERS: ParameterData = {
         "universalEligibility": true,
         "nondeductibleContributionAvailable": true,
         "spousalIraAvailable": true,
-        "nonworkingSpouseIndividualLimit": 250,
+        "nonworkingSpouseIndividualLimit": 2000,
         "oneEarnerHouseholdCombinedLimit": 2250,
         "traditionalContributionAge70HalfRestriction": true,
         "rothAvailable": false

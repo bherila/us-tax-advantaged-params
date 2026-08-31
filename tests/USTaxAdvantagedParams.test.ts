@@ -297,7 +297,10 @@ test("1981 active employer-plan participant is ineligible for the modeled IRA co
   assert.equal(account(result, "ira").status, CalculationStatus.INELIGIBLE);
 });
 
-test("1982 one-earner spousal IRA preserves the historical $250 nonworking-spouse cap", () => {
+test("1982 one-earner spousal IRA allows $2,000 to the spousal account when the worker contributes nothing", () => {
+  // IRC 219(c)(2) (ERTA 1981): the spousal deduction is min(2250, compensation)
+  // minus the working spouse's own-IRA deduction, and never more than 2000 to
+  // the spousal account. With no own-IRA contribution the subtraction is zero.
   const result = U.forTaxYear(1982)
     .filingStatus("MFJ")
     .taxpayer("t", (person) =>
@@ -308,7 +311,24 @@ test("1982 one-earner spousal IRA preserves the historical $250 nonworking-spous
     )
     .account("spouse-ira", "s", AccountType.TRADITIONAL_IRA)
     .calculate();
-  assert.equal(account(result, "spouse-ira").contributionComponents.deductibleIra, 250);
+  assert.equal(account(result, "spouse-ira").contributionComponents.deductibleIra, 2_000);
+});
+
+test("1982 one-earner spousal IRA is limited to the $2,250 household residue after the worker's own $2,000", () => {
+  const result = U.forTaxYear(1982)
+    .filingStatus("MFJ")
+    .taxpayer("t", (person) =>
+      person.bornIn(1950).iraCompensation(20_000).coveredByEmployerPlan(true),
+    )
+    .spouse("s", (person) =>
+      person.bornIn(1950).iraCompensation(0).coveredByEmployerPlan(false),
+    )
+    .account("own-ira", "t", AccountType.TRADITIONAL_IRA, (a) =>
+      a.existing({ deductibleIra: 2_000 }),
+    )
+    .account("spouse-ira", "s", AccountType.TRADITIONAL_IRA)
+    .calculate();
+  assert.equal(account(result, "spouse-ira").maximumAnnualContributionBasedOnInputs, 250);
 });
 
 test("pre-2020 traditional IRA age-70½ restriction is enforced", () => {

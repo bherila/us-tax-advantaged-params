@@ -52,7 +52,7 @@ export default {
     ["iraUniversalEligibility_219Historical", ["ira", "universalEligibility"], "IRS SOI Bulletin, 1982 universal-eligibility change"],
     ["iraNondeductibleContributionAvailable_408o", ["ira", "nondeductibleContributionAvailable"], "IRC 408(o)(1)"],
     ["iraSpousalIraAvailable_219cHistorical", ["ira", "spousalIraAvailable"], "IRS SOI Bulletin, one-earner spousal IRA rule"],
-    ["iraNonworkingSpouseIndividualLimit_219c", ["ira", "nonworkingSpouseIndividualLimit"], "IRC 219(c), no fixed individual spousal cap"],
+    ["iraNonworkingSpouseIndividualLimit_219c", ["ira", "nonworkingSpouseIndividualLimit"], "IRC 219(c)(2), 2000-dollar per-account ceiling on the spousal IRA; null once SBJPA gave each spouse a full limit for 1997"],
     ["iraOneEarnerHouseholdCombinedLimit_219c", ["ira", "oneEarnerHouseholdCombinedLimit"], "IRC 219(c), no fixed one-earner household cap"],
     ["iraTraditionalContributionAge70HalfRestriction_219d1", ["ira", "traditionalContributionAge70HalfRestriction"], "IRC 219(d)(1), repealed for years after 2019"],
     ["iraRothAvailable_408A", ["ira", "rothAvailable"], "IRC 408A, effective for years after 1997"],
