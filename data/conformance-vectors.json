@@ -6274,7 +6274,7 @@
     },
     {
       "name": "2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit",
-      "description": "Notice 2025-67 states that effective January 1, 2026 'the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from ,000 to ,000', so the 2026 annual benefit limit is ,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
+      "description": "Notice 2025-67 states that effective January 1, 2026 \"the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from $280,000 to $290,000\", so the 2026 annual benefit limit is $290,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -6306,8 +6306,40 @@
       }
     },
     {
-      "name": "a cash balance plan in a year with no transcribed IRC 415(b)(1)(A) figure reports no annual benefit limit",
-      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. IRC 415(b)(1)(A) is adjusted annually under IRC 415(d), but this package encodes only the figures transcribed from the notices committed under evidence/retirement-limits, and no dbAnnualBenefit_415b1A figure is recorded there for 2012. SOURCES.md forbids reusing a prior year published amount or inflation-extrapolating an unrecorded one, so the limit is reported as null rather than carried forward from the 195000 recorded for 2010 or interpolated toward the 205000 recorded for 2013. Absence of the figure is also not a reason to add a claim: the actuarial-valuation diagnostic is still the first diagnostic on the account, because no benefit-limit diagnostic is issued where there is no published amount to state.",
+      "name": "2011 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. Notice 2010-78 states that effective January 1, 2011 \"the limitation on the annual benefit under a defined benefit plan under 415(b)(1)(A) remains unchanged at $195,000\". \"Remains unchanged\" is the notice publishing the figure for 2011, not declining to: an amount the IRS restates for a year is transcribed for that year like any other, and 195000 is recorded for 2011 in evidence/retirement-limits from the document fixed by SHA256SUMS.txt. It is not carried forward from the 195000 recorded for 2010, which SOURCES.md would forbid. The account still keeps a null statutory maximum and an indeterminate status, because IRC 415(b)(1)(A) caps the benefit the plan may pay and says nothing about the contribution needed to fund it; the actuarial-valuation diagnostic is therefore still the first diagnostic on the account, with the benefit-limit report beside it.",
+      "input": {
+        "taxYear": 2011,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "cb",
+            "ownerId": "t",
+            "type": "cash_balance_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 195000,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 195000
+      }
+    },
+    {
+      "name": "2012 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. Notice 2011-90 states that effective January 1, 2012 \"the limitation on the annual benefit under a defined benefit plan under 415(b)(1)(A) is increased from $195,000 to $200,000\". The figure is transcribed for 2012 in evidence/retirement-limits from the document fixed by SHA256SUMS.txt, and is neither carried forward from the 195000 recorded for 2011 nor interpolated toward the 205000 recorded for 2013, both of which SOURCES.md forbids. The account still keeps a null statutory maximum and an indeterminate status, because IRC 415(b)(1)(A) caps the benefit the plan may pay and says nothing about the contribution needed to fund it; the actuarial-valuation diagnostic is therefore still the first diagnostic on the account, with the benefit-limit report beside it.",
       "input": {
         "taxYear": 2012,
         "filingStatus": "S",
@@ -6329,9 +6361,12 @@
       "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": null,
-        "accounts.0.definedBenefit.annualBenefitLimit": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 200000,
         "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
-        "parameters.definedBenefitAnnualBenefit415b": null
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 200000
       }
     },
     {

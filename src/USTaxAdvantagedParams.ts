@@ -4845,7 +4845,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
@@ -4964,7 +4964,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
