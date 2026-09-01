@@ -129,7 +129,11 @@ function randomHsaRules() {
   // for 2004-2006, and reaching it only through junk() put it below 0.04% per
   // rules object -- rare enough that the TS/PHP split it exposed survived until
   // a lucky seed found it.
-  if (chance(0.25)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 5150, 10500, null]);
+  // Three shapes, deliberately: a stated amount, an explicit null, and the
+  // property omitted entirely. The first two must normalize to the same fact and
+  // the third is the canonical absence, which is the split that produced the
+  // TS/PHP divergence in the first place.
+  if (chance(0.3)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 3000, 5000, 5150, 10500, null]);
   if (chance(0.3)) rules.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
   if (chance(0.25)) rules.testingPeriodSatisfied = chance(0.5);
   if (chance(0.15)) rules.testingPeriodFailureByDeathOrDisability = chance(0.5);
@@ -286,7 +290,19 @@ function randomPerson(id, role, taxYear) {
   }
   // Person-level IRC 223(c)(2) coverage. randomHsaRules() also emits the
   // account-only keys, which both engines must ignore identically here.
-  if (chance(0.3)) person.hsaCoverage = chance(0.1) ? {} : randomHsaRules();
+  // Spouse coverage drives the IRC 223(b)(5)(A) family-sharing and
+  // lowest-deductible rules even when that spouse owns no HSA, so it is
+  // generated often and is allowed to be family-with-a-deductible, family
+  // without one, self-only with a deductible, or the empty object that records
+  // no coverage at all. Mixed family/self-only couples are what proved a
+  // self-only deductible must not lower the family limitation.
+  if (chance(0.45)) {
+    person.hsaCoverage = chance(0.1)
+      ? {}
+      : (chance(0.5)
+        ? { coverageTier: pick(COVERAGE_TIERS), ...(chance(0.7) ? { hdhpAnnualDeductible: pick([1000, 3000, 5000, null]) } : {}) }
+        : randomHsaRules());
+  }
   if (chance(0.03)) person[pick(["birthYear", "role", "compensation", "magi", "coveredByEmployerRetirementPlan"])] = junk();
   return person;
 }

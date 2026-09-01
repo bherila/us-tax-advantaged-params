@@ -2307,6 +2307,219 @@
       }
     },
     {
+      "name": "2005 a spouse's self-only deductible does not lower the IRC 223(b)(5) family limitation",
+      "description": "IRC 223(b)(5)(A) reaches the lowest annual deductible only \"if such spouses each have family coverage under different plans\". Here only the taxpayer has family coverage; the spouse's own coverage is self-only, so the spouse has no family plan and the 1000 deductible of that self-only plan is not a candidate. The couple's family limitation is the deductible of a family plan, not of whatever plan is cheapest in the household. IRC 223(b)(2)(A) therefore takes the lesser of the taxpayer's 5000 family deductible and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), giving 5000 rather than 1000. Note that IRC 223(b)(5)(A) separately treats the spouse as having the taxpayer's family coverage, which is why the spouse's self-only months do not produce a self-only portion; being treated as having family coverage is not the same as having a family plan whose deductible competes.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.hsa.proratedContributionLimit": 5000,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5000,
+        "totals.hsaContribution": 5000
+      }
+    },
+    {
+      "name": "2005 two family plans take the lower annual deductible under IRC 223(b)(5)(A)",
+      "description": "The companion to the vector above, holding everything else constant so the two differ only in the spouse's coverage tier. Both spouses have family coverage under different plans, which is exactly the condition IRC 223(b)(5)(A) states for treating them as covered under the plan with the lowest annual deductible, so the spouse's 3000 competes and wins against the taxpayer's 5000. IRC 223(b)(2)(A) then takes the lesser of 3000 and the 2005 family dollar amount of 5250, giving 3000. Read against the self-only vector this pins the distinction the statute draws: a family plan's deductible competes and a self-only plan's does not.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "hdhpAnnualDeductible": 3000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.hsa.proratedContributionLimit": 3000,
+        "accounts.0.sharedLimits.1.limit": 3000,
+        "totals.hsaContribution": 3000
+      }
+    },
+    {
+      "name": "2005 an omitted annual deductible and an explicit null are the same fact",
+      "description": "The normalization half of the pre-2007 fix, stated as a vector rather than left to the type system. Every money input in this package reads null as the fact not being stated -- money() returns the default for null and for an absent property alike -- so supplying hdhpAnnualDeductible as null and omitting the property must reach the identical result. This vector omits it entirely; the explicit-null vector supplies it as null; both are indeterminate with all three pools null. Telling the two apart is what produced the original TypeScript/PHP divergence, where a retained null reached Math.min as a zero and read as a deductible binding at nothing.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.0.limit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "accounts.0.sharedLimits.2.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2007 no annual deductible is required once the IRC 223(b)(2) cap is repealed",
+      "description": "The effective-date boundary control for the three indeterminate vectors. Section 303 of the Tax Relief and Health Care Act of 2006 struck the IRC 223(b)(2)(A) comparison with the plan's annual deductible for taxable years beginning after 2006, so from 2007 the monthly limitation is one twelfth of the statutory amount alone and the deductible is not an operand of anything. The identical input that is indeterminate for 2005 must therefore be determinable for 2007: the family dollar amount is 5650 (Rev. Proc. 2006-53), the couple has family coverage for the whole year, and no deductible-required diagnostic is issued. This is what stops the fix from over-reaching into years the cap never governed.",
+      "input": {
+        "taxYear": 2007,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": false,
+        "hsaParameters.annualContributionLimit.family": 5650,
+        "accounts.0.statutoryMaximumAnnualContribution": 5650,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5650,
+        "totals.hsaContribution": 5650
+      }
+    },
+    {
+      "name": "a missing birth year leaves the IRC 223(b)(5) household limit determinable",
+      "description": "The IRC 223(b)(5) household pool reports null only when the family limitation itself cannot be determined, not whenever anything about an owner is unknown. A missing birth year makes the IRC 223(b)(3) additional contribution amount for an individual who attains age 55 unknowable, so the account is indeterminate and its statutory maximum is null; but the family limitation is a function of coverage and the year alone, and for 2026 it is the full 8750 family amount (Rev. Proc. 2025-19) with both spouses covered all year. Reporting null for the shared pool here would discard a limit the statute does fix, and would make the audit trail less informative than the facts allow. The IRC 223(b)(3) pool, which is the one the missing fact actually reaches, is null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t"
+          },
+          {
+            "id": "s",
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.2.id": "hsa223b3:t",
+        "accounts.0.sharedLimits.2.limit": null
+      },
+      "expectDiagnosticCodes": [
+        "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
+      ]
+    },
+    {
       "name": "2026 employer HSA contribution is excluded rather than deducted",
       "description": "The IRC 223(b) ceiling is a single 4400. An employer or cafeteria-plan contribution of 1000 is excluded from gross income under IRC 106(d) and reduces the IRC 223(a) deduction under IRC 223(b)(4)(B), leaving 3400 deductible. The excluded 1000 is outside Form W-2 box 1 and outside Social Security and Medicare wages.",
       "input": {
