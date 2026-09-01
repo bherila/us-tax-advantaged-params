@@ -11092,6 +11092,21 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
   }
 
+  /**
+   * Which spouses actually stated family coverage, captured before the
+   * IRC 223(b)(5)(A) recharacterization below rewrites self-only months in
+   * place. The lowest-deductible rule turns on who *has* family coverage, not
+   * on who is treated as having it, so this cannot be read off the months after
+   * they are rewritten.
+   */
+  const statedFamilyCoverage = new Map<string, boolean>();
+  for (const personId of couple ?? []) {
+    statedFamilyCoverage.set(
+      personId,
+      (coupleCoverage.get(personId)?.months ?? []).some((tier) => tier === "family"),
+    );
+  }
+
   const familyMonth = HSA_ALL_MONTHS.map((month) =>
     (couple ?? []).some((personId) => coupleCoverage.get(personId)?.months?.[month - 1] === "family"),
   );
@@ -11119,7 +11134,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
    * limitation by the deductible.
    */
+  // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such spouses
+  // each have family coverage under different plans". A spouse whose own
+  // coverage is self-only does not have family coverage, so their deductible is
+  // not a candidate and must not lower the couple's family limitation -- which
+  // is the deductible of a family plan, not of whatever plan happens to be
+  // cheapest in the household.
   const coupleDeductibles = (couple ?? [])
+    .filter((personId) => statedFamilyCoverage.get(personId) === true)
     .map((personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible)
     .filter((value): value is Money => value !== undefined);
   const lowestCoupleDeductible = coupleDeductibles.length > 0 ? Math.min(...coupleDeductibles) : null;
@@ -11140,6 +11162,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     lastMonthRuleApplied: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
+    familyLimitIndeterminate: boolean;
   }
 
   const amountsByOwner = new Map<string, HsaOwnerAmounts>();
@@ -11149,9 +11172,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const person = context.persons.get(ownerId)!;
     const diagnostics: Diagnostic[] = [];
     let indeterminate = false;
+    /**
+     * Whether this owner's *family-coverage* limitation is undeterminable, which
+     * is a narrower question than whether their overall result is. A missing
+     * birth year makes only the IRC 223(b)(3) age-55 amount unknown and leaves
+     * the IRC 223(b)(5) family limit perfectly knowable, so it deliberately does
+     * not set this.
+     */
+    let familyLimitIndeterminate = false;
 
     if (owner.conflict) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
@@ -11164,6 +11196,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (owner.personConflict) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
@@ -11176,6 +11209,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
@@ -11210,6 +11244,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       months.some((tier) => tier === "self_only")
     ) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
@@ -11257,6 +11292,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const monthlyAnnualLimits = months.map((tier) => (tier === null ? null : annualLimitFor(tier)));
     if (deductibleMissing) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
@@ -11341,6 +11377,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // refusal if that severity is ever softened. They are redundant on
         // purpose, so no mutation distinguishes them individually.
         indeterminate = true;
+        familyLimitIndeterminate = true;
         diagnostics.push(
           diagnostic(
             "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
@@ -11367,6 +11404,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       lastMonthRuleApplied,
       diagnostics,
       indeterminate,
+      familyLimitIndeterminate,
     });
   }
 
@@ -11415,7 +11453,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * limitations undeterminable too.
    */
   const householdLimitIndeterminate = coupleMembersWithAccounts.some(
-    (personId) => amountsByOwner.get(personId)?.indeterminate === true,
+    (personId) => amountsByOwner.get(personId)?.familyLimitIndeterminate === true,
   );
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 

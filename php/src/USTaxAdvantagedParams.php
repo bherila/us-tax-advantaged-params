@@ -11596,6 +11596,24 @@ final class Engine
                 : ['supplied' => false, 'months' => null, 'hdhpAnnualDeductible' => null];
         }
 
+        /*
+         * Which spouses actually stated family coverage, captured before the
+         * IRC 223(b)(5)(A) recharacterization below rewrites self-only months in
+         * place. The lowest-deductible rule turns on who *has* family coverage,
+         * not on who is treated as having it, so this cannot be read off the
+         * months after they are rewritten.
+         */
+        $statedFamilyCoverage = [];
+        foreach ($couple ?? [] as $personId) {
+            $stated = false;
+            foreach ($coupleCoverage[$personId]['months'] ?? [] as $tier) {
+                if ($tier === 'family') {
+                    $stated = true;
+                }
+            }
+            $statedFamilyCoverage[$personId] = $stated;
+        }
+
         $familyMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
             $any = false;
@@ -11631,8 +11649,17 @@ final class Engine
          * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
          * limitation by the deductible.
          */
+        // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
+        // spouses each have family coverage under different plans". A spouse whose
+        // own coverage is self-only does not have family coverage, so their
+        // deductible is not a candidate and must not lower the couple's family
+        // limitation — which is the deductible of a family plan, not of whatever
+        // plan happens to be cheapest in the household.
         $coupleDeductibles = [];
         foreach ($couple ?? [] as $personId) {
+            if (($statedFamilyCoverage[$personId] ?? false) !== true) {
+                continue;
+            }
             $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
             if ($value !== null) {
                 $coupleDeductibles[] = (float) $value;
@@ -11646,9 +11673,18 @@ final class Engine
             $person = $context['persons'][$ownerId];
             $diagnostics = [];
             $indeterminate = false;
+            /*
+             * Whether this owner's *family-coverage* limitation is undeterminable,
+             * which is a narrower question than whether their overall result is. A
+             * missing birth year makes only the IRC 223(b)(3) age-55 amount unknown
+             * and leaves the IRC 223(b)(5) family limit perfectly knowable, so it
+             * deliberately does not set this.
+             */
+            $familyLimitIndeterminate = false;
 
             if ($owner['conflict']) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER',
                     DiagnosticSeverity::ERROR,
@@ -11660,6 +11696,7 @@ final class Engine
             }
             if ($owner['personConflict']) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT',
                     DiagnosticSeverity::ERROR,
@@ -11672,6 +11709,7 @@ final class Engine
             }
             if ($owner['rules'] === null || $owner['months'] === null) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -11718,6 +11756,7 @@ final class Engine
                 && $ownerHasSelfOnlyMonth
             ) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -11785,6 +11824,7 @@ final class Engine
             }
             if ($deductibleMissing) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -11882,6 +11922,7 @@ final class Engine
                 // redundant on purpose, so no mutation distinguishes them
                 // individually.
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $whose = $ownFsa['purposeUnstated'] ? 'held by this individual' : "held by this individual's spouse";
                 $diagnostics[] = self::diagnostic(
                     'HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION',
@@ -11910,6 +11951,7 @@ final class Engine
                 'lastMonthRuleApplied' => $lastMonthRuleApplied,
                 'diagnostics' => $diagnostics,
                 'indeterminate' => $indeterminate,
+                'familyLimitIndeterminate' => $familyLimitIndeterminate,
             ];
         }
 
@@ -11970,7 +12012,7 @@ final class Engine
          */
         $householdLimitIndeterminate = false;
         foreach ($coupleMembersWithAccounts as $personId) {
-            if (($amountsByOwner[$personId]['indeterminate'] ?? false) === true) {
+            if (($amountsByOwner[$personId]['familyLimitIndeterminate'] ?? false) === true) {
                 $householdLimitIndeterminate = true;
             }
         }
