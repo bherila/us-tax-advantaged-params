@@ -124,7 +124,12 @@ function randomHsaRules() {
       rules.eligibleMonths = months;
     }
   }
-  if (chance(0.25)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 5150, 10500]);
+  // null belongs in the deliberate list, not only in the junk injector. It is a
+  // supplied "no deductible stated", which is the fact IRC 223(b)(2) turns on
+  // for 2004-2006, and reaching it only through junk() put it below 0.04% per
+  // rules object -- rare enough that the TS/PHP split it exposed survived until
+  // a lucky seed found it.
+  if (chance(0.25)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 5150, 10500, null]);
   if (chance(0.3)) rules.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
   if (chance(0.25)) rules.testingPeriodSatisfied = chance(0.5);
   if (chance(0.15)) rules.testingPeriodFailureByDeathOrDisability = chance(0.5);
