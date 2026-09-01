@@ -83,6 +83,7 @@ const CONTRIBUTION_PREFERENCES = ["account_type", "pretax_first", "roth_first"];
 const EMPLOYER_TAX_TREATMENTS = ["pretax", "roth"];
 const SIMPLE_METHODS = ["match_3_percent", "nonelective_2_percent", "custom"];
 const COVERAGE_TIERS = ["self_only", "family"];
+const HSA_FUZZ_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const HEALTH_FSA_PURPOSES = ["general_purpose", "limited_purpose", "post_deductible"];
 const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
@@ -124,15 +125,12 @@ function randomHsaRules() {
       rules.eligibleMonths = months;
     }
   }
-  // null belongs in the deliberate list, not only in the junk injector. It is a
-  // supplied "no deductible stated", which is the fact IRC 223(b)(2) turns on
-  // for 2004-2006, and reaching it only through junk() put it below 0.04% per
-  // rules object -- rare enough that the TS/PHP split it exposed survived until
-  // a lucky seed found it.
   // Three shapes, deliberately: a stated amount, an explicit null, and the
   // property omitted entirely. The first two must normalize to the same fact and
-  // the third is the canonical absence, which is the split that produced the
-  // TS/PHP divergence in the first place.
+  // the third is the canonical absence -- telling them apart is what produced the
+  // TS/PHP divergence. null belongs in this list rather than only in the junk
+  // injector, where it sat below 0.04% per rules object and stayed unreachable
+  // enough that the split survived until a lucky seed found it.
   if (chance(0.3)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 3000, 5000, 5150, 10500, null]);
   if (chance(0.3)) rules.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
   if (chance(0.25)) rules.testingPeriodSatisfied = chance(0.5);
@@ -300,7 +298,17 @@ function randomPerson(id, role, taxYear) {
     person.hsaCoverage = chance(0.1)
       ? {}
       : (chance(0.5)
-        ? { coverageTier: pick(COVERAGE_TIERS), ...(chance(0.7) ? { hdhpAnnualDeductible: pick([1000, 3000, 5000, null]) } : {}) }
+        ? {
+            // Per-month spouse coverage, not only a flat tier. The
+            // IRC 223(b)(5)(A) lowest-deductible comparison is answered month by
+            // month in a capped year, so a couple whose family-coverage months
+            // differ is the shape that distinguishes a per-month resolution from
+            // a whole-year one -- and nothing generated it before.
+            ...(chance(0.4)
+              ? { monthlyCoverage: HSA_FUZZ_MONTHS.filter(() => chance(0.4)).map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) }
+              : { coverageTier: pick(COVERAGE_TIERS), ...(chance(0.4) ? { eligibleMonths: HSA_FUZZ_MONTHS.filter(() => chance(0.5)) } : {}) }),
+            ...(chance(0.7) ? { hdhpAnnualDeductible: pick([1000, 3000, 5000, null]) } : {}),
+          }
         : randomHsaRules());
   }
   if (chance(0.03)) person[pick(["birthYear", "role", "compensation", "magi", "coveredByEmployerRetirementPlan"])] = junk();

@@ -2392,6 +2392,104 @@
       }
     },
     {
+      "name": "2005 a family-covered spouse who omits their annual deductible leaves the family limitation indeterminate",
+      "description": "IRC 223(b)(5)(A) treats spouses who each have family coverage under different plans as covered by the plan with the lowest annual deductible, so the couple's limitation turns on the least of their family-plan deductibles. Here the spouse states family coverage and no deductible for it. That plan could be the lower of the two, so the least is unknown and IRC 223(b)(2)(A)'s \"lesser of the plan's annual deductible and the dollar amount\" has an unknown operand; the taxpayer's own 5000 is not the answer merely because it is the only one supplied. Dropping the spouse from the comparison because their figure is absent would state a ceiling on facts that do not support it, and would overstate it whenever the spouse's plan is lower -- the direction that costs a taxpayer the IRC 4973 excise. Both the IRC 223(b)(5) pool and hsa.sharedFamilyContributionLimit, which is that same limitation reported per owner, therefore report null rather than the uncompared 5250 family dollar amount for 2005 (Rev. Proc. 2004-71).",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2005 a spouse's family plan sets the deductible only for the months that plan was in force",
+      "description": "IRC 223(b)(2) builds the year out of twelve monthly limitations, each one twelfth of the lesser of the annual deductible and the dollar amount for the coverage in force that month, so the IRC 223(b)(5)(A) lowest-deductible comparison is answered per month and not once for the year. The taxpayer holds family coverage all year with a 5000 deductible; the spouse takes family coverage in December only, with a 1000 deductible. For January through November the taxpayer is the only spouse with a family plan, so each month uses the lesser of 5000 and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), which is 5000. December has two family plans, so it uses the lesser of 1000 and 5250, which is 1000. The year is therefore (11 x 5000 + 1 x 1000) / 12 = 56000 / 12 = 4666.67. Applying the December plan's deductible to months in which the spouse held no family plan at all would understate the limitation by more than 3600, and is what a single whole-year comparison does.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 12,
+                  "coverage": "family"
+                }
+              ],
+              "hdhpAnnualDeductible": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 4666.67,
+        "accounts.0.hsa.proratedContributionLimit": 4666.67,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": 5000,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.10": 5000,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 1000,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 4666.67,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 4666.67,
+        "totals.hsaContribution": 4666.67
+      }
+    },
+    {
       "name": "2005 an omitted annual deductible and an explicit null are the same fact",
       "description": "The normalization half of the pre-2007 fix, stated as a vector rather than left to the type system. Every money input in this package reads null as the fact not being stated -- money() returns the default for null and for an absent property alike -- so supplying hdhpAnnualDeductible as null and omitting the property must reach the identical result. This vector omits it entirely; the explicit-null vector supplies it as null; both are indeterminate with all three pools null. Telling the two apart is what produced the original TypeScript/PHP divergence, where a retained null reached Math.min as a zero and read as a deductible binding at nothing.",
       "input": {
