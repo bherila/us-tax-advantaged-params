@@ -11597,28 +11597,30 @@ final class Engine
         }
 
         /*
-         * Which spouses actually stated family coverage, captured before the
-         * IRC 223(b)(5)(A) recharacterization below rewrites self-only months in
-         * place. The lowest-deductible rule turns on who *has* family coverage,
-         * not on who is treated as having it, so this cannot be read off the
-         * months after they are rewritten.
+         * The coverage each spouse actually *stated*, month by month, snapshotted
+         * before the IRC 223(b)(5)(A) recharacterization below rewrites self-only
+         * months. The statute draws two different lines off these months and they
+         * must not be confused: a spouse is *treated as* having family coverage for
+         * the purpose of computing the limitation, but only a spouse who *has* a
+         * family plan brings a deductible that competes for the lowest.
+         *
+         * The copy is deliberate rather than incidental. PHP arrays copy on
+         * assignment, so this survives the recharacterization anyway; TypeScript
+         * hands the same array to both $coupleCoverage and $facts and would see the
+         * write. Snapshotting in both engines makes the rule the same in each
+         * rather than leaving it to language semantics and statement order.
          */
-        $statedFamilyCoverage = [];
+        $statedCoverageByPerson = [];
         foreach ($couple ?? [] as $personId) {
-            $stated = false;
-            foreach ($coupleCoverage[$personId]['months'] ?? [] as $tier) {
-                if ($tier === 'family') {
-                    $stated = true;
-                }
-            }
-            $statedFamilyCoverage[$personId] = $stated;
+            $months = $coupleCoverage[$personId]['months'] ?? null;
+            $statedCoverageByPerson[$personId] = $months === null ? null : array_values($months);
         }
 
         $familyMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
             $any = false;
             foreach ($couple ?? [] as $personId) {
-                if (($coupleCoverage[$personId]['months'][$month - 1] ?? null) === 'family') {
+                if (($statedCoverageByPerson[$personId][$month - 1] ?? null) === 'family') {
                     $any = true;
                 }
             }
@@ -11648,24 +11650,52 @@ final class Engine
          * plans as covered by the plan with the lowest annual deductible. That only
          * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
          * limitation by the deductible.
+         *
+         * It is resolved per month, because the limitation itself is: IRC 223(b)(2)
+         * builds the year out of twelve monthly amounts, each determined from the
+         * coverage in force for that month. A spouse who takes family coverage in
+         * December brings that plan's deductible to December and to no earlier
+         * month, where they had no family plan for it to be the lowest of.
+         *
+         * Each entry is one of:
+         *   ['state' => 'not_applicable']
+         *   ['state' => 'known', 'value' => float]
+         *   ['state' => 'indeterminate', 'missingPersonIds' => string[]]
          */
-        // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
-        // spouses each have family coverage under different plans". A spouse whose
-        // own coverage is self-only does not have family coverage, so their
-        // deductible is not a candidate and must not lower the couple's family
-        // limitation — which is the deductible of a family plan, not of whatever
-        // plan happens to be cheapest in the household.
-        $coupleDeductibles = [];
-        foreach ($couple ?? [] as $personId) {
-            if (($statedFamilyCoverage[$personId] ?? false) !== true) {
+        $familyDeductibleByMonth = [];
+        for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+            // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
+            // spouses each have family coverage under different plans". A spouse
+            // whose own coverage is self-only for this month has no family plan, so
+            // their deductible is not a candidate and must not lower the couple's
+            // family limitation — which is the deductible of a family plan, not of
+            // whatever plan happens to be cheapest in the household.
+            $candidates = [];
+            foreach ($couple ?? [] as $personId) {
+                if (($statedCoverageByPerson[$personId][$month - 1] ?? null) === 'family') {
+                    $candidates[] = $personId;
+                }
+            }
+            if ($candidates === []) {
+                $familyDeductibleByMonth[$month - 1] = ['state' => 'not_applicable'];
                 continue;
             }
-            $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
-            if ($value !== null) {
-                $coupleDeductibles[] = (float) $value;
+            $missingPersonIds = [];
+            $values = [];
+            foreach ($candidates as $personId) {
+                $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
+                if ($value === null) {
+                    $missingPersonIds[] = $personId;
+                } else {
+                    $values[] = (float) $value;
+                }
             }
+            // A candidate's plan could be the lowest, so an unstated one leaves the
+            // least of them unknown rather than simply absent from the comparison.
+            $familyDeductibleByMonth[$month - 1] = $missingPersonIds === []
+                ? ['state' => 'known', 'value' => min($values)]
+                : ['state' => 'indeterminate', 'missingPersonIds' => $missingPersonIds];
         }
-        $lowestCoupleDeductible = $coupleDeductibles === [] ? null : min($coupleDeductibles);
 
         $amountsByOwner = [];
         foreach ($ownerIds as $ownerId) {
@@ -11791,17 +11821,31 @@ final class Engine
 
             $ownDeductible = $owner['rules']['hdhpAnnualDeductible'] ?? null;
             $deductibleMissing = false;
-            $deductibleFor = static function (string $tier) use (
+            $missingDeductibleSpouses = [];
+            $deductibleFor = static function (string $tier, int $monthIndex) use (
                 $familySharingApplies,
-                $lowestCoupleDeductible,
+                $familyDeductibleByMonth,
                 $ownDeductible,
+                $ownerId,
+                &$missingDeductibleSpouses,
             ): ?float {
-                if ($tier === 'family' && $familySharingApplies && $lowestCoupleDeductible !== null) {
-                    return $lowestCoupleDeductible;
+                if ($tier === 'family' && $familySharingApplies) {
+                    $resolved = $familyDeductibleByMonth[$monthIndex];
+                    if ($resolved['state'] === 'known') {
+                        return (float) $resolved['value'];
+                    }
+                    if ($resolved['state'] === 'indeterminate') {
+                        foreach ($resolved['missingPersonIds'] as $personId) {
+                            if ($personId !== $ownerId) {
+                                $missingDeductibleSpouses[$personId] = true;
+                            }
+                        }
+                        return null;
+                    }
                 }
                 return $ownDeductible === null ? null : (float) $ownDeductible;
             };
-            $annualLimitFor = static function (string $tier) use (
+            $annualLimitFor = static function (string $tier, int $monthIndex) use (
                 $parameters,
                 $deductibleFor,
                 &$deductibleMissing,
@@ -11810,7 +11854,7 @@ final class Engine
                 if ($parameters['contributionLimitCappedByHdhpAnnualDeductible'] !== true) {
                     return $statutory;
                 }
-                $deductible = $deductibleFor($tier);
+                $deductible = $deductibleFor($tier, $monthIndex);
                 if ($deductible === null) {
                     $deductibleMissing = true;
                     return $statutory;
@@ -11819,19 +11863,29 @@ final class Engine
             };
 
             $monthlyAnnualLimits = [];
-            foreach ($months as $tier) {
-                $monthlyAnnualLimits[] = $tier === null ? null : $annualLimitFor($tier);
+            foreach ($months as $monthIndex => $tier) {
+                $monthlyAnnualLimits[] = $tier === null ? null : $annualLimitFor($tier, $monthIndex);
             }
             if ($deductibleMissing) {
                 $indeterminate = true;
                 $familyLimitIndeterminate = true;
+                // One diagnostic per owner, not one per affected month: the missing
+                // fact is a property of the person and their plan, not of each month
+                // it reaches. Where the gap is a spouse's, name them, because the
+                // input to supply lives on that spouse and not on this account.
+                $spouseNote = '';
+                foreach (array_keys($missingDeductibleSpouses) as $personId) {
+                    $spouseNote .= " Spouse {$personId} stated family coverage but supplied no "
+                        . "persons.{$personId}.hsaCoverage.hdhpAnnualDeductible, which IRC 223(b)(5)(A) needs to "
+                        . 'identify the lowest family-plan deductible.';
+                }
                 $diagnostics[] = self::diagnostic(
                     'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED',
                     DiagnosticSeverity::ERROR,
                     "For tax year {$context['taxYear']} IRC 223(b)(2) limited each month to one twelfth of the lesser of "
                         . 'the plan\'s annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible '
                         . 'is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years '
-                        . 'after 2006.',
+                        . 'after 2006.' . $spouseNote,
                     "persons.{$ownerId}",
                     'IRC 223(b)(2)',
                 );
@@ -11892,7 +11946,7 @@ final class Engine
                     );
                 } else {
                     $lastMonthRuleApplied = true;
-                    $decemberAnnualLimit = $annualLimitFor($decemberTier);
+                    $decemberAnnualLimit = $annualLimitFor($decemberTier, self::HSA_MONTHS_IN_YEAR - 1);
                     $appliedAnnualLimitByMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, $decemberAnnualLimit);
                     $proratedApplied = self::roundMoney($decemberAnnualLimit);
                     $familyPortionApplied = $decemberTier === 'family' ? (float) $decemberAnnualLimit : 0.0;
@@ -12554,7 +12608,14 @@ final class Engine
                 'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
                 'familyLimitShare' => $share,
+                // Null where the family limitation could not be determined, for the
+                // same reason the IRC 223(b)(5) pool is: this field *is* that
+                // limitation, seen per owner, and reporting the uncompared statutory
+                // amount here would leave the ceiling the pool refuses to state still
+                // published one field away. The field is already nullable for the
+                // unrelated case of no family limit being shared at all.
                 'sharedFamilyContributionLimit' => $isSharingMember
+                    && $amounts['familyLimitIndeterminate'] !== true
                     ? self::roundMoney(self::archerReducedPortions(
                         (float) $amounts['familyPortionApplied'],
                         (float) $amounts['selfPortionApplied'],

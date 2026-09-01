@@ -281,7 +281,17 @@ export interface HsaCoverageInput {
   eligibleMonths?: number[];
   /** Per-month coverage when the tier changes during the year. Mutually exclusive with the two fields above. */
   monthlyCoverage?: HsaMonthlyCoverageInput[];
-  /** The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by it. */
+  /**
+   * The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2)
+   * capped the monthly limitation by it.
+   *
+   * One amount covers every month this input represents. The IRC 223(b)(5)(A)
+   * comparison between the spouses' plans is resolved month by month, but a
+   * single person switching plans mid-year -- family Plan A at 5000 through
+   * June, Plan B at 3000 after -- cannot be expressed: `monthlyCoverage` varies
+   * the tier, not the deductible. Supply the deductible of the plan in force
+   * for the months this input covers.
+   */
   hdhpAnnualDeductible?: Money;
 }
 
@@ -11093,22 +11103,30 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   }
 
   /**
-   * Which spouses actually stated family coverage, captured before the
-   * IRC 223(b)(5)(A) recharacterization below rewrites self-only months in
-   * place. The lowest-deductible rule turns on who *has* family coverage, not
-   * on who is treated as having it, so this cannot be read off the months after
-   * they are rewritten.
+   * The coverage each spouse actually *stated*, month by month, snapshotted
+   * before the IRC 223(b)(5)(A) recharacterization below rewrites self-only
+   * months. The statute draws two different lines off these months and they
+   * must not be confused: a spouse is *treated as* having family coverage for
+   * the purpose of computing the limitation, but only a spouse who *has* a
+   * family plan brings a deductible that competes for the lowest.
+   *
+   * The copy is deliberate rather than incidental. A `coupleCoverage` entry for
+   * a spouse who owns an HSA holds the very array `facts` holds, so the
+   * recharacterization writes through it in TypeScript, while PHP's arrays copy
+   * on assignment and would not see the write. Reading stated coverage off a
+   * mutated array would therefore mean two different answers in the two
+   * engines, which is the divergence class this whole area exists to prevent.
+   * Snapshotting makes the rule the same in both rather than leaving it to
+   * language semantics and statement order.
    */
-  const statedFamilyCoverage = new Map<string, boolean>();
+  const statedCoverageByPerson = new Map<string, ReadonlyArray<HsaCoverageTier | null> | null>();
   for (const personId of couple ?? []) {
-    statedFamilyCoverage.set(
-      personId,
-      (coupleCoverage.get(personId)?.months ?? []).some((tier) => tier === "family"),
-    );
+    const months = coupleCoverage.get(personId)?.months ?? null;
+    statedCoverageByPerson.set(personId, months === null ? null : [...months]);
   }
 
   const familyMonth = HSA_ALL_MONTHS.map((month) =>
-    (couple ?? []).some((personId) => coupleCoverage.get(personId)?.months?.[month - 1] === "family"),
+    (couple ?? []).some((personId) => statedCoverageByPerson.get(personId)?.[month - 1] === "family"),
   );
   const familySharingApplies = familyMonth.some(Boolean);
   const recharacterized = new Set<string>();
@@ -11133,18 +11151,42 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * plans as covered by the plan with the lowest annual deductible. That only
    * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
    * limitation by the deductible.
+   *
+   * It is resolved per month, because the limitation itself is: IRC 223(b)(2)
+   * builds the year out of twelve monthly amounts, each determined from the
+   * coverage in force for that month. A spouse who takes family coverage in
+   * December brings that plan's deductible to December and to no earlier month,
+   * where they had no family plan for it to be the lowest of.
    */
-  // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such spouses
-  // each have family coverage under different plans". A spouse whose own
-  // coverage is self-only does not have family coverage, so their deductible is
-  // not a candidate and must not lower the couple's family limitation -- which
-  // is the deductible of a family plan, not of whatever plan happens to be
-  // cheapest in the household.
-  const coupleDeductibles = (couple ?? [])
-    .filter((personId) => statedFamilyCoverage.get(personId) === true)
-    .map((personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible)
-    .filter((value): value is Money => value !== undefined);
-  const lowestCoupleDeductible = coupleDeductibles.length > 0 ? Math.min(...coupleDeductibles) : null;
+  type FamilyMonthDeductible =
+    | { state: "not_applicable" }
+    | { state: "known"; value: Money }
+    | { state: "indeterminate"; missingPersonIds: string[] };
+
+  const familyDeductibleByMonth: FamilyMonthDeductible[] = HSA_ALL_MONTHS.map((month) => {
+    // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
+    // spouses each have family coverage under different plans". A spouse whose
+    // own coverage is self-only for this month has no family plan, so their
+    // deductible is not a candidate and must not lower the couple's family
+    // limitation -- which is the deductible of a family plan, not of whatever
+    // plan happens to be cheapest in the household.
+    const candidates = (couple ?? []).filter(
+      (personId) => statedCoverageByPerson.get(personId)?.[month - 1] === "family",
+    );
+    if (candidates.length === 0) return { state: "not_applicable" };
+    const missingPersonIds = candidates.filter(
+      (personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible === undefined,
+    );
+    // A candidate's plan could be the lowest, so an unstated one leaves the
+    // least of them unknown rather than simply absent from the comparison.
+    if (missingPersonIds.length > 0) return { state: "indeterminate", missingPersonIds };
+    return {
+      state: "known",
+      value: Math.min(
+        ...candidates.map((personId) => coupleCoverage.get(personId)!.hdhpAnnualDeductible!),
+      ),
+    };
+  });
 
   interface HsaOwnerAmounts {
     proratedApplied: Money;
@@ -11271,17 +11313,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
 
     const ownDeductible = owner.rules?.hdhpAnnualDeductible;
-    const deductibleFor = (tier: HsaCoverageTier): Money | null => {
-      if (tier === "family" && familySharingApplies && lowestCoupleDeductible !== null) {
-        return lowestCoupleDeductible;
+    let deductibleMissing = false;
+    const missingDeductibleSpouses = new Set<string>();
+    const deductibleFor = (tier: HsaCoverageTier, monthIndex: number): Money | null => {
+      if (tier === "family" && familySharingApplies) {
+        const resolved = familyDeductibleByMonth[monthIndex];
+        if (resolved.state === "known") return resolved.value;
+        if (resolved.state === "indeterminate") {
+          for (const personId of resolved.missingPersonIds) {
+            if (personId !== ownerId) missingDeductibleSpouses.add(personId);
+          }
+          return null;
+        }
       }
       return ownDeductible ?? null;
     };
-    let deductibleMissing = false;
-    const annualLimitFor = (tier: HsaCoverageTier): Money => {
+    const annualLimitFor = (tier: HsaCoverageTier, monthIndex: number): Money => {
       const statutory = parameters.annualContributionLimit[tier === "family" ? "family" : "selfOnly"];
       if (!parameters.contributionLimitCappedByHdhpAnnualDeductible) return statutory;
-      const deductible = deductibleFor(tier);
+      const deductible = deductibleFor(tier, monthIndex);
       if (deductible === null) {
         deductibleMissing = true;
         return statutory;
@@ -11289,15 +11339,30 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       return minMoney(deductible, statutory);
     };
 
-    const monthlyAnnualLimits = months.map((tier) => (tier === null ? null : annualLimitFor(tier)));
+    const monthlyAnnualLimits = months.map((tier, index) =>
+      tier === null ? null : annualLimitFor(tier, index),
+    );
     if (deductibleMissing) {
       indeterminate = true;
       familyLimitIndeterminate = true;
+      // One diagnostic per owner, not one per affected month: the missing fact
+      // is a property of the person and their plan, not of each month it
+      // reaches. Where the gap is a spouse's, name them, because the input to
+      // supply lives on that spouse and not on this account.
+      const spouseNote =
+        missingDeductibleSpouses.size > 0
+          ? ` ${[...missingDeductibleSpouses]
+              .map(
+                (personId) =>
+                  `Spouse ${personId} stated family coverage but supplied no persons.${personId}.hsaCoverage.hdhpAnnualDeductible, which IRC 223(b)(5)(A) needs to identify the lowest family-plan deductible.`,
+              )
+              .join(" ")}`
+          : "";
       diagnostics.push(
         diagnostic(
           "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
           DiagnosticSeverity.ERROR,
-          `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.`,
+          `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.${spouseNote}`,
           `persons.${ownerId}`,
           "IRC 223(b)(2)",
         ),
@@ -11350,7 +11415,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         );
       } else {
         lastMonthRuleApplied = true;
-        const decemberAnnualLimit = annualLimitFor(decemberTier);
+        const decemberAnnualLimit = annualLimitFor(decemberTier, HSA_MONTHS_IN_YEAR - 1);
         appliedAnnualLimitByMonth = HSA_ALL_MONTHS.map(() => decemberAnnualLimit);
         proratedApplied = roundMoney(decemberAnnualLimit);
         familyPortionApplied = decemberTier === "family" ? decemberAnnualLimit : 0;
@@ -11893,7 +11958,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
       familyLimitShare: share,
-      sharedFamilyContributionLimit: isSharingMember
+      // Null where the family limitation could not be determined, for the same
+      // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
+      // per owner, and reporting the uncompared statutory amount here would
+      // leave the ceiling the pool refuses to state still published one field
+      // away. The field is already declared nullable for the unrelated case of
+      // no family limit being shared at all.
+      sharedFamilyContributionLimit: isSharingMember && !amounts.familyLimitIndeterminate
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
         : null,
       archerMsaContributionsApplied: archerAmount,
