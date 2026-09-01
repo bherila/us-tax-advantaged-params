@@ -11568,6 +11568,13 @@ final class Engine
          * therefore read from the person: from planRules.hsa where that spouse has
          * an HSA, and from persons[].hsaCoverage where they do not.
          */
+        /*
+         * `hdhpAnnualDeductible` is null here whenever the caller stated no
+         * annual deductible for this person, including where they supplied a
+         * literal null: money() already treats null as "absent" everywhere
+         * else in both engines, so the two must not be told apart here. The
+         * `?? null` below is load-bearing for that, not defensive padding.
+         */
         $coupleCoverage = [];
         foreach ($couple ?? [] as $personId) {
             if (isset($facts[$personId]) && $facts[$personId]['rules'] !== null) {
@@ -11687,10 +11694,17 @@ final class Engine
              */
             $marriedFiler = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
                 || $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+            // First match, not last: TypeScript selects with Array.prototype.find.
+            // The two agree for every reachable input today, because a couple is
+            // always exactly [taxpayer, spouse] and the duplicate-role check makes
+            // an owner whose role is taxpayer or spouse a member of it -- so only
+            // one element can differ. Taking the first here keeps the two engines
+            // the same rule rather than the same answer by argument.
             $otherSpouseId = null;
             foreach ($couple ?? [] as $personId) {
                 if ($personId !== $ownerId) {
                     $otherSpouseId = $personId;
+                    break;
                 }
             }
             $ownerIsSpouseOfCouple = $couple !== null && in_array($ownerId, $couple, true);
@@ -11949,6 +11963,17 @@ final class Engine
             $rawSharedFamilyLimit = max($candidates);
             $sharedFamilyLimit = self::roundMoney($rawSharedFamilyLimit);
         }
+        /**
+         * True where any spouse who holds an HSA has an undeterminable
+         * limitation of their own, which makes the IRC 223(b)(5) aggregate
+         * built from those limitations undeterminable too.
+         */
+        $householdLimitIndeterminate = false;
+        foreach ($coupleMembersWithAccounts as $personId) {
+            if (($amountsByOwner[$personId]['indeterminate'] ?? false) === true) {
+                $householdLimitIndeterminate = true;
+            }
+        }
         $familyPoolKey = $couple === null ? null : "{$couple[0]}|{$couple[1]}";
 
         $explicitShareHolders = [];
@@ -12054,9 +12079,22 @@ final class Engine
                     'id' => "hsa223b5:{$familyPoolKey}",
                     'legalLimit' => 'IRC 223(b)(5) single family contribution limit divided between the spouses, '
                         . 'plus their undivided self-only-month limitations',
-                    'limit' => $rawSharedFamilyLimit === null
-                        ? $sharedFamilyLimit
-                        : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions),
+                    // The one family limitation is built out of the spouses'
+                    // own refigured limitations, so it is only as determinable
+                    // as they are. Where a spouse's limitation could not be
+                    // determined their portion falls back to a statutory amount
+                    // the statute may not allow on its own -- for 2004-2006
+                    // IRC 223(b)(2) reaches the dollar amount only after
+                    // comparing it with the plan's annual deductible -- and
+                    // reporting the sum anyway would state a household ceiling
+                    // on facts that do not support one. The per-owner
+                    // IRC 223(b)(1) and 223(b)(3) pools already report null in
+                    // that case; this pool now agrees with them.
+                    'limit' => $householdLimitIndeterminate
+                        ? null
+                        : ($rawSharedFamilyLimit === null
+                            ? $sharedFamilyLimit
+                            : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions)),
                     'used' => 0.0,
                 ];
             }

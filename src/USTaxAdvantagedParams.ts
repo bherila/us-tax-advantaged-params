@@ -10882,6 +10882,13 @@ interface HsaPersonCoverage {
   /** False when nothing in the input states this person's coverage either way. */
   supplied: boolean;
   months: Array<HsaCoverageTier | null> | null;
+  /**
+   * `undefined` means the caller stated no annual deductible for this person.
+   * A supplied `null` normalizes to `undefined` here, because `money()` already
+   * treats `null` as "absent" everywhere else in both engines; keeping the two
+   * apart let a supplied `null` reach `Math.min` as a zero and read as a
+   * deductible that binds at nothing.
+   */
   hdhpAnnualDeductible: Money | undefined;
 }
 
@@ -11068,7 +11075,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       coupleCoverage.set(personId, {
         supplied: true,
         months: owned.months,
-        hdhpAnnualDeductible: owned.rules.hdhpAnnualDeductible,
+        hdhpAnnualDeductible: owned.rules.hdhpAnnualDeductible ?? undefined,
       });
       continue;
     }
@@ -11080,7 +11087,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         : {
             supplied: true,
             months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
-            hdhpAnnualDeductible: declared.hdhpAnnualDeductible,
+            hdhpAnnualDeductible: declared.hdhpAnnualDeductible ?? undefined,
           },
     );
   }
@@ -11402,6 +11409,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ? Math.max(...coupleMembersWithAccounts.map((personId) => reducedPortionsFor(personId)[0]))
     : null;
   const sharedFamilyLimit = rawSharedFamilyLimit === null ? null : roundMoney(rawSharedFamilyLimit);
+  /**
+   * True where any spouse who holds an HSA has an undeterminable limitation of
+   * their own, which makes the IRC 223(b)(5) aggregate built from those
+   * limitations undeterminable too.
+   */
+  const householdLimitIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.indeterminate === true,
+  );
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
   const explicitShareHolders = coupleMembersWithAccounts.filter(
@@ -11501,7 +11516,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         id: `hsa223b5:${familyPoolKey}`,
         legalLimit:
           "IRC 223(b)(5) single family contribution limit divided between the spouses, plus their undivided self-only-month limitations",
-        limit: rawSharedFamilyLimit === null ? sharedFamilyLimit : roundMoney(rawSharedFamilyLimit + undividedSelfPortions),
+        // The one family limitation is built out of the spouses' own refigured
+        // limitations, so it is only as determinable as they are. Where a
+        // spouse's limitation could not be determined their portion falls back
+        // to a statutory amount the statute may not allow on its own -- for
+        // 2004-2006 IRC 223(b)(2) reaches the dollar amount only after
+        // comparing it with the plan's annual deductible -- and reporting the
+        // sum anyway would state a household ceiling on facts that do not
+        // support one. The per-owner IRC 223(b)(1) and 223(b)(3) pools already
+        // report null in that case; this pool now agrees with them.
+        limit: householdLimitIndeterminate
+          ? null
+          : rawSharedFamilyLimit === null
+            ? sharedFamilyLimit
+            : roundMoney(rawSharedFamilyLimit + undividedSelfPortions),
         used: 0,
       });
     }
