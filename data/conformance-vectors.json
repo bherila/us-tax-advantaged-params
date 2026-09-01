@@ -6847,6 +6847,215 @@
         "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
         "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
       }
+    },
+    {
+      "name": "2026 governmental 457(b)-hosted PLESA runs against the IRC 457(e)(15) limit",
+      "description": "IRC 402A(f)(1)(C) makes an eligible deferred compensation plan (as defined in IRC 457(b)) of an eligible employer described in IRC 457(e)(1)(A) the third applicable retirement plan that may include a pension-linked emergency savings account. Its deferrals are not IRC 402(g)(3) elective deferrals -- that paragraph enumerates them exhaustively and lists no IRC 457(b) deferral -- so IRC 457(b)(2)(A) applies the IRC 457(e)(15) applicable dollar amount, 24500 for 2026 per Notice 2025-67, and IRC 457(b)(2)(B) caps the deferral at 100 percent of includible compensation, 90000 here. IRC 402A(e)(3)(A)(i) caps the participant-contribution portion of the balance at 2600 for 2026, and 0 is supplied as already attributable, so the account ceiling is the least of 24500, 90000 and 2600, which is 2600. IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account, so the whole amount is a Roth deferral. The pool drawn on is the IRC 457(b) one and no other: 24500 - 2600 leaves 21900. No age-based catch-up applies, because IRC 414(v) permits exceeding a limit on elective deferrals while IRC 402A(e)(3)(A) forbids exceeding this one at any age.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "gov",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "includibleCompensation457": 90000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountType": "governmental_457b_pension_linked_emergency_savings",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.0.usedByAccount": 2600,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 21900,
+        "parameters.section457b.baseDeferralLimit": 24500,
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": 2600
+      },
+      "expectDiagnosticCodes": [
+        "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
+      ]
+    },
+    {
+      "name": "2026 governmental 457(b)-hosted PLESA joins no IRC 415(c) annual-additions group",
+      "description": "IRC 415(a)(1) applies the annual-additions limit to a trust forming part of a pension, profit-sharing or stock bonus plan, and IRC 415(a)(2) extends it to IRC 403(a) annuity plans, IRC 403(b) annuity contracts and IRC 408(k) simplified employee pensions. An IRC 457(b) plan appears in neither, so no annual-additions limit reaches this account. The scenario places it beside a traditional 401(k) and supplies the same annualAdditionsGroupId on both, so that the statute rather than the caller's grouping hint decides: the 401(k)'s IRC 415(c) entry must show nothing used before it. That limit is the lesser of 72000 (IRC 415(c)(1)(A) for 2026, Notice 2025-67) and 100 percent of the 200000 compensation, so 72000, of which the 401(k)'s 24500 IRC 402(g)(1) deferral leaves 47500. The 401(k)'s IRC 402(g) pool likewise starts unused, because the 457(b)-hosted account never touches it. Both assertions are positive rather than an absence, because a missing path is an error in the PHP harness rather than an undefined value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "gov",
+            "priority": 1,
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "includibleCompensation457": 200000,
+              "annualAdditionsGroupId": "g"
+            }
+          },
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "corp",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 200000,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.usedByAccount": 2600,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.1.sharedLimits.0.id": "402g:t",
+        "accounts.1.sharedLimits.0.limit": 24500,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.1.sharedLimits.1.limit": 72000,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 47500
+      }
+    },
+    {
+      "name": "2026 PLESAs in a governmental 457(b) and a 401(k) draw on separate deferral pools",
+      "description": "The boundary case for the two hosts in one scenario. IRC 457(e)(15) and IRC 402(g)(1) are both per-individual aggregate limits, and one person may participate in a governmental IRC 457(b) plan and an unrelated employer's IRC 401(k) in the same year, so the two ceilings stand side by side rather than as one. Allocation runs in ascending priority. The 457(b)-hosted account takes the least of 24500, 90000 and the 2600 IRC 402A(e)(3)(A)(i) room, so 2600 out of the IRC 457(b) pool, leaving 21900 there and nothing taken from IRC 402(g). The 401(k)-hosted account takes the least of 24500 and 2600, so 2600 out of IRC 402(g), leaving 21900. The 401(k) then takes that 21900, exhausting IRC 402(g). The person defers 2600 + 2600 + 21900 = 27100 in total, which is arithmetically impossible under a single 24500 deferral limit; that total is the proof the pools are separate. The tightest single statement is the pair of usedBeforeAccount figures on the IRC 402(g) pool: 0 when the 401(k)-hosted PLESA reaches it, and 2600 when the 401(k) does, so exactly one of the two emergency accounts is visible there.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "gov",
+            "priority": 1,
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "includibleCompensation457": 90000
+            }
+          },
+          {
+            "id": "p401k",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "corp",
+            "priority": 2,
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            }
+          },
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "corp",
+            "priority": 3,
+            "planRules": {
+              "planCompensation": 200000,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 21900,
+        "accounts.1.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.1.sharedLimits.0.id": "402g:t",
+        "accounts.1.sharedLimits.0.limit": 24500,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.0.remainingAfterAccount": 21900,
+        "accounts.2.contributionComponents.employeePreTaxDeferral": 21900,
+        "accounts.2.sharedLimits.0.id": "402g:t",
+        "accounts.2.sharedLimits.0.usedBeforeAccount": 2600,
+        "accounts.2.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.2.sharedLimits.1.usedBeforeAccount": 2600,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 47500
+      }
+    },
+    {
+      "name": "a governmental 457(b)-hosted PLESA is unavailable before 2024",
+      "description": "SECURE 2.0 (Pub. L. 117-328) section 127(g) applies IRC 402A(e) to plan years beginning after December 31, 2023, so no pension-linked emergency savings account exists for 2023 in any of its three IRC 402A(f)(1) hosts. The 457(b)-hosted account reads the same pensionLinkedEmergencySavings availability flag as the other two, which the data records as false through 2023 and true from 2024; the governmental 457(b) plan that hosts it has been available since 1979, so it is the emergency-account provision and not the host that is absent. The account is therefore unavailable rather than indeterminate: the provision does not exist for the year, which is a different fact from a limit that cannot be determined.",
+      "input": {
+        "taxYear": 2023,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "gov",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "includibleCompensation457": 90000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.statutoryMaximumAnnualContribution": 0
+      }
     }
   ]
 }

@@ -58,6 +58,13 @@ const integer = (low, high) => low + Math.floor(random() * (high - low + 1));
 const money = () => pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
   + (chance(0.25) ? integer(0, 999) : 0);
 
+// Both IRC 402A(f)(1) hosts, so the IRC 402A(e)(3)(A) balance rule is
+// differentially fuzzed on each rather than only on the IRC 401(a)/403(b) one.
+const PLESA_TYPES = [
+  "pension_linked_emergency_savings",
+  "governmental_457b_pension_linked_emergency_savings",
+];
+
 const ACCOUNT_TYPES = [
   "traditional_ira", "roth_ira", "rollover_ira", "payroll_deduction_ira",
   "deemed_traditional_ira", "deemed_roth_ira", "inherited_traditional_ira", "inherited_roth_ira",
@@ -66,6 +73,7 @@ const ACCOUNT_TYPES = [
   "simple_401k", "roth_simple_401k", "starter_401k", "pension_linked_emergency_savings",
   "traditional_403b", "roth_403b", "safe_harbor_403b_deferral_only",
   "governmental_457b", "roth_governmental_457b", "nongovernmental_457b", "section_457f",
+  "governmental_457b_pension_linked_emergency_savings",
   "traditional_tsp", "roth_tsp",
   "section_401a", "profit_sharing_plan", "money_purchase_plan", "keogh_plan", "esop",
   "defined_benefit_plan", "cash_balance_plan",
@@ -226,10 +234,11 @@ function randomPlanRules(type) {
   }
   if (chance(0.1)) rules.grandfatheredSarsep = chance(0.5);
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
-  // Present most of the time on a pension-linked emergency savings account and
+  // Present most of the time on a pension-linked emergency savings account, in
+  // either host, and
   // occasionally elsewhere, so both the supplied and the missing branch of the
   // IRC 402A(e)(3)(A) balance rule are differentially tested.
-  if (type === "pension_linked_emergency_savings" ? chance(0.7) : chance(0.08)) {
+  if (PLESA_TYPES.includes(type) ? chance(0.7) : chance(0.08)) {
     rules.pensionLinkedEmergencySavingsParticipantContributionBalance = chance(0.05) ? junk() : money();
   }
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
