@@ -44,9 +44,12 @@ enum AccountType: string
     case STARTER_401K = 'starter_401k';
     /**
      * IRC 402A(e) pension-linked emergency savings account, as included in a
-     * qualified trust under IRC 401(a) or a plan under IRC 403(b). Modeled as the
-     * designated Roth account IRC 402A(e)(1)(A)(i) says it is treated as, so its
-     * contributions run against IRC 402(g) and IRC 415(c).
+     * qualified trust under IRC 401(a) — IRC 402A(f)(1)(A) — or a plan under
+     * IRC 403(b) — IRC 402A(f)(1)(B). Modeled as the designated Roth account
+     * IRC 402A(e)(1)(A)(i) says it is treated as, so its contributions run
+     * against IRC 402(g) and IRC 415(c). The third host at IRC 402A(f)(1)(C) is
+     * GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS, which runs against
+     * neither.
      */
     case PENSION_LINKED_EMERGENCY_SAVINGS = 'pension_linked_emergency_savings';
     case TRADITIONAL_403B = 'traditional_403b';
@@ -54,6 +57,18 @@ enum AccountType: string
     case SAFE_HARBOR_403B_DEFERRAL_ONLY = 'safe_harbor_403b_deferral_only';
     case GOVERNMENTAL_457B = 'governmental_457b';
     case ROTH_GOVERNMENTAL_457B = 'roth_governmental_457b';
+    /**
+     * IRC 402A(e) pension-linked emergency savings account hosted in an eligible
+     * deferred compensation plan of a governmental employer — the third
+     * "applicable retirement plan" at IRC 402A(f)(1)(C). It is not the same
+     * calculation as the other two hosts wearing a different label: deferrals
+     * under such a plan are not IRC 402(g)(3) elective deferrals, so they run
+     * against the IRC 457(e)(15) applicable dollar amount through
+     * IRC 457(b)(2)(A) rather than IRC 402(g)(1), and IRC 415(a)(1) and (a)(2)
+     * do not reach an IRC 457(b) plan at all, so no annual-additions limit
+     * applies to it.
+     */
+    case GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS = 'governmental_457b_pension_linked_emergency_savings';
     case NONGOVERNMENTAL_457B = 'nongovernmental_457b';
     case SECTION_457F = 'section_457f';
     case TRADITIONAL_TSP = 'traditional_tsp';
@@ -8451,6 +8466,9 @@ final class Engine
             'ROTH_SIMPLE_401K' => AccountType::ROTH_SIMPLE_401K->value,
             'STARTER_401K' => AccountType::STARTER_401K->value,
             'PLESA' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
+            'GOVERNMENTAL_457B_PLESA' => AccountType::GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS->value,
+            'PLESA_457B' => AccountType::GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS->value,
+            '457B_PLESA' => AccountType::GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS->value,
             'PENSION_LINKED_EMERGENCY_SAVINGS' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
             'PENSION_LINKED_EMERGENCY_SAVINGS_ACCOUNT' => AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value,
             '403B' => AccountType::TRADITIONAL_403B->value,
@@ -8765,6 +8783,44 @@ final class Engine
                 'designatedRoth' => true,
                 'shares402g' => true,
                 'uses415c' => true,
+                'isPlesa' => true,
+            ]);
+        }
+        // IRC 402A(f)(1)(C) makes an eligible deferred compensation plan (as defined
+        // in IRC 457(b)) of an eligible employer described in IRC 457(e)(1)(A) the
+        // third applicable retirement plan that may include a pension-linked
+        // emergency savings account, and IRC 402A(f)(2)(B) reads "elective deferral"
+        // for this purpose to include a deferral under such a plan.
+        //
+        // Two limits that reach the other two hosts do not reach this one, which is
+        // why it is a separate account type rather than another permitted plan type
+        // on the existing one:
+        //
+        // - IRC 402(g)(3) enumerates elective deferrals exhaustively — IRC 401(k)
+        //   arrangements, IRC 402(h)(1)(B), IRC 403(b) salary-reduction annuities and
+        //   IRC 408(p)(2)(A)(i) — and no IRC 457(b) deferral appears among them, so
+        //   these contributions are outside IRC 402(g)(1) and run instead against the
+        //   IRC 457(e)(15) applicable dollar amount that IRC 457(b)(2)(A) imposes.
+        //   IRC 402A(e)(9), which orders excess deferrals distributed under
+        //   IRC 402(g)(2)(A) out of the emergency account first, is therefore not the
+        //   authority it is for the other hosts and is deliberately not restated here.
+        // - IRC 415(a)(1) reaches a trust that is part of a pension, profitsharing or
+        //   stock bonus plan and IRC 415(a)(2) extends it to IRC 403(a) annuity plans,
+        //   IRC 403(b) annuity contracts and IRC 408(k) simplified employee pensions.
+        //   An IRC 457(b) plan appears in neither, so there is no annual-additions
+        //   group for this account to join.
+        //
+        // As with the other hosts no age-based catch-up attaches: IRC 414(v) permits
+        // exceeding a limit on elective deferrals, and the IRC 457(b)(3)
+        // last-three-years catch-up raises "the ceiling set forth in paragraph (2)",
+        // while IRC 402A(e)(3)(A) forbids any contribution that would push the account
+        // balance past its own cap whatever the participant's age or service.
+        if ($type === AccountType::GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS->value) {
+            return array_replace($base, [
+                'family' => 'section457',
+                'availabilityKey' => 'pensionLinkedEmergencySavings',
+                'designatedRoth' => true,
+                'governmental457' => true,
                 'isPlesa' => true,
             ]);
         }
@@ -13248,7 +13304,17 @@ final class Engine
     {
         if (!empty($traits['isPlesa'])) {
             $room = self::pensionLinkedEmergencySavingsRoom($context, $account);
-            $statutory = $context['parameters']['electiveDeferral402g'];
+            // Which dollar deferral limit applies turns on the host. An IRC 457(b)
+            // deferral is not among the elective deferrals IRC 402(g)(3) enumerates,
+            // so an IRC 402A(f)(1)(C) account runs against the IRC 457(e)(15)
+            // applicable dollar amount that IRC 457(b)(2)(A) imposes rather than
+            // IRC 402(g)(1). The two figures happen to be equal for every year a
+            // pension-linked emergency savings account has been available, so this
+            // branch is not observable as a dollar difference — only as which pool
+            // the contribution is drawn from.
+            $statutory = ($traits['family'] ?? null) === 'section457'
+                ? $context['parameters']['section457b']['baseDeferralLimit']
+                : $context['parameters']['electiveDeferral402g'];
             if ($room === null || $statutory === null) {
                 return null;
             }
@@ -14293,17 +14359,79 @@ final class Engine
                 'diagnostics' => $diagnostics,
             ];
         }
+        // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
+        // participant contributions, not the contributions of any one year, and
+        // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
+        // room back. What may still be contributed therefore depends on a balance no
+        // other supplied fact expresses, and assuming an empty account would state a
+        // ceiling the statute may not allow.
+        if (
+            !empty($traits['isPlesa'])
+            && !array_key_exists('pensionLinkedEmergencySavingsParticipantContributionBalance', $account['planRules'])
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED',
+                DiagnosticSeverity::ERROR,
+                'IRC 402A(e)(3)(A) caps the portion of a pension-linked emergency savings account balance '
+                    . 'attributable to participant contributions rather than the contributions of a single '
+                    . 'year, so the balance already attributable to them is required. Supply '
+                    . 'planRules.pensionLinkedEmergencySavingsParticipantContributionBalance, using 0 for a '
+                    . 'newly established account.',
+                "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
+                'IRC 402A(e)(3)(A)',
+            );
+            self::reportPoolWithoutConsuming($context['section457BasePools'][$ownerId], $sharedLimits);
+            return [
+                'status' => CalculationStatus::INDETERMINATE->value,
+                'statutoryMaximum' => null,
+                'annualComponents' => $annual,
+                'additionalComponents' => $additional,
+                'planTermDependentCapacity' => 0.0,
+                'sharedLimits' => $sharedLimits,
+                'diagnostics' => $diagnostics,
+            ];
+        }
         $includibleCompensation = self::money(
             $account['planRules']['includibleCompensation457']
                 ?? $account['planRules']['planCompensation']
                 ?? self::planCompensation($account, $person),
             "{$account['id']}.includibleCompensation457",
         );
+        // For a pension-linked emergency savings account the IRC 402A(e)(3)(A) room
+        // binds alongside the IRC 457(e)(15) applicable dollar amount, and
+        // baseDeferralLimitForAccount is the one place that says which dollar limit a
+        // host uses. IRC 457(b)(2)(B) still applies on top: it caps the deferral at
+        // 100 percent of includible compensation whatever the plan holds.
+        $statutoryOrPlesaBase = !empty($traits['isPlesa'])
+            ? (self::baseDeferralLimitForAccount($context, $account, $traits) ?? (float) $statutoryBase)
+            : (float) $statutoryBase;
         $accountBaseLimit = self::minMoney(
-            (float) $statutoryBase,
+            $statutoryOrPlesaBase,
             $includibleCompensation * (float) $compensationFraction,
             $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? (float) $statutoryBase,
         );
+        if (!empty($traits['isPlesa'])) {
+            $plesaCap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
+            $plesaRoom = self::pensionLinkedEmergencySavingsRoom($context, $account);
+            $plesaBalance = $account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null;
+            if ($plesaCap !== null && $plesaRoom !== null) {
+                $suppliedPlesaBalance = self::money($plesaBalance, "accounts.{$account['id']}");
+                $diagnostics[] = self::diagnostic(
+                    'PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED',
+                    DiagnosticSeverity::INFO,
+                    '$' . self::localeNumber((float) $plesaCap)
+                        . ' is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $'
+                        . self::localeNumber($suppliedPlesaBalance)
+                        . ' was supplied as already attributable to them, leaving $'
+                        . self::localeNumber($plesaRoom)
+                        . '. Contributions are Roth by IRC 402A(e)(1)(A)(i) and count against IRC 457(e)(15); IRC 415(c) does not reach an IRC 457(b) plan, and no age-based or last-three-years catch-up is available.'
+                        . ' Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7),'
+                        . " and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.",
+                    "accounts.{$account['id']}",
+                    'IRC 402A(e)(3)(A)(i)',
+                );
+            }
+        }
         $existingRegular = self::roundMoney(
             self::baseDeferrals($annual)
             + $annual['employeeAfterTax']
@@ -14319,8 +14447,13 @@ final class Engine
             self::nonnegative($expectedEmployer - $existingEmployer),
             self::nonnegative($accountBaseLimit - $existingRegular),
         );
+        // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
+        // contributions to the participant's *other* account under the plan, and
+        // IRC 402A(e)(8)(B) bars transfers in, so no employer contribution is ever
+        // allocated here.
         if (
-            $employerDesired > 0.0
+            empty($traits['isPlesa'])
+            && $employerDesired > 0.0
             && self::validateEmployerRothAvailability($context, $account, $traits, $diagnostics)
         ) {
             $employerAdded = self::takeAcrossPools(
@@ -14368,7 +14501,14 @@ final class Engine
             self::poolRemaining($context['section457CatchUpPools'][$ownerId]),
             $compensationRemaining,
         );
-        $specialInput = $account['planRules']['section457SpecialCatchUp'] ?? null;
+        // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)", but
+        // IRC 402A(e)(3)(A) independently forbids any contribution that would push
+        // the balance past its own cap, so neither catch-up can lift a pension-linked
+        // emergency savings account above it. Same reasoning as IRC 414(v) for the
+        // other hosts.
+        $specialInput = !empty($traits['isPlesa'])
+            ? null
+            : ($account['planRules']['section457SpecialCatchUp'] ?? null);
         $specialStatutoryExtra = is_array($specialInput) && !empty($specialInput['eligible'])
             ? self::minMoney(
                 (float) $statutoryBase,
@@ -14427,7 +14567,18 @@ final class Engine
         }
         return [
             'status' => self::accountStatusFromDiagnostics(CalculationStatus::DETERMINATE->value, $diagnostics),
-            'statutoryMaximum' => self::roundMoney($accountBaseLimit + max($ageLimit, $specialStatutoryExtra)),
+            // A plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount is a plan term, not a
+            // statutory ceiling, so it lowers what may be contributed without lowering
+            // the maximum the statute reports — which is how the IRC 401(a) and
+            // IRC 403(b) hosts already behave, because allocateQualifiedElective builds
+            // this figure from baseDeferralLimitForAccount. The IRC 457(b)(2)(B)
+            // includible-compensation cap stays in, because that one is statutory.
+            'statutoryMaximum' => !empty($traits['isPlesa'])
+                ? self::roundMoney(self::minMoney(
+                    $statutoryOrPlesaBase,
+                    $includibleCompensation * (float) $compensationFraction,
+                ))
+                : self::roundMoney($accountBaseLimit + max($ageLimit, $specialStatutoryExtra)),
             'annualComponents' => $annual,
             'additionalComponents' => $additional,
             'planTermDependentCapacity' => 0.0,
