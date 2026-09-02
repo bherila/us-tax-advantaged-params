@@ -58,6 +58,13 @@ const integer = (low, high) => low + Math.floor(random() * (high - low + 1));
 const money = () => pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
   + (chance(0.25) ? integer(0, 999) : 0);
 
+// Both IRC 402A(f)(1) hosts, so the IRC 402A(e)(3)(A) balance rule is
+// differentially fuzzed on each rather than only on the IRC 401(a)/403(b) one.
+const PLESA_TYPES = [
+  "pension_linked_emergency_savings",
+  "governmental_457b_pension_linked_emergency_savings",
+];
+
 const ACCOUNT_TYPES = [
   "traditional_ira", "roth_ira", "rollover_ira", "payroll_deduction_ira",
   "deemed_traditional_ira", "deemed_roth_ira", "inherited_traditional_ira", "inherited_roth_ira",
@@ -66,6 +73,7 @@ const ACCOUNT_TYPES = [
   "simple_401k", "roth_simple_401k", "starter_401k", "pension_linked_emergency_savings",
   "traditional_403b", "roth_403b", "safe_harbor_403b_deferral_only",
   "governmental_457b", "roth_governmental_457b", "nongovernmental_457b", "section_457f",
+  "governmental_457b_pension_linked_emergency_savings",
   "traditional_tsp", "roth_tsp",
   "section_401a", "profit_sharing_plan", "money_purchase_plan", "keogh_plan", "esop",
   "defined_benefit_plan", "cash_balance_plan",
@@ -229,10 +237,11 @@ function randomPlanRules(type) {
   }
   if (chance(0.1)) rules.grandfatheredSarsep = chance(0.5);
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
-  // Present most of the time on a pension-linked emergency savings account and
+  // Present most of the time on a pension-linked emergency savings account, in
+  // either host, and
   // occasionally elsewhere, so both the supplied and the missing branch of the
   // IRC 402A(e)(3)(A) balance rule are differentially tested.
-  if (type === "pension_linked_emergency_savings" ? chance(0.7) : chance(0.08)) {
+  if (PLESA_TYPES.includes(type) ? chance(0.7) : chance(0.08)) {
     rules.pensionLinkedEmergencySavingsParticipantContributionBalance = chance(0.05) ? junk() : money();
   }
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
@@ -523,9 +532,20 @@ function randomScenario() {
     else delete owner.birthYear;
     const employerId = pick(["e1", "e2"]);
     const groupId = pick(["g1", "g2"]);
-    const hostType = pick([
-      "traditional_401k", "roth_401k", "solo_401k", "traditional_403b", "safe_harbor_403b_deferral_only",
-    ]);
+    // Which IRC 402A(f)(1) host. The governmental IRC 457(b) one at
+    // IRC 402A(f)(1)(C) spends a different base pool (IRC 457(e)(15) rather than
+    // IRC 402(g)), joins no IRC 415(c) group, and reaches a catch-up the other
+    // hosts do not have at all -- the IRC 457(b)(3) last-three-years one -- so
+    // the pair is generated on either host rather than only the first two.
+    const section457Host = chance(0.4);
+    const plesaType = section457Host
+      ? "governmental_457b_pension_linked_emergency_savings"
+      : "pension_linked_emergency_savings";
+    const hostType = section457Host
+      ? pick(["governmental_457b", "roth_governmental_457b", "nongovernmental_457b"])
+      : pick([
+        "traditional_401k", "roth_401k", "solo_401k", "traditional_403b", "safe_harbor_403b_deferral_only",
+      ]);
     // Half the time the host is arranged to have spent the shared IRC 402(g)
     // pool without touching the shared IRC 414(v) one, by recognizing exactly
     // the compensation it has already deferred. That is the state the reported
@@ -533,13 +553,17 @@ function randomScenario() {
     // in thousands of cases.
     const exhaustHost = chance(0.5);
     const deferred = pick([23000, 23500, 24500]);
+    const hostCompensation = exhaustHost
+      ? deferred
+      : pick([0, 1000, 15500, 23000, 23500, 24500, 60000, 350000]);
     const hostRules = {
       annualAdditionsGroupId: groupId,
-      planCompensation: exhaustHost
-        ? deferred
-        : pick([0, 1000, 15500, 23000, 23500, 24500, 60000, 350000]),
+      planCompensation: hostCompensation,
       expectedEmployerContribution: chance(0.6) ? 0 : money(),
     };
+    // An IRC 457(b) account measures its own ceiling against includible
+    // compensation, so exhausting that host means constraining this field.
+    if (section457Host) hostRules.includibleCompensation457 = hostCompensation;
     if (chance(0.3)) hostRules.planDocumentEmployeeDeferralLimit = money();
     const plesaRules = { annualAdditionsGroupId: groupId };
     if (chance(0.85)) {
@@ -548,12 +572,25 @@ function randomScenario() {
     }
     if (chance(0.25)) plesaRules.planDocumentEmployeeDeferralLimit = pick([0, 500, 1000, 2500, money()]);
     if (chance(0.2)) plesaRules.planCompensation = money();
+    // The IRC 457(b)(3) catch-up is the one this host has and the others do not.
+    // Put it on either account, since IRC 457(e)(18) picks between it and the
+    // IRC 414(v) catch-up per participant and IRC 414(v)(6)(C) turns the age
+    // question off for a year in which it applies.
+    if (section457Host && chance(0.35)) {
+      const special = { eligible: chance(0.8), unusedDeferralsFromPriorYears: pick([0, 500, 5000, 20000, money()]) };
+      if (chance(0.5)) plesaRules.section457SpecialCatchUp = special;
+      else hostRules.section457SpecialCatchUp = special;
+    }
     const pair = [
       { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
-      { id: "p1", ownerId: owner.id, type: "pension_linked_emergency_savings", employerId, planRules: plesaRules },
+      { id: "p1", ownerId: owner.id, type: plesaType, employerId, planRules: plesaRules },
     ];
     if (chance(0.3)) pair[1].existingContributions = randomExisting();
-    if (exhaustHost) pair[0].existingContributions = { employeePreTaxDeferral: deferred };
+    if (exhaustHost) {
+      pair[0].existingContributions = section457Host && hostType === "roth_governmental_457b"
+        ? { employeeRothDeferral: deferred }
+        : { employeePreTaxDeferral: deferred };
+    }
     else if (chance(0.3)) pair[0].existingContributions = randomExisting();
     if (chance(0.5)) pair.reverse();
     pair.forEach((account) => {
