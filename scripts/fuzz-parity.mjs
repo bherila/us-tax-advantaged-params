@@ -350,28 +350,62 @@ function randomScenario() {
   }
 
   /**
-   * One person holding two health savings accounts that disagree about their
-   * coverage tier, inserted at independently chosen array positions, alongside
-   * a self-only account for the other spouse.
+   * One person holding two health savings accounts whose coverage statements
+   * disagree, inserted at independently chosen array positions, alongside an
+   * account for the other spouse.
    *
-   * Whether IRC 223(b)(5)(A) reaches the *other* spouse's self-only months is
-   * read from these statements, and it was formerly read from whichever of them
-   * the accounts array happened to carry first -- so the pair has to be emitted
-   * in both orders for the engines to be compared on it. The ordinary generator
-   * reaches this shape far too rarely: it needs two HSAs, one owner, and
-   * differing tiers all at once. Emitting a self-only/self-only pair some of the
-   * time keeps the narrow case covered too, where the statements conflict on the
-   * deductible but agree that neither is family coverage.
+   * Everything this shape turns on is varied independently, because the rules
+   * project the disagreement onto separate operands and each projection has its
+   * own way of going wrong:
+   *
+   *  - *which months* the statements disagree about, against which months the
+   *    other spouse is eligible and self-only, since IRC 223(b)(5)(A) is a
+   *    monthly question and a January disagreement must leave December alone;
+   *  - *which field* they disagree about -- coverage tier, annual deductible,
+   *    the IRC 223(b)(5)(B)(ii) share -- since only some of those reach the
+   *    couple's limitation, and the deductible only in 2004-2006;
+   *  - whether family sharing is active at all, through the other spouse's tier;
+   *  - and array position independently of `priority`, since coverage facts are
+   *    read in input order while priority governs allocation. Emitting the pair
+   *    in both orders is what compares the engines on that.
+   *
+   * The ordinary generator reaches none of this at a useful rate: it needs two
+   * HSAs, one owner, and a specific kind of difference all at once.
    */
-  if (personCount === 2 && chance(0.12)) {
+  if (personCount === 2 && chance(0.14)) {
     const conflictOwnerId = pick(persons).id;
-    const pairRules = [
-      { coverageTier: "self_only", ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}) },
-      {
-        coverageTier: chance(0.75) ? "family" : "self_only",
-        ...(chance(0.5) ? { hdhpAnnualDeductible: money() } : {}),
-      },
-    ];
+    const monthsFor = () => HSA_FUZZ_MONTHS.filter(() => chance(0.4));
+    const conflictShape = pick(["tier", "tier", "monthly", "monthly", "deductible_only", "share_only"]);
+    const sharedTier = pick(COVERAGE_TIERS);
+    let pairRules;
+    if (conflictShape === "monthly") {
+      // Disjoint or overlapping month sets, chosen independently of the other
+      // spouse's, so the same-month test is exercised both ways.
+      const left = monthsFor();
+      const right = monthsFor();
+      pairRules = [
+        { monthlyCoverage: left.map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) },
+        { monthlyCoverage: right.map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) },
+      ];
+    } else if (conflictShape === "deductible_only") {
+      pairRules = [
+        { coverageTier: sharedTier, hdhpAnnualDeductible: money() },
+        { coverageTier: sharedTier, hdhpAnnualDeductible: money() },
+      ];
+    } else if (conflictShape === "share_only") {
+      pairRules = [
+        { coverageTier: sharedTier, familyLimitShare: 0.5 },
+        { coverageTier: sharedTier, familyLimitShare: chance(0.5) ? 0.5 : 0.25 },
+      ];
+    } else {
+      pairRules = [
+        { coverageTier: "self_only", ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}) },
+        {
+          coverageTier: chance(0.75) ? "family" : "self_only",
+          ...(chance(0.5) ? { hdhpAnnualDeductible: money() } : {}),
+        },
+      ];
+    }
     if (chance(0.5)) pairRules.reverse();
     pairRules.forEach((hsa, offset) => {
       const account = { id: `x${offset}`, ownerId: conflictOwnerId, type: "hsa", planRules: { hsa } };
@@ -379,15 +413,25 @@ function randomScenario() {
       accounts.splice(integer(0, accounts.length), 0, account);
     });
     const otherPerson = persons.find((person) => person.id !== conflictOwnerId);
-    if (otherPerson !== undefined && chance(0.8)) {
-      const account = {
-        id: "x2",
-        ownerId: otherPerson.id,
-        type: "hsa",
-        planRules: { hsa: { coverageTier: chance(0.85) ? "self_only" : "family" } },
-      };
+    if (otherPerson !== undefined && chance(0.85)) {
+      const hsa = chance(0.4)
+        ? { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) }
+        : {
+            coverageTier: chance(0.7) ? "self_only" : "family",
+            ...(chance(0.4) ? { eligibleMonths: monthsFor() } : {}),
+            ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}),
+          };
+      const account = { id: "x2", ownerId: otherPerson.id, type: "hsa", planRules: { hsa } };
       if (chance(0.3)) account.priority = integer(1, 200);
       accounts.splice(integer(0, accounts.length), 0, account);
+    }
+    // The person-level statement is one more variant of the same fact, so the
+    // person-versus-account contradiction has to be generated too.
+    if (chance(0.2)) {
+      const target = pick(persons);
+      target.hsaCoverage = chance(0.5)
+        ? { coverageTier: pick(COVERAGE_TIERS) }
+        : { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) };
     }
   }
 
