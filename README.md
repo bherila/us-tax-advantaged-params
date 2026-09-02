@@ -359,13 +359,21 @@ result.accounts[0].statutoryMaximumAnnualContribution; // 1600 — 2600 less the
 result.accounts[0].contributionComponents.employeeRothDeferral; // 1600
 ```
 
+Because the cap is on a balance, a year's gross contributions may exceed it. A
+participant who contributed $600, withdrew $400 under §402A(e)(7), and so holds
+$200 attributable to participant contributions has $2,400 of room left and may
+reach $3,000 for the year — the Department of Labor's PLESA guidance is explicit
+that a plan may **not** impose a separate annual PLESA contribution limit,
+precisely so the account can be replenished.
+
 | Rule | Treatment |
 |---|---|
 | §402A(e)(3)(A)(i) dollar figure | `parameters.pensionLinkedEmergencySavingsBalanceCap402A`. $2,500 for 2024 and 2025, $2,600 for 2026 |
 | §402A(e)(3)(A)(ii) plan sponsor amount | Supplied as `planRules.planDocumentEmployeeDeferralLimit`; it lowers the contributable amount but not the reported statutory maximum |
-| Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`; pass 0 for a new account. Omitted, the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` rather than defaulted to an empty account |
-| §402(g) and §415(c) | Consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools |
-| Age-based catch-up | None. §414(v) permits exceeding an applicable deferral limit; §402A(e)(3)(A) bars exceeding this one at any age. A PLESA needs no birth year |
+| Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`: the portion of the balance attributable to participant contributions **immediately before the proposed allocation** — including amounts contributed earlier in the same year that are still in the account, net of withdrawals under the plan's accounting, excluding earnings. Pass 0 for a new account. Omitted, the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` (whose "prior" means *immediately prior to the allocation*, not an opening or prior-year figure) rather than defaulted to an empty account |
+| §402(g) and §415(c) | Base deferrals are consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools. A §414(v) catch-up draws the owner's catch-up pool and, per §414(v)(3)(A)(i), not the annual-additions group |
+| §402A(e)(3)(A) room | An account-local pool, reported in `sharedLimits` as `plesa402Ae3:{accountId}`, seeded with the supplied balance and drawn by base deferrals and catch-up alike |
+| Age-based catch-up | Available, within the balance cap. §402A(e)(3)(A) gates a *balance*, while §414(v) relieves a plan- or employee-level *deferral* limit — 26 CFR §1.414(v)-1(b)(1)(i) lists them and none is account-level — so the two compose and both bind. Once the host's §402(g) pool is spent, remaining room may be filled from the §414(v) catch-up; a catch-up is outside §415(c) under §414(v)(3)(A)(i). As elsewhere in this package, capacity follows from age rather than a plan-document election, under the standing assumption that the plan permits and so characterises it. A birth year is required only where a catch-up could reach unfilled room — not where the host's base capacity already covers it |
 | Employer contributions | Never allocated here. §402A(e)(6)(A) directs any match earned on PLESA contributions to the participant's *other* account under the plan, and §402A(e)(8)(B) bars transfers in |
 | 2023 and earlier | `unavailable`. Pub. L. 117-328 §127(g) applies §127 to plan years beginning after December 31, 2023 |
 
@@ -706,7 +714,7 @@ ownership, so it is a caller-supplied fact rather than something inferred from t
 
 | Field | Meaning |
 |---|---|
-| `statutoryMaximumAnnualContribution` | Overall monetary legal ceiling when determinable from encoded law and supplied facts |
+| `statutoryMaximumAnnualContribution` | Overall monetary legal ceiling when determinable from encoded law and supplied facts. Restrictions the plan document imposes are **not** folded in — they lower `maximumAnnualContributionBasedOnInputs` instead — so a §457(b) plan writing a deferral limit below the §457(e)(15) amount, or a PLESA sponsor setting a §402A(e)(3)(A)(ii) amount below the published figure, lowers what may be contributed without lowering this field |
 | `maximumAnnualContributionBasedOnInputs` | Maximum supported by law and supplied plan capabilities/formulas |
 | `maximumAdditionalContributionBasedOnInputs` | Remaining supported amount after existing contributions |
 | `existingAnnualContribution` | Existing contribution components supplied by the caller |
