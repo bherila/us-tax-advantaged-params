@@ -83,6 +83,7 @@ const CONTRIBUTION_PREFERENCES = ["account_type", "pretax_first", "roth_first"];
 const EMPLOYER_TAX_TREATMENTS = ["pretax", "roth"];
 const SIMPLE_METHODS = ["match_3_percent", "nonelective_2_percent", "custom"];
 const COVERAGE_TIERS = ["self_only", "family"];
+const HSA_FUZZ_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const HEALTH_FSA_PURPOSES = ["general_purpose", "limited_purpose", "post_deductible"];
 const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
@@ -124,7 +125,14 @@ function randomHsaRules() {
       rules.eligibleMonths = months;
     }
   }
-  if (chance(0.25)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 5150, 10500]);
+  // Three shapes, deliberately: a stated amount, an explicit null, and the
+  // property omitted entirely. Explicit null and omission must normalize to the
+  // same absent fact; a stated amount stays distinct from both. Telling null and
+  // omission apart is what produced the TS/PHP divergence. null belongs in this
+  // list rather than only in the junk injector, where it sat below 0.04% per
+  // rules object and stayed unreachable enough that the split survived until a
+  // lucky seed found it.
+  if (chance(0.3)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 3000, 5000, 5150, 10500, null]);
   if (chance(0.3)) rules.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
   if (chance(0.25)) rules.testingPeriodSatisfied = chance(0.5);
   if (chance(0.15)) rules.testingPeriodFailureByDeathOrDisability = chance(0.5);
@@ -281,7 +289,29 @@ function randomPerson(id, role, taxYear) {
   }
   // Person-level IRC 223(c)(2) coverage. randomHsaRules() also emits the
   // account-only keys, which both engines must ignore identically here.
-  if (chance(0.3)) person.hsaCoverage = chance(0.1) ? {} : randomHsaRules();
+  // Spouse coverage drives the IRC 223(b)(5)(A) family-sharing and
+  // lowest-deductible rules even when that spouse owns no HSA, so it is
+  // generated often and is allowed to be family-with-a-deductible, family
+  // without one, self-only with a deductible, or the empty object that records
+  // no coverage at all. Mixed family/self-only couples are what proved a
+  // self-only deductible must not lower the family limitation.
+  if (chance(0.45)) {
+    person.hsaCoverage = chance(0.1)
+      ? {}
+      : (chance(0.5)
+        ? {
+            // Per-month spouse coverage, not only a flat tier. The
+            // IRC 223(b)(5)(A) lowest-deductible comparison is answered month by
+            // month in a capped year, so a couple whose family-coverage months
+            // differ is the shape that distinguishes a per-month resolution from
+            // a whole-year one -- and nothing generated it before.
+            ...(chance(0.4)
+              ? { monthlyCoverage: HSA_FUZZ_MONTHS.filter(() => chance(0.4)).map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) }
+              : { coverageTier: pick(COVERAGE_TIERS), ...(chance(0.4) ? { eligibleMonths: HSA_FUZZ_MONTHS.filter(() => chance(0.5)) } : {}) }),
+            ...(chance(0.7) ? { hdhpAnnualDeductible: pick([1000, 3000, 5000, null]) } : {}),
+          }
+        : randomHsaRules());
+  }
   if (chance(0.03)) person[pick(["birthYear", "role", "compensation", "magi", "coveredByEmployerRetirementPlan"])] = junk();
   return person;
 }
@@ -317,6 +347,138 @@ function randomScenario() {
     if (chance(0.85)) account.planRules = randomPlanRules(type);
     if (chance(0.4)) account.existingContributions = randomExisting();
     accounts.push(account);
+  }
+
+  /**
+   * One person holding two health savings accounts whose coverage statements
+   * disagree, inserted at independently chosen array positions, alongside an
+   * account for the other spouse.
+   *
+   * Everything this shape turns on is varied independently, because the rules
+   * project the disagreement onto separate operands and each projection has its
+   * own way of going wrong:
+   *
+   *  - *which months* the statements disagree about, against which months the
+   *    other spouse is eligible and self-only, since IRC 223(b)(5)(A) is a
+   *    monthly question and a January disagreement must leave December alone;
+   *  - *which field* they disagree about -- coverage tier, annual deductible,
+   *    the IRC 223(b)(5)(B)(ii) share -- since only some of those reach the
+   *    couple's limitation, and the deductible only in 2004-2006;
+   *  - whether family sharing is active at all, through the other spouse's tier;
+   *  - and array position independently of `priority`, since coverage facts are
+   *    read in input order while priority governs allocation. Emitting the pair
+   *    in both orders is what compares the engines on that.
+   *
+   * The ordinary generator reaches none of this at a useful rate: it needs two
+   * HSAs, one owner, and a specific kind of difference all at once.
+   */
+  if (personCount === 2 && chance(0.14)) {
+    const conflictOwnerId = pick(persons).id;
+    const monthsFor = () => HSA_FUZZ_MONTHS.filter(() => chance(0.4));
+    const conflictShape = pick([
+      "tier",
+      "monthly",
+      "deductible_only",
+      "share_only",
+      // A disagreement about *which months are covered at all* leaves the
+      // family question answered the same way by both statements but changes
+      // the undivided self-only portion that is added to the IRC 223(b)(5)
+      // household ceiling.
+      "eligible_months_only",
+      // Neither field is coverage, and only one of the two reaches the ceiling.
+      "last_month_rule",
+      "testing_period",
+      // An account statement carrying no usable coverage fact, which must not
+      // read as an assertion that the person had none.
+      "empty_account",
+    ]);
+    const sharedTier = pick(COVERAGE_TIERS);
+    let pairRules;
+    if (conflictShape === "monthly") {
+      // Disjoint or overlapping month sets, chosen independently of the other
+      // spouse's, so the same-month test is exercised both ways.
+      const left = monthsFor();
+      const right = monthsFor();
+      pairRules = [
+        { monthlyCoverage: left.map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) },
+        { monthlyCoverage: right.map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) },
+      ];
+    } else if (conflictShape === "deductible_only") {
+      pairRules = [
+        { coverageTier: sharedTier, hdhpAnnualDeductible: money() },
+        { coverageTier: sharedTier, hdhpAnnualDeductible: money() },
+      ];
+    } else if (conflictShape === "share_only") {
+      pairRules = [
+        { coverageTier: sharedTier, familyLimitShare: 0.5 },
+        { coverageTier: sharedTier, familyLimitShare: chance(0.5) ? 0.5 : 0.25 },
+      ];
+    } else if (conflictShape === "eligible_months_only") {
+      pairRules = [
+        { coverageTier: sharedTier, eligibleMonths: monthsFor() },
+        { coverageTier: sharedTier, eligibleMonths: monthsFor() },
+      ];
+    } else if (conflictShape === "last_month_rule") {
+      const shared = { coverageTier: sharedTier, eligibleMonths: [12] };
+      pairRules = [
+        { ...shared, useLastMonthRule: true, ...(chance(0.6) ? { testingPeriodSatisfied: chance(0.5) } : {}) },
+        { ...shared, useLastMonthRule: chance(0.75) ? false : true },
+      ];
+    } else if (conflictShape === "testing_period") {
+      const shared = { coverageTier: sharedTier, eligibleMonths: [12], useLastMonthRule: true };
+      pairRules = [
+        { ...shared, testingPeriodSatisfied: true },
+        {
+          ...shared,
+          ...(chance(0.75) ? { testingPeriodSatisfied: false } : {}),
+          ...(chance(0.3) ? { testingPeriodFailureByDeathOrDisability: true } : {}),
+        },
+      ];
+    } else if (conflictShape === "empty_account") {
+      pairRules = [
+        {},
+        chance(0.5) ? { coverageTier: sharedTier } : {},
+      ];
+    } else {
+      pairRules = [
+        { coverageTier: "self_only", ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}) },
+        {
+          coverageTier: chance(0.75) ? "family" : "self_only",
+          ...(chance(0.5) ? { hdhpAnnualDeductible: money() } : {}),
+        },
+      ];
+    }
+    if (chance(0.5)) pairRules.reverse();
+    pairRules.forEach((hsa, offset) => {
+      const account = { id: `x${offset}`, ownerId: conflictOwnerId, type: "hsa", planRules: { hsa } };
+      if (chance(0.3)) account.priority = integer(1, 200);
+      accounts.splice(integer(0, accounts.length), 0, account);
+    });
+    const otherPerson = persons.find((person) => person.id !== conflictOwnerId);
+    if (otherPerson !== undefined && chance(0.85)) {
+      const hsa = chance(0.4)
+        ? { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) }
+        : {
+            coverageTier: chance(0.7) ? "self_only" : "family",
+            ...(chance(0.4) ? { eligibleMonths: monthsFor() } : {}),
+            ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}),
+          };
+      const account = { id: "x2", ownerId: otherPerson.id, type: "hsa", planRules: { hsa } };
+      if (chance(0.3)) account.priority = integer(1, 200);
+      accounts.splice(integer(0, accounts.length), 0, account);
+    }
+    // The person-level statement is one more variant of the same fact, so the
+    // person-versus-account contradiction has to be generated too.
+    if (chance(0.2)) {
+      const target = pick(persons);
+      target.hsaCoverage = chance(0.2)
+        // The documented statement of no high deductible health plan coverage,
+        // which must stay distinguishable from an account that states nothing.
+        ? {}
+        : chance(0.5)
+          ? { coverageTier: pick(COVERAGE_TIERS) }
+          : { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) };
+    }
   }
 
   const scenario = { taxYear, filingStatus, persons, accounts };

@@ -2164,6 +2164,532 @@
       ]
     },
     {
+      "name": "2005 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate",
+      "description": "Before the Tax Relief and Health Care Act of 2006 section 303, IRC 223(b)(2)(A) limited each month to one twelfth of the lesser of the plan's annual deductible and the dollar amount, so the deductible is an operand of the limitation itself and not a refinement of it. The taxpayer supplies hdhpAnnualDeductible as null, which every money input in this package reads as the fact not being stated, and the spouse states no deductible either; neither operand of \"the lesser of\" is therefore known and no month has a determinable limitation. The 2005 family dollar amount of 5250 (Rev. Proc. 2004-71) is not the answer on its own, because IRC 223(b)(2)(A) reaches it only after the comparison. IRC 223(b)(5)(A) builds the one family limitation out of the spouses' own refigured limitations, so it is no more determinable than they are: the IRC 223(b)(1), 223(b)(5) and 223(b)(3) pools all report null rather than a ceiling the statute does not support. Reporting the uncompared dollar amount instead would overstate the ceiling, which is the direction that costs a taxpayer the IRC 4973 excise.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": null
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "hsaParameters.annualContributionLimit.family": 5250,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.0.id": "hsa223b1:t",
+        "accounts.0.sharedLimits.0.limit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.2.id": "hsa223b3:t",
+        "accounts.0.sharedLimits.2.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2004 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate",
+      "description": "The sibling year, pinned so the IRC 223(b)(2) era is covered at both ends rather than at one. IRC 223(b)(2)(A) applies for every year the Tax Relief and Health Care Act of 2006 section 303 had not yet reached, which is 2004 through 2006, so the answer cannot turn on which of those years is asked about. The 2004 family dollar amount is 5150 (Rev. Proc. 2003-102) against 5250 for 2005, and with no annual deductible stated by either spouse neither figure is reachable: IRC 223(b)(2)(A) takes the lesser of the deductible and the dollar amount, and one operand is unknown. All three pools report null, as in 2005.",
+      "input": {
+        "taxYear": 2004,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": null
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "hsaParameters.annualContributionLimit.family": 5150,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2005 married couple with family coverage under two plans takes the lower annual deductible and stays determinate",
+      "description": "The positive control for the two vectors above: the same shape with the deductibles actually stated must still produce a number, so that requiring the fact does not turn every pre-2007 couple indeterminate. IRC 223(b)(5)(A) treats spouses with family coverage under different plans as covered by the plan with the lowest annual deductible, so 3000 governs rather than the spouse's 4000. IRC 223(b)(2)(A) then limits each month to one twelfth of the lesser of that 3000 and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), giving 250 a month and 12 x 250 = 3000 for the year. Only one spouse holds a health savings account, so the whole family limitation is allocated to it under IRC 223(b)(5)(B)(ii). That allocation is an assumption about the division the spouses agreed on -- the statutory default absent an agreement is an equal division -- so the status is determinate_with_assumptions rather than determinate, even though every figure is determinable. The taxpayer attains 35 in 2005, so the IRC 223(b)(3) additional contribution amount does not apply and the statutory maximum is 3000.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "hdhpAnnualDeductible": 4000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.hsa.proratedContributionLimit": 3000,
+        "accounts.0.hsa.additionalContributionAmount": 0,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 3000,
+        "totals.hsaContribution": 3000
+      }
+    },
+    {
+      "name": "2005 a spouse's self-only deductible does not lower the IRC 223(b)(5) family limitation",
+      "description": "IRC 223(b)(5)(A) reaches the lowest annual deductible only \"if such spouses each have family coverage under different plans\". Here only the taxpayer has family coverage; the spouse's own coverage is self-only, so the spouse has no family plan and the 1000 deductible of that self-only plan is not a candidate. The couple's family limitation is the deductible of a family plan, not of whatever plan is cheapest in the household. IRC 223(b)(2)(A) therefore takes the lesser of the taxpayer's 5000 family deductible and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), giving 5000 rather than 1000. Note that IRC 223(b)(5)(A) separately treats the spouse as having the taxpayer's family coverage, which is why the spouse's self-only months do not produce a self-only portion; being treated as having family coverage is not the same as having a family plan whose deductible competes.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.hsa.proratedContributionLimit": 5000,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5000,
+        "totals.hsaContribution": 5000
+      }
+    },
+    {
+      "name": "2005 two family plans take the lower annual deductible under IRC 223(b)(5)(A)",
+      "description": "The companion to the vector above, holding everything else constant so the two differ only in the spouse's coverage tier. Both spouses have family coverage under different plans, which is exactly the condition IRC 223(b)(5)(A) states for treating them as covered under the plan with the lowest annual deductible, so the spouse's 3000 competes and wins against the taxpayer's 5000. IRC 223(b)(2)(A) then takes the lesser of 3000 and the 2005 family dollar amount of 5250, giving 3000. Read against the self-only vector this pins the distinction the statute draws: a family plan's deductible competes and a self-only plan's does not.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "hdhpAnnualDeductible": 3000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.hsa.proratedContributionLimit": 3000,
+        "accounts.0.sharedLimits.1.limit": 3000,
+        "totals.hsaContribution": 3000
+      }
+    },
+    {
+      "name": "2005 a family-covered spouse who omits their annual deductible leaves the family limitation indeterminate",
+      "description": "IRC 223(b)(5)(A) treats spouses who each have family coverage under different plans as covered by the plan with the lowest annual deductible, so the couple's limitation turns on the least of their family-plan deductibles. Here the spouse states family coverage and no deductible for it. That plan could be the lower of the two, so the least is unknown and IRC 223(b)(2)(A)'s \"lesser of the plan's annual deductible and the dollar amount\" has an unknown operand; the taxpayer's own 5000 is not the answer merely because it is the only one supplied. Dropping the spouse from the comparison because their figure is absent would state a ceiling on facts that do not support it, and would overstate it whenever the spouse's plan is lower -- the direction that costs a taxpayer the IRC 4973 excise. Both the IRC 223(b)(5) pool and hsa.sharedFamilyContributionLimit, which is that same limitation reported per owner, therefore report null rather than the uncompared 5250 family dollar amount for 2005 (Rev. Proc. 2004-71).",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2005 one spouse's conflicting coverage facts leave the other spouse's share of the family limitation indeterminate",
+      "description": "IRC 223(b)(5)(A) gives spouses who have family coverage a single family limitation, and IRC 223(b)(5)(B)(ii) divides that one limitation between them, so each spouse's share is a function of facts belonging to both. Here the taxpayer's own coverage is perfectly coherent -- family, 5000 deductible -- while the spouse holds two health savings accounts stating contradictory coverage, family at 3000 and self-only at 1000. Coverage is one fact about a person, so the spouse's is undeterminable, and with it the couple's single family limitation. The taxpayer's share of an undeterminable limitation is undeterminable too: having coherent facts of one's own does not make the couple's shared amount knowable. Every account drawing on that limitation therefore reports indeterminate with a null statutory maximum, a null IRC 223(b)(5) pool and a null sharedFamilyContributionLimit. Reporting a number for the taxpayer would be worse than merely wrong: it would be half of a figure taken from the very spouse whose facts contradict each other.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-conflict",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2005 a spouse's family plan sets the deductible only for the months that plan was in force",
+      "description": "IRC 223(b)(2) builds the year out of twelve monthly limitations, each one twelfth of the lesser of the annual deductible and the dollar amount for the coverage in force that month, so the IRC 223(b)(5)(A) lowest-deductible comparison is answered per month and not once for the year. The taxpayer holds family coverage all year with a 5000 deductible; the spouse takes family coverage in December only, with a 1000 deductible. For January through November the taxpayer is the only spouse with a family plan, so each month uses the lesser of 5000 and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), which is 5000. December has two family plans, so it uses the lesser of 1000 and 5250, which is 1000. The year is therefore (11 x 5000 + 1 x 1000) / 12 = 56000 / 12 = 4666.67. Applying the December plan's deductible to months in which the spouse held no family plan at all would understate the limitation by more than 3600, and is what a single whole-year comparison does.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 12,
+                  "coverage": "family"
+                }
+              ],
+              "hdhpAnnualDeductible": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 4666.67,
+        "accounts.0.hsa.proratedContributionLimit": 4666.67,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": 5000,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.10": 5000,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 1000,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 4666.67,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 4666.67,
+        "totals.hsaContribution": 4666.67
+      }
+    },
+    {
+      "name": "2005 an omitted annual deductible and an explicit null are the same fact",
+      "description": "The normalization half of the pre-2007 fix, stated as a vector rather than left to the type system. Every money input in this package reads null as the fact not being stated -- money() returns the default for null and for an absent property alike -- so supplying hdhpAnnualDeductible as null and omitting the property must reach the identical result. This vector omits it entirely; the explicit-null vector supplies it as null; both are indeterminate with all three pools null. Telling the two apart is what produced the original TypeScript/PHP divergence, where a retained null reached Math.min as a zero and read as a deductible binding at nothing.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.0.limit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "accounts.0.sharedLimits.2.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2007 no annual deductible is required once the IRC 223(b)(2) cap is repealed",
+      "description": "The effective-date boundary control for the three indeterminate vectors. Section 303 of the Tax Relief and Health Care Act of 2006 struck the IRC 223(b)(2)(A) comparison with the plan's annual deductible for taxable years beginning after 2006, so from 2007 the monthly limitation is one twelfth of the statutory amount alone and the deductible is not an operand of anything. The identical input that is indeterminate for 2005 must therefore be determinable for 2007: the family dollar amount is 5650 (Rev. Proc. 2006-53), the couple has family coverage for the whole year, and no deductible-required diagnostic is issued. This is what stops the fix from over-reaching into years the cap never governed.",
+      "input": {
+        "taxYear": 2007,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": false,
+        "hsaParameters.annualContributionLimit.family": 5650,
+        "accounts.0.statutoryMaximumAnnualContribution": 5650,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5650,
+        "totals.hsaContribution": 5650
+      }
+    },
+    {
+      "name": "a missing birth year leaves the IRC 223(b)(5) household limit determinable",
+      "description": "The IRC 223(b)(5) household pool reports null only when the family limitation itself cannot be determined, not whenever anything about an owner is unknown. A missing birth year makes the IRC 223(b)(3) additional contribution amount for an individual who attains age 55 unknowable, so the account is indeterminate and its statutory maximum is null; but the family limitation is a function of coverage and the year alone, and for 2026 it is the full 8750 family amount (Rev. Proc. 2025-19) with both spouses covered all year. Reporting null for the shared pool here would discard a limit the statute does fix, and would make the audit trail less informative than the facts allow. The IRC 223(b)(3) pool, which is the one the missing fact actually reaches, is null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t"
+          },
+          {
+            "id": "s",
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.2.id": "hsa223b3:t",
+        "accounts.0.sharedLimits.2.limit": null
+      },
+      "expectDiagnosticCodes": [
+        "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
+      ]
+    },
+    {
       "name": "2026 employer HSA contribution is excluded rather than deducted",
       "description": "The IRC 223(b) ceiling is a single 4400. An employer or cafeteria-plan contribution of 1000 is excluded from gross income under IRC 106(d) and reduces the IRC 223(a) deduction under IRC 223(b)(4)(B), leaving 3400 deductible. The excluded 1000 is outside Form W-2 box 1 and outside Social Security and Medicare wages.",
       "input": {
@@ -6131,7 +6657,7 @@
     },
     {
       "name": "2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit",
-      "description": "Notice 2025-67 states that effective January 1, 2026 'the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from ,000 to ,000', so the 2026 annual benefit limit is ,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
+      "description": "Notice 2025-67 states that effective January 1, 2026 \"the limitation on the annual benefit under a defined benefit plan under section 415(b)(1)(A) of the Code is increased from $280,000 to $290,000\", so the 2026 annual benefit limit is $290,000; the figure is transcribed from that notice in evidence/retirement-limits and its document is fixed by SHA256SUMS.txt. That limitation caps the benefit the plan may pay and is not a contribution ceiling: sizing a defined-benefit contribution runs through IRC 404, IRC 412 and the ERISA funding rules from the plan formula, participant census, assets and actuarial assumptions, none of which this package models. The account therefore keeps a null statutory maximum, an indeterminate status and DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION, and reports the benefit limit beside them. Pinning both halves is the point: the benefit ceiling is knowable from the tax year alone, the contribution is not, and neither answer may be derived from the other.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -6163,8 +6689,40 @@
       }
     },
     {
-      "name": "a cash balance plan in a year with no transcribed IRC 415(b)(1)(A) figure reports no annual benefit limit",
-      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. IRC 415(b)(1)(A) is adjusted annually under IRC 415(d), but this package encodes only the figures transcribed from the notices committed under evidence/retirement-limits, and no dbAnnualBenefit_415b1A figure is recorded there for 2012. SOURCES.md forbids reusing a prior year published amount or inflation-extrapolating an unrecorded one, so the limit is reported as null rather than carried forward from the 195000 recorded for 2010 or interpolated toward the 205000 recorded for 2013. Absence of the figure is also not a reason to add a claim: the actuarial-valuation diagnostic is still the first diagnostic on the account, because no benefit-limit diagnostic is issued where there is no published amount to state.",
+      "name": "2011 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. Notice 2010-78 states that effective January 1, 2011 \"the limitation on the annual benefit under a defined benefit plan under 415(b)(1)(A) remains unchanged at $195,000\". \"Remains unchanged\" is the notice publishing the figure for 2011, not declining to: an amount the IRS restates for a year is transcribed for that year like any other, and 195000 is recorded for 2011 in evidence/retirement-limits from the document fixed by SHA256SUMS.txt. It is not carried forward from the 195000 recorded for 2010, which SOURCES.md would forbid. The account still keeps a null statutory maximum and an indeterminate status, because IRC 415(b)(1)(A) caps the benefit the plan may pay and says nothing about the contribution needed to fund it; the actuarial-valuation diagnostic is therefore still the first diagnostic on the account, with the benefit-limit report beside it.",
+      "input": {
+        "taxYear": 2011,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "cb",
+            "ownerId": "t",
+            "type": "cash_balance_plan",
+            "employerId": "e"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 195000,
+        "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 195000
+      }
+    },
+    {
+      "name": "2012 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit",
+      "description": "A cash balance plan is a defined benefit plan that states the benefit as a hypothetical account balance, so IRC 415(b) governs it and IRC 415(c) does not; it takes the same treatment here as a traditional pension. Notice 2011-90 states that effective January 1, 2012 \"the limitation on the annual benefit under a defined benefit plan under 415(b)(1)(A) is increased from $195,000 to $200,000\". The figure is transcribed for 2012 in evidence/retirement-limits from the document fixed by SHA256SUMS.txt, and is neither carried forward from the 195000 recorded for 2011 nor interpolated toward the 205000 recorded for 2013, both of which SOURCES.md forbids. The account still keeps a null statutory maximum and an indeterminate status, because IRC 415(b)(1)(A) caps the benefit the plan may pay and says nothing about the contribution needed to fund it; the actuarial-valuation diagnostic is therefore still the first diagnostic on the account, with the benefit-limit report beside it.",
       "input": {
         "taxYear": 2012,
         "filingStatus": "S",
@@ -6186,9 +6744,12 @@
       "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": null,
-        "accounts.0.definedBenefit.annualBenefitLimit": null,
+        "accounts.0.definedBenefit.annualBenefitLimit": 200000,
         "accounts.0.diagnostics.0.code": "DEFINED_BENEFIT_CONTRIBUTION_REQUIRES_ACTUARIAL_VALUATION",
-        "parameters.definedBenefitAnnualBenefit415b": null
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.1.code": "DEFINED_BENEFIT_ANNUAL_BENEFIT_LIMIT_REPORTED",
+        "accounts.0.diagnostics.1.severity": "info",
+        "parameters.definedBenefitAnnualBenefit415b": 200000
       }
     },
     {
@@ -6669,6 +7230,1084 @@
         "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
         "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
       }
+    },
+    {
+      "name": "2026 a spouse's contradictory coverage tiers leave IRC 223(b)(5)(A) applicability unknown, self-only account listed first",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so an owner with a self-only month cannot be priced without knowing the other spouse's coverage: for 2026 the answer is either the undivided self-only 4400 plus the IRC 223(b)(3) age-55 1000, or a divided family limitation instead. Here the spouse owns two health savings accounts stating contradictory tiers, self-only and family. Coverage is one fact about a person, so the spouse has not stated whether they have family coverage, and whether IRC 223(b)(5)(A) reaches the taxpayer's self-only months is therefore unknown -- not merely the size of a shared limitation, but whether one exists. The taxpayer is indeterminate with a null statutory maximum and nothing allocated. This vector lists the spouse's self-only account first. Its companion lists the family one first and must produce identical output: the engine formerly kept whichever coverage statement appeared first in the accounts array and decided the applicability of IRC 223(b)(5)(A) from it, so these same facts returned a determinate 5400 in this ordering and indeterminate in the other. The two orderings differ in array position rather than in priority, because coverage facts are read in input order while priority governs allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-self",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 the same contradictory spouse coverage gives the same answer with the family account listed first",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so an owner with a self-only month cannot be priced without knowing the other spouse's coverage: for 2026 the answer is either the undivided self-only 4400 plus the IRC 223(b)(3) age-55 1000, or a divided family limitation instead. Here the spouse owns two health savings accounts stating contradictory tiers, self-only and family. Coverage is one fact about a person, so the spouse has not stated whether they have family coverage, and whether IRC 223(b)(5)(A) reaches the taxpayer's self-only months is therefore unknown -- not merely the size of a shared limitation, but whether one exists. The taxpayer is indeterminate with a null statutory maximum and nothing allocated. This vector lists the spouse's family account first; its companion lists the self-only one first. The pair exists to pin permutation invariance, which no single vector can state. The differing element is array position rather than priority: coverage facts are read in input order, so permuting priority alone would not distinguish the fixed engine from the broken one.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-self",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's coverage facts that conflict only in the annual deductible leave the other spouse determinate",
+      "description": "The narrowing that keeps the two vectors above from overreaching. IRC 223(b)(5)(A) turns on whether a spouse has family coverage, and on nothing else. Here the spouse's two health savings accounts are still contradictory -- so the spouse is indeterminate under IRC 223(b) for their own accounts -- but both statements say self-only, so no reading of them puts family coverage on either spouse and the subsection cannot apply. The taxpayer's own limitation is therefore fully knowable: the 2026 self-only 4400 under IRC 223(b)(2)(A) plus the IRC 223(b)(3) additional 1000 for an account beneficiary who attains 55 before the close of the year (born 1970), giving 5400. The spouse's deductibles never enter it, because the lowest-deductible rule in IRC 223(b)(5)(A) applies only where the spouses have family coverage under different plans. Treating every conflict as unknown coverage would make this indeterminate, which would be a wrong answer to a question the record settles.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5400,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5400,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 5400
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's coverage conflict outside the owner's eligible months leaves the owner determinate",
+      "description": "IRC 223(b)(1) sums twelve separate monthly limitations, and IRC 223(b)(5)(A) treats a spouse as having family coverage only for a month in which the other spouse has it, so the applicability of that subsection is a monthly question and not an annual one. The taxpayer here is an eligible individual in December alone, with self-only coverage, so IRC 223(b)(2)(A) gives one twelfth of the 2026 self-only annual amount of 4400, which is 366.67 to the cent. The spouse owns two health savings accounts whose statements contradict each other about January and say nothing about any other month; both therefore agree that the spouse has no family coverage in December, which is the only month that can affect the taxpayer. The spouse's own accounts stay indeterminate because coverage is one fact about a person, but the taxpayer's limitation is fully determined. Answering indeterminate here would suppress a December amount because of a January disagreement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 366.67,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 366.67,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 366.67
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 family sharing survives a spouse's conflict confined to an annual deductible that no longer applies",
+      "description": "IRC 223(b)(5)(A) gives spouses who have family coverage a single family limitation, 8750 for 2026, and IRC 223(b)(5)(B)(ii) divides it equally between them absent an agreed division, giving the taxpayer 4375. Every operand of that calculation is agreed here. The spouse's two health savings accounts both state self-only coverage for the whole year and differ only in the plan's annual deductible. A deductible reaches the limitation in only two ways, and neither is present: IRC 223(b)(2) capped each month at one twelfth of the lesser of the deductible and the dollar amount only for 2004 through 2006, the Tax Relief and Health Care Act of 2006 section 303 having removed that cap for later years; and IRC 223(b)(5)(A) takes the lowest annual deductible only where the spouses each have family coverage under different plans, which a self-only plan is not. The spouse's own accounts remain indeterminate under the identical-person-facts contract, but an uncertainty that cannot reach an operand must not be projected onto the result that operand feeds.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 4375,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 4375
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2005 a spouse's conflict between two family-plan annual deductibles does reach the shared family limit",
+      "description": "The control in the other direction for the 2026 deductible vector above. For 2004 through 2006 IRC 223(b)(2) capped each month's limitation at one twelfth of the lesser of the plan's annual deductible and the statutory dollar amount, and IRC 223(b)(5)(A) takes the lowest annual deductible of the spouses' plans where each has family coverage under a different plan. Both spouses state family coverage here, so the deductible is an operand of the couple's single limitation, and the spouse's two accounts give different family-plan deductibles of 3000 and 4000. The lowest of the spouses' deductibles is therefore either 3000 or 4000 depending on which of the spouse's contradictory statements is true, and no reading of the record settles it. Every account sharing that limitation is indeterminate with a null IRC 223(b)(5) pool. A narrowing that let an annual-deductible disagreement through in this year would be a hole, not a refinement.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 4000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's person-level family coverage contradicting their account's self-only leaves the other spouse indeterminate",
+      "description": "The person-versus-account route to the same uncertainty, which involves no ordering at all. Coverage is one fact about a person, so persons[].hsaCoverage and that person's planRules.hsa are two statements of it and must agree; here the person-level statement says family and the account says self-only. IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so on one of those two statements the taxpayer's self-only months are recharacterized and on the other they are not. Whether the subsection applies is therefore unknown, and the taxpayer cannot be given the undivided 2026 self-only amount of 4400 as though the spouse had never said otherwise. Preferring the account statement over the person's, which is what reading a single retained statement does, would answer from the shape of the input rather than from the facts.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "2026 an HSA whose planRules.hsa states no coverage facts is a missing fact, not an assertion of no coverage",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so an owner with self-only months cannot be priced without the other spouse's coverage. The spouse here owns a health savings account whose planRules.hsa carries neither a coverage tier nor a monthlyCoverage list. That is a required fact left unsupplied -- the spouse's own account reports HSA_COVERAGE_FACTS_REQUIRED for it -- and not a statement that they held no high deductible health plan coverage. Reading the empty object as an assertion would hand the taxpayer the undivided 2026 self-only amount of 4400 on the strength of a fact nobody supplied, so the taxpayer is indeterminate and the diagnostic is the absent-facts one rather than the conflicting-facts one: nothing contradicts anything, something is missing.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {}
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 an empty persons[].hsaCoverage is the documented statement of no coverage and leaves the other spouse determinate",
+      "description": "The control for the vector above, and the reason the two empty objects cannot be normalized together. An empty persons[].hsaCoverage is the input's documented way to record that a spouse held no high deductible health plan coverage, which is an answer: IRC 223(b)(5)(A) can recharacterize a self-only month only where a spouse has family coverage in it, and this spouse has none in any month. The taxpayer's self-only coverage therefore stands undivided at the 2026 IRC 223(b)(2)(A) self-only amount of 4400, with no IRC 223(b)(5) pool because the subsection never engages. Treating this statement as missing rather than as known absence would refuse an answer the caller did supply.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4400,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 4400,
+        "totals.hsaContribution": 4400
+      },
+      "expectDiagnosticCodes": []
+    },
+    {
+      "name": "2026 a spouse's self-only-versus-no-coverage disagreement leaves the household ceiling indeterminate, all-year account first",
+      "description": "The IRC 223(b)(5) household ceiling is the divided family limitation *plus* each spouse's undivided self-only months, so a disagreement that never touches family coverage can still change it. Both of this spouse's statements agree they have family coverage in no month, so whether IRC 223(b)(5)(A) applies to the taxpayer is settled; they disagree about whether the spouse held self-only coverage in January through November, and IRC 223(b)(1) sums twelve monthly limitations, so those eleven months are worth 11/12 of the 2026 self-only amount under one statement and nothing under the other. The ceiling the couple share is therefore not one number, and every account drawing on it is indeterminate with a null IRC 223(b)(5) pool. Answering from whichever statement the accounts array happened to carry first is what an ordering pair exists to catch. This vector lists the all-year statement first; its companion lists the December-only one first, and both must produce identical output.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-all",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-dec",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 the same self-only-versus-no-coverage disagreement gives the same answer with the December-only account first",
+      "description": "The IRC 223(b)(5) household ceiling is the divided family limitation *plus* each spouse's undivided self-only months, so a disagreement that never touches family coverage can still change it. Both of this spouse's statements agree they have family coverage in no month, so whether IRC 223(b)(5)(A) applies to the taxpayer is settled; they disagree about whether the spouse held self-only coverage in January through November, and IRC 223(b)(1) sums twelve monthly limitations, so those eleven months are worth 11/12 of the 2026 self-only amount under one statement and nothing under the other. The ceiling the couple share is therefore not one number, and every account drawing on it is indeterminate with a null IRC 223(b)(5) pool. Answering from whichever statement the accounts array happened to carry first is what an ordering pair exists to catch. This vector lists the December-only statement first; its companion lists the all-year one first. The pair pins permutation invariance, which no single vector can state, and the differing element is array position rather than priority because coverage facts are read in input order.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-dec",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-all",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's conflicting IRC 223(b)(8) election leaves the household ceiling indeterminate, election-true account first",
+      "description": "IRC 223(b)(8) lets an individual who is an eligible individual in December be treated as eligible for every month of the year, which replaces a one-month prorated limitation with the full annual one. This spouse's two statements agree about coverage in every month -- family in December, none before -- and disagree only about whether that election is made. The election is worth the difference between one twelfth of the 2026 family amount and the whole of it, and the family portion it produces feeds the couple's shared IRC 223(b)(5) ceiling, so the ceiling is not one number and every account drawing on it is indeterminate. Coverage alone is not the whole of what the ceiling reads. This vector lists the electing statement first; its companion lists the non-electing one first, and both must produce identical output.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 the same conflicting IRC 223(b)(8) election gives the same answer with the non-electing account first",
+      "description": "IRC 223(b)(8) lets an individual who is an eligible individual in December be treated as eligible for every month of the year, which replaces a one-month prorated limitation with the full annual one. This spouse's two statements agree about coverage in every month -- family in December, none before -- and disagree only about whether that election is made. The election is worth the difference between one twelfth of the 2026 family amount and the whole of it, and the family portion it produces feeds the couple's shared IRC 223(b)(5) ceiling, so the ceiling is not one number and every account drawing on it is indeterminate. Coverage alone is not the whole of what the ceiling reads. This vector lists the non-electing statement first; its companion lists the electing one first. Before the election was read for unanimity the household ceiling was 8750 in one ordering and 729.17 in the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": false
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's conflicting IRC 223(b)(8)(B)(iii) testing-period fact leaves the household ceiling knowable",
+      "description": "The narrowing control for the election vectors above. IRC 223(b)(8)(B)(iii) asks whether the individual remains an eligible individual through the testing period, and a failure is included in income and penalized in the *following* year under IRC 223(b)(8)(B)(i); it changes neither spouse's IRC 223(b)(1) limitation for this year. This spouse's two statements both elect the last-month rule and both give the same coverage, disagreeing only about that future compliance fact, so their own accounts are indeterminate under the identical-person-facts contract while the couple's shared ceiling is fully determined. The spouse's refigured family limitation is the whole 2026 family amount of 8750 by force of the election; the taxpayer, an eligible individual with family coverage in December alone, has one twelfth of 8750, or 729.17, and IRC 223(b)(5)(B)(ii) divides that equally absent an agreed division, giving 364.58. Treating every disagreement as reaching the ceiling would refuse both figures.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": true
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "useLastMonthRule": true,
+                "testingPeriodSatisfied": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 364.58,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 364.58,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 729.17,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 364.58
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year",
+      "description": "The other half of the deductible narrowing. For 2004 through 2006 IRC 223(b)(2) capped each month's limitation at one twelfth of the lesser of the plan's annual deductible and the statutory dollar amount, and that cap applies to a self-only month as much as to a family one. The IRC 223(b)(5) household ceiling adds each spouse's undivided self-only months to the divided family limitation, so this spouse's self-only months are worth a different amount under a 2000 deductible than under a 3000 one and the ceiling is not one number. This is the case an earlier narrowing missed by requiring the conflicted person to have a family month: IRC 223(b)(5)(A) reaches the lowest deductible only where the spouses each have family coverage under different plans, which is why a self-only deductible never competes there -- but it is not the only way a deductible reaches the ceiling.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a person-level coverage statement does not disagree with an account-only familyLimitShare",
+      "description": "persons[].hsaCoverage states IRC 223(c)(2) coverage and nothing else: it structurally cannot carry the IRC 223(b)(5)(B)(ii) agreed division, which lives on the account. Reading its absence of that field as a vote would make every person-level statement disagree with any account that supplies one, and would refuse a division the spouses actually agreed. Here the taxpayer states family coverage on the person and a share of 1 on their account, and the spouse agrees with a share of 0, so the whole of the 2026 family limitation of 8750 belongs to the taxpayer and none to the spouse -- which IRC 223(b)(5)(B)(ii) expressly permits, the equal split applying only in the absence of agreement. Both spouses are determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 1
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8750,
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 0,
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": []
     }
   ]
 }

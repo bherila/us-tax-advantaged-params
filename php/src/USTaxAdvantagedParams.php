@@ -4682,7 +4682,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
@@ -4801,7 +4801,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
@@ -10315,6 +10315,99 @@ final class Engine
         ]);
     }
 
+    /**
+     * What a person's coverage was in a month, read across every statement made
+     * about them. Two projections are needed because two different questions
+     * are asked of the same statements:
+     *
+     *  - the resolved slot ('none'|'self_only'|'family'|'unknown') decides the
+     *    *amount* -- eligibility, the family portion, and the undivided
+     *    self-only portion added to the IRC 223(b)(5) household ceiling. A
+     *    disagreement between 'self_only' and no coverage gives different self
+     *    portions, so it is 'unknown' here.
+     *  - the family presence ('family'|'not_family'|'unknown') decides IRC
+     *    223(b)(5)(A) *applicability*. That same disagreement is 'not_family'
+     *    either way, so the other spouse's answer stays knowable.
+     *
+     * A variant whose 'months' is null stated nothing usable and does not vote.
+     *
+     * @param list<array<string,mixed>> $variants
+     * @return list<string>
+     */
+    private static function resolvedCoverageSlotsFor(array $variants): array
+    {
+        $vectors = [];
+        foreach ($variants as $variant) {
+            if ($variant['months'] !== null) {
+                $vectors[] = $variant['months'];
+            }
+        }
+        // No usable statement is unknown, stated explicitly rather than left to
+        // a vacuous answer over an empty list.
+        if (count($vectors) === 0) {
+            return array_fill(0, self::HSA_MONTHS_IN_YEAR, 'unknown');
+        }
+        $slots = [];
+        for ($index = 0; $index < self::HSA_MONTHS_IN_YEAR; $index += 1) {
+            $seen = [];
+            foreach ($vectors as $vector) {
+                $seen[($vector[$index] ?? null) === null ? 'none' : (string) $vector[$index]] = true;
+            }
+            $slots[] = count($seen) > 1 ? 'unknown' : (string) array_key_first($seen);
+        }
+        return $slots;
+    }
+
+    /**
+     * @param list<string> $slots
+     * @param list<array<string,mixed>> $variants
+     * @return list<string>
+     */
+    private static function familyPresenceFor(array $slots, array $variants): array
+    {
+        $vectors = [];
+        foreach ($variants as $variant) {
+            if ($variant['months'] !== null) {
+                $vectors[] = $variant['months'];
+            }
+        }
+        if (count($vectors) === 0) {
+            return array_fill(0, self::HSA_MONTHS_IN_YEAR, 'unknown');
+        }
+        $presence = [];
+        for ($index = 0; $index < self::HSA_MONTHS_IN_YEAR; $index += 1) {
+            if ($slots[$index] !== 'unknown') {
+                $presence[] = $slots[$index] === 'family' ? 'family' : 'not_family';
+                continue;
+            }
+            $family = false;
+            $notFamily = false;
+            foreach ($vectors as $vector) {
+                if (($vector[$index] ?? null) === 'family') {
+                    $family = true;
+                } else {
+                    $notFamily = true;
+                }
+            }
+            $presence[] = $family && $notFamily ? 'unknown' : ($family ? 'family' : 'not_family');
+        }
+        return $presence;
+    }
+
+    /**
+     * True when every supplied statement gives the same value for one field.
+     *
+     * @param list<mixed> $values
+     */
+    private static function unanimousField(array $values): bool
+    {
+        $seen = [];
+        foreach ($values as $value) {
+            $seen[(string) json_encode($value ?? null)] = true;
+        }
+        return count($seen) <= 1;
+    }
+
     /** Twelve coverage slots, or null when no coverage facts were supplied at all.
      *  @param array<string,mixed> $rules
      *  @return list<string|null>|null
@@ -11528,6 +11621,8 @@ final class Engine
             $rules = null;
             $signature = null;
             $conflict = false;
+            $accountVariants = [];
+            $seenSignatures = [];
             foreach ($accountsByOwner[$ownerId] as $account) {
                 if (!array_key_exists('hsa', $account['planRules'])) {
                     continue;
@@ -11540,15 +11635,69 @@ final class Engine
                 } elseif ($signature !== $encoded) {
                     $conflict = true;
                 }
+                if (!array_key_exists($encoded, $seenSignatures)) {
+                    $seenSignatures[$encoded] = true;
+                    $accountVariants[] = is_array($supplied) ? $supplied : [];
+                }
             }
             $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
+            $personConflict = $rules !== null
+                && is_array($declared)
+                && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared);
+            /*
+             * Every coverage statement made about this person, the person-level
+             * one included. persons[].hsaCoverage is a statement of the same fact
+             * as planRules.hsa, so it belongs in the same set rather than in a
+             * parallel branch: the person-versus-account contradiction is then the
+             * ordinary disagreement, read by the same projection.
+             */
+            $coverageVariants = [];
+            foreach ($accountVariants as $variant) {
+                $coverageVariants[] = [
+                    'source' => 'account',
+                    'coverage' => $variant,
+                    'months' => self::resolveHsaMonths($variant),
+                ];
+            }
+            if (is_array($declared) && !array_key_exists((string) json_encode($declared), $seenSignatures)) {
+                $coverageVariants[] = [
+                    'source' => 'person',
+                    'coverage' => $declared,
+                    // The one place an empty object is an answer:
+                    // persons[].hsaCoverage of {} records that this person held
+                    // no high deductible health plan coverage.
+                    'months' => self::resolveHsaMonths($declared)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                ];
+            }
+            $shareValues = [];
+            $lastMonthRuleValues = [];
+            foreach ($accountVariants as $variant) {
+                $shareValues[] = $variant['familyLimitShare'] ?? null;
+                $lastMonthRuleValues[] = $variant['useLastMonthRule'] ?? null;
+            }
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'rules' => $rules,
                 'conflict' => $conflict,
-                'personConflict' => $rules !== null
-                    && is_array($declared)
-                    && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared),
+                'personConflict' => $personConflict,
+                /**
+                 * Every distinct coverage statement supplied for this person, in
+                 * input order. Uncertainty is projected off these onto each
+                 * operand it actually reaches, rather than off the bare fact that
+                 * they disagree: two statements differing only in an annual
+                 * deductible answer the IRC 223(b)(5)(A) family question
+                 * identically, and in a year without the IRC 223(b)(2) cap they do
+                 * not reach the couple's limitation at all.
+                 */
+                'coverageVariants' => $coverageVariants,
+                /**
+                 * persons[].hsaCoverage carries neither field, so it does not vote
+                 * on either; only the person's own accounts can disagree about the
+                 * IRC 223(b)(5)(B)(ii) division or the IRC 223(b)(8) election.
+                 */
+                'familyLimitShareConflict' => !self::unanimousField($shareValues),
+                'useLastMonthRuleConflict' => !self::unanimousField($lastMonthRuleValues),
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
         }
@@ -11567,6 +11716,13 @@ final class Engine
          * not on whether either spouse owns a health savings account. Coverage is
          * therefore read from the person: from planRules.hsa where that spouse has
          * an HSA, and from persons[].hsaCoverage where they do not.
+         */
+        /*
+         * `hdhpAnnualDeductible` is null here whenever the caller stated no
+         * annual deductible for this person, including where they supplied a
+         * literal null: money() already treats null as "absent" everywhere
+         * else in both engines, so the two must not be told apart here. The
+         * `?? null` below is load-bearing for that, not defensive padding.
          */
         $coupleCoverage = [];
         foreach ($couple ?? [] as $personId) {
@@ -11589,11 +11745,98 @@ final class Engine
                 : ['supplied' => false, 'months' => null, 'hdhpAnnualDeductible' => null];
         }
 
+        /*
+         * The coverage each spouse actually *stated*, month by month, snapshotted
+         * before the IRC 223(b)(5)(A) recharacterization below rewrites self-only
+         * months. The statute draws two different lines off these months and they
+         * must not be confused: a spouse is *treated as* having family coverage for
+         * the purpose of computing the limitation, but only a spouse who *has* a
+         * family plan brings a deductible that competes for the lowest.
+         *
+         * The copy is deliberate rather than incidental. PHP arrays copy on
+         * assignment, so this survives the recharacterization anyway; TypeScript
+         * hands the same array to both $coupleCoverage and $facts and would see the
+         * write. Snapshotting in both engines makes the rule the same in each
+         * rather than leaving it to language semantics and statement order.
+         */
+        /*
+         * The IRC 223(b)(5)(A) reading of every person the subsection could reach,
+         * month by month. A spouse who owns no health savings account states their
+         * coverage on persons[].hsaCoverage instead, so both routes are collected
+         * here; a person who stated nothing at all is absent, which is the case
+         * HSA_SPOUSE_COVERAGE_FACTS_REQUIRED already reports.
+         */
+        $coverageVariantsByPerson = [];
+        $coverageSlotsByPerson = [];
+        $familyStatusByPerson = [];
+        $statusPersonIds = [];
+        foreach ($ownerIds as $personId) {
+            $statusPersonIds[$personId] = true;
+        }
+        foreach ($couple ?? [] as $personId) {
+            $statusPersonIds[$personId] = true;
+        }
+        foreach (array_keys($statusPersonIds) as $personId) {
+            $declaredCoverage = $context['persons'][$personId]['hsaCoverage'] ?? null;
+            $variants = $facts[$personId]['coverageVariants'] ?? [];
+            if (count($variants) === 0 && is_array($declaredCoverage)) {
+                $variants = [[
+                    'source' => 'person',
+                    'coverage' => $declaredCoverage,
+                    'months' => self::resolveHsaMonths($declaredCoverage)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                ]];
+            }
+            $coverageVariantsByPerson[$personId] = $variants;
+            // A person every one of whose statements is unusable has stated
+            // nothing, so no projection is recorded and the absent-facts
+            // diagnostic reports it.
+            $anyUsable = false;
+            foreach ($variants as $variant) {
+                if ($variant['months'] !== null) {
+                    $anyUsable = true;
+                    break;
+                }
+            }
+            if ($anyUsable) {
+                $slots = self::resolvedCoverageSlotsFor($variants);
+                $coverageSlotsByPerson[$personId] = $slots;
+                $familyStatusByPerson[$personId] = self::familyPresenceFor($slots, $variants);
+            }
+        }
+
+        /*
+         * Stated coverage, projected onto the one question its two readers ask:
+         * does this spouse have family coverage in this month. A month the
+         * person's statements answer unanimously survives even when another month
+         * is contradictory, which is what keeps a December limitation computable
+         * while January is disputed. Reading a tier off whichever statement came
+         * first would instead decide the applicability of IRC 223(b)(5)(A) from
+         * input order.
+         *
+         * The projection is lossless only because nothing reads a non-family tier
+         * from this map; a reader that needed 'self_only' back would need the tier
+         * carried through the status instead.
+         */
+        $statedCoverageByPerson = [];
+        foreach ($couple ?? [] as $personId) {
+            $status = $familyStatusByPerson[$personId] ?? null;
+            if ($status === null) {
+                $statedCoverageByPerson[$personId] = null;
+                continue;
+            }
+            $projected = [];
+            foreach ($status as $slot) {
+                $projected[] = $slot === 'family' ? 'family' : null;
+            }
+            $statedCoverageByPerson[$personId] = $projected;
+        }
+
         $familyMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
             $any = false;
             foreach ($couple ?? [] as $personId) {
-                if (($coupleCoverage[$personId]['months'][$month - 1] ?? null) === 'family') {
+                if (($statedCoverageByPerson[$personId][$month - 1] ?? null) === 'family') {
                     $any = true;
                 }
             }
@@ -11623,15 +11866,52 @@ final class Engine
          * plans as covered by the plan with the lowest annual deductible. That only
          * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
          * limitation by the deductible.
+         *
+         * It is resolved per month, because the limitation itself is: IRC 223(b)(2)
+         * builds the year out of twelve monthly amounts, each determined from the
+         * coverage in force for that month. A spouse who takes family coverage in
+         * December brings that plan's deductible to December and to no earlier
+         * month, where they had no family plan for it to be the lowest of.
+         *
+         * Each entry is one of:
+         *   ['state' => 'not_applicable']
+         *   ['state' => 'known', 'value' => float]
+         *   ['state' => 'indeterminate', 'missingPersonIds' => string[]]
          */
-        $coupleDeductibles = [];
-        foreach ($couple ?? [] as $personId) {
-            $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
-            if ($value !== null) {
-                $coupleDeductibles[] = (float) $value;
+        $familyDeductibleByMonth = [];
+        for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+            // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
+            // spouses each have family coverage under different plans". A spouse
+            // whose own coverage is self-only for this month has no family plan, so
+            // their deductible is not a candidate and must not lower the couple's
+            // family limitation — which is the deductible of a family plan, not of
+            // whatever plan happens to be cheapest in the household.
+            $candidates = [];
+            foreach ($couple ?? [] as $personId) {
+                if (($statedCoverageByPerson[$personId][$month - 1] ?? null) === 'family') {
+                    $candidates[] = $personId;
+                }
             }
+            if ($candidates === []) {
+                $familyDeductibleByMonth[$month - 1] = ['state' => 'not_applicable'];
+                continue;
+            }
+            $missingPersonIds = [];
+            $values = [];
+            foreach ($candidates as $personId) {
+                $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
+                if ($value === null) {
+                    $missingPersonIds[] = $personId;
+                } else {
+                    $values[] = (float) $value;
+                }
+            }
+            // A candidate's plan could be the lowest, so an unstated one leaves the
+            // least of them unknown rather than simply absent from the comparison.
+            $familyDeductibleByMonth[$month - 1] = $missingPersonIds === []
+                ? ['state' => 'known', 'value' => min($values)]
+                : ['state' => 'indeterminate', 'missingPersonIds' => $missingPersonIds];
         }
-        $lowestCoupleDeductible = $coupleDeductibles === [] ? null : min($coupleDeductibles);
 
         $amountsByOwner = [];
         foreach ($ownerIds as $ownerId) {
@@ -11639,6 +11919,69 @@ final class Engine
             $person = $context['persons'][$ownerId];
             $diagnostics = [];
             $indeterminate = false;
+            /*
+             * Whether this owner's *family-coverage* limitation is undeterminable,
+             * which is a narrower question than whether their overall result is. A
+             * missing birth year makes only the IRC 223(b)(3) age-55 amount unknown
+             * and leaves the IRC 223(b)(5) family limit perfectly knowable, so it
+             * deliberately does not set this. Neither does the bare fact that this
+             * person's coverage statements disagree: see $familyOperandConflict
+             * below, which asks which operand they disagree about.
+             */
+            $familyLimitIndeterminate = false;
+
+            /*
+             * Does this owner's disagreement actually reach the couple's IRC
+             * 223(b)(5) ceiling? That ceiling is the divided family limitation
+             * *plus* the spouses' undivided self-only portions, so the question is
+             * which inputs can change familyPortionApplied, selfPortionApplied or
+             * the division. HsaRulesInput is a closed surface of eight fields, so
+             * the answer is enumerable rather than guessable -- an earlier attempt
+             * listed only the operands of the divided family amount and let a
+             * self-only month, a self-only deductible and the IRC 223(b)(8)
+             * election through, each of which then fixed the ceiling from whichever
+             * account happened to be listed first:
+             *
+             *   coverageTier, eligibleMonths, monthlyCoverage  reach it: tier and
+             *       months of both portions.
+             *   hdhpAnnualDeductible  reaches it in 2004-2006 only, when IRC
+             *       223(b)(2) capped each covered month by it -- family months
+             *       through the IRC 223(b)(5)(A) lowest-deductible comparison, and
+             *       self-only months through the undivided self portion, which is
+             *       why no family month is required for it to matter.
+             *   useLastMonthRule  reaches it: IRC 223(b)(8) replaces the prorated
+             *       amount with December's annualized one.
+             *   familyLimitShare  reaches it: the IRC 223(b)(5)(B)(ii) division.
+             *   testingPeriodSatisfied, testingPeriodFailureByDeathOrDisability do
+             *       not. They are read only into the reported testing-period
+             *       obligation, never into either portion, so a disagreement about
+             *       a future compliance fact leaves this year's ceiling knowable.
+             *
+             * A ninth field must be classified here rather than defaulting to inert.
+             */
+            $ownerSlots = $coverageSlotsByPerson[$ownerId] ?? null;
+            $deductibleValues = [];
+            foreach ($coverageVariantsByPerson[$ownerId] ?? [] as $variant) {
+                $deductibleValues[] = $variant['coverage']['hdhpAnnualDeductible'] ?? null;
+            }
+            $deductibleUnanimous = self::unanimousField($deductibleValues);
+            $ownerHasCoveredMonth = false;
+            foreach ($ownerSlots ?? [] as $slot) {
+                if ($slot !== 'none') {
+                    $ownerHasCoveredMonth = true;
+                    break;
+                }
+            }
+            $limitInputsIndeterminate = $ownerSlots === null
+                || in_array('unknown', $ownerSlots, true)
+                || ($parameters['contributionLimitCappedByHdhpAnnualDeductible']
+                    && !$deductibleUnanimous
+                    && $ownerHasCoveredMonth)
+                || $owner['useLastMonthRuleConflict']
+                || $owner['familyLimitShareConflict'];
+            if ($limitInputsIndeterminate) {
+                $familyLimitIndeterminate = true;
+            }
 
             if ($owner['conflict']) {
                 $indeterminate = true;
@@ -11665,6 +12008,7 @@ final class Engine
             }
             if ($owner['rules'] === null || $owner['months'] === null) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -11687,15 +12031,33 @@ final class Engine
              */
             $marriedFiler = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value
                 || $context['filingStatus'] === FilingStatus::MARRIED_FILING_SEPARATELY->value;
+            // First match, not last: TypeScript selects with Array.prototype.find.
+            // The two agree for every reachable input today, because a couple is
+            // always exactly [taxpayer, spouse] and the duplicate-role check makes
+            // an owner whose role is taxpayer or spouse a member of it -- so only
+            // one element can differ. Taking the first here keeps the two engines
+            // the same rule rather than the same answer by argument.
             $otherSpouseId = null;
             foreach ($couple ?? [] as $personId) {
                 if ($personId !== $ownerId) {
                     $otherSpouseId = $personId;
+                    break;
                 }
             }
             $ownerIsSpouseOfCouple = $couple !== null && in_array($ownerId, $couple, true);
+            /*
+             * Supplied has to mean *usable*. An account whose planRules.hsa carries
+             * no tier and no monthlyCoverage has not stated this person's coverage,
+             * even though the property is present, so the other spouse is no better
+             * placed than if nothing had been said. Reading the empty object as an
+             * assertion of no family coverage would answer the IRC 223(b)(5)(A)
+             * question from a fact the caller never supplied. persons[].hsaCoverage
+             * of {} is the exception and is deliberately different: it is the
+             * documented way to state that the person held no high deductible
+             * health plan coverage.
+             */
             $spouseCoverageSupplied = $otherSpouseId !== null
-                && ($coupleCoverage[$otherSpouseId]['supplied'] ?? false);
+                && array_key_exists($otherSpouseId, $familyStatusByPerson);
             $ownerHasSelfOnlyMonth = in_array('self_only', $months, true);
             if (
                 $marriedFiler
@@ -11704,6 +12066,7 @@ final class Engine
                 && $ownerHasSelfOnlyMonth
             ) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -11712,6 +12075,58 @@ final class Engine
                         . 'least one self-only month, so the other spouse\'s coverage changes the answer and is not '
                         . 'supplied. State it on that spouse\'s persons[].hsaCoverage — an empty object records that '
                         . 'the spouse held no high deductible health plan coverage.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(5)(A)',
+                );
+            }
+
+            /**
+             * The same question one step further out. A spouse who supplied
+             * coverage facts that contradict each other on the family question
+             * has not answered it either, so an owner with a self-only month is
+             * no better placed than if that spouse had said nothing. This is a
+             * sibling of the condition above rather than a reuse of it: the
+             * remedy differs, because the caller must reconcile two statements
+             * they already made instead of adding a missing one. It is also not
+             * the IRC 223(b)(5) sharing error, which reports a family limitation
+             * known to exist but not divisible; here whether the subsection
+             * applies at all is what is unknown, and the sharing path is never
+             * reached.
+             */
+            /*
+             * The months have to be the same months. IRC 223(b)(5)(A)
+             * recharacterizes a self-only month only where a spouse has family
+             * coverage in *that* month, so a spouse whose statements contradict
+             * each other in January leaves a December self-only limitation exactly
+             * as computable as it ever was.
+             */
+            $otherSpouseFamilyStatus = $otherSpouseId === null
+                ? null
+                : ($familyStatusByPerson[$otherSpouseId] ?? null);
+            $spouseCoverageAmbiguousOnFamily = false;
+            if ($otherSpouseFamilyStatus !== null) {
+                foreach ($months as $index => $tier) {
+                    if ($tier === 'self_only' && ($otherSpouseFamilyStatus[$index] ?? null) === 'unknown') {
+                        $spouseCoverageAmbiguousOnFamily = true;
+                        break;
+                    }
+                }
+            }
+            if (
+                $marriedFiler
+                && ($ownerIsSpouseOfCouple || ($person['role'] ?? null) === 'taxpayer' || ($person['role'] ?? null) === 'spouse')
+                && $spouseCoverageAmbiguousOnFamily
+            ) {
+                $indeterminate = true;
+                $familyLimitIndeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_SPOUSE_COVERAGE_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of '
+                        . 'them has it. The other spouse\'s supplied coverage facts disagree about whether they have '
+                        . 'family coverage, so whether this subsection applies to this owner\'s self-only months '
+                        . 'cannot be determined. Reconcile that spouse\'s coverage facts; coverage is one fact about '
+                        . 'a person, so every statement of it must agree.',
                     "persons.{$ownerId}",
                     'IRC 223(b)(5)(A)',
                 );
@@ -11738,17 +12153,31 @@ final class Engine
 
             $ownDeductible = $owner['rules']['hdhpAnnualDeductible'] ?? null;
             $deductibleMissing = false;
-            $deductibleFor = static function (string $tier) use (
+            $missingDeductibleSpouses = [];
+            $deductibleFor = static function (string $tier, int $monthIndex) use (
                 $familySharingApplies,
-                $lowestCoupleDeductible,
+                $familyDeductibleByMonth,
                 $ownDeductible,
+                $ownerId,
+                &$missingDeductibleSpouses,
             ): ?float {
-                if ($tier === 'family' && $familySharingApplies && $lowestCoupleDeductible !== null) {
-                    return $lowestCoupleDeductible;
+                if ($tier === 'family' && $familySharingApplies) {
+                    $resolved = $familyDeductibleByMonth[$monthIndex];
+                    if ($resolved['state'] === 'known') {
+                        return (float) $resolved['value'];
+                    }
+                    if ($resolved['state'] === 'indeterminate') {
+                        foreach ($resolved['missingPersonIds'] as $personId) {
+                            if ($personId !== $ownerId) {
+                                $missingDeductibleSpouses[$personId] = true;
+                            }
+                        }
+                        return null;
+                    }
                 }
                 return $ownDeductible === null ? null : (float) $ownDeductible;
             };
-            $annualLimitFor = static function (string $tier) use (
+            $annualLimitFor = static function (string $tier, int $monthIndex) use (
                 $parameters,
                 $deductibleFor,
                 &$deductibleMissing,
@@ -11757,7 +12186,7 @@ final class Engine
                 if ($parameters['contributionLimitCappedByHdhpAnnualDeductible'] !== true) {
                     return $statutory;
                 }
-                $deductible = $deductibleFor($tier);
+                $deductible = $deductibleFor($tier, $monthIndex);
                 if ($deductible === null) {
                     $deductibleMissing = true;
                     return $statutory;
@@ -11766,18 +12195,29 @@ final class Engine
             };
 
             $monthlyAnnualLimits = [];
-            foreach ($months as $tier) {
-                $monthlyAnnualLimits[] = $tier === null ? null : $annualLimitFor($tier);
+            foreach ($months as $monthIndex => $tier) {
+                $monthlyAnnualLimits[] = $tier === null ? null : $annualLimitFor($tier, $monthIndex);
             }
             if ($deductibleMissing) {
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
+                // One diagnostic per owner, not one per affected month: the missing
+                // fact is a property of the person and their plan, not of each month
+                // it reaches. Where the gap is a spouse's, name them, because the
+                // input to supply lives on that spouse and not on this account.
+                $spouseNote = '';
+                foreach (array_keys($missingDeductibleSpouses) as $personId) {
+                    $spouseNote .= " Spouse {$personId} stated family coverage but supplied no "
+                        . "persons.{$personId}.hsaCoverage.hdhpAnnualDeductible, which IRC 223(b)(5)(A) needs to "
+                        . 'identify the lowest family-plan deductible.';
+                }
                 $diagnostics[] = self::diagnostic(
                     'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED',
                     DiagnosticSeverity::ERROR,
                     "For tax year {$context['taxYear']} IRC 223(b)(2) limited each month to one twelfth of the lesser of "
                         . 'the plan\'s annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible '
                         . 'is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years '
-                        . 'after 2006.',
+                        . 'after 2006.' . $spouseNote,
                     "persons.{$ownerId}",
                     'IRC 223(b)(2)',
                 );
@@ -11838,7 +12278,7 @@ final class Engine
                     );
                 } else {
                     $lastMonthRuleApplied = true;
-                    $decemberAnnualLimit = $annualLimitFor($decemberTier);
+                    $decemberAnnualLimit = $annualLimitFor($decemberTier, self::HSA_MONTHS_IN_YEAR - 1);
                     $appliedAnnualLimitByMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, $decemberAnnualLimit);
                     $proratedApplied = self::roundMoney($decemberAnnualLimit);
                     $familyPortionApplied = $decemberTier === 'family' ? (float) $decemberAnnualLimit : 0.0;
@@ -11868,6 +12308,7 @@ final class Engine
                 // redundant on purpose, so no mutation distinguishes them
                 // individually.
                 $indeterminate = true;
+                $familyLimitIndeterminate = true;
                 $whose = $ownFsa['purposeUnstated'] ? 'held by this individual' : "held by this individual's spouse";
                 $diagnostics[] = self::diagnostic(
                     'HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION',
@@ -11896,6 +12337,7 @@ final class Engine
                 'lastMonthRuleApplied' => $lastMonthRuleApplied,
                 'diagnostics' => $diagnostics,
                 'indeterminate' => $indeterminate,
+                'familyLimitIndeterminate' => $familyLimitIndeterminate,
             ];
         }
 
@@ -11949,6 +12391,17 @@ final class Engine
             $rawSharedFamilyLimit = max($candidates);
             $sharedFamilyLimit = self::roundMoney($rawSharedFamilyLimit);
         }
+        /**
+         * True where any spouse who holds an HSA has an undeterminable
+         * limitation of their own, which makes the IRC 223(b)(5) aggregate
+         * built from those limitations undeterminable too.
+         */
+        $householdLimitIndeterminate = false;
+        foreach ($coupleMembersWithAccounts as $personId) {
+            if (($amountsByOwner[$personId]['familyLimitIndeterminate'] ?? false) === true) {
+                $householdLimitIndeterminate = true;
+            }
+        }
         $familyPoolKey = $couple === null ? null : "{$couple[0]}|{$couple[1]}";
 
         $explicitShareHolders = [];
@@ -11959,6 +12412,25 @@ final class Engine
         }
         $shareByOwner = [];
         $sharingDiagnostics = [];
+        if ($familySharingApplies && $householdLimitIndeterminate) {
+            // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
+            // divides it between them, so each share is a function of facts belonging
+            // to both. A spouse whose own coverage is coherent still cannot be told
+            // their share of a limitation the couple's facts do not fix. Nulling the
+            // pool alone was not enough: the pool went null while the accounts drawing
+            // on it stayed determinate and kept reporting a maximum they could never
+            // allocate.
+            $sharingDiagnostics[] = self::diagnostic(
+                'HSA_SHARED_FAMILY_LIMIT_INDETERMINATE',
+                DiagnosticSeverity::ERROR,
+                'IRC 223(b)(5) gives the spouses one family limitation to divide, so it is no more '
+                    . 'determinable than the coverage facts of either of them. Another spouse\'s health '
+                    . 'savings account coverage facts are missing or conflicting, so this account\'s share '
+                    . 'of that limitation cannot be stated either.',
+                'accounts',
+                'IRC 223(b)(5)',
+            );
+        }
         if ($familySharingApplies) {
             if ($explicitShareHolders !== []) {
                 if (count($explicitShareHolders) !== count($coupleMembersWithAccounts)) {
@@ -12054,9 +12526,22 @@ final class Engine
                     'id' => "hsa223b5:{$familyPoolKey}",
                     'legalLimit' => 'IRC 223(b)(5) single family contribution limit divided between the spouses, '
                         . 'plus their undivided self-only-month limitations',
-                    'limit' => $rawSharedFamilyLimit === null
-                        ? $sharedFamilyLimit
-                        : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions),
+                    // The one family limitation is built out of the spouses'
+                    // own refigured limitations, so it is only as determinable
+                    // as they are. Where a spouse's limitation could not be
+                    // determined their portion falls back to a statutory amount
+                    // the statute may not allow on its own -- for 2004-2006
+                    // IRC 223(b)(2) reaches the dollar amount only after
+                    // comparing it with the plan's annual deductible -- and
+                    // reporting the sum anyway would state a household ceiling
+                    // on facts that do not support one. The per-owner
+                    // IRC 223(b)(1) and 223(b)(3) pools already report null in
+                    // that case; this pool now agrees with them.
+                    'limit' => $householdLimitIndeterminate
+                        ? null
+                        : ($rawSharedFamilyLimit === null
+                            ? $sharedFamilyLimit
+                            : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions)),
                     'used' => 0.0,
                 ];
             }
@@ -12474,7 +12959,14 @@ final class Engine
                 'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
                 'familyLimitShare' => $share,
+                // Null where the family limitation could not be determined, for the
+                // same reason the IRC 223(b)(5) pool is: this field *is* that
+                // limitation, seen per owner, and reporting the uncompared statutory
+                // amount here would leave the ceiling the pool refuses to state still
+                // published one field away. The field is already nullable for the
+                // unrelated case of no family limit being shared at all.
                 'sharedFamilyContributionLimit' => $isSharingMember
+                    && $householdLimitIndeterminate !== true
                     ? self::roundMoney(self::archerReducedPortions(
                         (float) $amounts['familyPortionApplied'],
                         (float) $amounts['selfPortionApplied'],

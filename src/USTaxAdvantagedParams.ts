@@ -281,7 +281,17 @@ export interface HsaCoverageInput {
   eligibleMonths?: number[];
   /** Per-month coverage when the tier changes during the year. Mutually exclusive with the two fields above. */
   monthlyCoverage?: HsaMonthlyCoverageInput[];
-  /** The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2) capped the monthly limitation by it. */
+  /**
+   * The plan's annual deductible. Required for 2004-2006, when IRC 223(b)(2)
+   * capped the monthly limitation by it.
+   *
+   * One amount covers every month this input represents. The IRC 223(b)(5)(A)
+   * comparison between the spouses' plans is resolved month by month, but a
+   * single person switching plans mid-year -- family Plan A at 5000 through
+   * June, Plan B at 3000 after -- cannot be expressed: `monthlyCoverage` varies
+   * the tier, not the deductible. Supply the deductible of the plan in force
+   * for the months this input covers.
+   */
   hdhpAnnualDeductible?: Money;
 }
 
@@ -4845,7 +4855,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
@@ -4964,7 +4974,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
-      "definedBenefitAnnualBenefit415b": null,
+      "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
         "available": true,
@@ -10874,6 +10884,20 @@ interface HsaOwnerFacts {
   conflict: boolean;
   /** The owner's own `persons[].hsaCoverage` contradicts their account's `planRules.hsa`. */
   personConflict: boolean;
+  /**
+   * Every distinct coverage statement supplied for this person — each of their
+   * HSAs' `planRules.hsa`, plus `persons[].hsaCoverage` — in input order, each
+   * carrying its source. Uncertainty is projected off these onto each input it
+   * actually reaches, rather than off the bare fact that they disagree.
+   */
+  coverageVariants: ReadonlyArray<HsaCoverageVariant>;
+  /**
+   * This person's *accounts*, without the person-level statement, which cannot
+   * carry either field. Letting `persons[].hsaCoverage` vote here would read its
+   * structural absence as a disagreement with an account that supplies one.
+   */
+  familyLimitShareConflict: boolean;
+  useLastMonthRuleConflict: boolean;
   months: Array<HsaCoverageTier | null> | null;
 }
 
@@ -10882,6 +10906,13 @@ interface HsaPersonCoverage {
   /** False when nothing in the input states this person's coverage either way. */
   supplied: boolean;
   months: Array<HsaCoverageTier | null> | null;
+  /**
+   * `undefined` means the caller stated no annual deductible for this person.
+   * A supplied `null` normalizes to `undefined` here, because `money()` already
+   * treats `null` as "absent" everywhere else in both engines; keeping the two
+   * apart let a supplied `null` reach `Math.min` as a zero and read as a
+   * deductible that binds at nothing.
+   */
   hdhpAnnualDeductible: Money | undefined;
 }
 
@@ -10906,6 +10937,74 @@ function hsaCoverageSignature(coverage: HsaCoverageInput): string {
     coverage.monthlyCoverage ?? null,
     coverage.hdhpAnnualDeductible ?? null,
   ]);
+}
+
+/**
+ * One coverage statement about a person, carrying where it came from. The
+ * source matters because an object with no coverage fields means two different
+ * things: `persons[].hsaCoverage: {}` is the documented way to record that the
+ * person held no high deductible health plan coverage, while an account's
+ * `planRules.hsa: {}` is a required fact that was not supplied, already
+ * diagnosed HSA_COVERAGE_FACTS_REQUIRED. Reading the second as an assertion of
+ * no coverage would answer a question the caller never answered.
+ */
+interface HsaCoverageVariant {
+  source: "account" | "person";
+  coverage: HsaCoverageInput;
+  /** Twelve resolved slots, or null where this statement says nothing usable. */
+  months: Array<HsaCoverageTier | null> | null;
+}
+
+/**
+ * What a person's coverage was in a month, read across every statement made
+ * about them. Two projections are needed because two different questions are
+ * asked of the same statements, and conflating them loses one of the answers:
+ *
+ *  - `ResolvedCoverageSlot` decides the *amount* -- eligibility, the family
+ *    portion, and the undivided self-only portion that is added to the IRC
+ *    223(b)(5) household ceiling. Statements disagreeing between `self_only`
+ *    and no coverage give different self portions, so that is `unknown` here.
+ *  - `FamilyPresence` decides IRC 223(b)(5)(A) *applicability* -- whether the
+ *    other spouse's self-only months are recharacterized. That same
+ *    self_only-versus-none disagreement is `not_family` on either reading, so
+ *    the other spouse's applicability stays knowable.
+ */
+type ResolvedCoverageSlot = "none" | "self_only" | "family" | "unknown";
+type FamilyPresence = "family" | "not_family" | "unknown";
+
+function resolvedCoverageSlotsFor(
+  variants: ReadonlyArray<HsaCoverageVariant>,
+): ResolvedCoverageSlot[] {
+  const vectors = variants.filter((variant) => variant.months !== null).map((variant) => variant.months!);
+  // No usable statement is unknown, stated explicitly. An `every` over an empty
+  // list would otherwise answer the question vacuously.
+  if (vectors.length === 0) return HSA_ALL_MONTHS.map(() => "unknown");
+  return HSA_ALL_MONTHS.map((month) => {
+    const slots = new Set(vectors.map((vector) => vector[month - 1] ?? "none"));
+    if (slots.size > 1) return "unknown";
+    return [...slots][0] as ResolvedCoverageSlot;
+  });
+}
+
+function familyPresenceFor(slots: ReadonlyArray<ResolvedCoverageSlot>, variants: ReadonlyArray<HsaCoverageVariant>): FamilyPresence[] {
+  const vectors = variants.filter((variant) => variant.months !== null).map((variant) => variant.months!);
+  if (vectors.length === 0) return HSA_ALL_MONTHS.map(() => "unknown");
+  return HSA_ALL_MONTHS.map((month, index) => {
+    if (slots[index] !== "unknown") return slots[index] === "family" ? "family" : "not_family";
+    let family = false;
+    let notFamily = false;
+    for (const vector of vectors) {
+      if (vector[month - 1] === "family") family = true;
+      else notFamily = true;
+    }
+    if (family && notFamily) return "unknown";
+    return family ? "family" : "not_family";
+  });
+}
+
+/** True when every supplied statement gives the same value for one field. */
+function unanimousField<T>(values: ReadonlyArray<T>): boolean {
+  return new Set(values.map((value) => JSON.stringify(value ?? null))).size <= 1;
 }
 
 /** Twelve coverage slots, or null when no coverage facts were supplied at all. */
@@ -11021,6 +11120,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     let rules: HsaRulesInput | null = null;
     let signature: string | null = null;
     let conflict = false;
+    const accountVariants: HsaRulesInput[] = [];
+    const seenSignatures = new Set<string>();
     for (const account of accountsByOwner.get(ownerId)!) {
       const supplied = account.planRules.hsa;
       if (supplied === undefined) continue;
@@ -11031,14 +11132,48 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       } else if (signature !== encoded) {
         conflict = true;
       }
+      if (!seenSignatures.has(encoded)) {
+        seenSignatures.add(encoded);
+        accountVariants.push(supplied);
+      }
     }
     const declared = context.persons.get(ownerId)?.hsaCoverage;
+    const personConflict =
+      rules !== null && declared !== undefined && hsaCoverageSignature(rules) !== hsaCoverageSignature(declared);
+    /**
+     * Every coverage statement made about this person, the person-level one
+     * included. `persons[].hsaCoverage` is a statement of the same fact as
+     * `planRules.hsa`, so it belongs in the same set rather than in a parallel
+     * branch: the person-versus-account contradiction is then the ordinary
+     * disagreement, read by the same projection.
+     */
+    const coverageVariants: HsaCoverageVariant[] = accountVariants.map((coverage) => ({
+      source: "account",
+      coverage,
+      months: resolveHsaMonths(coverage),
+    }));
+    if (declared !== undefined && !seenSignatures.has(JSON.stringify(declared))) {
+      coverageVariants.push({
+        source: "person",
+        coverage: declared,
+        // The one place an empty object is an answer: `persons[].hsaCoverage: {}`
+        // records that this person held no high deductible health plan coverage.
+        months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
+      });
+    }
     facts.set(ownerId, {
       ownerId,
       rules,
       conflict,
-      personConflict:
-        rules !== null && declared !== undefined && hsaCoverageSignature(rules) !== hsaCoverageSignature(declared),
+      personConflict,
+      coverageVariants,
+      /**
+       * `persons[].hsaCoverage` carries neither field, so it does not vote on
+       * either; only the person's own accounts can disagree about the IRC
+       * 223(b)(5)(B)(ii) division or the IRC 223(b)(8) election.
+       */
+      familyLimitShareConflict: !unanimousField(accountVariants.map((variant) => variant.familyLimitShare)),
+      useLastMonthRuleConflict: !unanimousField(accountVariants.map((variant) => variant.useLastMonthRule)),
       months: rules === null ? null : resolveHsaMonths(rules),
     });
   }
@@ -11068,7 +11203,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       coupleCoverage.set(personId, {
         supplied: true,
         months: owned.months,
-        hdhpAnnualDeductible: owned.rules.hdhpAnnualDeductible,
+        hdhpAnnualDeductible: owned.rules.hdhpAnnualDeductible ?? undefined,
       });
       continue;
     }
@@ -11080,13 +11215,87 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         : {
             supplied: true,
             months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
-            hdhpAnnualDeductible: declared.hdhpAnnualDeductible,
+            hdhpAnnualDeductible: declared.hdhpAnnualDeductible ?? undefined,
           },
     );
   }
 
+  /**
+   * The coverage each spouse actually *stated*, month by month, snapshotted
+   * before the IRC 223(b)(5)(A) recharacterization below rewrites self-only
+   * months. The statute draws two different lines off these months and they
+   * must not be confused: a spouse is *treated as* having family coverage for
+   * the purpose of computing the limitation, but only a spouse who *has* a
+   * family plan brings a deductible that competes for the lowest.
+   *
+   * The copy is deliberate rather than incidental. A `coupleCoverage` entry for
+   * a spouse who owns an HSA holds the very array `facts` holds, so the
+   * recharacterization writes through it in TypeScript, while PHP's arrays copy
+   * on assignment and would not see the write. Reading stated coverage off a
+   * mutated array would therefore mean two different answers in the two
+   * engines, which is the divergence class this whole area exists to prevent.
+   * Snapshotting makes the rule the same in both rather than leaving it to
+   * language semantics and statement order.
+   */
+  /**
+   * The IRC 223(b)(5)(A) reading of every person the subsection could reach,
+   * month by month. A spouse who owns no health savings account states their
+   * coverage on `persons[].hsaCoverage` instead, so both routes are collected
+   * here; a person who stated nothing at all is absent, which is the case
+   * `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` already reports.
+   */
+  const coverageVariantsByPerson = new Map<string, ReadonlyArray<HsaCoverageVariant>>();
+  const coverageSlotsByPerson = new Map<string, ResolvedCoverageSlot[]>();
+  const familyStatusByPerson = new Map<string, FamilyPresence[]>();
+  for (const personId of new Set<string>([...ownerIds, ...(couple ?? [])])) {
+    const owned = facts.get(personId);
+    const declaredCoverage = context.persons.get(personId)?.hsaCoverage;
+    const variants: ReadonlyArray<HsaCoverageVariant> =
+      owned !== undefined && owned.coverageVariants.length > 0
+        ? owned.coverageVariants
+        : declaredCoverage !== undefined
+          ? [
+              {
+                source: "person",
+                coverage: declaredCoverage,
+                months: resolveHsaMonths(declaredCoverage) ?? HSA_ALL_MONTHS.map(() => null),
+              },
+            ]
+          : [];
+    coverageVariantsByPerson.set(personId, variants);
+    // A person every one of whose statements is unusable has stated nothing, so
+    // no projection is recorded and the absent-facts diagnostic reports it.
+    if (variants.some((variant) => variant.months !== null)) {
+      const slots = resolvedCoverageSlotsFor(variants);
+      coverageSlotsByPerson.set(personId, slots);
+      familyStatusByPerson.set(personId, familyPresenceFor(slots, variants));
+    }
+  }
+
+  /**
+   * Stated coverage, projected onto the one question its two readers ask:
+   * does this spouse have family coverage in this month. A month the person's
+   * statements answer unanimously survives even when another month is
+   * contradictory, which is what keeps a December limitation computable while
+   * January is disputed. Reading a tier off whichever statement came first
+   * would instead decide the applicability of IRC 223(b)(5)(A) from input
+   * order.
+   *
+   * The projection is lossless only because nothing reads a non-family tier
+   * from this map; a reader that needed `self_only` back would need the tier
+   * carried through the status instead.
+   */
+  const statedCoverageByPerson = new Map<string, ReadonlyArray<HsaCoverageTier | null> | null>();
+  for (const personId of couple ?? []) {
+    const status = familyStatusByPerson.get(personId);
+    statedCoverageByPerson.set(
+      personId,
+      status === undefined ? null : status.map((slot) => (slot === "family" ? "family" : null)),
+    );
+  }
+
   const familyMonth = HSA_ALL_MONTHS.map((month) =>
-    (couple ?? []).some((personId) => coupleCoverage.get(personId)?.months?.[month - 1] === "family"),
+    (couple ?? []).some((personId) => statedCoverageByPerson.get(personId)?.[month - 1] === "family"),
   );
   const familySharingApplies = familyMonth.some(Boolean);
   const recharacterized = new Set<string>();
@@ -11111,11 +11320,42 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * plans as covered by the plan with the lowest annual deductible. That only
    * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
    * limitation by the deductible.
+   *
+   * It is resolved per month, because the limitation itself is: IRC 223(b)(2)
+   * builds the year out of twelve monthly amounts, each determined from the
+   * coverage in force for that month. A spouse who takes family coverage in
+   * December brings that plan's deductible to December and to no earlier month,
+   * where they had no family plan for it to be the lowest of.
    */
-  const coupleDeductibles = (couple ?? [])
-    .map((personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible)
-    .filter((value): value is Money => value !== undefined);
-  const lowestCoupleDeductible = coupleDeductibles.length > 0 ? Math.min(...coupleDeductibles) : null;
+  type FamilyMonthDeductible =
+    | { state: "not_applicable" }
+    | { state: "known"; value: Money }
+    | { state: "indeterminate"; missingPersonIds: string[] };
+
+  const familyDeductibleByMonth: FamilyMonthDeductible[] = HSA_ALL_MONTHS.map((month) => {
+    // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
+    // spouses each have family coverage under different plans". A spouse whose
+    // own coverage is self-only for this month has no family plan, so their
+    // deductible is not a candidate and must not lower the couple's family
+    // limitation -- which is the deductible of a family plan, not of whatever
+    // plan happens to be cheapest in the household.
+    const candidates = (couple ?? []).filter(
+      (personId) => statedCoverageByPerson.get(personId)?.[month - 1] === "family",
+    );
+    if (candidates.length === 0) return { state: "not_applicable" };
+    const missingPersonIds = candidates.filter(
+      (personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible === undefined,
+    );
+    // A candidate's plan could be the lowest, so an unstated one leaves the
+    // least of them unknown rather than simply absent from the comparison.
+    if (missingPersonIds.length > 0) return { state: "indeterminate", missingPersonIds };
+    return {
+      state: "known",
+      value: Math.min(
+        ...candidates.map((personId) => coupleCoverage.get(personId)!.hdhpAnnualDeductible!),
+      ),
+    };
+  });
 
   interface HsaOwnerAmounts {
     proratedApplied: Money;
@@ -11133,6 +11373,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     lastMonthRuleApplied: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
+    familyLimitIndeterminate: boolean;
   }
 
   const amountsByOwner = new Map<string, HsaOwnerAmounts>();
@@ -11142,6 +11383,59 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const person = context.persons.get(ownerId)!;
     const diagnostics: Diagnostic[] = [];
     let indeterminate = false;
+    /**
+     * Whether this owner's *family-coverage* limitation is undeterminable, which
+     * is a narrower question than whether their overall result is. A missing
+     * birth year makes only the IRC 223(b)(3) age-55 amount unknown and leaves
+     * the IRC 223(b)(5) family limit perfectly knowable, so it deliberately does
+     * not set this. Neither does the bare fact that this person's coverage
+     * statements disagree: see `familyOperandConflict` below, which asks which
+     * operand they disagree about.
+     */
+    let familyLimitIndeterminate = false;
+
+    /**
+     * Does this owner's disagreement actually reach the couple's IRC 223(b)(5)
+     * ceiling? That ceiling is the divided family limitation *plus* the
+     * spouses' undivided self-only portions, so the question is which inputs
+     * can change `familyPortionApplied` or `selfPortionApplied` or the
+     * division. `HsaRulesInput` is a closed surface of eight fields, so the
+     * answer is enumerable rather than guessable -- an earlier attempt listed
+     * only the operands of the divided family amount and let a self-only month,
+     * a self-only deductible and the IRC 223(b)(8) election through, each of
+     * which then fixed the ceiling from whichever account happened to be listed
+     * first:
+     *
+     *   coverageTier, eligibleMonths, monthlyCoverage  reach it: tier and
+     *       months of both portions.
+     *   hdhpAnnualDeductible  reaches it in 2004-2006 only, when IRC 223(b)(2)
+     *       capped each covered month by it -- family months through the IRC
+     *       223(b)(5)(A) lowest-deductible comparison, and self-only months
+     *       through the undivided self portion, which is why no family month is
+     *       required for it to matter.
+     *   useLastMonthRule  reaches it: IRC 223(b)(8) replaces the prorated
+     *       amount with December's annualized one.
+     *   familyLimitShare  reaches it: the IRC 223(b)(5)(B)(ii) division.
+     *   testingPeriodSatisfied, testingPeriodFailureByDeathOrDisability  do
+     *       not. They are read only into the reported testing-period
+     *       obligation, never into either portion, so a disagreement about a
+     *       future compliance fact leaves this year's ceiling knowable.
+     *
+     * A ninth field must be classified here rather than defaulting to inert.
+     */
+    const ownerSlots = coverageSlotsByPerson.get(ownerId);
+    const deductibleUnanimous = unanimousField(
+      (coverageVariantsByPerson.get(ownerId) ?? []).map((variant) => variant.coverage.hdhpAnnualDeductible),
+    );
+    const limitInputsIndeterminate =
+      ownerSlots === undefined ||
+      ownerSlots.some((slot) => slot === "unknown") ||
+      (parameters.contributionLimitCappedByHdhpAnnualDeductible &&
+        !deductibleUnanimous &&
+        ownerSlots.some((slot) => slot !== "none")) ||
+      owner.useLastMonthRuleConflict ||
+      owner.familyLimitShareConflict;
+    if (limitInputsIndeterminate) familyLimitIndeterminate = true;
 
     if (owner.conflict) {
       indeterminate = true;
@@ -11169,6 +11463,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
@@ -11194,8 +11489,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY;
     const otherSpouseId = couple?.find((personId) => personId !== ownerId);
     const ownerIsSpouseOfCouple = couple !== null && couple.includes(ownerId);
+    /**
+     * Supplied has to mean *usable*. An account whose `planRules.hsa` carries no
+     * tier and no `monthlyCoverage` has not stated this person's coverage, even
+     * though the property is present, so the other spouse is no better placed
+     * than if nothing had been said. Reading the empty object as an assertion of
+     * no family coverage would answer the IRC 223(b)(5)(A) question from a fact
+     * the caller never supplied. `persons[].hsaCoverage: {}` is the exception
+     * and is deliberately different: it is the documented way to state that the
+     * person held no high deductible health plan coverage.
+     */
     const spouseCoverageSupplied =
-      otherSpouseId !== undefined && (coupleCoverage.get(otherSpouseId)?.supplied ?? false);
+      otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
     if (
       marriedFiler &&
       (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
@@ -11203,11 +11508,53 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       months.some((tier) => tier === "self_only")
     ) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
           DiagnosticSeverity.ERROR,
           "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied. State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(5)(A)",
+        ),
+      );
+    }
+
+    /**
+     * The same question one step further out. A spouse who supplied coverage
+     * facts that contradict each other on the family question has not answered
+     * it either, so an owner with a self-only month is no better placed than if
+     * that spouse had said nothing. This is a sibling of the condition above
+     * rather than a reuse of it: the remedy differs, because the caller must
+     * reconcile two statements they already made instead of adding a missing
+     * one. It is also not the IRC 223(b)(5) sharing error, which reports a
+     * family limitation known to exist but not divisible; here whether the
+     * subsection applies at all is what is unknown, and the sharing path is
+     * never reached.
+     */
+    const otherSpouseFamilyStatus =
+      otherSpouseId === undefined ? undefined : familyStatusByPerson.get(otherSpouseId);
+    /**
+     * The months have to be the same months. IRC 223(b)(5)(A) recharacterizes a
+     * self-only month only where a spouse has family coverage in *that* month,
+     * so a spouse whose statements contradict each other in January leaves a
+     * December self-only limitation exactly as computable as it ever was.
+     */
+    const spouseCoverageAmbiguousOnFamily =
+      otherSpouseFamilyStatus !== undefined &&
+      months.some((tier, index) => tier === "self_only" && otherSpouseFamilyStatus[index] === "unknown");
+    if (
+      marriedFiler &&
+      (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
+      spouseCoverageAmbiguousOnFamily
+    ) {
+      indeterminate = true;
+      familyLimitIndeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+          DiagnosticSeverity.ERROR,
+          "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it. The other spouse's supplied coverage facts disagree about whether they have family coverage, so whether this subsection applies to this owner's self-only months cannot be determined. Reconcile that spouse's coverage facts; coverage is one fact about a person, so every statement of it must agree.",
           `persons.${ownerId}`,
           "IRC 223(b)(5)(A)",
         ),
@@ -11229,17 +11576,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
 
     const ownDeductible = owner.rules?.hdhpAnnualDeductible;
-    const deductibleFor = (tier: HsaCoverageTier): Money | null => {
-      if (tier === "family" && familySharingApplies && lowestCoupleDeductible !== null) {
-        return lowestCoupleDeductible;
+    let deductibleMissing = false;
+    const missingDeductibleSpouses = new Set<string>();
+    const deductibleFor = (tier: HsaCoverageTier, monthIndex: number): Money | null => {
+      if (tier === "family" && familySharingApplies) {
+        const resolved = familyDeductibleByMonth[monthIndex];
+        if (resolved.state === "known") return resolved.value;
+        if (resolved.state === "indeterminate") {
+          for (const personId of resolved.missingPersonIds) {
+            if (personId !== ownerId) missingDeductibleSpouses.add(personId);
+          }
+          return null;
+        }
       }
       return ownDeductible ?? null;
     };
-    let deductibleMissing = false;
-    const annualLimitFor = (tier: HsaCoverageTier): Money => {
+    const annualLimitFor = (tier: HsaCoverageTier, monthIndex: number): Money => {
       const statutory = parameters.annualContributionLimit[tier === "family" ? "family" : "selfOnly"];
       if (!parameters.contributionLimitCappedByHdhpAnnualDeductible) return statutory;
-      const deductible = deductibleFor(tier);
+      const deductible = deductibleFor(tier, monthIndex);
       if (deductible === null) {
         deductibleMissing = true;
         return statutory;
@@ -11247,14 +11602,30 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       return minMoney(deductible, statutory);
     };
 
-    const monthlyAnnualLimits = months.map((tier) => (tier === null ? null : annualLimitFor(tier)));
+    const monthlyAnnualLimits = months.map((tier, index) =>
+      tier === null ? null : annualLimitFor(tier, index),
+    );
     if (deductibleMissing) {
       indeterminate = true;
+      familyLimitIndeterminate = true;
+      // One diagnostic per owner, not one per affected month: the missing fact
+      // is a property of the person and their plan, not of each month it
+      // reaches. Where the gap is a spouse's, name them, because the input to
+      // supply lives on that spouse and not on this account.
+      const spouseNote =
+        missingDeductibleSpouses.size > 0
+          ? ` ${[...missingDeductibleSpouses]
+              .map(
+                (personId) =>
+                  `Spouse ${personId} stated family coverage but supplied no persons.${personId}.hsaCoverage.hdhpAnnualDeductible, which IRC 223(b)(5)(A) needs to identify the lowest family-plan deductible.`,
+              )
+              .join(" ")}`
+          : "";
       diagnostics.push(
         diagnostic(
           "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
           DiagnosticSeverity.ERROR,
-          `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.`,
+          `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.${spouseNote}`,
           `persons.${ownerId}`,
           "IRC 223(b)(2)",
         ),
@@ -11307,7 +11678,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         );
       } else {
         lastMonthRuleApplied = true;
-        const decemberAnnualLimit = annualLimitFor(decemberTier);
+        const decemberAnnualLimit = annualLimitFor(decemberTier, HSA_MONTHS_IN_YEAR - 1);
         appliedAnnualLimitByMonth = HSA_ALL_MONTHS.map(() => decemberAnnualLimit);
         proratedApplied = roundMoney(decemberAnnualLimit);
         familyPortionApplied = decemberTier === "family" ? decemberAnnualLimit : 0;
@@ -11334,6 +11705,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // refusal if that severity is ever softened. They are redundant on
         // purpose, so no mutation distinguishes them individually.
         indeterminate = true;
+        familyLimitIndeterminate = true;
         diagnostics.push(
           diagnostic(
             "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
@@ -11360,6 +11732,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       lastMonthRuleApplied,
       diagnostics,
       indeterminate,
+      familyLimitIndeterminate,
     });
   }
 
@@ -11402,6 +11775,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ? Math.max(...coupleMembersWithAccounts.map((personId) => reducedPortionsFor(personId)[0]))
     : null;
   const sharedFamilyLimit = rawSharedFamilyLimit === null ? null : roundMoney(rawSharedFamilyLimit);
+  /**
+   * True where any spouse who holds an HSA has an undeterminable limitation of
+   * their own, which makes the IRC 223(b)(5) aggregate built from those
+   * limitations undeterminable too.
+   */
+  const householdLimitIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.familyLimitIndeterminate === true,
+  );
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
   const explicitShareHolders = coupleMembersWithAccounts.filter(
@@ -11409,6 +11790,23 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   );
   const shareByOwner = new Map<string, number>();
   const sharingDiagnostics: Diagnostic[] = [];
+  if (familySharingApplies && householdLimitIndeterminate) {
+    // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
+    // divides it between them, so each share is a function of facts belonging to
+    // both. A spouse whose own coverage is coherent still cannot be told their
+    // share of a limitation the couple's facts do not fix. Nulling the pool
+    // alone was not enough: the pool went null while the accounts drawing on it
+    // stayed determinate and kept reporting a maximum they could never allocate.
+    sharingDiagnostics.push(
+      diagnostic(
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        DiagnosticSeverity.ERROR,
+        "IRC 223(b)(5) gives the spouses one family limitation to divide, so it is no more determinable than the coverage facts of either of them. Another spouse's health savings account coverage facts are missing or conflicting, so this account's share of that limitation cannot be stated either.",
+        "accounts",
+        "IRC 223(b)(5)",
+      ),
+    );
+  }
   if (familySharingApplies) {
     if (explicitShareHolders.length > 0) {
       if (explicitShareHolders.length !== coupleMembersWithAccounts.length) {
@@ -11501,7 +11899,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         id: `hsa223b5:${familyPoolKey}`,
         legalLimit:
           "IRC 223(b)(5) single family contribution limit divided between the spouses, plus their undivided self-only-month limitations",
-        limit: rawSharedFamilyLimit === null ? sharedFamilyLimit : roundMoney(rawSharedFamilyLimit + undividedSelfPortions),
+        // The one family limitation is built out of the spouses' own refigured
+        // limitations, so it is only as determinable as they are. Where a
+        // spouse's limitation could not be determined their portion falls back
+        // to a statutory amount the statute may not allow on its own -- for
+        // 2004-2006 IRC 223(b)(2) reaches the dollar amount only after
+        // comparing it with the plan's annual deductible -- and reporting the
+        // sum anyway would state a household ceiling on facts that do not
+        // support one. The per-owner IRC 223(b)(1) and 223(b)(3) pools already
+        // report null in that case; this pool now agrees with them.
+        limit: householdLimitIndeterminate
+          ? null
+          : rawSharedFamilyLimit === null
+            ? sharedFamilyLimit
+            : roundMoney(rawSharedFamilyLimit + undividedSelfPortions),
         used: 0,
       });
     }
@@ -11827,7 +12238,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
       familyLimitShare: share,
-      sharedFamilyContributionLimit: isSharingMember
+      // Null where the family limitation could not be determined, for the same
+      // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
+      // per owner, and reporting the uncompared statutory amount here would
+      // leave the ceiling the pool refuses to state still published one field
+      // away. The field is already declared nullable for the unrelated case of
+      // no family limit being shared at all.
+      sharedFamilyContributionLimit: isSharingMember && !householdLimitIndeterminate
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
         : null,
       archerMsaContributionsApplied: archerAmount,
