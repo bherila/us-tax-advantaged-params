@@ -10316,29 +10316,70 @@ final class Engine
     }
 
     /**
-     * Whether one person has family coverage in a month, read across every
-     * coverage statement supplied for them. IRC 223(b)(5)(A) asks that question
-     * month by month, so the answer is twelve answers and not one: statements
-     * that contradict each other in January still agree about December, and a
-     * December limitation stays computable.
+     * What a person's coverage was in a month, read across every statement made
+     * about them. Two projections are needed because two different questions
+     * are asked of the same statements:
      *
-     * A statement carrying no coverage facts at all is not silence about the
-     * question: persons[].hsaCoverage of {} is how the input records that the
-     * person held no high deductible health plan coverage, so it answers "not
-     * family" for every month.
+     *  - the resolved slot ('none'|'self_only'|'family'|'unknown') decides the
+     *    *amount* -- eligibility, the family portion, and the undivided
+     *    self-only portion added to the IRC 223(b)(5) household ceiling. A
+     *    disagreement between 'self_only' and no coverage gives different self
+     *    portions, so it is 'unknown' here.
+     *  - the family presence ('family'|'not_family'|'unknown') decides IRC
+     *    223(b)(5)(A) *applicability*. That same disagreement is 'not_family'
+     *    either way, so the other spouse's answer stays knowable.
+     *
+     * A variant whose 'months' is null stated nothing usable and does not vote.
      *
      * @param list<array<string,mixed>> $variants
      * @return list<string>
      */
-    private static function familyCoverageStatusFor(array $variants): array
+    private static function resolvedCoverageSlotsFor(array $variants): array
     {
         $vectors = [];
         foreach ($variants as $variant) {
-            $vectors[] = self::resolveHsaMonths($variant)
-                ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+            if ($variant['months'] !== null) {
+                $vectors[] = $variant['months'];
+            }
         }
-        $status = [];
+        // No usable statement is unknown, stated explicitly rather than left to
+        // a vacuous answer over an empty list.
+        if (count($vectors) === 0) {
+            return array_fill(0, self::HSA_MONTHS_IN_YEAR, 'unknown');
+        }
+        $slots = [];
         for ($index = 0; $index < self::HSA_MONTHS_IN_YEAR; $index += 1) {
+            $seen = [];
+            foreach ($vectors as $vector) {
+                $seen[($vector[$index] ?? null) === null ? 'none' : (string) $vector[$index]] = true;
+            }
+            $slots[] = count($seen) > 1 ? 'unknown' : (string) array_key_first($seen);
+        }
+        return $slots;
+    }
+
+    /**
+     * @param list<string> $slots
+     * @param list<array<string,mixed>> $variants
+     * @return list<string>
+     */
+    private static function familyPresenceFor(array $slots, array $variants): array
+    {
+        $vectors = [];
+        foreach ($variants as $variant) {
+            if ($variant['months'] !== null) {
+                $vectors[] = $variant['months'];
+            }
+        }
+        if (count($vectors) === 0) {
+            return array_fill(0, self::HSA_MONTHS_IN_YEAR, 'unknown');
+        }
+        $presence = [];
+        for ($index = 0; $index < self::HSA_MONTHS_IN_YEAR; $index += 1) {
+            if ($slots[$index] !== 'unknown') {
+                $presence[] = $slots[$index] === 'family' ? 'family' : 'not_family';
+                continue;
+            }
             $family = false;
             $notFamily = false;
             foreach ($vectors as $vector) {
@@ -10348,9 +10389,23 @@ final class Engine
                     $notFamily = true;
                 }
             }
-            $status[] = $family && $notFamily ? 'unknown' : ($family ? 'family' : 'not_family');
+            $presence[] = $family && $notFamily ? 'unknown' : ($family ? 'family' : 'not_family');
         }
-        return $status;
+        return $presence;
+    }
+
+    /**
+     * True when every supplied statement gives the same value for one field.
+     *
+     * @param list<mixed> $values
+     */
+    private static function unanimousField(array $values): bool
+    {
+        $seen = [];
+        foreach ($values as $value) {
+            $seen[(string) json_encode($value ?? null)] = true;
+        }
+        return count($seen) <= 1;
     }
 
     /** Twelve coverage slots, or null when no coverage facts were supplied at all.
@@ -11596,13 +11651,30 @@ final class Engine
              * parallel branch: the person-versus-account contradiction is then the
              * ordinary disagreement, read by the same projection.
              */
-            $coverageVariants = $accountVariants;
-            if (is_array($declared) && !array_key_exists((string) json_encode($declared), $seenSignatures)) {
-                $coverageVariants[] = $declared;
-            }
-            $shareVotes = [];
+            $coverageVariants = [];
             foreach ($accountVariants as $variant) {
-                $shareVotes[(string) json_encode($variant['familyLimitShare'] ?? null)] = true;
+                $coverageVariants[] = [
+                    'source' => 'account',
+                    'coverage' => $variant,
+                    'months' => self::resolveHsaMonths($variant),
+                ];
+            }
+            if (is_array($declared) && !array_key_exists((string) json_encode($declared), $seenSignatures)) {
+                $coverageVariants[] = [
+                    'source' => 'person',
+                    'coverage' => $declared,
+                    // The one place an empty object is an answer:
+                    // persons[].hsaCoverage of {} records that this person held
+                    // no high deductible health plan coverage.
+                    'months' => self::resolveHsaMonths($declared)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                ];
+            }
+            $shareValues = [];
+            $lastMonthRuleValues = [];
+            foreach ($accountVariants as $variant) {
+                $shareValues[] = $variant['familyLimitShare'] ?? null;
+                $lastMonthRuleValues[] = $variant['useLastMonthRule'] ?? null;
             }
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
@@ -11620,11 +11692,12 @@ final class Engine
                  */
                 'coverageVariants' => $coverageVariants,
                 /**
-                 * persons[].hsaCoverage cannot carry a share, so it does not vote
-                 * here; only the person's own accounts can disagree about the IRC
-                 * 223(b)(5)(B)(ii) division they record.
+                 * persons[].hsaCoverage carries neither field, so it does not vote
+                 * on either; only the person's own accounts can disagree about the
+                 * IRC 223(b)(5)(B)(ii) division or the IRC 223(b)(8) election.
                  */
-                'familyLimitShareConflict' => count($shareVotes) > 1,
+                'familyLimitShareConflict' => !self::unanimousField($shareValues),
+                'useLastMonthRuleConflict' => !self::unanimousField($lastMonthRuleValues),
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
         }
@@ -11693,6 +11766,8 @@ final class Engine
          * here; a person who stated nothing at all is absent, which is the case
          * HSA_SPOUSE_COVERAGE_FACTS_REQUIRED already reports.
          */
+        $coverageVariantsByPerson = [];
+        $coverageSlotsByPerson = [];
         $familyStatusByPerson = [];
         $statusPersonIds = [];
         foreach ($ownerIds as $personId) {
@@ -11704,11 +11779,29 @@ final class Engine
         foreach (array_keys($statusPersonIds) as $personId) {
             $declaredCoverage = $context['persons'][$personId]['hsaCoverage'] ?? null;
             $variants = $facts[$personId]['coverageVariants'] ?? [];
-            if (count($variants) === 0) {
-                $variants = is_array($declaredCoverage) ? [$declaredCoverage] : [];
+            if (count($variants) === 0 && is_array($declaredCoverage)) {
+                $variants = [[
+                    'source' => 'person',
+                    'coverage' => $declaredCoverage,
+                    'months' => self::resolveHsaMonths($declaredCoverage)
+                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                ]];
             }
-            if (count($variants) > 0) {
-                $familyStatusByPerson[$personId] = self::familyCoverageStatusFor($variants);
+            $coverageVariantsByPerson[$personId] = $variants;
+            // A person every one of whose statements is unusable has stated
+            // nothing, so no projection is recorded and the absent-facts
+            // diagnostic reports it.
+            $anyUsable = false;
+            foreach ($variants as $variant) {
+                if ($variant['months'] !== null) {
+                    $anyUsable = true;
+                    break;
+                }
+            }
+            if ($anyUsable) {
+                $slots = self::resolvedCoverageSlotsFor($variants);
+                $coverageSlotsByPerson[$personId] = $slots;
+                $familyStatusByPerson[$personId] = self::familyPresenceFor($slots, $variants);
             }
         }
 
@@ -11839,39 +11932,54 @@ final class Engine
 
             /*
              * Does this owner's disagreement actually reach the couple's IRC
-             * 223(b)(5) limitation? Only three operands of it can be stated
-             * inconsistently:
+             * 223(b)(5) ceiling? That ceiling is the divided family limitation
+             * *plus* the spouses' undivided self-only portions, so the question is
+             * which inputs can change familyPortionApplied, selfPortionApplied or
+             * the division. HsaRulesInput is a closed surface of eight fields, so
+             * the answer is enumerable rather than guessable -- an earlier attempt
+             * listed only the operands of the divided family amount and let a
+             * self-only month, a self-only deductible and the IRC 223(b)(8)
+             * election through, each of which then fixed the ceiling from whichever
+             * account happened to be listed first:
              *
-             *  - which months are family coverage, which decides both whether the
-             *    subsection applies and how much of each spouse's refigured amount
-             *    is divided;
-             *  - the plan's annual deductible, but only in 2004-2006, when IRC
-             *    223(b)(2) capped each month by it, and only for a person who has
-             *    family coverage, since IRC 223(b)(5)(A) reaches the lowest
-             *    deductible only where the spouses each have family coverage under
-             *    different plans; and
-             *  - the IRC 223(b)(5)(B)(ii) division itself.
+             *   coverageTier, eligibleMonths, monthlyCoverage  reach it: tier and
+             *       months of both portions.
+             *   hdhpAnnualDeductible  reaches it in 2004-2006 only, when IRC
+             *       223(b)(2) capped each covered month by it -- family months
+             *       through the IRC 223(b)(5)(A) lowest-deductible comparison, and
+             *       self-only months through the undivided self portion, which is
+             *       why no family month is required for it to matter.
+             *   useLastMonthRule  reaches it: IRC 223(b)(8) replaces the prorated
+             *       amount with December's annualized one.
+             *   familyLimitShare  reaches it: the IRC 223(b)(5)(B)(ii) division.
+             *   testingPeriodSatisfied, testingPeriodFailureByDeathOrDisability do
+             *       not. They are read only into the reported testing-period
+             *       obligation, never into either portion, so a disagreement about
+             *       a future compliance fact leaves this year's ceiling knowable.
              *
-             * Anything else the statements disagree about -- a self-only deductible,
-             * a deductible in a year with no cap, the last-month-rule election --
-             * leaves the couple's limitation exactly as knowable as it was. Deriving
-             * family uncertainty from the bare conflict instead made a spouse's
-             * irrelevant deductible disagreement null the other spouse's whole
-             * family pool, which is the same overbreadth as reading a missing birth
-             * year as family uncertainty.
+             * A ninth field must be classified here rather than defaulting to inert.
              */
-            $ownerFamilyStatus = $familyStatusByPerson[$ownerId] ?? null;
-            $deductibleVotes = [];
-            foreach ($owner['coverageVariants'] as $variant) {
-                $deductibleVotes[(string) json_encode($variant['hdhpAnnualDeductible'] ?? null)] = true;
+            $ownerSlots = $coverageSlotsByPerson[$ownerId] ?? null;
+            $deductibleValues = [];
+            foreach ($coverageVariantsByPerson[$ownerId] ?? [] as $variant) {
+                $deductibleValues[] = $variant['coverage']['hdhpAnnualDeductible'] ?? null;
             }
-            $familyOperandConflict = ($ownerFamilyStatus !== null && in_array('unknown', $ownerFamilyStatus, true))
+            $deductibleUnanimous = self::unanimousField($deductibleValues);
+            $ownerHasCoveredMonth = false;
+            foreach ($ownerSlots ?? [] as $slot) {
+                if ($slot !== 'none') {
+                    $ownerHasCoveredMonth = true;
+                    break;
+                }
+            }
+            $limitInputsIndeterminate = $ownerSlots === null
+                || in_array('unknown', $ownerSlots, true)
                 || ($parameters['contributionLimitCappedByHdhpAnnualDeductible']
-                    && $ownerFamilyStatus !== null
-                    && in_array('family', $ownerFamilyStatus, true)
-                    && count($deductibleVotes) > 1)
+                    && !$deductibleUnanimous
+                    && $ownerHasCoveredMonth)
+                || $owner['useLastMonthRuleConflict']
                 || $owner['familyLimitShareConflict'];
-            if ($familyOperandConflict) {
+            if ($limitInputsIndeterminate) {
                 $familyLimitIndeterminate = true;
             }
 
@@ -11937,8 +12045,19 @@ final class Engine
                 }
             }
             $ownerIsSpouseOfCouple = $couple !== null && in_array($ownerId, $couple, true);
+            /*
+             * Supplied has to mean *usable*. An account whose planRules.hsa carries
+             * no tier and no monthlyCoverage has not stated this person's coverage,
+             * even though the property is present, so the other spouse is no better
+             * placed than if nothing had been said. Reading the empty object as an
+             * assertion of no family coverage would answer the IRC 223(b)(5)(A)
+             * question from a fact the caller never supplied. persons[].hsaCoverage
+             * of {} is the exception and is deliberately different: it is the
+             * documented way to state that the person held no high deductible
+             * health plan coverage.
+             */
             $spouseCoverageSupplied = $otherSpouseId !== null
-                && ($coupleCoverage[$otherSpouseId]['supplied'] ?? false);
+                && array_key_exists($otherSpouseId, $familyStatusByPerson);
             $ownerHasSelfOnlyMonth = in_array('self_only', $months, true);
             if (
                 $marriedFiler

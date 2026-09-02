@@ -375,7 +375,23 @@ function randomScenario() {
   if (personCount === 2 && chance(0.14)) {
     const conflictOwnerId = pick(persons).id;
     const monthsFor = () => HSA_FUZZ_MONTHS.filter(() => chance(0.4));
-    const conflictShape = pick(["tier", "tier", "monthly", "monthly", "deductible_only", "share_only"]);
+    const conflictShape = pick([
+      "tier",
+      "monthly",
+      "deductible_only",
+      "share_only",
+      // A disagreement about *which months are covered at all* leaves the
+      // family question answered the same way by both statements but changes
+      // the undivided self-only portion that is added to the IRC 223(b)(5)
+      // household ceiling.
+      "eligible_months_only",
+      // Neither field is coverage, and only one of the two reaches the ceiling.
+      "last_month_rule",
+      "testing_period",
+      // An account statement carrying no usable coverage fact, which must not
+      // read as an assertion that the person had none.
+      "empty_account",
+    ]);
     const sharedTier = pick(COVERAGE_TIERS);
     let pairRules;
     if (conflictShape === "monthly") {
@@ -396,6 +412,32 @@ function randomScenario() {
       pairRules = [
         { coverageTier: sharedTier, familyLimitShare: 0.5 },
         { coverageTier: sharedTier, familyLimitShare: chance(0.5) ? 0.5 : 0.25 },
+      ];
+    } else if (conflictShape === "eligible_months_only") {
+      pairRules = [
+        { coverageTier: sharedTier, eligibleMonths: monthsFor() },
+        { coverageTier: sharedTier, eligibleMonths: monthsFor() },
+      ];
+    } else if (conflictShape === "last_month_rule") {
+      const shared = { coverageTier: sharedTier, eligibleMonths: [12] };
+      pairRules = [
+        { ...shared, useLastMonthRule: true, ...(chance(0.6) ? { testingPeriodSatisfied: chance(0.5) } : {}) },
+        { ...shared, useLastMonthRule: chance(0.75) ? false : true },
+      ];
+    } else if (conflictShape === "testing_period") {
+      const shared = { coverageTier: sharedTier, eligibleMonths: [12], useLastMonthRule: true };
+      pairRules = [
+        { ...shared, testingPeriodSatisfied: true },
+        {
+          ...shared,
+          ...(chance(0.75) ? { testingPeriodSatisfied: false } : {}),
+          ...(chance(0.3) ? { testingPeriodFailureByDeathOrDisability: true } : {}),
+        },
+      ];
+    } else if (conflictShape === "empty_account") {
+      pairRules = [
+        {},
+        chance(0.5) ? { coverageTier: sharedTier } : {},
       ];
     } else {
       pairRules = [
@@ -429,9 +471,13 @@ function randomScenario() {
     // person-versus-account contradiction has to be generated too.
     if (chance(0.2)) {
       const target = pick(persons);
-      target.hsaCoverage = chance(0.5)
-        ? { coverageTier: pick(COVERAGE_TIERS) }
-        : { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) };
+      target.hsaCoverage = chance(0.2)
+        // The documented statement of no high deductible health plan coverage,
+        // which must stay distinguishable from an account that states nothing.
+        ? {}
+        : chance(0.5)
+          ? { coverageTier: pick(COVERAGE_TIERS) }
+          : { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) };
     }
   }
 
