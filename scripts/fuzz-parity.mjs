@@ -319,11 +319,18 @@ function randomPerson(id, role, taxYear) {
 function randomScenario() {
   const hsaHeavy = chance(0.35);
   const fsaHeavy = chance(0.3);
+  // A pension-linked emergency savings account exists only for plan years
+  // beginning after December 31, 2023, and its IRC 402A(e)(3)(A)(i) figure has
+  // taken two values so far, so the injection below needs a year range that
+  // straddles the availability boundary and both amounts.
+  const plesaHeavy = !hsaHeavy && !fsaHeavy && chance(0.35);
   const taxYear = hsaHeavy
     ? integer(2002, 2028)
     : fsaHeavy
       ? pick([integer(1979, 1990), integer(2009, 2028)])
-      : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
+      : plesaHeavy
+        ? integer(2023, 2028)
+        : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
   const filingStatus = pick(FILING_STATUSES);
   const personCount = chance(0.55) ? 2 : 1;
   const persons = [randomPerson("t", "taxpayer", taxYear)];
@@ -479,6 +486,81 @@ function randomScenario() {
           ? { coverageTier: pick(COVERAGE_TIERS) }
           : { monthlyCoverage: monthsFor().map((month) => ({ month, coverage: pick(COVERAGE_TIERS) })) };
     }
+  }
+
+  /**
+   * A pension-linked emergency savings account beside another account of the
+   * same host plan: same owner, same employer, same annual-additions group.
+   *
+   * IRC 402A(e)(3)(A) caps the account's own balance while the host's IRC 402(g)
+   * and IRC 414(v) pools are shared with everything else in the plan, so the
+   * interesting states are the ones where one of those runs out before the other
+   * — and an isolated account, which is what the ordinary generator almost
+   * always produces, never reaches them: its $2,500 or $2,600 of room sits far
+   * below an untouched $23,500 base limit, so the base allocation always covers
+   * it and neither the catch-up path nor the exhausted-host path is ever taken.
+   *
+   * Varied independently, because each turns a different part of the rule:
+   *
+   *  - the host's recognized compensation, biased to just below and just above
+   *    the IRC 402(g)(1) limit, so the base pool is sometimes exhausted before
+   *    the account is reached and sometimes not, and so the host does or does not
+   *    consume the shared IRC 414(v) pool first;
+   *  - the owner's age, including its absence, since a birth year is required
+   *    only where a catch-up could reach the remaining room;
+   *  - the supplied balance, from zero through the cap to above it, and its
+   *    absence, which is a different answer from a zero balance;
+   *  - a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount, which must bind the
+   *    base and the catch-up together rather than either alone;
+   *  - existing contributions on the account, which seed the host's annual pools
+   *    while the balance seeds the account-local one, so a double subtraction
+   *    shows up as a divergence;
+   *  - and array position independently of `priority`.
+   */
+  if (plesaHeavy || chance(0.05)) {
+    const owner = pick(persons);
+    if (chance(0.75)) owner.birthYear = taxYear - pick([35, 45, 49, 50, 56, 61, 64]);
+    else delete owner.birthYear;
+    const employerId = pick(["e1", "e2"]);
+    const groupId = pick(["g1", "g2"]);
+    const hostType = pick([
+      "traditional_401k", "roth_401k", "solo_401k", "traditional_403b", "safe_harbor_403b_deferral_only",
+    ]);
+    // Half the time the host is arranged to have spent the shared IRC 402(g)
+    // pool without touching the shared IRC 414(v) one, by recognizing exactly
+    // the compensation it has already deferred. That is the state the reported
+    // defect lived in, and leaving it to chance produced it a handful of times
+    // in thousands of cases.
+    const exhaustHost = chance(0.5);
+    const deferred = pick([23000, 23500, 24500]);
+    const hostRules = {
+      annualAdditionsGroupId: groupId,
+      planCompensation: exhaustHost
+        ? deferred
+        : pick([0, 1000, 15500, 23000, 23500, 24500, 60000, 350000]),
+      expectedEmployerContribution: chance(0.6) ? 0 : money(),
+    };
+    if (chance(0.3)) hostRules.planDocumentEmployeeDeferralLimit = money();
+    const plesaRules = { annualAdditionsGroupId: groupId };
+    if (chance(0.85)) {
+      plesaRules.pensionLinkedEmergencySavingsParticipantContributionBalance =
+        pick([0, 1, 200, 1000, 2500, 2600, 5000, money()]);
+    }
+    if (chance(0.25)) plesaRules.planDocumentEmployeeDeferralLimit = pick([0, 500, 1000, 2500, money()]);
+    if (chance(0.2)) plesaRules.planCompensation = money();
+    const pair = [
+      { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
+      { id: "p1", ownerId: owner.id, type: "pension_linked_emergency_savings", employerId, planRules: plesaRules },
+    ];
+    if (chance(0.3)) pair[1].existingContributions = randomExisting();
+    if (exhaustHost) pair[0].existingContributions = { employeePreTaxDeferral: deferred };
+    else if (chance(0.3)) pair[0].existingContributions = randomExisting();
+    if (chance(0.5)) pair.reverse();
+    pair.forEach((account) => {
+      if (chance(0.4)) account.priority = integer(1, 200);
+      accounts.splice(integer(0, accounts.length), 0, account);
+    });
+    if (chance(0.3)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
   }
 
   const scenario = { taxYear, filingStatus, persons, accounts };
