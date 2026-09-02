@@ -1,10 +1,10 @@
 # Validation Report
 
 - **Package:** `us-tax-advantaged-params@0.3.0`
-- **Run:** 2026-09-02T07:25:51.467Z through 2026-09-02T07:25:55.058Z
+- **Run:** 2026-09-02T08:01:14.679Z through 2026-09-02T08:01:18.509Z
 - **Overall:** PASS
 - **Tax years:** 1975-2026
-- **Shared vectors:** 205
+- **Shared vectors:** 214
 - **Node:** v22.22.2
 - **npm:** 10.9.7
 - **TypeScript:** Version 7.0.2
@@ -15,23 +15,23 @@
 
 | Check | Result | Exit | Duration |
 |---|---:|---:|---:|
-| Canonical parameter and vector validation | PASS | 0 | 55 ms |
-| Generated native parameter blocks | PASS | 0 | 59 ms |
-| Source manifests and publication files | PASS | 0 | 56 ms |
-| Strict TypeScript typecheck | PASS | 0 | 158 ms |
-| TypeScript unit and conformance tests | PASS | 0 | 764 ms |
-| PHP engine syntax | PASS | 0 | 37 ms |
-| PHP unit-test syntax | PASS | 0 | 27 ms |
-| PHP conformance-test syntax | PASS | 0 | 27 ms |
-| PHP parity runner syntax | PASS | 0 | 27 ms |
-| PHP unit tests | PASS | 0 | 38 ms |
-| PHP conformance vectors | PASS | 0 | 57 ms |
-| ESM, CommonJS, and declaration build | PASS | 0 | 1131 ms |
-| ESM/CommonJS smoke imports | PASS | 0 | 58 ms |
-| Complete TypeScript/PHP output parity | PASS | 0 | 204 ms |
-| Built-package manifest validation | PASS | 0 | 62 ms |
-| npm package dry run | PASS | 0 | 411 ms |
-| Composer manifest validation | PASS | 0 | 150 ms |
+| Canonical parameter and vector validation | PASS | 0 | 66 ms |
+| Generated native parameter blocks | PASS | 0 | 68 ms |
+| Source manifests and publication files | PASS | 0 | 63 ms |
+| Strict TypeScript typecheck | PASS | 0 | 194 ms |
+| TypeScript unit and conformance tests | PASS | 0 | 841 ms |
+| PHP engine syntax | PASS | 0 | 40 ms |
+| PHP unit-test syntax | PASS | 0 | 31 ms |
+| PHP conformance-test syntax | PASS | 0 | 32 ms |
+| PHP parity runner syntax | PASS | 0 | 29 ms |
+| PHP unit tests | PASS | 0 | 45 ms |
+| PHP conformance vectors | PASS | 0 | 70 ms |
+| ESM, CommonJS, and declaration build | PASS | 0 | 1178 ms |
+| ESM/CommonJS smoke imports | PASS | 0 | 68 ms |
+| Complete TypeScript/PHP output parity | PASS | 0 | 200 ms |
+| Built-package manifest validation | PASS | 0 | 64 ms |
+| npm package dry run | PASS | 0 | 430 ms |
+| Composer manifest validation | PASS | 0 | 148 ms |
 
 ## Runtime qualification note
 
@@ -46,7 +46,7 @@ Command: `node scripts/validate-data.mjs`
 **stdout**
 
 ```text
-Canonical data validation passed: 52 contiguous retirement tax years, 23 contiguous HSA tax years, 45 contiguous FSA tax years, 70 sources, 205 conformance vectors.
+Canonical data validation passed: 52 contiguous retirement tax years, 23 contiguous HSA tax years, 45 contiguous FSA tax years, 70 sources, 214 conformance vectors.
 ```
 
 **stderr**
@@ -110,1518 +110,1572 @@ TAP version 13
 # Subtest: supports the first general IRA year through the generated year without extrapolation
 ok 1 - supports the first general IRA year through the generated year without extrapolation
   ---
-  duration_ms: 3.783955
+  duration_ms: 4.484855
   type: 'test'
   ...
 # Subtest: normalizes common filing-status and account aliases
 ok 2 - normalizes common filing-status and account aliases
   ---
-  duration_ms: 0.498844
+  duration_ms: 0.659853
   type: 'test'
   ...
 # Subtest: 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity
 ok 3 - 2026 ordinary 401(k) distinguishes employee maximum from plan-term-dependent 415(c) capacity
   ---
-  duration_ms: 14.870926
+  duration_ms: 14.705378
   type: 'test'
   ...
 # Subtest: 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold
 ok 4 - 2026 age-60-to-63 catch-up is forced to Roth above the prior-year wage threshold
   ---
-  duration_ms: 0.528692
+  duration_ms: 0.556589
   type: 'test'
   ...
 # Subtest: high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up
 ok 5 - high-wage participant receives no catch-up when supplied plan terms omit Roth catch-up
   ---
-  duration_ms: 0.486958
+  duration_ms: 0.525365
   type: 'test'
   ...
 # Subtest: 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method
 ok 6 - 2026 Roth IRA MFJ phase-out is linear and rounded under the IRS method
   ---
-  duration_ms: 0.720904
+  duration_ms: 0.784359
   type: 'test'
   ...
 # Subtest: 2026 active-participant traditional IRA deduction phases out while total contribution remains available
 ok 7 - 2026 active-participant traditional IRA deduction phases out while total contribution remains available
   ---
-  duration_ms: 0.883136
+  duration_ms: 0.927522
   type: 'test'
   ...
 # Subtest: traditional and Roth IRAs share one owner-level contribution pool
 ok 8 - traditional and Roth IRAs share one owner-level contribution pool
   ---
-  duration_ms: 0.542571
+  duration_ms: 0.481608
   type: 'test'
   ...
 # Subtest: reports the quantified amount of an existing contribution above an account ceiling
 ok 9 - reports the quantified amount of an existing contribution above an account ceiling
   ---
-  duration_ms: 0.620601
+  duration_ms: 0.603638
   type: 'test'
   ...
 # Subtest: 401(k) and 457(b) employee limits are separate
 ok 10 - 401(k) and 457(b) employee limits are separate
   ---
-  duration_ms: 1.092383
+  duration_ms: 1.133069
   type: 'test'
   ...
 # Subtest: two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups
 ok 11 - two 401(k) plans share the owner-level 402(g) limit but retain separate employer 415(c) groups
   ---
-  duration_ms: 0.683967
+  duration_ms: 0.723584
   type: 'test'
   ...
 # Subtest: mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount
 ok 12 - mega-backdoor-capable 401(k) fills remaining 415(c) space after deferral and employer amount
   ---
-  duration_ms: 0.371817
+  duration_ms: 0.398426
   type: 'test'
   ...
 # Subtest: self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space
 ok 13 - self-employed solo 401(k) uses the 20% equivalent employer rate and can fill after-tax space
   ---
-  duration_ms: 0.415247
+  duration_ms: 0.460275
   type: 'test'
   ...
 # Subtest: self-employed SEP maximum uses the reduced 20% net-earnings rate
 ok 14 - self-employed SEP maximum uses the reduced 20% net-earnings rate
   ---
-  duration_ms: 0.390296
+  duration_ms: 0.381169
   type: 'test'
   ...
 # Subtest: 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up
 ok 15 - 403(b) 15-year catch-up is applied after the ordinary 402(g) amount and before age catch-up
   ---
-  duration_ms: 0.611702
+  duration_ms: 0.628274
   type: 'test'
   ...
 # Subtest: 457(b) last-three-years catch-up is selected when larger than the age catch-up
 ok 16 - 457(b) last-three-years catch-up is selected when larger than the age catch-up
   ---
-  duration_ms: 0.336752
+  duration_ms: 0.358986
   type: 'test'
   ...
 # Subtest: 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values
 ok 17 - 1994 employer-plan limits use historical 402(g), 415(c), and compensation-fraction values
   ---
-  duration_ms: 0.260308
+  duration_ms: 0.315236
   type: 'test'
   ...
 # Subtest: pre-1987 401(k) maximum is explicitly indeterminate rather than invented
 ok 18 - pre-1987 401(k) maximum is explicitly indeterminate rather than invented
   ---
-  duration_ms: 0.255533
+  duration_ms: 0.367076
   type: 'test'
   ...
 # Subtest: 1981 active employer-plan participant is ineligible for the modeled IRA contribution
 ok 19 - 1981 active employer-plan participant is ineligible for the modeled IRA contribution
   ---
-  duration_ms: 0.374852
+  duration_ms: 0.329112
   type: 'test'
   ...
 # Subtest: 1982 one-earner spousal IRA allows $2,000 to the spousal account when the worker contributes nothing
 ok 20 - 1982 one-earner spousal IRA allows $2,000 to the spousal account when the worker contributes nothing
   ---
-  duration_ms: 0.252696
+  duration_ms: 0.267099
   type: 'test'
   ...
 # Subtest: 1982 one-earner spousal IRA is limited to the $2,250 household residue after the worker's own $2,000
 ok 21 - 1982 one-earner spousal IRA is limited to the $2,250 household residue after the worker's own $2,000
   ---
-  duration_ms: 0.294066
+  duration_ms: 0.386163
   type: 'test'
   ...
 # Subtest: pre-2020 traditional IRA age-70½ restriction is enforced
 ok 22 - pre-2020 traditional IRA age-70½ restriction is enforced
   ---
-  duration_ms: 0.405094
+  duration_ms: 0.434361
   type: 'test'
   ...
 # Subtest: IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits
 ok 23 - IRA-to-Roth conversion applies aggregate Form 8606 pro-rata basis and does not consume contribution limits
   ---
-  duration_ms: 0.743477
+  duration_ms: 0.823535
   type: 'test'
   ...
 # Subtest: in-plan Roth rollover reports only the pre-tax portion as taxable
 ok 24 - in-plan Roth rollover reports only the pre-tax portion as taxable
   ---
-  duration_ms: 0.502205
+  duration_ms: 0.505184
   type: 'test'
   ...
 # Subtest: defined-benefit and cash-balance contributions remain actuarially indeterminate
 ok 25 - defined-benefit and cash-balance contributions remain actuarially indeterminate
   ---
-  duration_ms: 0.421743
+  duration_ms: 0.320406
   type: 'test'
   ...
 # Subtest: 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied
 ok 26 - 2026 enhanced SIMPLE limit and age-60-to-63 catch-up are both applied
   ---
-  duration_ms: 0.447944
+  duration_ms: 0.440256
   type: 'test'
   ...
 # Subtest: self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions
 ok 27 - self-employed plan deduction includes elective deferral and employer contribution but excludes IRA deductions
   ---
-  duration_ms: 0.501251
+  duration_ms: 0.482567
   type: 'test'
   ...
 # Subtest: pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling
 ok 28 - pre-2010 MFS taxpayer living apart may convert when under the historical MAGI ceiling
   ---
-  duration_ms: 0.293062
+  duration_ms: 0.302186
   type: 'test'
   ...
 # Subtest: additional SIMPLE nonelective contribution is capped by 10% of recognized compensation
 ok 29 - additional SIMPLE nonelective contribution is capped by 10% of recognized compensation
   ---
-  duration_ms: 0.282103
+  duration_ms: 0.342385
   type: 'test'
   ...
 # Subtest: SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded
 ok 30 - SIMPLE IRA catch-up remains pre-tax for a high-wage participant because IRC 408(p) is excluded
   ---
-  duration_ms: 0.261695
+  duration_ms: 0.24656
   type: 'test'
   ...
 # Subtest: multiple 403(b) accounts share one owner-level 15-year catch-up pool
 ok 31 - multiple 403(b) accounts share one owner-level 15-year catch-up pool
   ---
-  duration_ms: 0.927217
+  duration_ms: 1.456607
   type: 'test'
   ...
 # Subtest: Roth employer contributions are rejected before their 2023 effective year
 ok 32 - Roth employer contributions are rejected before their 2023 effective year
   ---
-  duration_ms: 0.338632
+  duration_ms: 0.501055
   type: 'test'
   ...
 # Subtest: multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation
 ok 33 - multiple IRA conversions allocate aggregate pro-rata basis without penny over-allocation
   ---
-  duration_ms: 0.368565
+  duration_ms: 0.382149
   type: 'test'
   ...
 # Subtest: duplicate taxpayer or spouse roles are rejected
 ok 34 - duplicate taxpayer or spouse roles are rejected
   ---
-  duration_ms: 0.244677
+  duration_ms: 0.329991
   type: 'test'
   ...
 # Subtest: ambiguous M alias is accepted but produces a diagnostic
 ok 35 - ambiguous M alias is accepted but produces a diagnostic
   ---
-  duration_ms: 0.351709
+  duration_ms: 0.347376
   type: 'test'
   ...
 # Subtest: 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate
 ok 36 - 1997 common-law SEP applies the 401(a)(17) compensation ceiling before the 15% rate
   ---
-  duration_ms: 0.255289
+  duration_ms: 0.275671
   type: 'test'
   ...
 # Subtest: 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling
 ok 37 - 1997 employer nonelective formula applies the 401(a)(17) compensation ceiling
   ---
-  duration_ms: 0.40728
+  duration_ms: 0.461596
   type: 'test'
   ...
 # Subtest: 1997 employer match uses recognized compensation without capping employee elective deferrals
 ok 38 - 1997 employer match uses recognized compensation without capping employee elective deferrals
   ---
-  duration_ms: 0.26781
+  duration_ms: 0.310138
   type: 'test'
   ...
 # Subtest: 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings
 ok 39 - 1997 self-employed SEP applies both the reduced-rate and recognized-compensation worksheet ceilings
   ---
-  duration_ms: 0.168568
+  duration_ms: 0.227624
   type: 'test'
   ...
 # Subtest: 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings
 ok 40 - 1997 self-employed qualified-plan formula applies both reduced-rate and recognized-compensation ceilings
   ---
-  duration_ms: 0.149504
+  duration_ms: 0.283061
   type: 'test'
   ...
 # Subtest: exposes the IRC 125 and IRC 129 parameter table without extrapolating it
 ok 41 - exposes the IRC 125 and IRC 129 parameter table without extrapolating it
   ---
-  duration_ms: 0.331243
+  duration_ms: 0.260204
   type: 'test'
   ...
 # Subtest: rejects a bare FSA account type but accepts each unambiguous spelling
 ok 42 - rejects a bare FSA account type but accepts each unambiguous spelling
   ---
-  duration_ms: 0.123519
+  duration_ms: 0.14993
   type: 'test'
   ...
 # Subtest: validates health FSA plan facts before calculating anything
 ok 43 - validates health FSA plan facts before calculating anything
   ---
-  duration_ms: 0.514989
+  duration_ms: 0.739788
   type: 'test'
   ...
 # Subtest: the health FSA builder reaches every IRC 125(i) plan fact
 ok 44 - the health FSA builder reaches every IRC 125(i) plan fact
   ---
-  duration_ms: 0.547486
+  duration_ms: 0.631963
   type: 'test'
   ...
 # Subtest: validates IRC 129 earned income facts before calculating anything
 ok 45 - validates IRC 129 earned income facts before calculating anything
   ---
-  duration_ms: 0.453568
+  duration_ms: 0.479529
   type: 'test'
   ...
 # Subtest: the dependent care builder reaches the IRC 129(b) earned income facts
 ok 46 - the dependent care builder reaches the IRC 129(b) earned income facts
   ---
-  duration_ms: 0.507303
+  duration_ms: 0.566914
   type: 'test'
   ...
 # Subtest: conformance: ordinary 2026 401k plan-term capacity
 ok 47 - conformance: ordinary 2026 401k plan-term capacity
   ---
-  duration_ms: 19.220086
+  duration_ms: 19.159587
   type: 'test'
   ...
 # Subtest: conformance: 2026 high-wage age-60-to-63 Roth catch-up
 ok 48 - conformance: 2026 high-wage age-60-to-63 Roth catch-up
   ---
-  duration_ms: 0.643949
+  duration_ms: 0.618711
   type: 'test'
   ...
 # Subtest: conformance: 2026 Roth IRA MFJ phaseout
 ok 49 - conformance: 2026 Roth IRA MFJ phaseout
   ---
-  duration_ms: 0.614984
+  duration_ms: 0.650509
   type: 'test'
   ...
 # Subtest: conformance: shared traditional and Roth IRA pool
 ok 50 - conformance: shared traditional and Roth IRA pool
   ---
-  duration_ms: 0.972084
+  duration_ms: 0.950593
   type: 'test'
   ...
 # Subtest: conformance: 401k and governmental 457b are separate
 ok 51 - conformance: 401k and governmental 457b are separate
   ---
-  duration_ms: 1.075088
+  duration_ms: 0.91289
   type: 'test'
   ...
 # Subtest: conformance: mega backdoor 401k fills 415c
 ok 52 - conformance: mega backdoor 401k fills 415c
   ---
-  duration_ms: 0.517222
+  duration_ms: 0.434379
   type: 'test'
   ...
 # Subtest: conformance: self-employed solo 401k
 ok 53 - conformance: self-employed solo 401k
   ---
-  duration_ms: 0.403933
+  duration_ms: 0.493371
   type: 'test'
   ...
 # Subtest: conformance: 403b 15-year catch-up
 ok 54 - conformance: 403b 15-year catch-up
   ---
-  duration_ms: 0.461542
+  duration_ms: 0.440995
   type: 'test'
   ...
 # Subtest: conformance: 457b special last-three-years catch-up
 ok 55 - conformance: 457b special last-three-years catch-up
   ---
-  duration_ms: 0.611556
+  duration_ms: 0.586479
   type: 'test'
   ...
 # Subtest: conformance: 1994 historical employer-plan limits
 ok 56 - conformance: 1994 historical employer-plan limits
   ---
-  duration_ms: 0.555237
+  duration_ms: 0.604576
   type: 'test'
   ...
 # Subtest: conformance: 1985 employer-plan limit remains indeterminate
 ok 57 - conformance: 1985 employer-plan limit remains indeterminate
   ---
-  duration_ms: 0.445042
+  duration_ms: 0.323742
   type: 'test'
   ...
 # Subtest: conformance: 1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule
 ok 58 - conformance: 1979 spousal IRA is indeterminate under the former IRC 220 twice-the-lesser rule
   ---
-  duration_ms: 0.37731
+  duration_ms: 0.362616
   type: 'test'
   ...
 # Subtest: conformance: 1982 nonworking spouse IRA
 ok 59 - conformance: 1982 nonworking spouse IRA
   ---
-  duration_ms: 0.25807
+  duration_ms: 0.232331
   type: 'test'
   ...
 # Subtest: conformance: IRA conversion Form 8606 pro-rata
 ok 60 - conformance: IRA conversion Form 8606 pro-rata
   ---
-  duration_ms: 0.758174
+  duration_ms: 0.661665
   type: 'test'
   ...
 # Subtest: conformance: in-plan Roth rollover basis
 ok 61 - conformance: in-plan Roth rollover basis
   ---
-  duration_ms: 0.564009
+  duration_ms: 0.532668
   type: 'test'
   ...
 # Subtest: conformance: 2026 enhanced SIMPLE
 ok 62 - conformance: 2026 enhanced SIMPLE
   ---
-  duration_ms: 0.537695
+  duration_ms: 0.644324
   type: 'test'
   ...
 # Subtest: conformance: cash-balance contribution is actuarial
 ok 63 - conformance: cash-balance contribution is actuarial
   ---
-  duration_ms: 0.414258
+  duration_ms: 0.371715
   type: 'test'
   ...
 # Subtest: conformance: self-employed retirement deduction classification
 ok 64 - conformance: self-employed retirement deduction classification
   ---
-  duration_ms: 0.305216
+  duration_ms: 1.447461
   type: 'test'
   ...
 # Subtest: conformance: 2009 MFS living apart Roth conversion
 ok 65 - conformance: 2009 MFS living apart Roth conversion
   ---
-  duration_ms: 1.38088
+  duration_ms: 0.26804
   type: 'test'
   ...
 # Subtest: conformance: SIMPLE additional nonelective 10 percent cap
 ok 66 - conformance: SIMPLE additional nonelective 10 percent cap
   ---
-  duration_ms: 0.369269
+  duration_ms: 0.18807
   type: 'test'
   ...
 # Subtest: conformance: SIMPLE IRA Roth catch-up wage-test exclusion
 ok 67 - conformance: SIMPLE IRA Roth catch-up wage-test exclusion
   ---
-  duration_ms: 0.216485
+  duration_ms: 0.189596
   type: 'test'
   ...
 # Subtest: conformance: aggregate 403b 15-year catch-up pool
 ok 68 - conformance: aggregate 403b 15-year catch-up pool
   ---
-  duration_ms: 0.336623
+  duration_ms: 0.240205
   type: 'test'
   ...
 # Subtest: conformance: pre-2023 Roth employer contribution unavailable
 ok 69 - conformance: pre-2023 Roth employer contribution unavailable
   ---
-  duration_ms: 0.289115
+  duration_ms: 0.27226
   type: 'test'
   ...
 # Subtest: conformance: aggregate IRA conversion basis penny allocation
 ok 70 - conformance: aggregate IRA conversion basis penny allocation
   ---
-  duration_ms: 0.271644
+  duration_ms: 0.374716
   type: 'test'
   ...
 # Subtest: conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate
 ok 71 - conformance: 1997 SEP formula applies 401a17 compensation ceiling before 15 percent rate
   ---
-  duration_ms: 0.308147
+  duration_ms: 0.393022
   type: 'test'
   ...
 # Subtest: conformance: 1997 nonelective formula applies 401a17 compensation ceiling
 ok 72 - conformance: 1997 nonelective formula applies 401a17 compensation ceiling
   ---
-  duration_ms: 0.375847
+  duration_ms: 0.299426
   type: 'test'
   ...
 # Subtest: conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings
 ok 73 - conformance: 1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings
   ---
-  duration_ms: 0.146008
+  duration_ms: 0.139587
   type: 'test'
   ...
 # Subtest: conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings
 ok 74 - conformance: 1997 self-employed qualified plan applies reduced-rate and capped plan-rate ceilings
   ---
-  duration_ms: 0.107809
+  duration_ms: 0.125421
   type: 'test'
   ...
 # Subtest: conformance: 1998 SEP compensation below 400 reports maximum-excludable threshold
 ok 75 - conformance: 1998 SEP compensation below 400 reports maximum-excludable threshold
   ---
-  duration_ms: 0.169191
+  duration_ms: 0.170205
   type: 'test'
   ...
 # Subtest: conformance: 2005 designated Roth governmental 457b unavailable
 ok 76 - conformance: 2005 designated Roth governmental 457b unavailable
   ---
-  duration_ms: 0.116587
+  duration_ms: 0.223398
   type: 'test'
   ...
 # Subtest: conformance: 2011 first-year designated Roth governmental 457b
 ok 77 - conformance: 2011 first-year designated Roth governmental 457b
   ---
-  duration_ms: 0.174
+  duration_ms: 0.137146
   type: 'test'
   ...
 # Subtest: conformance: 2025 SIMPLE 401k match capped by 401a17 compensation
 ok 78 - conformance: 2025 SIMPLE 401k match capped by 401a17 compensation
   ---
-  duration_ms: 0.182729
+  duration_ms: 0.141878
   type: 'test'
   ...
 # Subtest: conformance: 2025 SIMPLE IRA match exempt from 401a17 compensation cap
 ok 79 - conformance: 2025 SIMPLE IRA match exempt from 401a17 compensation cap
   ---
-  duration_ms: 0.108877
+  duration_ms: 0.100487
   type: 'test'
   ...
 # Subtest: conformance: 2026 MFS living together Roth IRA phase-out
 ok 80 - conformance: 2026 MFS living together Roth IRA phase-out
   ---
-  duration_ms: 0.129391
+  duration_ms: 0.141046
   type: 'test'
   ...
 # Subtest: conformance: 2026 MFS living together covered traditional IRA deduction phase-out
 ok 81 - conformance: 2026 MFS living together covered traditional IRA deduction phase-out
   ---
-  duration_ms: 0.354095
+  duration_ms: 0.193434
   type: 'test'
   ...
 # Subtest: conformance: 2026 modern spousal IRA from joint compensation
 ok 82 - conformance: 2026 modern spousal IRA from joint compensation
   ---
-  duration_ms: 0.227943
+  duration_ms: 0.177002
   type: 'test'
   ...
 # Subtest: conformance: 2026 noncovered spouse deduction phase-out band
 ok 83 - conformance: 2026 noncovered spouse deduction phase-out band
   ---
-  duration_ms: 0.144911
+  duration_ms: 0.134073
   type: 'test'
   ...
 # Subtest: conformance: 2026 ordinary age-50 catch-up at age 56
 ok 84 - conformance: 2026 ordinary age-50 catch-up at age 56
   ---
-  duration_ms: 0.144134
+  duration_ms: 0.139471
   type: 'test'
   ...
 # Subtest: conformance: 2026 age-64 reversion from enhanced catch-up
 ok 85 - conformance: 2026 age-64 reversion from enhanced catch-up
   ---
-  duration_ms: 0.103618
+  duration_ms: 0.165089
   type: 'test'
   ...
 # Subtest: conformance: 2023 first-year Roth employer contribution
 ok 86 - conformance: 2023 first-year Roth employer contribution
   ---
-  duration_ms: 0.125546
+  duration_ms: 0.157879
   type: 'test'
   ...
 # Subtest: conformance: 2010 Roth conversion after MAGI repeal
 ok 87 - conformance: 2010 Roth conversion after MAGI repeal
   ---
-  duration_ms: 0.121722
+  duration_ms: 0.132233
   type: 'test'
   ...
 # Subtest: conformance: 2020 traditional IRA contribution after age-70-half repeal
 ok 88 - conformance: 2020 traditional IRA contribution after age-70-half repeal
   ---
-  duration_ms: 0.20927
+  duration_ms: 0.159939
   type: 'test'
   ...
 # Subtest: conformance: 1975 first-year traditional IRA fifteen percent limit
 ok 89 - conformance: 1975 first-year traditional IRA fifteen percent limit
   ---
-  duration_ms: 0.15066
+  duration_ms: 0.09632
   type: 'test'
   ...
 # Subtest: conformance: unsupported tax year 1974
 ok 90 - conformance: unsupported tax year 1974
   ---
-  duration_ms: 0.387582
+  duration_ms: 0.363332
   type: 'test'
   ...
 # Subtest: conformance: duplicate account id
 ok 91 - conformance: duplicate account id
   ---
-  duration_ms: 0.116989
+  duration_ms: 0.135885
   type: 'test'
   ...
 # Subtest: conformance: unknown account owner
 ok 92 - conformance: unknown account owner
   ---
-  duration_ms: 0.090668
+  duration_ms: 0.092496
   type: 'test'
   ...
 # Subtest: conformance: negative compensation is invalid money
 ok 93 - conformance: negative compensation is invalid money
   ---
-  duration_ms: 0.075578
+  duration_ms: 0.073281
   type: 'test'
   ...
 # Subtest: conformance: invalid filing status alias
 ok 94 - conformance: invalid filing status alias
   ---
-  duration_ms: 0.123177
+  duration_ms: 0.05762
   type: 'test'
   ...
 # Subtest: conformance: 2026 full-year self-only HSA limit
 ok 95 - conformance: 2026 full-year self-only HSA limit
   ---
-  duration_ms: 1.052672
+  duration_ms: 1.273733
   type: 'test'
   ...
 # Subtest: conformance: 2026 full-year family HSA limit
 ok 96 - conformance: 2026 full-year family HSA limit
   ---
-  duration_ms: 0.383087
+  duration_ms: 0.377376
   type: 'test'
   ...
 # Subtest: conformance: 2026 mid-year HSA coverage change prorated by month
 ok 97 - conformance: 2026 mid-year HSA coverage change prorated by month
   ---
-  duration_ms: 0.935961
+  duration_ms: 0.900355
   type: 'test'
   ...
 # Subtest: conformance: 2026 both spouses age 55 receive separate HSA catch-ups
 ok 98 - conformance: 2026 both spouses age 55 receive separate HSA catch-ups
   ---
-  duration_ms: 1.958875
+  duration_ms: 2.004248
   type: 'test'
   ...
 # Subtest: conformance: 2026 spouses divide the single family HSA limit as agreed
 ok 99 - conformance: 2026 spouses divide the single family HSA limit as agreed
   ---
-  duration_ms: 0.61502
+  duration_ms: 0.517229
   type: 'test'
   ...
 # Subtest: conformance: 2026 HSA last-month rule with a satisfied testing period
 ok 100 - conformance: 2026 HSA last-month rule with a satisfied testing period
   ---
-  duration_ms: 0.360114
+  duration_ms: 0.32995
   type: 'test'
   ...
 # Subtest: conformance: 2026 HSA last-month rule failed in the testing period
 ok 101 - conformance: 2026 HSA last-month rule failed in the testing period
   ---
-  duration_ms: 0.622972
+  duration_ms: 0.497884
   type: 'test'
   ...
 # Subtest: conformance: 2005 HSA monthly limit capped by the plan annual deductible
 ok 102 - conformance: 2005 HSA monthly limit capped by the plan annual deductible
   ---
-  duration_ms: 0.33674
+  duration_ms: 0.307365
   type: 'test'
   ...
 # Subtest: conformance: 2006 HSA monthly limit capped by the statutory dollar amount
 ok 103 - conformance: 2006 HSA monthly limit capped by the statutory dollar amount
   ---
-  duration_ms: 0.23994
+  duration_ms: 0.170775
   type: 'test'
   ...
 # Subtest: conformance: 2005 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate
 ok 104 - conformance: 2005 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate
   ---
-  duration_ms: 0.373786
+  duration_ms: 0.388739
   type: 'test'
   ...
 # Subtest: conformance: 2004 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate
 ok 105 - conformance: 2004 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate
   ---
-  duration_ms: 0.232466
+  duration_ms: 0.259374
   type: 'test'
   ...
 # Subtest: conformance: 2005 married couple with family coverage under two plans takes the lower annual deductible and stays determinate
 ok 106 - conformance: 2005 married couple with family coverage under two plans takes the lower annual deductible and stays determinate
   ---
-  duration_ms: 0.534066
+  duration_ms: 0.398302
   type: 'test'
   ...
 # Subtest: conformance: 2005 a spouse's self-only deductible does not lower the IRC 223(b)(5) family limitation
 ok 107 - conformance: 2005 a spouse's self-only deductible does not lower the IRC 223(b)(5) family limitation
   ---
-  duration_ms: 0.270095
+  duration_ms: 0.300803
   type: 'test'
   ...
 # Subtest: conformance: 2005 two family plans take the lower annual deductible under IRC 223(b)(5)(A)
 ok 108 - conformance: 2005 two family plans take the lower annual deductible under IRC 223(b)(5)(A)
   ---
-  duration_ms: 0.215934
+  duration_ms: 0.192118
   type: 'test'
   ...
 # Subtest: conformance: 2005 a family-covered spouse who omits their annual deductible leaves the family limitation indeterminate
 ok 109 - conformance: 2005 a family-covered spouse who omits their annual deductible leaves the family limitation indeterminate
   ---
-  duration_ms: 0.243861
+  duration_ms: 0.159641
   type: 'test'
   ...
 # Subtest: conformance: 2005 one spouse's conflicting coverage facts leave the other spouse's share of the family limitation indeterminate
 ok 110 - conformance: 2005 one spouse's conflicting coverage facts leave the other spouse's share of the family limitation indeterminate
   ---
-  duration_ms: 0.339697
+  duration_ms: 0.287071
   type: 'test'
   ...
 # Subtest: conformance: 2005 a spouse's family plan sets the deductible only for the months that plan was in force
 ok 111 - conformance: 2005 a spouse's family plan sets the deductible only for the months that plan was in force
   ---
-  duration_ms: 0.246265
+  duration_ms: 0.352733
   type: 'test'
   ...
 # Subtest: conformance: 2005 an omitted annual deductible and an explicit null are the same fact
 ok 112 - conformance: 2005 an omitted annual deductible and an explicit null are the same fact
   ---
-  duration_ms: 0.261872
+  duration_ms: 0.229188
   type: 'test'
   ...
 # Subtest: conformance: 2007 no annual deductible is required once the IRC 223(b)(2) cap is repealed
 ok 113 - conformance: 2007 no annual deductible is required once the IRC 223(b)(2) cap is repealed
   ---
-  duration_ms: 0.184508
+  duration_ms: 0.15766
   type: 'test'
   ...
 # Subtest: conformance: a missing birth year leaves the IRC 223(b)(5) household limit determinable
 ok 114 - conformance: a missing birth year leaves the IRC 223(b)(5) household limit determinable
   ---
-  duration_ms: 0.287757
+  duration_ms: 0.235826
   type: 'test'
   ...
 # Subtest: conformance: 2026 employer HSA contribution is excluded rather than deducted
 ok 115 - conformance: 2026 employer HSA contribution is excluded rather than deducted
   ---
-  duration_ms: 0.162066
+  duration_ms: 0.164677
   type: 'test'
   ...
 # Subtest: conformance: 2003 predates IRC 223 health savings accounts
 ok 116 - conformance: 2003 predates IRC 223 health savings accounts
   ---
-  duration_ms: 0.115745
+  duration_ms: 0.161778
   type: 'test'
   ...
 # Subtest: conformance: 2026 HSA last-month rule with an unresolved testing period
 ok 117 - conformance: 2026 HSA last-month rule with an unresolved testing period
   ---
-  duration_ms: 0.159692
+  duration_ms: 0.291536
   type: 'test'
   ...
 # Subtest: conformance: 2026 married filing separately family coverage recharacterizes the other spouse
 ok 118 - conformance: 2026 married filing separately family coverage recharacterizes the other spouse
   ---
-  duration_ms: 0.257391
+  duration_ms: 0.361876
   type: 'test'
   ...
 # Subtest: conformance: 2026 spouse family and self-only months divide only the family portion
 ok 119 - conformance: 2026 spouse family and self-only months divide only the family portion
   ---
-  duration_ms: 0.327906
+  duration_ms: 0.409173
   type: 'test'
   ...
 # Subtest: conformance: 2026 spouses with unequal family-coverage months each divide their own refigured family limit
 ok 120 - conformance: 2026 spouses with unequal family-coverage months each divide their own refigured family limit
   ---
-  duration_ms: 0.230884
+  duration_ms: 0.275824
   type: 'test'
   ...
 # Subtest: conformance: 2026 married last-month rule measures the attributable amount against the divided limit
 ok 121 - conformance: 2026 married last-month rule measures the attributable amount against the divided limit
   ---
-  duration_ms: 0.232075
+  duration_ms: 0.408508
   type: 'test'
   ...
 # Subtest: conformance: 2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months
 ok 122 - conformance: 2026 spouse family coverage without an HSA recharacterizes the taxpayer's self-only months
   ---
-  duration_ms: 0.288772
+  duration_ms: 0.312079
   type: 'test'
   ...
 # Subtest: conformance: 2026 unstated spouse coverage leaves a self-only HSA limit indeterminate
 ok 123 - conformance: 2026 unstated spouse coverage leaves a self-only HSA limit indeterminate
   ---
-  duration_ms: 0.227969
+  duration_ms: 0.241057
   type: 'test'
   ...
 # Subtest: conformance: 2026 spouse without high deductible coverage leaves the self-only HSA limit intact
 ok 124 - conformance: 2026 spouse without high deductible coverage leaves the self-only HSA limit intact
   ---
-  duration_ms: 0.205741
+  duration_ms: 0.331673
   type: 'test'
   ...
 # Subtest: conformance: 2026 unmarried Archer MSA contribution reduces the HSA limit under IRC 223(b)(4)(A)
 ok 125 - conformance: 2026 unmarried Archer MSA contribution reduces the HSA limit under IRC 223(b)(4)(A)
   ---
-  duration_ms: 0.225783
+  duration_ms: 0.276532
   type: 'test'
   ...
 # Subtest: conformance: 2026 married Archer MSA reduction is taken before the IRC 223(b)(5)(B)(ii) division
 ok 126 - conformance: 2026 married Archer MSA reduction is taken before the IRC 223(b)(5)(B)(ii) division
   ---
-  duration_ms: 0.329325
+  duration_ms: 0.282494
   type: 'test'
   ...
 # Subtest: conformance: 2026 IRC 223(b)(4)(A) reduces the whole subsection (b) limitation including the age 55 amount
 ok 127 - conformance: 2026 IRC 223(b)(4)(A) reduces the whole subsection (b) limitation including the age 55 amount
   ---
-  duration_ms: 0.169504
+  duration_ms: 0.168082
   type: 'test'
   ...
 # Subtest: conformance: 2026 IRC 223(b)(5)(B) leaves the age 55 additional contribution amount untouched
 ok 128 - conformance: 2026 IRC 223(b)(5)(B) leaves the age 55 additional contribution amount untouched
   ---
-  duration_ms: 0.266061
+  duration_ms: 0.254511
   type: 'test'
   ...
 # Subtest: conformance: 2026 Archer MSA contribution above the HSA limit reduces it to zero, never below
 ok 129 - conformance: 2026 Archer MSA contribution above the HSA limit reduces it to zero, never below
   ---
-  duration_ms: 0.174314
+  duration_ms: 0.168809
   type: 'test'
   ...
 # Subtest: conformance: 2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule
 ok 130 - conformance: 2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule
   ---
-  duration_ms: 0.228549
+  duration_ms: 0.232719
   type: 'test'
   ...
 # Subtest: conformance: persons entry that is not an object is rejected
 ok 131 - conformance: persons entry that is not an object is rejected
   ---
-  duration_ms: 0.09766
+  duration_ms: 0.119168
   type: 'test'
   ...
 # Subtest: conformance: accounts entry that is not an object is rejected
 ok 132 - conformance: accounts entry that is not an object is rejected
   ---
-  duration_ms: 0.083468
+  duration_ms: 0.099553
   type: 'test'
   ...
 # Subtest: conformance: conversions entry that is not an object is rejected
 ok 133 - conformance: conversions entry that is not an object is rejected
   ---
-  duration_ms: 0.091648
+  duration_ms: 0.092507
   type: 'test'
   ...
 # Subtest: conformance: account without an ownerId is rejected
 ok 134 - conformance: account without an ownerId is rejected
   ---
-  duration_ms: 0.16389
+  duration_ms: 0.222664
   type: 'test'
   ...
 # Subtest: conformance: conversion without an ownerId is rejected
 ok 135 - conformance: conversion without an ownerId is rejected
   ---
-  duration_ms: 0.106053
+  duration_ms: 0.110763
   type: 'test'
   ...
 # Subtest: conformance: unrecognized contributionPreference is rejected
 ok 136 - conformance: unrecognized contributionPreference is rejected
   ---
-  duration_ms: 0.100104
+  duration_ms: 0.104041
   type: 'test'
   ...
 # Subtest: conformance: unrecognized employerContributionTaxTreatment is rejected
 ok 137 - conformance: unrecognized employerContributionTaxTreatment is rejected
   ---
-  duration_ms: 0.169503
+  duration_ms: 0.094453
   type: 'test'
   ...
 # Subtest: conformance: rate outside 0 through 1 is rejected
 ok 138 - conformance: rate outside 0 through 1 is rejected
   ---
-  duration_ms: 0.134361
+  duration_ms: 0.089991
   type: 'test'
   ...
 # Subtest: conformance: existing contributions above the account ceiling name the amounts
 ok 139 - conformance: existing contributions above the account ceiling name the amounts
   ---
-  duration_ms: 0.388842
+  duration_ms: 0.364296
   type: 'test'
   ...
 # Subtest: conformance: taxYear that is not an integer is rejected
 ok 140 - conformance: taxYear that is not an integer is rejected
   ---
-  duration_ms: 0.162337
+  duration_ms: 0.059014
   type: 'test'
   ...
 # Subtest: conformance: missing filingStatus is rejected rather than defaulted
 ok 141 - conformance: missing filingStatus is rejected rather than defaulted
   ---
-  duration_ms: 0.208171
+  duration_ms: 0.14413
   type: 'test'
   ...
 # Subtest: conformance: filingStatus that is not a string is rejected
 ok 142 - conformance: filingStatus that is not a string is rejected
   ---
-  duration_ms: 0.07213
+  duration_ms: 0.068109
   type: 'test'
   ...
 # Subtest: conformance: accounts that is not an array is rejected
 ok 143 - conformance: accounts that is not an array is rejected
   ---
-  duration_ms: 0.078435
+  duration_ms: 0.073956
   type: 'test'
   ...
 # Subtest: conformance: conversions that is not an array is rejected
 ok 144 - conformance: conversions that is not an array is rejected
   ---
-  duration_ms: 0.087689
+  duration_ms: 0.08535
   type: 'test'
   ...
 # Subtest: conformance: account type that is not a string is rejected
 ok 145 - conformance: account type that is not a string is rejected
   ---
-  duration_ms: 0.071884
+  duration_ms: 0.08729
   type: 'test'
   ...
 # Subtest: conformance: person id that is not a string is rejected
 ok 146 - conformance: person id that is not a string is rejected
   ---
-  duration_ms: 0.063397
+  duration_ms: 0.070354
   type: 'test'
   ...
 # Subtest: conformance: structured input field that is not an object is rejected
 ok 147 - conformance: structured input field that is not an object is rejected
   ---
-  duration_ms: 0.057853
+  duration_ms: 0.062637
   type: 'test'
   ...
 # Subtest: conformance: unrecognized simpleEmployerContributionMethod is rejected
 ok 148 - conformance: unrecognized simpleEmployerContributionMethod is rejected
   ---
-  duration_ms: 0.067179
+  duration_ms: 0.230911
   type: 'test'
   ...
 # Subtest: conformance: 1989 fractional plan-term capacity keeps its fraction in the message
 ok 149 - conformance: 1989 fractional plan-term capacity keeps its fraction in the message
   ---
-  duration_ms: 0.206064
+  duration_ms: 0.251062
   type: 'test'
   ...
 # Subtest: conformance: flag field that is not a boolean is rejected
 ok 150 - conformance: flag field that is not a boolean is rejected
   ---
-  duration_ms: 0.110753
+  duration_ms: 0.094825
   type: 'test'
   ...
 # Subtest: conformance: 2026 unmarried qualified HSA funding distribution reduces the limit under IRC 223(b)(4)(C)
 ok 151 - conformance: 2026 unmarried qualified HSA funding distribution reduces the limit under IRC 223(b)(4)(C)
   ---
-  duration_ms: 5.202589
+  duration_ms: 0.239256
   type: 'test'
   ...
 # Subtest: conformance: 2026 qualified HSA funding distribution reaches the IRC 223(b)(3) additional contribution amount
 ok 152 - conformance: 2026 qualified HSA funding distribution reaches the IRC 223(b)(3) additional contribution amount
   ---
-  duration_ms: 0.271355
+  duration_ms: 0.171811
   type: 'test'
   ...
 # Subtest: conformance: 2026 IRC 223(b)(4) reduces by the sum of subparagraphs (A) and (C) but not below zero
 ok 153 - conformance: 2026 IRC 223(b)(4) reduces by the sum of subparagraphs (A) and (C) but not below zero
   ---
-  duration_ms: 0.219756
+  duration_ms: 3.52257
   type: 'test'
   ...
 # Subtest: conformance: 2026 married qualified HSA funding distribution is taken after the IRC 223(b)(5)(B)(ii) division
 ok 154 - conformance: 2026 married qualified HSA funding distribution is taken after the IRC 223(b)(5)(B)(ii) division
   ---
-  duration_ms: 2.344852
+  duration_ms: 0.305646
   type: 'test'
   ...
 # Subtest: conformance: 2026 matched Archer MSA contribution of the same amount is taken before the division instead
 ok 155 - conformance: 2026 matched Archer MSA contribution of the same amount is taken before the division instead
   ---
-  duration_ms: 0.260239
+  duration_ms: 0.25108
   type: 'test'
   ...
 # Subtest: conformance: 2026 married qualified HSA funding distribution reaches that spouse's IRC 223(b)(3) amount
 ok 156 - conformance: 2026 married qualified HSA funding distribution reaches that spouse's IRC 223(b)(3) amount
   ---
-  duration_ms: 0.296862
+  duration_ms: 0.233977
   type: 'test'
   ...
 # Subtest: conformance: 2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides
 ok 157 - conformance: 2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides
   ---
-  duration_ms: 0.362403
+  duration_ms: 0.159851
   type: 'test'
   ...
 # Subtest: conformance: 2026 family-limit shares that do not exhaust the limitation are not a division
 ok 158 - conformance: 2026 family-limit shares that do not exhaust the limitation are not a division
   ---
-  duration_ms: 0.19754
+  duration_ms: 0.201758
   type: 'test'
   ...
 # Subtest: conformance: 2026 family-limit shares totalling exactly one may still give a spouse nothing
 ok 159 - conformance: 2026 family-limit shares totalling exactly one may still give a spouse nothing
   ---
-  duration_ms: 0.205795
+  duration_ms: 0.178038
   type: 'test'
   ...
 # Subtest: conformance: 2026 sole HSA-owning spouse may agree a share below one without forfeiting anything
 ok 160 - conformance: 2026 sole HSA-owning spouse may agree a share below one without forfeiting anything
   ---
-  duration_ms: 0.148171
+  duration_ms: 0.204968
   type: 'test'
   ...
 # Subtest: conformance: 2026 incomplete family-limit shares report only the missing-share error
 ok 161 - conformance: 2026 incomplete family-limit shares report only the missing-share error
   ---
-  duration_ms: 0.248836
+  duration_ms: 0.175794
   type: 'test'
   ...
 # Subtest: conformance: 2026 flexible spending arrangement parameters are published in the result
 ok 162 - conformance: 2026 flexible spending arrangement parameters are published in the result
   ---
-  duration_ms: 0.087782
+  duration_ms: 0.074387
   type: 'test'
   ...
 # Subtest: conformance: 2012 health FSA exists with no statutory ceiling rather than not existing
 ok 163 - conformance: 2012 health FSA exists with no statutory ceiling rather than not existing
   ---
-  duration_ms: 0.082138
+  duration_ms: 0.072286
   type: 'test'
   ...
 # Subtest: conformance: 1986 has an IRC 129 row with no dollar ceiling; 1981 has no row at all
 ok 164 - conformance: 1986 has an IRC 129 row with no dollar ceiling; 1981 has no row at all
   ---
-  duration_ms: 0.061697
+  duration_ms: 0.058237
   type: 'test'
   ...
 # Subtest: conformance: 2026 health FSA election at the IRC 125(i) limit
 ok 165 - conformance: 2026 health FSA election at the IRC 125(i) limit
   ---
-  duration_ms: 0.344724
+  duration_ms: 0.372344
   type: 'test'
   ...
 # Subtest: conformance: 2013 is the first year IRC 125(i) limits a health FSA election
 ok 166 - conformance: 2013 is the first year IRC 125(i) limits a health FSA election
   ---
-  duration_ms: 0.160076
+  duration_ms: 0.211462
   type: 'test'
   ...
 # Subtest: conformance: 2012 health FSA has no statutory salary-reduction ceiling
 ok 167 - conformance: 2012 health FSA has no statutory salary-reduction ceiling
   ---
-  duration_ms: 0.156201
+  duration_ms: 0.111318
   type: 'test'
   ...
 # Subtest: conformance: 2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited
 ok 168 - conformance: 2026 health FSA carryover is capped by the 2025 cap and the excess is forfeited
   ---
-  duration_ms: 0.307823
+  duration_ms: 0.247536
   type: 'test'
   ...
 # Subtest: conformance: 2026 health FSA carryover sits on top of the IRC 125(i) limit
 ok 169 - conformance: 2026 health FSA carryover sits on top of the IRC 125(i) limit
   ---
-  duration_ms: 0.150864
+  duration_ms: 0.217154
   type: 'test'
   ...
 # Subtest: conformance: a health FSA grace period precludes a carryover
 ok 170 - conformance: a health FSA grace period precludes a carryover
   ---
-  duration_ms: 0.094867
+  duration_ms: 0.117173
   type: 'test'
   ...
 # Subtest: conformance: a health FSA offering neither carryover nor grace period forfeits the whole unused amount
 ok 171 - conformance: a health FSA offering neither carryover nor grace period forfeits the whole unused amount
   ---
-  duration_ms: 0.084267
+  duration_ms: 2.753221
   type: 'test'
   ...
 # Subtest: conformance: a health FSA carryover and grace period asserted together are refused
 ok 172 - conformance: a health FSA carryover and grace period asserted together are refused
   ---
-  duration_ms: 0.078244
+  duration_ms: 0.239236
   type: 'test'
   ...
 # Subtest: conformance: nothing may be carried into 2013, the first year the carryover existed
 ok 173 - conformance: nothing may be carried into 2013, the first year the carryover existed
   ---
-  duration_ms: 0.100713
+  duration_ms: 0.148417
   type: 'test'
   ...
 # Subtest: conformance: a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled
 ok 174 - conformance: a 2021 health FSA carryover out of 2020 discloses that CAA 2021 section 214 relief is not modelled
   ---
-  duration_ms: 0.174372
+  duration_ms: 0.137871
   type: 'test'
   ...
 # Subtest: conformance: a prior-year unused amount without a stated plan option asks for the fact
 ok 175 - conformance: a prior-year unused amount without a stated plan option asks for the fact
   ---
-  duration_ms: 0.150052
+  duration_ms: 0.175854
   type: 'test'
   ...
 # Subtest: conformance: a health FSA election above the IRC 125(i) limit is reported, not truncated
 ok 176 - conformance: a health FSA election above the IRC 125(i) limit is reported, not truncated
   ---
-  duration_ms: 0.119001
+  duration_ms: 0.164018
   type: 'test'
   ...
 # Subtest: conformance: an account type that did not exist for the tax year reports no exclusion
 ok 177 - conformance: an account type that did not exist for the tax year reports no exclusion
   ---
-  duration_ms: 0.176815
+  duration_ms: 0.126456
   type: 'test'
   ...
 # Subtest: conformance: a pre-2013 health FSA still excludes its salary reduction under IRC 125(a)
 ok 178 - conformance: a pre-2013 health FSA still excludes its salary reduction under IRC 125(a)
   ---
-  duration_ms: 0.126218
+  duration_ms: 0.109847
   type: 'test'
   ...
 # Subtest: conformance: a pre-2013 health FSA with a supplied plan maximum reports that maximum
 ok 179 - conformance: a pre-2013 health FSA with a supplied plan maximum reports that maximum
   ---
-  duration_ms: 0.092931
+  duration_ms: 0.205103
   type: 'test'
   ...
 # Subtest: conformance: two unrelated employers each carry a full health FSA limit
 ok 180 - conformance: two unrelated employers each carry a full health FSA limit
   ---
-  duration_ms: 0.135689
+  duration_ms: 0.122604
   type: 'test'
   ...
 # Subtest: conformance: two health FSAs of one employer share a single IRC 125(i) limit
 ok 181 - conformance: two health FSAs of one employer share a single IRC 125(i) limit
   ---
-  duration_ms: 0.102135
+  duration_ms: 0.116523
   type: 'test'
   ...
 # Subtest: conformance: spouses filing jointly each carry a full health FSA limit
 ok 182 - conformance: spouses filing jointly each carry a full health FSA limit
   ---
-  duration_ms: 0.129627
+  duration_ms: 0.155812
   type: 'test'
   ...
 # Subtest: conformance: non-elective employer flex credits stay outside the IRC 125(i) limit
 ok 183 - conformance: non-elective employer flex credits stay outside the IRC 125(i) limit
   ---
-  duration_ms: 0.119894
+  duration_ms: 0.136928
   type: 'test'
   ...
 # Subtest: conformance: flex credits electable as cash consume the IRC 125(i) limit
 ok 184 - conformance: flex credits electable as cash consume the IRC 125(i) limit
   ---
-  duration_ms: 0.085715
+  duration_ms: 0.097848
   type: 'test'
   ...
 # Subtest: conformance: flex credits without a stated cash election ask for the fact
 ok 185 - conformance: flex credits without a stated cash election ask for the fact
   ---
-  duration_ms: 0.089677
+  duration_ms: 0.096233
   type: 'test'
   ...
 # Subtest: conformance: a lower plan-document health FSA limit binds
 ok 186 - conformance: a lower plan-document health FSA limit binds
   ---
-  duration_ms: 0.102598
+  duration_ms: 0.17325
   type: 'test'
   ...
 # Subtest: conformance: a lower plan-document limit caps its own arrangement, not the employer group
 ok 187 - conformance: a lower plan-document limit caps its own arrangement, not the employer group
   ---
-  duration_ms: 0.110124
+  duration_ms: 0.130114
   type: 'test'
   ...
 # Subtest: conformance: exceeding a plan-document limit is not the IRC 125(i) qualification failure
 ok 188 - conformance: exceeding a plan-document limit is not the IRC 125(i) qualification failure
   ---
-  duration_ms: 0.153291
+  duration_ms: 0.253815
   type: 'test'
   ...
 # Subtest: conformance: a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate
 ok 189 - conformance: a non-calendar cafeteria plan year makes the IRC 125(i) figure indeterminate
   ---
-  duration_ms: 0.099811
+  duration_ms: 0.135605
   type: 'test'
   ...
 # Subtest: conformance: a bare FSA account type is rejected as ambiguous
 ok 190 - conformance: a bare FSA account type is rejected as ambiguous
   ---
-  duration_ms: 0.080049
+  duration_ms: 0.085992
   type: 'test'
   ...
 # Subtest: conformance: an unrecognised health FSA purpose is rejected
 ok 191 - conformance: an unrecognised health FSA purpose is rejected
   ---
-  duration_ms: 0.066046
+  duration_ms: 0.085378
   type: 'test'
   ...
 # Subtest: conformance: 2025 dependent care assistance exclusion on a single return
 ok 192 - conformance: 2025 dependent care assistance exclusion on a single return
   ---
-  duration_ms: 0.369089
+  duration_ms: 0.43778
   type: 'test'
   ...
 # Subtest: conformance: 2025 dependent care exclusion is halved on a married separate return
 ok 193 - conformance: 2025 dependent care exclusion is halved on a married separate return
   ---
-  duration_ms: 0.186655
+  duration_ms: 0.193291
   type: 'test'
   ...
 # Subtest: conformance: an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount
 ok 194 - conformance: an IRC 21(e)(4) considered-unmarried separate return takes the undivided amount
   ---
-  duration_ms: 0.198064
+  duration_ms: 0.161532
   type: 'test'
   ...
 # Subtest: conformance: a separate return that states it is still married keeps the halved amount
 ok 195 - conformance: a separate return that states it is still married keeps the halved amount
   ---
-  duration_ms: 0.293195
+  duration_ms: 0.373835
   type: 'test'
   ...
 # Subtest: conformance: 2021 only, the ARPA dependent care exclusion is 10500
 ok 196 - conformance: 2021 only, the ARPA dependent care exclusion is 10500
   ---
-  duration_ms: 0.169795
+  duration_ms: 0.200833
   type: 'test'
   ...
 # Subtest: conformance: 2022 reverts to the pre-ARPA dependent care exclusion
 ok 197 - conformance: 2022 reverts to the pre-ARPA dependent care exclusion
   ---
-  duration_ms: 0.145217
+  duration_ms: 0.131812
   type: 'test'
   ...
 # Subtest: conformance: 2026 dependent care exclusion rises to 7500 under Pub. L. 119-21
 ok 198 - conformance: 2026 dependent care exclusion rises to 7500 under Pub. L. 119-21
   ---
-  duration_ms: 0.100362
+  duration_ms: 0.107052
   type: 'test'
   ...
 # Subtest: conformance: the IRC 129(b)(1) earned income limitation binds below the statutory amount
 ok 199 - conformance: the IRC 129(b)(1) earned income limitation binds below the statutory amount
   ---
-  duration_ms: 0.165302
+  duration_ms: 0.127644
   type: 'test'
   ...
 # Subtest: conformance: the IRC 129(b)(1) limitation is asked for when the earned income facts are absent
 ok 200 - conformance: the IRC 129(b)(1) limitation is asked for when the earned income facts are absent
   ---
-  duration_ms: 0.183748
+  duration_ms: 0.285488
   type: 'test'
   ...
 # Subtest: conformance: the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled
 ok 201 - conformance: the IRC 129(b)(2) deemed earned income schedule is disclosed as unmodelled
   ---
-  duration_ms: 0.156357
+  duration_ms: 0.264035
   type: 'test'
   ...
 # Subtest: conformance: spouses filing jointly share one IRC 129 household exclusion
 ok 202 - conformance: spouses filing jointly share one IRC 129 household exclusion
   ---
-  duration_ms: 0.416978
+  duration_ms: 0.309564
   type: 'test'
   ...
 # Subtest: conformance: married separate spouses do not share one IRC 129 exclusion
 ok 203 - conformance: married separate spouses do not share one IRC 129 exclusion
   ---
-  duration_ms: 0.230486
+  duration_ms: 0.157752
   type: 'test'
   ...
 # Subtest: conformance: the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs
 ok 204 - conformance: the IRC 129(b)(1) ceiling is a return-level figure across two dependent care FSAs
   ---
-  duration_ms: 0.159405
+  duration_ms: 0.197932
   type: 'test'
   ...
 # Subtest: conformance: a dependent care plan document below the IRC 129 amount binds this arrangement
 ok 205 - conformance: a dependent care plan document below the IRC 129 amount binds this arrangement
   ---
-  duration_ms: 0.171875
+  duration_ms: 0.194318
   type: 'test'
   ...
 # Subtest: conformance: a dependent care plan document caps its own arrangement, not the household amount
 ok 206 - conformance: a dependent care plan document caps its own arrangement, not the household amount
   ---
-  duration_ms: 0.139955
+  duration_ms: 0.128998
   type: 'test'
   ...
 # Subtest: conformance: the IRC 129(b)(1) ceiling does not pool across married separate returns
 ok 207 - conformance: the IRC 129(b)(1) ceiling does not pool across married separate returns
   ---
-  duration_ms: 0.131138
+  duration_ms: 0.133461
   type: 'test'
   ...
 # Subtest: conformance: 1986 dependent care has no statutory ceiling, so the earned income limitation is the ceiling
 ok 208 - conformance: 1986 dependent care has no statutory ceiling, so the earned income limitation is the ceiling
   ---
-  duration_ms: 0.207934
+  duration_ms: 0.175453
   type: 'test'
   ...
 # Subtest: conformance: 1986 dependent care with no ceiling from any source stays indeterminate
 ok 209 - conformance: 1986 dependent care with no ceiling from any source stays indeterminate
   ---
-  duration_ms: 0.168085
+  duration_ms: 0.17093
   type: 'test'
   ...
 # Subtest: conformance: 1981 predates IRC 129 entirely
 ok 210 - conformance: 1981 predates IRC 129 entirely
   ---
-  duration_ms: 0.100292
+  duration_ms: 0.189839
   type: 'test'
   ...
 # Subtest: conformance: a health FSA and a dependent care FSA carry independent limits
 ok 211 - conformance: a health FSA and a dependent care FSA carry independent limits
   ---
-  duration_ms: 0.135766
+  duration_ms: 0.17654
   type: 'test'
   ...
 # Subtest: conformance: a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures
 ok 212 - conformance: a general-purpose health FSA is diagnosed against an HSA without changing the IRC 223 figures
   ---
-  duration_ms: 0.234924
+  duration_ms: 0.236486
   type: 'test'
   ...
 # Subtest: conformance: a limited-purpose health FSA raises no IRC 223 conflict
 ok 213 - conformance: a limited-purpose health FSA raises no IRC 223 conflict
   ---
-  duration_ms: 0.163111
+  duration_ms: 0.188955
   type: 'test'
   ...
 # Subtest: conformance: a post-deductible health FSA raises no IRC 223 conflict
 ok 214 - conformance: a post-deductible health FSA raises no IRC 223 conflict
   ---
-  duration_ms: 0.208375
+  duration_ms: 0.220923
   type: 'test'
   ...
 # Subtest: conformance: a health FSA of unstated purpose makes the IRC 223 limitation indeterminate
 ok 215 - conformance: a health FSA of unstated purpose makes the IRC 223 limitation indeterminate
   ---
-  duration_ms: 0.157007
+  duration_ms: 0.193395
   type: 'test'
   ...
 # Subtest: conformance: a spouse's general-purpose health FSA disqualifies the other spouse's HSA
 ok 216 - conformance: a spouse's general-purpose health FSA disqualifies the other spouse's HSA
   ---
-  duration_ms: 0.18497
+  duration_ms: 1.234673
   type: 'test'
   ...
 # Subtest: conformance: a general-purpose health FSA carryover disqualifies the whole receiving plan year
 ok 217 - conformance: a general-purpose health FSA carryover disqualifies the whole receiving plan year
   ---
-  duration_ms: 1.092787
+  duration_ms: 0.273148
   type: 'test'
   ...
 # Subtest: conformance: a general-purpose health FSA grace period extends the IRC 223 disqualification
 ok 218 - conformance: a general-purpose health FSA grace period extends the IRC 223 disqualification
   ---
-  duration_ms: 0.243342
+  duration_ms: 0.236495
   type: 'test'
   ...
 # Subtest: conformance: a dependent care FSA raises no IRC 223 conflict at all
 ok 219 - conformance: a dependent care FSA raises no IRC 223 conflict at all
   ---
-  duration_ms: 0.203376
+  duration_ms: 0.182857
   type: 'test'
   ...
 # Subtest: conformance: 2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit
 ok 220 - conformance: 2026 defined benefit plan reports the IRC 415(b)(1)(A) annual benefit limit
   ---
-  duration_ms: 0.146013
+  duration_ms: 0.14451
   type: 'test'
   ...
 # Subtest: conformance: 2011 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit
 ok 221 - conformance: 2011 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit
   ---
-  duration_ms: 0.092188
+  duration_ms: 0.103749
   type: 'test'
   ...
 # Subtest: conformance: 2012 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit
 ok 222 - conformance: 2012 cash balance plan reports the transcribed IRC 415(b)(1)(A) annual benefit limit
   ---
-  duration_ms: 0.076258
+  duration_ms: 0.098703
   type: 'test'
   ...
 # Subtest: conformance: 2001 403(b) is indeterminate because the IRC 403(b)(2) exclusion allowance still governs
 ok 223 - conformance: 2001 403(b) is indeterminate because the IRC 403(b)(2) exclusion allowance still governs
   ---
-  duration_ms: 0.1303
+  duration_ms: 0.13557
   type: 'test'
   ...
 # Subtest: conformance: 2002 403(b) is determinable because EGTRRA repealed the exclusion allowance
 ok 224 - conformance: 2002 403(b) is determinable because EGTRRA repealed the exclusion allowance
   ---
-  duration_ms: 0.122473
+  duration_ms: 0.110816
   type: 'test'
   ...
 # Subtest: conformance: 1986 403(b) still reports the missing IRC 415(c) limit rather than the exclusion allowance
 ok 225 - conformance: 1986 403(b) still reports the missing IRC 415(c) limit rather than the exclusion allowance
   ---
-  duration_ms: 0.078704
+  duration_ms: 0.134293
   type: 'test'
   ...
 # Subtest: conformance: 2001 401(k) is unaffected by the IRC 403(b)(2) exclusion allowance
 ok 226 - conformance: 2001 401(k) is unaffected by the IRC 403(b)(2) exclusion allowance
   ---
-  duration_ms: 0.078317
+  duration_ms: 0.098745
   type: 'test'
   ...
 # Subtest: conformance: 2026 pension-linked emergency savings account is capped by IRC 402A(e)(3)(A)(i)
 ok 227 - conformance: 2026 pension-linked emergency savings account is capped by IRC 402A(e)(3)(A)(i)
   ---
-  duration_ms: 0.243031
+  duration_ms: 0.287525
   type: 'test'
   ...
 # Subtest: conformance: 2025 pension-linked emergency savings room is the IRC 402A(e)(3)(A) cap less the participant contribution balance
 ok 228 - conformance: 2025 pension-linked emergency savings room is the IRC 402A(e)(3)(A) cap less the participant contribution balance
   ---
-  duration_ms: 0.099915
+  duration_ms: 0.162912
   type: 'test'
   ...
 # Subtest: conformance: a pension-linked emergency savings account already at the IRC 402A(e)(3)(A) cap accepts nothing
 ok 229 - conformance: a pension-linked emergency savings account already at the IRC 402A(e)(3)(A) cap accepts nothing
   ---
-  duration_ms: 0.084333
+  duration_ms: 0.11678
   type: 'test'
   ...
 # Subtest: conformance: 2024 pension-linked emergency savings uses the unadjusted statutory IRC 402A(e)(3)(A)(i) amount
 ok 230 - conformance: 2024 pension-linked emergency savings uses the unadjusted statutory IRC 402A(e)(3)(A)(i) amount
   ---
-  duration_ms: 0.084173
+  duration_ms: 0.104389
   type: 'test'
   ...
 # Subtest: conformance: 2023 has no pension-linked emergency savings account
 ok 231 - conformance: 2023 has no pension-linked emergency savings account
   ---
-  duration_ms: 0.074283
+  duration_ms: 0.126324
   type: 'test'
   ...
 # Subtest: conformance: a pension-linked emergency savings account without a supplied participant contribution balance is indeterminate
 ok 232 - conformance: a pension-linked emergency savings account without a supplied participant contribution balance is indeterminate
   ---
-  duration_ms: 0.08635
+  duration_ms: 0.106826
   type: 'test'
   ...
 # Subtest: conformance: a pension-linked emergency savings account shares the IRC 402(g) limit with the plan's 401(k)
 ok 233 - conformance: a pension-linked emergency savings account shares the IRC 402(g) limit with the plan's 401(k)
   ---
-  duration_ms: 0.135185
+  duration_ms: 0.153172
   type: 'test'
   ...
 # Subtest: conformance: a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds below the statutory figure
 ok 234 - conformance: a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds below the statutory figure
   ---
-  duration_ms: 0.092966
+  duration_ms: 0.15861
   type: 'test'
   ...
 # Subtest: conformance: a pension-linked emergency savings account needs no birth year
 ok 235 - conformance: a pension-linked emergency savings account needs no birth year
   ---
-  duration_ms: 0.149441
+  duration_ms: 0.114387
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's contradictory coverage tiers leave IRC 223(b)(5)(A) applicability unknown, self-only account listed first
 ok 236 - conformance: 2026 a spouse's contradictory coverage tiers leave IRC 223(b)(5)(A) applicability unknown, self-only account listed first
   ---
-  duration_ms: 0.17255
+  duration_ms: 0.209651
   type: 'test'
   ...
 # Subtest: conformance: 2026 the same contradictory spouse coverage gives the same answer with the family account listed first
 ok 237 - conformance: 2026 the same contradictory spouse coverage gives the same answer with the family account listed first
   ---
-  duration_ms: 0.193404
+  duration_ms: 0.252495
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's coverage facts that conflict only in the annual deductible leave the other spouse determinate
 ok 238 - conformance: 2026 a spouse's coverage facts that conflict only in the annual deductible leave the other spouse determinate
   ---
-  duration_ms: 0.173009
+  duration_ms: 0.18743
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's coverage conflict outside the owner's eligible months leaves the owner determinate
 ok 239 - conformance: 2026 a spouse's coverage conflict outside the owner's eligible months leaves the owner determinate
   ---
-  duration_ms: 0.153627
+  duration_ms: 0.181747
   type: 'test'
   ...
 # Subtest: conformance: 2026 family sharing survives a spouse's conflict confined to an annual deductible that no longer applies
 ok 240 - conformance: 2026 family sharing survives a spouse's conflict confined to an annual deductible that no longer applies
   ---
-  duration_ms: 0.207883
+  duration_ms: 0.201695
   type: 'test'
   ...
 # Subtest: conformance: 2005 a spouse's conflict between two family-plan annual deductibles does reach the shared family limit
 ok 241 - conformance: 2005 a spouse's conflict between two family-plan annual deductibles does reach the shared family limit
   ---
-  duration_ms: 0.207043
+  duration_ms: 0.210873
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's person-level family coverage contradicting their account's self-only leaves the other spouse indeterminate
 ok 242 - conformance: 2026 a spouse's person-level family coverage contradicting their account's self-only leaves the other spouse indeterminate
   ---
-  duration_ms: 0.190864
+  duration_ms: 0.259189
   type: 'test'
   ...
 # Subtest: conformance: 2026 an HSA whose planRules.hsa states no coverage facts is a missing fact, not an assertion of no coverage
 ok 243 - conformance: 2026 an HSA whose planRules.hsa states no coverage facts is a missing fact, not an assertion of no coverage
   ---
-  duration_ms: 0.354088
+  duration_ms: 0.171592
   type: 'test'
   ...
 # Subtest: conformance: 2026 an empty persons[].hsaCoverage is the documented statement of no coverage and leaves the other spouse determinate
 ok 244 - conformance: 2026 an empty persons[].hsaCoverage is the documented statement of no coverage and leaves the other spouse determinate
   ---
-  duration_ms: 0.197858
+  duration_ms: 0.132362
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's self-only-versus-no-coverage disagreement leaves the household ceiling indeterminate, all-year account first
 ok 245 - conformance: 2026 a spouse's self-only-versus-no-coverage disagreement leaves the household ceiling indeterminate, all-year account first
   ---
-  duration_ms: 0.167537
+  duration_ms: 0.180085
   type: 'test'
   ...
 # Subtest: conformance: 2026 the same self-only-versus-no-coverage disagreement gives the same answer with the December-only account first
 ok 246 - conformance: 2026 the same self-only-versus-no-coverage disagreement gives the same answer with the December-only account first
   ---
-  duration_ms: 0.1892
+  duration_ms: 0.234039
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's conflicting IRC 223(b)(8) election leaves the household ceiling indeterminate, election-true account first
 ok 247 - conformance: 2026 a spouse's conflicting IRC 223(b)(8) election leaves the household ceiling indeterminate, election-true account first
   ---
-  duration_ms: 0.29744
+  duration_ms: 0.178235
   type: 'test'
   ...
 # Subtest: conformance: 2026 the same conflicting IRC 223(b)(8) election gives the same answer with the non-electing account first
 ok 248 - conformance: 2026 the same conflicting IRC 223(b)(8) election gives the same answer with the non-electing account first
   ---
-  duration_ms: 0.333392
+  duration_ms: 0.174297
   type: 'test'
   ...
 # Subtest: conformance: 2026 a spouse's conflicting IRC 223(b)(8)(B)(iii) testing-period fact leaves the household ceiling knowable
 ok 249 - conformance: 2026 a spouse's conflicting IRC 223(b)(8)(B)(iii) testing-period fact leaves the household ceiling knowable
   ---
-  duration_ms: 0.227213
+  duration_ms: 0.171277
   type: 'test'
   ...
 # Subtest: conformance: 2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year
 ok 250 - conformance: 2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year
   ---
-  duration_ms: 0.165823
+  duration_ms: 0.179251
   type: 'test'
   ...
 # Subtest: conformance: 2026 a person-level coverage statement does not disagree with an account-only familyLimitShare
 ok 251 - conformance: 2026 a person-level coverage statement does not disagree with an account-only familyLimitShare
   ---
-  duration_ms: 0.179734
+  duration_ms: 0.219263
   type: 'test'
   ...
-1..251
-# tests 251
+# Subtest: conformance: 2026 an age-50 catch-up fills pension-linked emergency savings room the 401(k) host's base pool has no space for
+ok 252 - conformance: 2026 an age-50 catch-up fills pension-linked emergency savings room the 401(k) host's base pool has no space for
+  ---
+  duration_ms: 0.245549
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 the same age-50 catch-up fills pension-linked emergency savings room on a 403(b) host
+ok 253 - conformance: 2026 the same age-50 catch-up fills pension-linked emergency savings room on a 403(b) host
+  ---
+  duration_ms: 0.141807
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds the base and the catch-up together
+ok 254 - conformance: 2026 a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds the base and the catch-up together
+  ---
+  duration_ms: 0.13469
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 the pension-linked emergency savings balance and existing contributions are not subtracted twice
+ok 255 - conformance: 2026 the pension-linked emergency savings balance and existing contributions are not subtracted twice
+  ---
+  duration_ms: 0.16212
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a replenished pension-linked emergency savings account may take more in the year than the balance cap
+ok 256 - conformance: 2026 a replenished pension-linked emergency savings account may take more in the year than the balance cap
+  ---
+  duration_ms: 0.125304
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a pension-linked emergency savings account needs a birth year only once a catch-up could reach its room
+ok 257 - conformance: 2026 a pension-linked emergency savings account needs a birth year only once a catch-up could reach its room
+  ---
+  duration_ms: 0.313162
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a pension-linked emergency savings catch-up needs no prior-year FICA wages
+ok 258 - conformance: 2026 a pension-linked emergency savings catch-up needs no prior-year FICA wages
+  ---
+  duration_ms: 0.162628
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a 457(b) plan-document deferral limit lowers the contributable amount but not the statutory maximum
+ok 259 - conformance: 2026 a 457(b) plan-document deferral limit lowers the contributable amount but not the statutory maximum
+  ---
+  duration_ms: 0.209647
+  type: 'test'
+  ...
+# Subtest: conformance: 2026 a 457(b) account with no plan-document limit is unchanged by the statutory-maximum split
+ok 260 - conformance: 2026 a 457(b) account with no plan-document limit is unchanged by the statutory-maximum split
+  ---
+  duration_ms: 0.113337
+  type: 'test'
+  ...
+1..260
+# tests 260
 # suites 0
-# pass 251
+# pass 260
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 219.471483
+# duration_ms 243.668341
 ```
 
 **stderr**
@@ -1738,7 +1792,7 @@ ok - the health FSA builder reaches every IRC 125(i) plan fact
 ok - validates IRC 129 earned income facts before calculating anything
 ok - the dependent care builder reaches the IRC 129(b) earned income facts
 
-46 tests, 0 failed (0.005s)
+46 tests, 0 failed (0.006s)
 ```
 
 **stderr**
@@ -1957,8 +2011,17 @@ ok - 2026 the same conflicting IRC 223(b)(8) election gives the same answer with
 ok - 2026 a spouse's conflicting IRC 223(b)(8)(B)(iii) testing-period fact leaves the household ceiling knowable
 ok - 2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year
 ok - 2026 a person-level coverage statement does not disagree with an account-only familyLimitShare
+ok - 2026 an age-50 catch-up fills pension-linked emergency savings room the 401(k) host's base pool has no space for
+ok - 2026 the same age-50 catch-up fills pension-linked emergency savings room on a 403(b) host
+ok - 2026 a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds the base and the catch-up together
+ok - 2026 the pension-linked emergency savings balance and existing contributions are not subtracted twice
+ok - 2026 a replenished pension-linked emergency savings account may take more in the year than the balance cap
+ok - 2026 a pension-linked emergency savings account needs a birth year only once a catch-up could reach its room
+ok - 2026 a pension-linked emergency savings catch-up needs no prior-year FICA wages
+ok - 2026 a 457(b) plan-document deferral limit lowers the contributable amount but not the statutory maximum
+ok - 2026 a 457(b) account with no plan-document limit is unchanged by the statutory-maximum split
 
-205 conformance vectors, 0 failed
+214 conformance vectors, 0 failed
 ```
 
 **stderr**
@@ -2010,7 +2073,7 @@ Command: `node scripts/check-parity.mjs`
 **stdout**
 
 ```text
-TypeScript/PHP full-output parity passed for 205 vectors.
+TypeScript/PHP full-output parity passed for 214 vectors.
 ```
 
 **stderr**
@@ -2043,10 +2106,10 @@ Command: `npm pack --dry-run --ignore-scripts --json`
     "id": "us-tax-advantaged-params@0.3.0",
     "name": "us-tax-advantaged-params",
     "version": "0.3.0",
-    "size": 280826,
-    "unpackedSize": 2210766,
-    "shasum": "63ba3dae7e71ba6393759b775500d3665d56c381",
-    "integrity": "sha512-QgXoJs6hp1y63PR0s6x0ow0NrZZkaJjOhokdO8XP+y1GMjIBoeo3+5a8Yqt0A77eZXXOmuJ9gFj9U/xY3D6uTQ==",
+    "size": 287457,
+    "unpackedSize": 2233532,
+    "shasum": "bec3487e42b27a5ecc3d442d04d3027fae80140e",
+    "integrity": "sha512-7oMyqJ2qcV3nnQEvif34MtEQHLVvRxuGD/OL0TMpfIhKfSf/XW1TbbYmaQIgt/Yu5Fcob8pE0L6D9HGXs5m2cg==",
     "filename": "us-tax-advantaged-params-0.3.0.tgz",
     "files": [
       {
@@ -2056,7 +2119,7 @@ Command: `npm pack --dry-run --ignore-scripts --json`
       },
       {
         "path": "README.md",
-        "size": 55565,
+        "size": 57601,
         "mode": 420
       },
       {
@@ -2086,22 +2149,22 @@ Command: `npm pack --dry-run --ignore-scripts --json`
       },
       {
         "path": "dist/cjs/USTaxAdvantagedParams.js",
-        "size": 578821,
+        "size": 586712,
         "mode": 420
       },
       {
         "path": "dist/cjs/USTaxAdvantagedParams.js.map",
-        "size": 319627,
+        "size": 322101,
         "mode": 420
       },
       {
         "path": "dist/esm/USTaxAdvantagedParams.js",
-        "size": 577897,
+        "size": 585788,
         "mode": 420
       },
       {
         "path": "dist/esm/USTaxAdvantagedParams.js.map",
-        "size": 319752,
+        "size": 322226,
         "mode": 420
       },
       {
