@@ -8741,6 +8741,94 @@
         "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
         "accounts.0.sharedLimits.0.usedByAccount": 24500
       }
+    },
+    {
+      "name": "2026 a sponsor's IRC 402A(e)(3)(A)(ii) amount caps the balance and not the year's deferrals",
+      "description": "IRC 402A(e)(3)(A) bars a contribution only to the extent it would cause the portion of the account balance attributable to participant contributions to exceed the lesser of clause (i)'s $2,600 for 2026 and clause (ii)'s amount set by the plan sponsor, here $1,000. Both clauses cap the same quantity -- a balance -- so the sponsor's amount is not a second, annual limit on deferrals, and the Department of Labor's PLESA guidance states that a plan may not impose a separate annual contribution limit on the account at all. $600 was contributed this year and withdrawn under the IRC 402A(e)(7) monthly withdrawal right, so the balance immediately before this allocation is $0 and the room is $1,000 - $0 = $1,000; the annual total reaches $600 + $1,000 = $1,600. Charging the year's $600 against the sponsor's $1,000 as well as against the balance would leave $400, stranding $600 of room the statute allows. The reported statutory maximum uses clause (i) only, because clause (ii) is a plan term: min($24,500 under IRC 402(g)(1) with no catch-up at age 36, $600 already contributed + ($2,600 - $0)) = $3,200.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": 1000,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1600,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 1000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedByAccount": 1000
+      }
+    },
+    {
+      "name": "2026 an unwithdrawn balance leaves the sponsor's IRC 402A(e)(3)(A)(ii) room correctly reduced",
+      "description": "The control for the vector above, differing only in the supplied balance. Here the $600 contributed this year is still in the account, so the balance immediately before this allocation is $600 and IRC 402A(e)(3)(A) leaves $1,000 - $600 = $400 of room against the sponsor's clause (ii) amount. The annual total is $600 + $400 = $1,000, which is the sponsor's amount exactly, as it must be when nothing was withdrawn. Reading clause (ii) as a balance cap and reading it as an annual deferral limit give the same answer on these facts, which is why only the withdrawal case above distinguishes them; asserting both pins that the fix narrowed nothing. The statutory maximum again uses clause (i): min($24,500, $600 + ($2,600 - $600)) = $2,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 600,
+              "planDocumentEmployeeDeferralLimit": 1000,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1000,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1000,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 1000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 600,
+        "accounts.0.sharedLimits.2.usedByAccount": 400
+      }
     }
   ]
 }

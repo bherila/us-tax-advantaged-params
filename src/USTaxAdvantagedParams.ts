@@ -13136,7 +13136,17 @@ function allocateBaseAndCatchUp(
   }
 
   const existingBaseForAccount = baseElectiveDeferrals(account.existingContributions);
-  const planDocumentEmployeeLimit = account.planRules.planDocumentEmployeeDeferralLimit;
+  // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than clause
+  // (i), and it is supplied through this same field. But clause (ii) caps the
+  // account *balance*, exactly as clause (i) does, and the account-local pool
+  // below already enforces it against the balance the caller supplied. Reading
+  // it a second time here — as an annual limit on what may be deferred — charges
+  // this year's contributions against the sponsor's amount twice, and strands
+  // room the statute leaves the participant. A plan may not impose a separate
+  // annual limit on a pension-linked emergency savings account in any event.
+  const planDocumentEmployeeLimit = traits.isPlesa
+    ? undefined
+    : account.planRules.planDocumentEmployeeDeferralLimit;
   const employeePlanLimit = minMoney(
     basePlanLimit,
     planDocumentEmployeeLimit ?? basePlanLimit,
