@@ -126,11 +126,12 @@ function randomHsaRules() {
     }
   }
   // Three shapes, deliberately: a stated amount, an explicit null, and the
-  // property omitted entirely. The first two must normalize to the same fact and
-  // the third is the canonical absence -- telling them apart is what produced the
-  // TS/PHP divergence. null belongs in this list rather than only in the junk
-  // injector, where it sat below 0.04% per rules object and stayed unreachable
-  // enough that the split survived until a lucky seed found it.
+  // property omitted entirely. Explicit null and omission must normalize to the
+  // same absent fact; a stated amount stays distinct from both. Telling null and
+  // omission apart is what produced the TS/PHP divergence. null belongs in this
+  // list rather than only in the junk injector, where it sat below 0.04% per
+  // rules object and stayed unreachable enough that the split survived until a
+  // lucky seed found it.
   if (chance(0.3)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 3000, 5000, 5150, 10500, null]);
   if (chance(0.3)) rules.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
   if (chance(0.25)) rules.testingPeriodSatisfied = chance(0.5);

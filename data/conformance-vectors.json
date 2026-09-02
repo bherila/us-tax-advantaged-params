@@ -2437,6 +2437,78 @@
       ]
     },
     {
+      "name": "2005 one spouse's conflicting coverage facts leave the other spouse's share of the family limitation indeterminate",
+      "description": "IRC 223(b)(5)(A) gives spouses who have family coverage a single family limitation, and IRC 223(b)(5)(B)(ii) divides that one limitation between them, so each spouse's share is a function of facts belonging to both. Here the taxpayer's own coverage is perfectly coherent -- family, 5000 deductible -- while the spouse holds two health savings accounts stating contradictory coverage, family at 3000 and self-only at 1000. Coverage is one fact about a person, so the spouse's is undeterminable, and with it the couple's single family limitation. The taxpayer's share of an undeterminable limitation is undeterminable too: having coherent facts of one's own does not make the couple's shared amount knowable. Every account drawing on that limitation therefore reports indeterminate with a null statutory maximum, a null IRC 223(b)(5) pool and a null sharedFamilyContributionLimit. Reporting a number for the taxpayer would be worse than merely wrong: it would be half of a figure taken from the very spouse whose facts contradict each other.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "s-hsa-conflict",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa.sharedFamilyContributionLimit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
       "name": "2005 a spouse's family plan sets the deductible only for the months that plan was in force",
       "description": "IRC 223(b)(2) builds the year out of twelve monthly limitations, each one twelfth of the lesser of the annual deductible and the dollar amount for the coverage in force that month, so the IRC 223(b)(5)(A) lowest-deductible comparison is answered per month and not once for the year. The taxpayer holds family coverage all year with a 5000 deductible; the spouse takes family coverage in December only, with a 1000 deductible. For January through November the taxpayer is the only spouse with a family plan, so each month uses the lesser of 5000 and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), which is 5000. December has two family plans, so it uses the lesser of 1000 and 5250, which is 1000. The year is therefore (11 x 5000 + 1 x 1000) / 12 = 56000 / 12 = 4666.67. Applying the December plan's deductible to months in which the spouse held no family plan at all would understate the limitation by more than 3600, and is what a single whole-year comparison does.",
       "input": {
