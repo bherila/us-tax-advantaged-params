@@ -8755,9 +8755,24 @@ final class Engine
         // are elective deferrals sharing the IRC 402(g) limit — IRC 402A(e)(9)
         // confirms it by ordering excess deferrals distributed under IRC 402(g)(2)(A)
         // out of the emergency account first — and annual additions under IRC 415(c).
-        // No age-based catch-up attaches: IRC 414(v) lets a participant exceed an
-        // applicable limit on elective deferrals, while IRC 402A(e)(3)(A) forbids any
-        // contribution that would push the account balance past its cap.
+        // IRC 402A(e)(3)(A) bars a contribution only "to the extent such
+        // contribution would cause the portion of the account balance attributable
+        // to participant contributions to exceed" the cap: a gate on a balance,
+        // indifferent to how the contribution is characterised. IRC 414(v) relieves
+        // a *deferral* limit at the plan, and 26 CFR 1.414(v)-1(b)(1)(i) lists the
+        // limits it relieves — IRC 401(a)(30), 402(h), 403(b), 408, 415(c) and
+        // 457(b)(2) — every one a plan- or employee-level limit and none of them
+        // account-level. The two compose, and both still bind: a contribution past
+        // an applicable host limit may be treated as a catch-up under
+        // 26 CFR 1.414(v)-1(a)(1), which requires that the plan so treat it, while
+        // the balance cap continues to bar anything above the account-local room.
+        //
+        // As everywhere else in this engine, capacity is derived from age and this
+        // trait rather than from a plan-document catch-up election, so this states
+        // that the statute permits it, under the package-wide assumption that the
+        // represented plan permits and characterises what is modelled. A PLESA
+        // contribution does not become a catch-up merely because the host's base
+        // pool is exhausted.
         if ($type === AccountType::PENSION_LINKED_EMERGENCY_SAVINGS->value) {
             return array_replace($base, [
                 'family' => 'qualified_elective',
@@ -8766,6 +8781,7 @@ final class Engine
                 'shares402g' => true,
                 'uses415c' => true,
                 'isPlesa' => true,
+                'permitsAgeCatchUpByStatute' => true,
             ]);
         }
         if (in_array($type, [AccountType::GOVERNMENTAL_457B->value, AccountType::ROTH_GOVERNMENTAL_457B->value, AccountType::NONGOVERNMENTAL_457B->value], true)) {
@@ -9921,6 +9937,7 @@ final class Engine
             'iraDeductionPools' => [],
             'elective402gPools' => [],
             'catchUpPools' => [],
+            'plesaPools' => [],
             'special403bCatchUpPools' => [],
             'annualAdditionsPools' => [],
             'section457BasePools' => [],
@@ -13670,28 +13687,84 @@ final class Engine
     }
 
     /**
-     * Room left under IRC 402A(e)(3)(A) for a pension-linked emergency savings
-     * account, or null for a year with no encoded limitation. The statute caps the
-     * portion of the *account balance* attributable to participant contributions at
-     * the lesser of the published figure and any lower amount the plan sponsor sets,
-     * so what a participant may still contribute is the figure less the balance
-     * already attributable to their contributions. The sponsor's lower amount is
-     * supplied as `planDocumentEmployeeDeferralLimit` and applied with the other
-     * plan-document ceilings.
+     * The IRC 402A(e)(3)(A) ceilings for a pension-linked emergency savings account,
+     * or null for a year with no encoded limitation.
+     *
+     * The statute caps the portion of the *account balance* attributable to
+     * participant contributions at the lesser of the published figure — clause (i) —
+     * and any lower amount the plan sponsor sets — clause (ii), supplied as
+     * `planDocumentEmployeeDeferralLimit`. Clause (ii) is a plan term rather than
+     * encoded law, so it binds what may be contributed but not the statutory
+     * maximum this package reports; the two rooms are kept apart for that reason.
+     *
+     * The supplied balance is the portion attributable to participant contributions
+     * *immediately before the proposed allocation*: it includes amounts contributed
+     * earlier in the same year that are still in the account and is net of
+     * withdrawals under the plan's accounting. IRC 402A(e)(7) requires the plan to
+     * permit withdrawal at least monthly, and the Department of Labor's PLESA
+     * guidance states a plan may not impose a separate annual PLESA contribution
+     * limit, so a year's gross contributions may exceed the cap once the balance has
+     * been drawn down. A reading of the field as an opening or prior-year balance
+     * could not express that without a withdrawal input the package does not have.
      *
      * @param array<string,mixed> $context
      * @param array<string,mixed> $account
+     * @return array{statutoryCap:float,effectiveCap:float,balance:float,plesaRoom:float,statutoryPlesaRoom:float}|null
      */
-    private static function pensionLinkedEmergencySavingsRoom(array $context, array $account): ?float
+    private static function pensionLinkedEmergencySavingsCaps(array $context, array $account): ?array
     {
-        $cap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
-        if ($cap === null) {
+        $statutoryCap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
+        if ($statutoryCap === null) {
             return null;
         }
-        return self::nonnegative((float) $cap - self::money(
+        $statutoryCap = (float) $statutoryCap;
+        $sponsorCap = $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? null;
+        $effectiveCap = $sponsorCap === null
+            ? $statutoryCap
+            : self::minMoney($statutoryCap, self::money(
+                $sponsorCap,
+                "{$account['id']}.planDocumentEmployeeDeferralLimit",
+            ));
+        $balance = self::money(
             $account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null,
             "{$account['id']}.pensionLinkedEmergencySavingsParticipantContributionBalance",
-        ));
+        );
+        return [
+            'statutoryCap' => $statutoryCap,
+            'effectiveCap' => $effectiveCap,
+            'balance' => $balance,
+            'plesaRoom' => self::nonnegative($effectiveCap - $balance),
+            'statutoryPlesaRoom' => self::nonnegative($statutoryCap - $balance),
+        ];
+    }
+
+    /**
+     * IRC 402A(e)(3)(A) as an account-local pool rather than as a deferral limit.
+     *
+     * Every participant-contribution component draws the same pool — a base
+     * elective deferral and an IRC 414(v) catch-up alike — because the statute gates
+     * the resulting *balance* and not the character of the contribution that would
+     * produce it. Expressing the room as a base deferral limit instead would let a
+     * catch-up allocated afterwards carry the balance past the cap.
+     *
+     * `used` is seeded from the supplied balance and never from
+     * `existingContributions`. The balance is stated as of immediately before this
+     * allocation and so already reflects contributions made earlier in the year that
+     * are still in the account, while existing contributions separately seed the
+     * host plan's annual pools; charging both would subtract the same dollars twice.
+     *
+     * @param array<string,mixed> $account
+     * @param array{statutoryCap:float,effectiveCap:float,balance:float,plesaRoom:float,statutoryPlesaRoom:float} $caps
+     * @return array<string,mixed>
+     */
+    private static function pensionLinkedEmergencySavingsPool(array $account, array $caps): array
+    {
+        return [
+            'id' => "plesa402Ae3:{$account['id']}",
+            'legalLimit' => 'IRC 402A(e)(3)(A) participant-contribution balance cap',
+            'limit' => $caps['effectiveCap'],
+            'used' => $caps['balance'],
+        ];
     }
 
     /** @param array<string,mixed> $context
@@ -13701,12 +13774,18 @@ final class Engine
     private static function baseDeferralLimitForAccount(array $context, array $account, array $traits): ?float
     {
         if (!empty($traits['isPlesa'])) {
-            $room = self::pensionLinkedEmergencySavingsRoom($context, $account);
-            $statutory = $context['parameters']['electiveDeferral402g'];
-            if ($room === null || $statutory === null) {
+            // The IRC 402A(e)(3)(A) room is enforced as an account-local pool that
+            // both the base and the catch-up allocation draw, not as a deferral
+            // limit, so what governs here is the host plan's own IRC 402(g) limit. A
+            // year that encodes no cap has no such account at all, and returning
+            // null there keeps the account indeterminate rather than letting it
+            // defer under IRC 402(g) alone.
+            if ($context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'] === null) {
                 return null;
             }
-            return self::minMoney((float) $statutory, $room);
+            return $context['parameters']['electiveDeferral402g'] === null
+                ? null
+                : (float) $context['parameters']['electiveDeferral402g'];
         }
         if (!empty($traits['isStarter'])) {
             return $context['parameters']['starterDeferralOnly']['baseDeferralLimit'] === null
@@ -13769,6 +13848,16 @@ final class Engine
             $threshold === null
             || $traits['family'] === 'simple'
             || !empty($traits['isSarsep'])
+            // IRC 414(v)(7)(A) requires a high-wage participant's catch-up to be a
+            // designated Roth contribution. Every contribution to a pension-linked
+            // emergency savings account is one already, because IRC 402A(e)(1)(A)(i)
+            // treats the account "for purposes of this title as a designated Roth
+            // account", so the wage test has nothing left to decide and the
+            // prior-year wage figure it would need is not required. The same
+            // reasoning reaches other designated Roth accounts; it is stated for
+            // this one only because widening it would change the treatment of
+            // accounts this change is not about.
+            || !empty($traits['isPlesa'])
             || self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0
         ) {
             return $defaultTreatment;
@@ -13865,11 +13954,17 @@ final class Engine
             (float) $context['parameters']['generalAge50CatchUp'] > 0
             || (float) $context['parameters']['simple']['generalAge50CatchUp'] > 0
             || (float) $context['parameters']['starterDeferralOnly']['age50CatchUp'] > 0;
-        // Only an account that can take an age-based catch-up needs an age. Every
-        // family that reaches this function permits one by statute except the
-        // pension-linked emergency savings account, where IRC 402A(e)(3)(A) forbids a
-        // contribution past the balance cap outright and IRC 414(v) adds nothing.
-        if ($age === null && $anyCatchUpAvailable && !empty($traits['permitsAgeCatchUpByStatute'])) {
+        // Only an account that can take an age-based catch-up needs an age.
+        $catchUpNeedsAge = $age === null
+            && $anyCatchUpAvailable
+            && !empty($traits['permitsAgeCatchUpByStatute']);
+        // A pension-linked emergency savings account is the one family where the age
+        // is not always load-bearing: IRC 402A(e)(3)(A) caps the account whatever the
+        // participant's age, so where the host's own base capacity already covers the
+        // remaining room, no catch-up could change the answer and no birth date is
+        // required. The question is therefore asked after the base allocation, once
+        // the room it leaves is known.
+        if ($catchUpNeedsAge && empty($traits['isPlesa'])) {
             $diagnostics[] = self::diagnostic(
                 'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP',
                 DiagnosticSeverity::ERROR,
@@ -13916,9 +14011,24 @@ final class Engine
             self::nonnegative($employeePlanLimit - $existingBaseForAccount),
             $accountAnnualRemainingBefore,
         );
+        // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
+        // the room is a pool this account's base and catch-up allocations both draw.
+        // IRC 414(v)(3)(A)(i) puts catch-up contributions outside IRC 415(c), so only
+        // the base draw carries the annual-additions group.
+        $plesaCaps = !empty($traits['isPlesa'])
+            ? self::pensionLinkedEmergencySavingsCaps($context, $account)
+            : null;
+        $hasPlesaPool = $plesaCaps !== null;
+        if ($hasPlesaPool) {
+            $context['plesaPools'][$account['id']] =
+                self::pensionLinkedEmergencySavingsPool($account, $plesaCaps);
+        }
         $refs = [['elective402gPools', $ownerId]];
         if ($annualGroupExists) {
             $refs[] = ['annualAdditionsPools', $groupId];
+        }
+        if ($hasPlesaPool) {
+            $refs[] = ['plesaPools', $account['id']];
         }
         $baseAdded = self::takeAcrossPools($context, $refs, $desiredBase, $sharedLimits);
         if (self::accountUsesRothEmployeeContributions($account, $traits)) {
@@ -13966,6 +14076,28 @@ final class Engine
                 $compensationRemaining = self::nonnegative($compensationRemaining - $specialAdded);
             }
         }
+        // A birth date the base allocation made irrelevant is not demanded: it matters
+        // only where the account still has room that a catch-up could fill, which
+        // takes both unfilled IRC 402A(e)(3)(A) room and compensation left to defer.
+        // The owner's IRC 414(v) pool is deliberately not consulted — it is itself
+        // sized from the age being asked for, so it reads as empty exactly when the
+        // question is open, and testing it would answer the question with its own
+        // premise. `$anyCatchUpAvailable`, folded into `$catchUpNeedsAge`, is the part
+        // of that test the year alone can settle.
+        if (
+            $catchUpNeedsAge
+            && $hasPlesaPool
+            && (self::poolRemaining($context['plesaPools'][$account['id']]) ?? 0.0) > 0
+            && $compensationRemaining > 0
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP',
+                DiagnosticSeverity::ERROR,
+                'Birth year or birth date is required to determine the maximum age-based workplace catch-up contribution.',
+                "persons.{$person['id']}",
+            );
+        }
+
         $planCatchUpLimit = self::accountPlanCatchUpLimit($context, $account, $traits);
         $existingCatchUp = self::ageCatchUps($account['existingContributions']);
         $desiredCatchUp = self::minMoney(
@@ -13973,13 +14105,17 @@ final class Engine
             $compensationRemaining,
         );
         $catchUpAdded = 0.0;
+        $catchUpRefs = [['catchUpPools', $ownerId]];
+        if ($hasPlesaPool) {
+            $catchUpRefs[] = ['plesaPools', $account['id']];
+        }
         $treatment = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
         if ($treatment === 'unknown') {
             self::reportPoolWithoutConsuming($context['catchUpPools'][$ownerId], $sharedLimits);
         } elseif ($treatment !== 'unavailable' && $desiredCatchUp > 0) {
             $catchUpAdded = self::takeAcrossPools(
                 $context,
-                [['catchUpPools', $ownerId]],
+                $catchUpRefs,
                 $desiredCatchUp,
                 $sharedLimits,
             );
@@ -14298,22 +14434,18 @@ final class Engine
                     'diagnostics' => $diagnostics,
                 ];
             }
-            $cap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
-            $room = self::pensionLinkedEmergencySavingsRoom($context, $account);
-            if ($cap !== null && $room !== null) {
-                $suppliedBalance = self::money(
-                    $account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'],
-                    "accounts.{$account['id']}",
-                );
+            $caps = self::pensionLinkedEmergencySavingsCaps($context, $account);
+            if ($caps !== null) {
                 $diagnostics[] = self::diagnostic(
                     'PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED',
                     DiagnosticSeverity::INFO,
-                    '$' . self::localeNumber((float) $cap)
+                    '$' . self::localeNumber($caps['statutoryCap'])
                         . ' is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $'
-                        . self::localeNumber($suppliedBalance)
-                        . ' was supplied as already attributable to them, leaving $'
-                        . self::localeNumber($room)
-                        . '. Contributions are Roth by IRC 402A(e)(1)(A)(i), count against IRC 402(g) and IRC 415(c), and take no age-based catch-up.'
+                        . self::localeNumber($caps['balance'])
+                        . ' was supplied as attributable to them immediately before this allocation, leaving $'
+                        . self::localeNumber($caps['plesaRoom'])
+                        . '. That room is drawn by base deferrals and by any IRC 414(v) catch-up alike, because IRC 402A(e)(3)(A) gates the resulting balance rather than the character of the contribution.'
+                        . ' Contributions are Roth by IRC 402A(e)(1)(A)(i); base deferrals count against IRC 402(g) and IRC 415(c), while a catch-up is outside IRC 415(c) under IRC 414(v)(3)(A)(i).'
                         . ' Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7),'
                         . " and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.",
                     "accounts.{$account['id']}",
@@ -14439,13 +14571,43 @@ final class Engine
             }
         }
         $planCatchUp = self::accountPlanCatchUpLimit($context, $account, $traits);
-        $statutoryMaximum = $deferralOnly
-            ? self::roundMoney((self::baseDeferralLimitForAccount($context, $account, $traits) ?? 0.0) + $planCatchUp)
-            : self::roundMoney(
+        // The reported statutory maximum folds in encoded law and supplied facts but
+        // not the plan's own restrictions, so it is built from the statutory host
+        // base limit rather than from `$employeePlanLimit`.
+        $statutoryHostBaseLimit = self::baseDeferralLimitForAccount($context, $account, $traits) ?? 0.0;
+        $statutoryHostAnnualCapacity = self::roundMoney($statutoryHostBaseLimit + $planCatchUp);
+        if (!empty($traits['isPlesa'])) {
+            // A pension-linked emergency savings account is bounded twice over: by
+            // what the host plan may take in a year, and by IRC 402A(e)(3)(A), which
+            // stops contributions once the participant-contribution *balance* reaches
+            // the cap. Reporting the host figure alone would state a ceiling this
+            // account can never reach; reporting the room alone would understate it
+            // where the balance already holds contributions made this year, since
+            // those are themselves part of the annual total. The maximum is therefore
+            // the lesser of the host's annual capacity and what the participant has
+            // already put in plus the room that remains. Clause (ii) — the plan
+            // sponsor's lower amount — is a plan term, so it lowers what may be
+            // contributed without lowering the statutory figure reported here.
+            $caps = self::pensionLinkedEmergencySavingsCaps($context, $account);
+            $existingParticipantContributions = self::roundMoney(
+                self::baseDeferrals($account['existingContributions'])
+                + self::ageCatchUps($account['existingContributions']),
+            );
+            $statutoryMaximum = $caps === null
+                ? $statutoryHostAnnualCapacity
+                : self::minMoney(
+                    $statutoryHostAnnualCapacity,
+                    self::roundMoney($existingParticipantContributions + $caps['statutoryPlesaRoom']),
+                );
+        } elseif ($deferralOnly) {
+            $statutoryMaximum = $statutoryHostAnnualCapacity;
+        } else {
+            $statutoryMaximum = self::roundMoney(
                 $accountAnnualLimit
                 + $planCatchUp
                 + (!empty($traits['isSimple']) ? max(0.0, $statutoryEmployerPotential - $accountAnnualLimit) : 0.0),
             );
+        }
         return [
             'status' => self::accountStatusFromDiagnostics(CalculationStatus::DETERMINATE->value, $diagnostics),
             'statutoryMaximum' => $statutoryMaximum,
@@ -14753,10 +14915,22 @@ final class Engine
                 ?? self::planCompensation($account, $person),
             "{$account['id']}.includibleCompensation457",
         );
-        $accountBaseLimit = self::minMoney(
+// IRC 457(b)(2) sets the ceiling as the lesser of the applicable dollar amount
+        // and 100 percent of includible compensation. Both are encoded law applied to
+        // supplied facts, so both belong in the statutory figure this package reports.
+        // A plan-document deferral limit is neither: it is a restriction the plan
+        // chose, so it lowers what may actually be deferred without lowering the
+        // reported statutory maximum. The qualified-plan path has always drawn that
+        // line — README documents it — and drawing it here too is what lets a
+        // pension-linked emergency savings account report the same kind of figure on
+        // either host.
+        $statutoryHostBaseLimit = self::minMoney(
             (float) $statutoryBase,
             $includibleCompensation * (float) $compensationFraction,
-            $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? (float) $statutoryBase,
+        );
+        $appliedHostBaseLimit = self::minMoney(
+            $statutoryHostBaseLimit,
+            $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
         );
         $existingRegular = self::roundMoney(
             self::baseDeferrals($annual)
@@ -14771,7 +14945,7 @@ final class Engine
         $existingEmployer = self::roundMoney($annual['employerPreTax'] + $annual['employerRoth']);
         $employerDesired = self::minMoney(
             self::nonnegative($expectedEmployer - $existingEmployer),
-            self::nonnegative($accountBaseLimit - $existingRegular),
+            self::nonnegative($appliedHostBaseLimit - $existingRegular),
         );
         if (
             $employerDesired > 0.0
@@ -14791,7 +14965,7 @@ final class Engine
             + $annual['employerPreTax']
             + $annual['employerRoth'],
         );
-        $regularDesired = self::nonnegative($accountBaseLimit - $regularBeforeEmployee);
+        $regularDesired = self::nonnegative($appliedHostBaseLimit - $regularBeforeEmployee);
         $regularAdded = self::takeAcrossPools(
             $context,
             [['section457BasePools', $ownerId]],
@@ -14881,7 +15055,7 @@ final class Engine
         }
         return [
             'status' => self::accountStatusFromDiagnostics(CalculationStatus::DETERMINATE->value, $diagnostics),
-            'statutoryMaximum' => self::roundMoney($accountBaseLimit + max($ageLimit, $specialStatutoryExtra)),
+            'statutoryMaximum' => self::roundMoney($statutoryHostBaseLimit + max($ageLimit, $specialStatutoryExtra)),
             'annualComponents' => $annual,
             'additionalComponents' => $additional,
             'planTermDependentCapacity' => 0.0,
