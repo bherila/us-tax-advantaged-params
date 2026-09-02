@@ -12080,6 +12080,25 @@ final class Engine
         }
         $shareByOwner = [];
         $sharingDiagnostics = [];
+        if ($familySharingApplies && $householdLimitIndeterminate) {
+            // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
+            // divides it between them, so each share is a function of facts belonging
+            // to both. A spouse whose own coverage is coherent still cannot be told
+            // their share of a limitation the couple's facts do not fix. Nulling the
+            // pool alone was not enough: the pool went null while the accounts drawing
+            // on it stayed determinate and kept reporting a maximum they could never
+            // allocate.
+            $sharingDiagnostics[] = self::diagnostic(
+                'HSA_SHARED_FAMILY_LIMIT_INDETERMINATE',
+                DiagnosticSeverity::ERROR,
+                'IRC 223(b)(5) gives the spouses one family limitation to divide, so it is no more '
+                    . 'determinable than the coverage facts of either of them. Another spouse\'s health '
+                    . 'savings account coverage facts are missing or conflicting, so this account\'s share '
+                    . 'of that limitation cannot be stated either.',
+                'accounts',
+                'IRC 223(b)(5)',
+            );
+        }
         if ($familySharingApplies) {
             if ($explicitShareHolders !== []) {
                 if (count($explicitShareHolders) !== count($coupleMembersWithAccounts)) {
@@ -12615,7 +12634,7 @@ final class Engine
                 // published one field away. The field is already nullable for the
                 // unrelated case of no family limit being shared at all.
                 'sharedFamilyContributionLimit' => $isSharingMember
-                    && $amounts['familyLimitIndeterminate'] !== true
+                    && $householdLimitIndeterminate !== true
                     ? self::roundMoney(self::archerReducedPortions(
                         (float) $amounts['familyPortionApplied'],
                         (float) $amounts['selfPortionApplied'],
