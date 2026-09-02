@@ -10884,6 +10884,15 @@ interface HsaOwnerFacts {
   conflict: boolean;
   /** The owner's own `persons[].hsaCoverage` contradicts their account's `planRules.hsa`. */
   personConflict: boolean;
+  /**
+   * The coverage statements supplied for this person disagree about *whether
+   * any month is family coverage*, which is the only thing IRC 223(b)(5)(A)
+   * turns on. Narrower than `conflict` on purpose: two statements that differ
+   * only in their annual deductible, or in which months are covered at all,
+   * still answer the family question the same way, and that answer stays
+   * usable for the other spouse.
+   */
+  coverageTierConflict: boolean;
   months: Array<HsaCoverageTier | null> | null;
 }
 
@@ -10923,6 +10932,19 @@ function hsaCoverageSignature(coverage: HsaCoverageInput): string {
     coverage.monthlyCoverage ?? null,
     coverage.hdhpAnnualDeductible ?? null,
   ]);
+}
+
+/**
+ * The family/non-family reading of one coverage statement, as twelve slots.
+ * IRC 223(b)(5)(A) asks only whether a spouse has family coverage in a month,
+ * so this is the projection of a coverage statement onto that question, and
+ * two statements sharing it cannot disagree about whether the subsection
+ * applies.
+ */
+function hsaFamilyMonthSignature(coverage: HsaCoverageInput): string {
+  const months = resolveHsaMonths(coverage);
+  if (months === null) return "unstated";
+  return months.map((tier) => (tier === "family" ? "F" : ".")).join("");
 }
 
 /** Twelve coverage slots, or null when no coverage facts were supplied at all. */
@@ -11037,25 +11059,35 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   for (const ownerId of ownerIds) {
     let rules: HsaRulesInput | null = null;
     let signature: string | null = null;
+    let familySignature: string | null = null;
     let conflict = false;
+    let coverageTierConflict = false;
     for (const account of accountsByOwner.get(ownerId)!) {
       const supplied = account.planRules.hsa;
       if (supplied === undefined) continue;
       const encoded = JSON.stringify(supplied);
+      const familyEncoded = hsaFamilyMonthSignature(supplied);
       if (signature === null) {
         signature = encoded;
+        familySignature = familyEncoded;
         rules = supplied;
-      } else if (signature !== encoded) {
-        conflict = true;
+      } else {
+        if (signature !== encoded) conflict = true;
+        if (familySignature !== familyEncoded) coverageTierConflict = true;
       }
     }
     const declared = context.persons.get(ownerId)?.hsaCoverage;
+    const personConflict =
+      rules !== null && declared !== undefined && hsaCoverageSignature(rules) !== hsaCoverageSignature(declared);
+    if (personConflict && declared !== undefined && familySignature !== hsaFamilyMonthSignature(declared)) {
+      coverageTierConflict = true;
+    }
     facts.set(ownerId, {
       ownerId,
       rules,
       conflict,
-      personConflict:
-        rules !== null && declared !== undefined && hsaCoverageSignature(rules) !== hsaCoverageSignature(declared),
+      personConflict,
+      coverageTierConflict,
       months: rules === null ? null : resolveHsaMonths(rules),
     });
   }
@@ -11121,7 +11153,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    */
   const statedCoverageByPerson = new Map<string, ReadonlyArray<HsaCoverageTier | null> | null>();
   for (const personId of couple ?? []) {
-    const months = coupleCoverage.get(personId)?.months ?? null;
+    /**
+     * A person whose statements disagree about family coverage has stated no
+     * usable answer to the IRC 223(b)(5)(A) question, so none is read from
+     * them. Keeping the first-listed statement instead would decide whether
+     * the subsection applies from input order: the same two contradictory
+     * accounts gave the other spouse a determinate self-only limit when the
+     * self-only one was listed first and an indeterminate one when the family
+     * one was.
+     */
+    const months = (facts.get(personId)?.coverageTierConflict ?? false)
+      ? null
+      : coupleCoverage.get(personId)?.months ?? null;
     statedCoverageByPerson.set(personId, months === null ? null : [...months]);
   }
 
@@ -11292,6 +11335,39 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
           DiagnosticSeverity.ERROR,
           "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied. State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.",
+          `persons.${ownerId}`,
+          "IRC 223(b)(5)(A)",
+        ),
+      );
+    }
+
+    /**
+     * The same question one step further out. A spouse who supplied coverage
+     * facts that contradict each other on the family question has not answered
+     * it either, so an owner with a self-only month is no better placed than if
+     * that spouse had said nothing. This is a sibling of the condition above
+     * rather than a reuse of it: the remedy differs, because the caller must
+     * reconcile two statements they already made instead of adding a missing
+     * one. It is also not the IRC 223(b)(5) sharing error, which reports a
+     * family limitation known to exist but not divisible; here whether the
+     * subsection applies at all is what is unknown, and the sharing path is
+     * never reached.
+     */
+    const spouseCoverageAmbiguousOnFamily =
+      otherSpouseId !== undefined && (facts.get(otherSpouseId)?.coverageTierConflict ?? false);
+    if (
+      marriedFiler &&
+      (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
+      spouseCoverageAmbiguousOnFamily &&
+      months.some((tier) => tier === "self_only")
+    ) {
+      indeterminate = true;
+      familyLimitIndeterminate = true;
+      diagnostics.push(
+        diagnostic(
+          "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+          DiagnosticSeverity.ERROR,
+          "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it. The other spouse's supplied coverage facts disagree about whether they have family coverage, so whether this subsection applies to this owner's self-only months cannot be determined. Reconcile that spouse's coverage facts; coverage is one fact about a person, so every statement of it must agree.",
           `persons.${ownerId}`,
           "IRC 223(b)(5)(A)",
         ),

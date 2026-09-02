@@ -349,6 +349,48 @@ function randomScenario() {
     accounts.push(account);
   }
 
+  /**
+   * One person holding two health savings accounts that disagree about their
+   * coverage tier, inserted at independently chosen array positions, alongside
+   * a self-only account for the other spouse.
+   *
+   * Whether IRC 223(b)(5)(A) reaches the *other* spouse's self-only months is
+   * read from these statements, and it was formerly read from whichever of them
+   * the accounts array happened to carry first -- so the pair has to be emitted
+   * in both orders for the engines to be compared on it. The ordinary generator
+   * reaches this shape far too rarely: it needs two HSAs, one owner, and
+   * differing tiers all at once. Emitting a self-only/self-only pair some of the
+   * time keeps the narrow case covered too, where the statements conflict on the
+   * deductible but agree that neither is family coverage.
+   */
+  if (personCount === 2 && chance(0.12)) {
+    const conflictOwnerId = pick(persons).id;
+    const pairRules = [
+      { coverageTier: "self_only", ...(chance(0.4) ? { hdhpAnnualDeductible: money() } : {}) },
+      {
+        coverageTier: chance(0.75) ? "family" : "self_only",
+        ...(chance(0.5) ? { hdhpAnnualDeductible: money() } : {}),
+      },
+    ];
+    if (chance(0.5)) pairRules.reverse();
+    pairRules.forEach((hsa, offset) => {
+      const account = { id: `x${offset}`, ownerId: conflictOwnerId, type: "hsa", planRules: { hsa } };
+      if (chance(0.3)) account.priority = integer(1, 200);
+      accounts.splice(integer(0, accounts.length), 0, account);
+    });
+    const otherPerson = persons.find((person) => person.id !== conflictOwnerId);
+    if (otherPerson !== undefined && chance(0.8)) {
+      const account = {
+        id: "x2",
+        ownerId: otherPerson.id,
+        type: "hsa",
+        planRules: { hsa: { coverageTier: chance(0.85) ? "self_only" : "family" } },
+      };
+      if (chance(0.3)) account.priority = integer(1, 200);
+      accounts.splice(integer(0, accounts.length), 0, account);
+    }
+  }
+
   const scenario = { taxYear, filingStatus, persons, accounts };
 
   if (chance(0.25)) {

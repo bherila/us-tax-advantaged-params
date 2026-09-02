@@ -10315,6 +10315,28 @@ final class Engine
         ]);
     }
 
+    /**
+     * The family/non-family reading of one coverage statement, as twelve slots.
+     * IRC 223(b)(5)(A) asks only whether a spouse has family coverage in a
+     * month, so this is the projection of a coverage statement onto that
+     * question, and two statements sharing it cannot disagree about whether the
+     * subsection applies.
+     *
+     * @param array<string,mixed> $coverage
+     */
+    private static function hsaFamilyMonthSignature(array $coverage): string
+    {
+        $months = self::resolveHsaMonths($coverage);
+        if ($months === null) {
+            return 'unstated';
+        }
+        $slots = '';
+        foreach ($months as $tier) {
+            $slots .= $tier === 'family' ? 'F' : '.';
+        }
+        return $slots;
+    }
+
     /** Twelve coverage slots, or null when no coverage facts were supplied at all.
      *  @param array<string,mixed> $rules
      *  @return list<string|null>|null
@@ -11527,28 +11549,54 @@ final class Engine
         foreach ($ownerIds as $ownerId) {
             $rules = null;
             $signature = null;
+            $familySignature = null;
             $conflict = false;
+            $coverageTierConflict = false;
             foreach ($accountsByOwner[$ownerId] as $account) {
                 if (!array_key_exists('hsa', $account['planRules'])) {
                     continue;
                 }
                 $supplied = $account['planRules']['hsa'];
                 $encoded = (string) json_encode($supplied);
+                $familyEncoded = self::hsaFamilyMonthSignature(is_array($supplied) ? $supplied : []);
                 if ($signature === null) {
                     $signature = $encoded;
+                    $familySignature = $familyEncoded;
                     $rules = is_array($supplied) ? $supplied : [];
-                } elseif ($signature !== $encoded) {
-                    $conflict = true;
+                } else {
+                    if ($signature !== $encoded) {
+                        $conflict = true;
+                    }
+                    if ($familySignature !== $familyEncoded) {
+                        $coverageTierConflict = true;
+                    }
                 }
             }
             $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
+            $personConflict = $rules !== null
+                && is_array($declared)
+                && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared);
+            if ($personConflict
+                && is_array($declared)
+                && $familySignature !== self::hsaFamilyMonthSignature($declared)
+            ) {
+                $coverageTierConflict = true;
+            }
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'rules' => $rules,
                 'conflict' => $conflict,
-                'personConflict' => $rules !== null
-                    && is_array($declared)
-                    && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared),
+                'personConflict' => $personConflict,
+                /**
+                 * The coverage statements supplied for this person disagree about
+                 * *whether any month is family coverage*, which is the only thing
+                 * IRC 223(b)(5)(A) turns on. Narrower than 'conflict' on purpose:
+                 * two statements that differ only in their annual deductible, or
+                 * in which months are covered at all, still answer the family
+                 * question the same way, and that answer stays usable for the
+                 * other spouse.
+                 */
+                'coverageTierConflict' => $coverageTierConflict,
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
         }
@@ -11610,9 +11658,20 @@ final class Engine
          * write. Snapshotting in both engines makes the rule the same in each
          * rather than leaving it to language semantics and statement order.
          */
+        /**
+         * A person whose statements disagree about family coverage has stated no
+         * usable answer to the IRC 223(b)(5)(A) question, so none is read from
+         * them. Keeping the first-listed statement instead would decide whether
+         * the subsection applies from input order: the same two contradictory
+         * accounts gave the other spouse a determinate self-only limit when the
+         * self-only one was listed first and an indeterminate one when the family
+         * one was.
+         */
         $statedCoverageByPerson = [];
         foreach ($couple ?? [] as $personId) {
-            $months = $coupleCoverage[$personId]['months'] ?? null;
+            $months = ($facts[$personId]['coverageTierConflict'] ?? false)
+                ? null
+                : $coupleCoverage[$personId]['months'] ?? null;
             $statedCoverageByPerson[$personId] = $months === null ? null : array_values($months);
         }
 
@@ -11795,6 +11854,42 @@ final class Engine
                         . 'least one self-only month, so the other spouse\'s coverage changes the answer and is not '
                         . 'supplied. State it on that spouse\'s persons[].hsaCoverage — an empty object records that '
                         . 'the spouse held no high deductible health plan coverage.',
+                    "persons.{$ownerId}",
+                    'IRC 223(b)(5)(A)',
+                );
+            }
+
+            /**
+             * The same question one step further out. A spouse who supplied
+             * coverage facts that contradict each other on the family question
+             * has not answered it either, so an owner with a self-only month is
+             * no better placed than if that spouse had said nothing. This is a
+             * sibling of the condition above rather than a reuse of it: the
+             * remedy differs, because the caller must reconcile two statements
+             * they already made instead of adding a missing one. It is also not
+             * the IRC 223(b)(5) sharing error, which reports a family limitation
+             * known to exist but not divisible; here whether the subsection
+             * applies at all is what is unknown, and the sharing path is never
+             * reached.
+             */
+            $spouseCoverageAmbiguousOnFamily = $otherSpouseId !== null
+                && ($facts[$otherSpouseId]['coverageTierConflict'] ?? false);
+            if (
+                $marriedFiler
+                && ($ownerIsSpouseOfCouple || ($person['role'] ?? null) === 'taxpayer' || ($person['role'] ?? null) === 'spouse')
+                && $spouseCoverageAmbiguousOnFamily
+                && $ownerHasSelfOnlyMonth
+            ) {
+                $indeterminate = true;
+                $familyLimitIndeterminate = true;
+                $diagnostics[] = self::diagnostic(
+                    'HSA_SPOUSE_COVERAGE_FACTS_CONFLICT',
+                    DiagnosticSeverity::ERROR,
+                    'IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of '
+                        . 'them has it. The other spouse\'s supplied coverage facts disagree about whether they have '
+                        . 'family coverage, so whether this subsection applies to this owner\'s self-only months '
+                        . 'cannot be determined. Reconcile that spouse\'s coverage facts; coverage is one fact about '
+                        . 'a person, so every statement of it must agree.',
                     "persons.{$ownerId}",
                     'IRC 223(b)(5)(A)',
                 );

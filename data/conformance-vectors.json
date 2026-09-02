@@ -7230,6 +7230,206 @@
         "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
         "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
       }
+    },
+    {
+      "name": "2026 a spouse's contradictory coverage tiers leave IRC 223(b)(5)(A) applicability unknown, self-only account listed first",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so an owner with a self-only month cannot be priced without knowing the other spouse's coverage: for 2026 the answer is either the undivided self-only 4400 plus the IRC 223(b)(3) age-55 1000, or a divided family limitation instead. Here the spouse owns two health savings accounts stating contradictory tiers, self-only and family. Coverage is one fact about a person, so the spouse has not stated whether they have family coverage, and whether IRC 223(b)(5)(A) reaches the taxpayer's self-only months is therefore unknown -- not merely the size of a shared limitation, but whether one exists. The taxpayer is indeterminate with a null statutory maximum and nothing allocated. This vector lists the spouse's self-only account first. Its companion lists the family one first and must produce identical output: the engine formerly kept whichever coverage statement appeared first in the accounts array and decided the applicability of IRC 223(b)(5)(A) from it, so these same facts returned a determinate 5400 in this ordering and indeterminate in the other. The two orderings differ in array position rather than in priority, because coverage facts are read in input order while priority governs allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-self",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 the same contradictory spouse coverage gives the same answer with the family account listed first",
+      "description": "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, so an owner with a self-only month cannot be priced without knowing the other spouse's coverage: for 2026 the answer is either the undivided self-only 4400 plus the IRC 223(b)(3) age-55 1000, or a divided family limitation instead. Here the spouse owns two health savings accounts stating contradictory tiers, self-only and family. Coverage is one fact about a person, so the spouse has not stated whether they have family coverage, and whether IRC 223(b)(5)(A) reaches the taxpayer's self-only months is therefore unknown -- not merely the size of a shared limitation, but whether one exists. The taxpayer is indeterminate with a null statutory maximum and nothing allocated. This vector lists the spouse's family account first; its companion lists the self-only one first. The pair exists to pin permutation invariance, which no single vector can state. The differing element is array position rather than priority: coverage facts are read in input order, so permuting priority alone would not distinguish the fixed engine from the broken one.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-family",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa-self",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 a spouse's coverage facts that conflict only in the annual deductible leave the other spouse determinate",
+      "description": "The narrowing that keeps the two vectors above from overreaching. IRC 223(b)(5)(A) turns on whether a spouse has family coverage, and on nothing else. Here the spouse's two health savings accounts are still contradictory -- so the spouse is indeterminate under IRC 223(b) for their own accounts -- but both statements say self-only, so no reading of them puts family coverage on either spouse and the subsection cannot apply. The taxpayer's own limitation is therefore fully knowable: the 2026 self-only 4400 under IRC 223(b)(2)(A) plus the IRC 223(b)(3) additional 1000 for an account beneficiary who attains 55 before the close of the year (born 1970), giving 5400. The spouse's deductibles never enter it, because the lowest-deductible rule in IRC 223(b)(5)(A) applies only where the spouses have family coverage under different plans. Treating every conflict as unknown coverage would make this indeterminate, which would be a wrong answer to a question the record settles.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "s-a",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "s-b",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5400,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5400,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 5400
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
     }
   ]
 }
