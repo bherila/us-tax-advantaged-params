@@ -96,7 +96,8 @@ const HEALTH_FSA_PURPOSES = ["general_purpose", "limited_purpose", "post_deducti
 const EXISTING_KEYS = [
   "employeePreTaxDeferral", "employeeRothDeferral", "employeePreTaxCatchUp", "employeeRothCatchUp",
   "employeeAfterTax", "employerPreTax", "employerRoth", "deductibleIra", "nondeductibleIra",
-  "rothIra", "special403bCatchUp", "special457CatchUp", "hsaDeductible", "hsaEmployerOrCafeteria",
+  "rothIra", "special403bCatchUp", "special457CatchUp", "special457RothCatchUp",
+  "hsaDeductible", "hsaEmployerOrCafeteria",
   "healthFsaSalaryReduction", "dependentCareAssistanceProvided",
 ];
 
@@ -588,6 +589,14 @@ function randomScenario() {
     // engines read differently was effectively outside the fuzz space.
     if (chance(0.12)) plesaRules.planDocumentEmployeeDeferralLimit = null;
     if (chance(0.08)) plesaRules.pensionLinkedEmergencySavingsParticipantContributionBalance = null;
+    // A pension-linked emergency savings account holds designated Roth
+    // contributions by IRC 402A(e)(1)(A)(i) whatever the caller states, so the
+    // fields that would otherwise elect pre-tax treatment have to reach this
+    // shape: they are the ones an engine could honour by mistake, and the
+    // generic rule generator does not build a PLESA that reaches the allocation.
+    if (chance(0.35)) plesaRules.contributionPreference = pick(CONTRIBUTION_PREFERENCES);
+    if (chance(0.25)) plesaRules.permitsRothContributions = chance(0.5);
+    if (chance(0.2)) plesaRules.permitsRothCatchUp = chance(0.5);
     // The IRC 457(b)(3) catch-up is the one this host has and the others do not.
     // Put it on either account, since IRC 457(e)(18) picks between it and the
     // IRC 414(v) catch-up per participant and IRC 414(v)(6)(C) turns the age

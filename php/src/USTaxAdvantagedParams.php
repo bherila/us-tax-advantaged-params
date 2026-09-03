@@ -9032,7 +9032,44 @@ final class Engine
         return self::roundMoney(array_sum($components));
     }
 
-    /** @param array<string,float> $components */
+    /**
+     * The diagnostic that records a caller-supplied tax-treatment election which
+     * IRC 402A(e)(1)(A)(i) does not leave open on a pension-linked emergency
+     * savings account. The election is disregarded rather than honoured, because
+     * honouring it would allocate a pre-tax contribution to an account the statute
+     * treats as a designated Roth account; saying so keeps the disregard visible to
+     * a caller who supplied the field believing it would take effect.
+     *
+     * @param array<string,mixed> $account
+     * @return array<string,mixed>|null
+     */
+    private static function pensionLinkedEmergencySavingsRothTreatmentDiagnostic(array $account): ?array
+    {
+        $rules = $account['planRules'];
+        $stated = null;
+        if (($rules['contributionPreference'] ?? null) === 'pretax_first') {
+            $stated = 'planRules.contributionPreference is pretax_first';
+        } elseif (($rules['permitsRothContributions'] ?? null) === false) {
+            $stated = 'planRules.permitsRothContributions is false';
+        } elseif (($rules['permitsRothCatchUp'] ?? null) === false) {
+            $stated = 'planRules.permitsRothCatchUp is false';
+        }
+        if ($stated === null) {
+            return null;
+        }
+
+        return self::diagnostic(
+            'PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH',
+            DiagnosticSeverity::INFO,
+            $stated . ', but IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account as a '
+                . 'designated Roth account for purposes of the whole title, so every participant contribution '
+                . 'to it is a designated Roth contribution. The supplied election was disregarded; no amount '
+                . 'was allocated as a pre-tax contribution.',
+            "accounts.{$account['id']}.planRules",
+            'IRC 402A(e)(1)(A)(i)',
+        );
+    }
+
     /**
      * The one diagnostic that says an age-based workplace catch-up cannot be
      * sized because the participant's age is unknown. Shared, because more than
@@ -9050,6 +9087,7 @@ final class Engine
         );
     }
 
+    /** @param array<string,float> $components */
     private static function baseDeferrals(array $components): float
     {
         return self::roundMoney($components['employeePreTaxDeferral'] + $components['employeeRothDeferral']);
@@ -14044,6 +14082,17 @@ final class Engine
      */
     private static function accountUsesRothEmployeeContributions(array $account, array $traits): bool
     {
+        // IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account "for
+        // purposes of this title as a designated Roth account", so every participant
+        // contribution to one is a designated Roth contribution. That is a
+        // characteristic of the account, not an allocation choice, so it precedes the
+        // caller's preference: a supplied preference or Roth-permission flag states a
+        // plan election the statute does not leave open, and honouring it would
+        // produce a pre-tax contribution to an account that cannot hold one. The
+        // preference keeps its ordinary meaning on every other account type.
+        if (!empty($traits['isPlesa'])) {
+            return true;
+        }
         $preference = $account['planRules']['contributionPreference'] ?? 'account_type';
         if ($preference === 'roth_first') {
             return (bool) ($account['planRules']['permitsRothContributions'] ?? $traits['designatedRoth']);
@@ -14541,7 +14590,15 @@ final class Engine
         // other supplied fact expresses, and assuming an empty account would state a
         // ceiling the statute may not allow.
         if (!empty($traits['isPlesa'])) {
-            if (!array_key_exists('pensionLinkedEmergencySavingsParticipantContributionBalance', $account['planRules'])) {
+            $rothTreatmentDiagnostic = self::pensionLinkedEmergencySavingsRothTreatmentDiagnostic($account);
+            if ($rothTreatmentDiagnostic !== null) {
+                $diagnostics[] = $rothTreatmentDiagnostic;
+            }
+            // An explicitly supplied null states no more about the balance than omitting
+            // the field does. Reading it as zero would answer a required question the
+            // caller did not answer, and would answer it with the one value that yields
+            // the largest ceiling the statute allows.
+            if (($account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null) === null) {
                 $diagnostics[] = self::diagnostic(
                     'PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -15042,9 +15099,19 @@ final class Engine
         // room back. What may still be contributed therefore depends on a balance no
         // other supplied fact expresses, and assuming an empty account would state a
         // ceiling the statute may not allow.
+        if (!empty($traits['isPlesa'])) {
+            $rothTreatmentDiagnostic = self::pensionLinkedEmergencySavingsRothTreatmentDiagnostic($account);
+            if ($rothTreatmentDiagnostic !== null) {
+                $diagnostics[] = $rothTreatmentDiagnostic;
+            }
+        }
+        // An explicitly supplied null states no more about the balance than omitting
+        // the field does. Reading it as zero would answer a required question the
+        // caller did not answer, and would answer it with the one value that yields
+        // the largest ceiling the statute allows.
         if (
             !empty($traits['isPlesa'])
-            && !array_key_exists('pensionLinkedEmergencySavingsParticipantContributionBalance', $account['planRules'])
+            && ($account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null) === null
         ) {
             $diagnostics[] = self::diagnostic(
                 'PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED',

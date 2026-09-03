@@ -13203,11 +13203,50 @@ function accountUsesRothEmployeeContributions(
   account: NormalizedAccount,
   traits: AccountTraits,
 ): boolean {
+  // IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account "for
+  // purposes of this title as a designated Roth account", so every participant
+  // contribution to one is a designated Roth contribution. That is a
+  // characteristic of the account, not an allocation choice, so it precedes the
+  // caller's preference: a supplied preference or Roth-permission flag states a
+  // plan election the statute does not leave open, and honouring it would
+  // produce a pre-tax contribution to an account that cannot hold one. The
+  // preference keeps its ordinary meaning on every other account type.
+  if (traits.isPlesa) return true;
   if (account.planRules.contributionPreference === "roth_first") {
     return account.planRules.permitsRothContributions ?? traits.designatedRoth;
   }
   if (account.planRules.contributionPreference === "pretax_first") return false;
   return traits.designatedRoth;
+}
+
+/**
+ * The diagnostic that records a caller-supplied tax-treatment election which
+ * IRC 402A(e)(1)(A)(i) does not leave open on a pension-linked emergency
+ * savings account. The election is disregarded rather than honoured, because
+ * honouring it would allocate a pre-tax contribution to an account the statute
+ * treats as a designated Roth account; saying so keeps the disregard visible to
+ * a caller who supplied the field believing it would take effect.
+ */
+function pensionLinkedEmergencySavingsRothTreatmentDiagnostic(
+  account: NormalizedAccount,
+): Diagnostic | null {
+  const rules = account.planRules;
+  const stated =
+    rules.contributionPreference === "pretax_first"
+      ? "planRules.contributionPreference is pretax_first"
+      : rules.permitsRothContributions === false
+        ? "planRules.permitsRothContributions is false"
+        : rules.permitsRothCatchUp === false
+          ? "planRules.permitsRothCatchUp is false"
+          : null;
+  if (stated === null) return null;
+  return diagnostic(
+    "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+    DiagnosticSeverity.INFO,
+    `${stated}, but IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account as a designated Roth account for purposes of the whole title, so every participant contribution to it is a designated Roth contribution. The supplied election was disregarded; no amount was allocated as a pre-tax contribution.`,
+    `accounts.${account.id}.planRules`,
+    "IRC 402A(e)(1)(A)(i)",
+  );
 }
 
 /**
@@ -13652,8 +13691,14 @@ function allocateQualifiedElective(
   // other supplied fact expresses, and assuming an empty account would state a
   // ceiling the statute may not allow.
   if (traits.isPlesa) {
+    const rothTreatmentDiagnostic = pensionLinkedEmergencySavingsRothTreatmentDiagnostic(account);
+    if (rothTreatmentDiagnostic !== null) diagnostics.push(rothTreatmentDiagnostic);
     const balance = account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance;
-    if (balance === undefined) {
+    // An explicitly supplied null states no more about the balance than omitting
+    // the field does. Reading it as zero would answer a required question the
+    // caller did not answer, and would answer it with the one value that yields
+    // the largest ceiling the statute allows.
+    if (balance == null) {
       diagnostics.push(
         diagnostic(
           "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
@@ -14117,7 +14162,15 @@ function allocateSection457(
   // room back. What may still be contributed therefore depends on a balance no
   // other supplied fact expresses, and assuming an empty account would state a
   // ceiling the statute may not allow.
-  if (traits.isPlesa && account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance === undefined) {
+  if (traits.isPlesa) {
+    const rothTreatmentDiagnostic = pensionLinkedEmergencySavingsRothTreatmentDiagnostic(account);
+    if (rothTreatmentDiagnostic !== null) diagnostics.push(rothTreatmentDiagnostic);
+  }
+  // An explicitly supplied null states no more about the balance than omitting
+  // the field does. Reading it as zero would answer a required question the
+  // caller did not answer, and would answer it with the one value that yields
+  // the largest ceiling the statute allows.
+  if (traits.isPlesa && account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance == null) {
     diagnostics.push(
       diagnostic(
         "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
