@@ -244,6 +244,15 @@ function randomPlanRules(type) {
   if (PLESA_TYPES.includes(type) ? chance(0.7) : chance(0.08)) {
     rules.pensionLinkedEmergencySavingsParticipantContributionBalance = chance(0.05) ? junk() : money();
   }
+  // An explicitly supplied null is a different input from an omitted key, and the
+  // two engines read absence differently in more than one place -- `=== undefined`
+  // against `?? null`. Only generating values and omissions left that whole class
+  // of divergence outside the fuzz space.
+  if (chance(0.06)) rules.pensionLinkedEmergencySavingsParticipantContributionBalance = null;
+  if (chance(0.06)) rules.planDocumentEmployeeDeferralLimit = null;
+  if (chance(0.04)) rules.planDocumentAnnualAdditionsLimit = null;
+  if (chance(0.04)) rules.includibleCompensation457 = null;
+  if (chance(0.04)) rules.planCompensation = null;
   if (type === "hsa" || chance(0.05)) rules.hsa = randomHsaRules();
   if (type === "health_fsa" || chance(0.05)) rules.healthFsa = randomHealthFsaRules();
   if (type === "dependent_care_fsa" || chance(0.05)) rules.dependentCareFsa = randomDependentCareRules();
@@ -572,6 +581,13 @@ function randomScenario() {
     }
     if (chance(0.25)) plesaRules.planDocumentEmployeeDeferralLimit = pick([0, 500, 1000, 2500, money()]);
     if (chance(0.2)) plesaRules.planCompensation = money();
+    // Explicitly null, on the account shape that actually reaches the
+    // IRC 402A(e)(3)(A) cap arithmetic. The generic rule generator emits nulls
+    // too, but a pension-linked emergency savings account assembled there needs
+    // several coincidences before the cap path runs at all, so the case the two
+    // engines read differently was effectively outside the fuzz space.
+    if (chance(0.12)) plesaRules.planDocumentEmployeeDeferralLimit = null;
+    if (chance(0.08)) plesaRules.pensionLinkedEmergencySavingsParticipantContributionBalance = null;
     // The IRC 457(b)(3) catch-up is the one this host has and the others do not.
     // Put it on either account, since IRC 457(e)(18) picks between it and the
     // IRC 414(v) catch-up per participant and IRC 414(v)(6)(C) turns the age

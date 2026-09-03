@@ -245,7 +245,15 @@ export interface ExistingContributionInput {
   nondeductibleIra?: Money;
   rothIra?: Money;
   special403bCatchUp?: Money;
+  /**
+   * A pre-tax IRC 457(b)(3) last-three-years catch-up. The statutory source and
+   * the tax treatment are independent: the same catch-up made to a designated
+   * Roth account is `special457RothCatchUp`, and both seed the same
+   * IRC 457(b)(3) pool.
+   */
   special457CatchUp?: Money;
+  /** A Roth IRC 457(b)(3) last-three-years catch-up. */
+  special457RothCatchUp?: Money;
   /** HSA contribution deductible under IRC 223(a). */
   hsaDeductible?: Money;
   /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
@@ -690,6 +698,7 @@ export interface ContributionComponents {
   rothIra: Money;
   special403bCatchUp: Money;
   special457CatchUp: Money;
+  special457RothCatchUp: Money;
   /** Known regular contribution whose tax classification cannot be resolved. */
   unclassifiedIra: Money;
   /** HSA contribution deductible under IRC 223(a). */
@@ -8879,6 +8888,7 @@ function zeroComponents(): ContributionComponents {
     rothIra: 0,
     special403bCatchUp: 0,
     special457CatchUp: 0,
+    special457RothCatchUp: 0,
     unclassifiedIra: 0,
     hsaDeductible: 0,
     hsaEmployerOrCafeteria: 0,
@@ -8903,6 +8913,7 @@ function cloneComponents(source?: ExistingContributionInput): ContributionCompon
   result.rothIra = money(source.rothIra, "existing.rothIra");
   result.special403bCatchUp = money(source.special403bCatchUp, "existing.special403bCatchUp");
   result.special457CatchUp = money(source.special457CatchUp, "existing.special457CatchUp");
+  result.special457RothCatchUp = money(source.special457RothCatchUp, "existing.special457RothCatchUp");
   result.hsaDeductible = money(source.hsaDeductible, "existing.hsaDeductible");
   result.hsaEmployerOrCafeteria = money(source.hsaEmployerOrCafeteria, "existing.hsaEmployerOrCafeteria");
   result.healthFsaSalaryReduction = money(source.healthFsaSalaryReduction, "existing.healthFsaSalaryReduction");
@@ -9051,7 +9062,8 @@ function contributionTaxEffects(
       components.employeeRothCatchUp +
       components.employeeAfterTax +
       components.employerRoth +
-      components.rothIra,
+      components.rothIra +
+      components.special457RothCatchUp,
   );
 
   if (pretaxEmployee > 0 && !planRules.isSelfEmployedOwner) {
@@ -10087,7 +10099,13 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + catchUp);
     const specialPool = context.section457SpecialCatchUpPools.get(account.ownerId);
     if (specialPool) {
-      specialPool.used = roundMoney(specialPool.used + account.existingContributions.special457CatchUp);
+      // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
+      // catch-up does not change which statutory limitation it was made under.
+      specialPool.used = roundMoney(
+        specialPool.used +
+          account.existingContributions.special457CatchUp +
+          account.existingContributions.special457RothCatchUp,
+      );
     }
   }
 }
@@ -12991,9 +13009,15 @@ function pensionLinkedEmergencySavingsCaps(
 ): PensionLinkedEmergencySavingsCaps | null {
   const statutoryCap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
   if (statutoryCap === null) return null;
+  // `== null` rather than `=== undefined`: an explicitly supplied null means the
+  // sponsor set no clause (ii) amount, exactly as omitting the field does. Read
+  // as a number it would pass through money() as zero and bar every contribution
+  // to the account, which is not what a caller serialising an absent value from
+  // a nullable column is saying — and PHP's `?? null` already read it that way,
+  // so the two engines answered the same input differently.
   const sponsorCap = account.planRules.planDocumentEmployeeDeferralLimit;
   const effectiveCap =
-    sponsorCap === undefined
+    sponsorCap == null
       ? statutoryCap
       : minMoney(
           statutoryCap,
@@ -14154,7 +14178,8 @@ function allocateSection457(
   const existingParticipantContributions = roundMoney(
     baseElectiveDeferrals(account.existingContributions) +
       ageCatchUpDeferrals(account.existingContributions) +
-      account.existingContributions.special457CatchUp,
+      account.existingContributions.special457CatchUp +
+      account.existingContributions.special457RothCatchUp,
   );
   if (plesaCaps !== null) {
     diagnostics.push(
@@ -14216,6 +14241,7 @@ function allocateSection457(
       baseElectiveDeferrals(annual) -
       ageCatchUpDeferrals(annual) -
       annual.special457CatchUp -
+      annual.special457RothCatchUp -
       annual.employerPreTax -
       annual.employerRoth,
   );
@@ -14238,7 +14264,40 @@ function allocateSection457(
       )
     : 0;
 
-  if (specialStatutoryExtra > agePotential) {
+  // The birth date is load-bearing on a pension-linked emergency savings account
+  // only where a catch-up could still reach room the base allocation left, which
+  // is how the qualified-plan host asks the same question: IRC 402A(e)(3)(A) caps
+  // the account whatever the participant's age, so where the room is spent no
+  // catch-up could change the answer.
+  //
+  // IRC 457(b)(3) does not by itself settle the question, and comparing the
+  // extra actually available under it against what this participant's age would
+  // allow is circular here, since that age is the unknown. The comparison is
+  // made instead against the largest age-based catch-up the year could produce
+  // at any age.
+  const largestPossibleAgeCatchUp = maximumAgeCatchUpLimitForYear(context.parameters, traits);
+  const catchUpRouteUnresolved =
+    plesaPool !== null &&
+    ageAtEndOfTaxYear(person, context.taxYear) === null &&
+    largestPossibleAgeCatchUp > 0 &&
+    specialStatutoryExtra <= largestPossibleAgeCatchUp &&
+    (poolRemaining(plesaPool) ?? 0) > 0 &&
+    compensationRemaining > 0;
+  // Where the participant's age is unknown and a catch-up could still reach the
+  // IRC 402A(e)(3)(A) room, the *route* is unknown too, not merely the amount:
+  // IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), and the two draw
+  // different pools and can carry different tax treatment. So nothing is
+  // allocated under either heading. Reporting a floor here would put a figure in
+  // a field named for a maximum and file it under a statutory category the facts
+  // do not establish.
+  //
+  // The comparison is `<=`, not `<`: IRC 414(v)(6)(C) removes the age-based
+  // catch-up only for a year in which a *higher* limitation applies under
+  // IRC 457(b)(3), so an equal IRC 457(b)(3) amount leaves IRC 414(v) available
+  // and the age still decides which route applies.
+  if (catchUpRouteUnresolved) {
+    diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
+  } else if (specialStatutoryExtra > agePotential) {
     // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)" — a plan-level
     // ceiling on deferrals, not an account-level one — so it composes with the
     // IRC 402A(e)(3)(A) balance cap in exactly the way IRC 414(v) does, and draws
@@ -14248,8 +14307,18 @@ function allocateSection457(
       specialStatutoryExtra,
       sharedLimits,
     );
-    additional.special457CatchUp = specialAdded;
-    annual.special457CatchUp = roundMoney(annual.special457CatchUp + specialAdded);
+    // IRC 457(b)(3) supplies the capacity; what decides the tax treatment is the
+    // account it lands in. On a pension-linked emergency savings account that is
+    // never a choice: IRC 402A(e)(1)(A)(i) treats the account as a designated
+    // Roth account for purposes of the title, so every participant contribution
+    // to it is Roth whatever limitation it was made under.
+    if (accountUsesRothEmployeeContributions(account, traits)) {
+      additional.special457RothCatchUp = specialAdded;
+      annual.special457RothCatchUp = roundMoney(annual.special457RothCatchUp + specialAdded);
+    } else {
+      additional.special457CatchUp = specialAdded;
+      annual.special457CatchUp = roundMoney(annual.special457CatchUp + specialAdded);
+    }
     compensationRemaining = nonnegative(compensationRemaining - specialAdded);
     if (ageLimit > 0) {
       diagnostics.push(
@@ -14280,33 +14349,6 @@ function allocateSection457(
       }
       compensationRemaining = nonnegative(compensationRemaining - ageAdded);
     }
-  }
-
-  // The birth date is load-bearing on a pension-linked emergency savings account
-  // only where a catch-up could still reach room the base allocation left, which
-  // is how the qualified-plan host asks the same question: IRC 402A(e)(3)(A) caps
-  // the account whatever the participant's age, so where the room is spent no
-  // catch-up could change the answer.
-  //
-  // IRC 457(b)(3) does not by itself settle the question. IRC 414(v)(6)(C)
-  // removes the age-based catch-up only for a year in which a *higher*
-  // limitation applies under IRC 457(b)(3), so the two have to be compared --
-  // and comparing the extra actually available under IRC 457(b)(3) against what
-  // this participant's age would allow is circular here, since that is the
-  // unknown. The comparison is therefore made against the largest age-based
-  // catch-up the year could produce at any age: at or above it, IRC 457(b)(3) is
-  // the higher limitation however old the participant turns out to be, and below
-  // it the answer genuinely turns on the age.
-  const largestPossibleAgeCatchUp = maximumAgeCatchUpLimitForYear(context.parameters, traits);
-  if (
-    plesaPool !== null &&
-    ageAtEndOfTaxYear(person, context.taxYear) === null &&
-    largestPossibleAgeCatchUp > 0 &&
-    specialStatutoryExtra < largestPossibleAgeCatchUp &&
-    (poolRemaining(plesaPool) ?? 0) > 0 &&
-    compensationRemaining > 0
-  ) {
-    diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
   }
 
   if (!traits.governmental457) {
@@ -14955,6 +14997,7 @@ function calculateScenarioTotals(
       totals.employeeRothOrAfterTaxContribution +
         components.employeeRothDeferral +
         components.employeeRothCatchUp +
+        components.special457RothCatchUp +
         components.employeeAfterTax +
         components.rothIra +
         components.nondeductibleIra +

@@ -8919,7 +8919,7 @@
     },
     {
       "name": "2026 the two PLESA hosts share no pool with each other",
-      "description": "IRC 402A(f)(1) makes three plan types an applicable retirement plan, and a participant may hold an emergency savings account in more than one. The limits they run against are different -- IRC 402(g)(1) for the IRC 401(a) trust, IRC 457(e)(15) for the governmental IRC 457(b) plan -- and IRC 402A(e)(3)(A) caps each account's own balance, since it speaks of 'the portion of the account balance'. So each takes its own $2,600 for 2026 and the participant contributes $5,200 across the two, which no single $24,500 deferral limit and no single balance cap could produce. The pool identities assert the separation directly: 402g:t against 457b:t, and one room pool per account.",
+      "description": "IRC 402A(f)(1) makes three plan types an applicable retirement plan, and a participant may hold an emergency savings account in more than one. The limits they run against are different -- IRC 402(g)(1) for the IRC 401(a) trust, IRC 457(e)(15) for the governmental IRC 457(b) plan -- and IRC 402A(e)(3)(A) caps each account's own balance, since it speaks of 'the portion of the account balance'. So each takes its own $2,600 for 2026 and the participant contributes $5,200 across the two, which no single IRC 402A(e)(3)(A) balance cap could produce -- $5,200 is twice the 2026 figure. The $5,200 says nothing about the deferral limits, which are $24,500 apiece and could accommodate it either way; the pool identities asserted below are what separate those. The pool identities assert the separation directly: 402g:t against 457b:t, and one room pool per account.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -9048,7 +9048,7 @@
     },
     {
       "name": "2026 the IRC 457(b)(3) last-three-years catch-up fills governmental 457(b) PLESA room",
-      "description": "The catch-up this host has and the others do not. IRC 457(b)(3) raises 'the ceiling set forth in paragraph (2)' -- again a limit on deferrals under the plan and not on an account balance -- so it composes with IRC 402A(e)(3)(A) exactly as IRC 414(v) does. The sibling account spends the IRC 457(e)(15) pool, and the participant has $20,000 of unused deferrals from prior years, so the extra available under IRC 457(b)(3) is min($24,500, $20,000) = $20,000, which exceeds the $8,000 IRC 414(v) catch-up. IRC 457(e)(18) gives the participant the greater of the two and never their sum, and the engine reports which it chose. The $2,600 of room caps what that catch-up may actually fund. The statutory maximum is min($24,500 + $20,000, $0 + $2,600) = $2,600.",
+      "description": "The catch-up this host has and the others do not. IRC 457(b)(3) raises 'the ceiling set forth in paragraph (2)' -- again a limit on deferrals under the plan and not on an account balance -- so it composes with IRC 402A(e)(3)(A) exactly as IRC 414(v) does. The sibling account spends the IRC 457(e)(15) pool, and the participant has $20,000 of unused deferrals from prior years, so the extra available under IRC 457(b)(3) is min($24,500, $20,000) = $20,000, which exceeds the $8,000 IRC 414(v) catch-up. IRC 457(e)(18) gives the participant the greater of the two and never their sum, and the engine reports which it chose. The $2,600 of room caps what that catch-up may actually fund. The statutory maximum is min($24,500 + $20,000, $0 + $2,600) = $2,600. The catch-up is Roth: IRC 457(b)(3) supplies the capacity, but IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account for purposes of the title, so a participant contribution to it is Roth whatever limitation it was made under. The two facts are independent, and the component records both -- special457RothCatchUp rather than special457CatchUp -- so the IRC 457(b)(3) pool is still the one seeded on a later calculation. The account reduces no Form W-2 box 1 wages and the whole $2,600 lands in the scenario's Roth total.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -9090,12 +9090,16 @@
         "accounts.1.status": "determinate",
         "accounts.1.statutoryMaximumAnnualContribution": 2600,
         "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
-        "accounts.1.contributionComponents.special457CatchUp": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 2600,
         "accounts.1.sharedLimits.2.id": "457b-special-catch-up:t",
         "accounts.1.sharedLimits.2.usedByAccount": 2600,
         "accounts.1.sharedLimits.3.id": "plesa402Ae3:p457",
         "accounts.1.sharedLimits.3.usedByAccount": 2600,
-        "accounts.1.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP"
+        "accounts.1.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP",
+        "accounts.1.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.1.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "totals.employeeRothOrAfterTaxContribution": 2600,
+        "totals.employeePreTaxContribution": 24500
       }
     },
     {
@@ -9140,7 +9144,7 @@
       "expect": {
         "accounts.1.status": "determinate",
         "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
-        "accounts.1.contributionComponents.special457CatchUp": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 2600,
         "accounts.1.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
       }
     },
@@ -9277,7 +9281,7 @@
     },
     {
       "name": "2026 an IRC 457(b)(3) extra below the year's largest age catch-up still needs the birth date",
-      "description": "The boundary the vector above sits on the other side of. IRC 457(b)(3) makes only $1,000 of unused prior deferrals available here, and $1,000 is below the $11,250 that IRC 414(v)(2)(E) would give a participant aged 60 through 63 in 2026 and below the $8,000 of IRC 414(v)(2)(B)(i). So IRC 457(b)(3) is not necessarily the higher limitation, IRC 414(v)(6)(C) does not remove the age-based catch-up, and whether the participant may fund the remaining IRC 402A(e)(3)(A)(i) room turns on an age that was not supplied. The account is indeterminate. The $1,000 it does report is a floor rather than an answer: eligibility under IRC 457(b)(3) does not depend on age, so that much is available whatever the age proves to be, and this package reports a partial figure rather than null where one is certain.",
+      "description": "The boundary the vector above sits on the other side of. IRC 457(b)(3) makes only $1,000 of unused prior deferrals available here, and $1,000 is below the $11,250 that IRC 414(v)(2)(E) would give a participant aged 60 through 63 in 2026. So IRC 457(b)(3) is not necessarily the higher limitation, IRC 414(v)(6)(C) does not remove the age-based catch-up, and the account is indeterminate. What is unknown is the *route* and not merely the amount: IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), the two draw different pools, and on another host they would carry different tax treatment. So no catch-up is allocated under either heading and no catch-up pool is consumed -- reporting the $1,000 that IRC 457(b)(3) would certainly allow would put a floor in a field named for a maximum and file it under a statutory category these facts do not establish. Only the IRC 402A(e)(3)(A)(i) room and the spent IRC 457(e)(15) pool are reported.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -9316,8 +9320,12 @@
       },
       "expect": {
         "accounts.1.status": "indeterminate",
-        "accounts.1.maximumAdditionalContributionBasedOnInputs": 1000,
-        "accounts.1.contributionComponents.special457CatchUp": 1000,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.sharedLimits.1.id": "plesa402Ae3:p457",
+        "accounts.1.sharedLimits.1.usedByAccount": 0,
         "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
       }
     },
@@ -9367,6 +9375,331 @@
         "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
         "accounts.1.contributionComponents.special457CatchUp": 0,
         "accounts.1.sharedLimits.2.id": "457b-catch-up:t"
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) extra equal to the year's largest age catch-up still needs the birth date",
+      "description": "IRC 414(v)(6)(C) removes the age-based catch-up only for a year in which a *higher* limitation applies under IRC 457(b)(3). Equal is not higher. The $11,250 of unused prior deferrals here exactly matches the IRC 414(v)(2)(E) figure for ages 60 through 63 in 2026, so IRC 414(v) remains available and which route applies still turns on the age. The dollar amounts the two routes would fund happen to coincide, but the routes do not: they draw different pools and record different components, which is why an equal amount cannot be treated as settling the question. Supplying the age resolves it, as the paired vector shows.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 11250
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "indeterminate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
+      }
+    },
+    {
+      "name": "2026 the same equal IRC 457(b)(3) amount with a known age of 61 takes the IRC 414(v) route",
+      "description": "The control for the vector above. At 61 the participant is inside the IRC 414(v)(2)(E) band, so the age-based catch-up is $11,250 -- equal to what IRC 457(b)(3) offers. IRC 457(e)(18) gives the greater of the two, and on a tie the age-based route applies because IRC 414(v)(6)(C) has not displaced it. The $2,600 of IRC 402A(e)(3)(A)(i) room is funded from the IRC 414(v) pool, whose limit reads $11,250 rather than the $8,000 of IRC 414(v)(2)(B)(i), and is recorded as employeeRothCatchUp rather than as an IRC 457(b)(3) amount. Same dollars as the indeterminate case, different route -- which is what makes the age load-bearing there.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 11250
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.sharedLimits.2.id": "457b-catch-up:t",
+        "accounts.1.sharedLimits.2.limit": 11250
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) catch-up to a Roth governmental 457(b) is Roth, not pre-tax",
+      "description": "IRC 457(b)(3) is a limitation on deferrals, not a tax characterisation. What decides the tax treatment is the account: a designated Roth account under IRC 402A takes Roth contributions whatever limitation they were made under. The base deferral is the IRC 457(e)(15) figure of $24,500 for 2026 -- includible compensation of $30,000 does not bind under IRC 457(b)(2)(B) -- and IRC 457(b)(3) adds min($24,500, $5,000) = $5,000, for $29,500. All of it is Roth: no Form W-2 box 1 wage reduction and no federal AGI reduction. The component is special457RothCatchUp so that the IRC 457(b)(3) provenance survives a round trip and seeds the right pool next year.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r457",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeeRothDeferral": 24500,
+        "accounts.0.contributionComponents.special457RothCatchUp": 5000,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 29500,
+        "totals.employeeRothOrAfterTaxContribution": 29500,
+        "totals.employeePreTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) catch-up to a traditional governmental 457(b) stays pre-tax",
+      "description": "The control for the vector above, differing only in the account type. A traditional IRC 457(b) account takes pre-tax deferrals, so the same $24,500 + $5,000 is pre-tax: it reduces Form W-2 box 1 wages by $29,500 and contributes nothing to the Roth total. Asserting both directions pins that the tax treatment follows the account rather than the limitation, and that separating the Roth case did not simply reclassify every IRC 457(b)(3) catch-up.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.special457CatchUp": 5000,
+        "accounts.0.contributionComponents.special457RothCatchUp": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 29500,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 0,
+        "totals.employeePreTaxContribution": 29500,
+        "totals.employeeRothOrAfterTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an explicitly null plan-document limit means the sponsor set no IRC 402A(e)(3)(A)(ii) amount",
+      "description": "IRC 402A(e)(3)(A) caps the balance at the lesser of clause (i) and any lower amount the plan sponsor sets under clause (ii). A caller who serialises an absent clause (ii) amount as JSON null is saying the sponsor set none, exactly as omitting the field does, so the cap is clause (i)'s $2,600 and the room is the whole of it. Read instead as a supplied number, null would become zero and bar every contribution to the account -- which is what one engine did while the other treated it as absent, so the same input got two different answers. This vector and the omitted-field vectors it matches pin the two readings together in both engines.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": null,
+              "annualAdditionsGroupId": "g"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 2600,
+        "accounts.0.sharedLimits.2.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b) PLESA seeds neither the IRC 402(g) pool nor an IRC 415(c) group",
+      "description": "The routing vectors elsewhere assert which pools this account draws. This one asserts what it leaves untouched, from the other side: a later account observes the pools after the PLESA has run. The PLESA holds an existing $600 Roth deferral and declares annualAdditionsGroupId 'g', and the 401(k) that follows declares the same group. If IRC 402(g)(3) reached an IRC 457(b) deferral, or IRC 415(a) reached an IRC 457(b) plan, the 401(k) would see that $600 already used. It sees zero in both, so it takes the full IRC 402(g)(1) $24,500 against an untouched IRC 415(c)(1)(A) $72,000. The PLESA's own room is $2,600 - $600 = $2,000, drawn from the IRC 457(e)(15) pool that the $600 did seed.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 600,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          },
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "annualAdditionsGroupId": "g",
+              "planCompensation": 400000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2000,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 600,
+        "accounts.1.sharedLimits.0.id": "402g:t",
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.0.usedByAccount": 24500,
+        "accounts.1.sharedLimits.1.id": "415c:t:g",
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.1.usedByAccount": 24500
+      }
+    },
+    {
+      "name": "2026 an existing Roth IRC 457(b)(3) catch-up seeds the IRC 457(b)(3) pool, not the age pool",
+      "description": "The round trip. A catch-up made under IRC 457(b)(3) to a designated Roth account carries two independent facts -- the limitation that supplied the capacity and the tax treatment of the account it entered -- and both have to survive being handed back as an existing contribution. If the Roth case were recorded as an ordinary employeeRothCatchUp it would seed the IRC 414(v) pool on the next calculation and leave the IRC 457(b)(3) pool untouched, overstating what remains under IRC 457(b)(3) and understating IRC 414(v). Here $5,000 was contributed under IRC 457(b)(3) to the first account; the second account's IRC 457(b)(3) pool therefore opens at $5,000 used against the $24,500 IRC 457(e)(15)-sized ceiling, leaving $19,500, which is what it takes once the first account has spent the shared IRC 457(b)(2)(A) base pool. Only the second account is asserted: the first reports an excess against a statutory maximum that omits what was already contributed, which is pre-existing behaviour on this path and not what this vector is about.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r457",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 24500,
+              "special457RothCatchUp": 5000
+            }
+          },
+          {
+            "id": "r457b",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 24500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 19500,
+        "accounts.1.contributionComponents.special457RothCatchUp": 19500,
+        "accounts.1.sharedLimits.1.id": "457b-special-catch-up:t",
+        "accounts.1.sharedLimits.1.limit": 24500,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 5000,
+        "accounts.1.sharedLimits.1.usedByAccount": 19500
       }
     }
   ]

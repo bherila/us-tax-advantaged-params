@@ -8999,6 +8999,7 @@ final class Engine
             'rothIra' => 0.0,
             'special403bCatchUp' => 0.0,
             'special457CatchUp' => 0.0,
+            'special457RothCatchUp' => 0.0,
             'unclassifiedIra' => 0.0,
             'hsaDeductible' => 0.0,
             'hsaEmployerOrCafeteria' => 0.0,
@@ -9197,7 +9198,8 @@ final class Engine
             + $components['employeeRothCatchUp']
             + $components['employeeAfterTax']
             + $components['employerRoth']
-            + $components['rothIra'],
+            + $components['rothIra']
+            + $components['special457RothCatchUp'],
         );
         if ($pretaxEmployee > 0 && empty($planRules['isSelfEmployedOwner'])) {
             $result['notes'][] = 'Pre-tax salary deferrals generally reduce Form W-2 box 1 wages but not Social Security or Medicare wages.';
@@ -10373,7 +10375,12 @@ final class Engine
                 $context['section457CatchUpPools'][$ownerId]['used'] + self::ageCatchUps($components),
             );
             $context['section457SpecialCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                $context['section457SpecialCatchUpPools'][$ownerId]['used'] + $components['special457CatchUp'],
+                // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of
+                // a catch-up does not change which statutory limitation it was made
+                // under.
+                $context['section457SpecialCatchUpPools'][$ownerId]['used']
+                    + $components['special457CatchUp']
+                    + $components['special457RothCatchUp'],
             );
         }
     }
@@ -15109,7 +15116,8 @@ final class Engine
         $existingParticipantContributions = self::roundMoney(
             self::baseDeferrals($account['existingContributions'])
             + self::ageCatchUps($account['existingContributions'])
-            + $account['existingContributions']['special457CatchUp'],
+            + $account['existingContributions']['special457CatchUp']
+            + $account['existingContributions']['special457RothCatchUp'],
         );
         if ($plesaCaps !== null) {
             $diagnostics[] = self::diagnostic(
@@ -15185,6 +15193,7 @@ final class Engine
             - self::baseDeferrals($annual)
             - self::ageCatchUps($annual)
             - $annual['special457CatchUp']
+            - $annual['special457RothCatchUp']
             - $annual['employerPreTax']
             - $annual['employerRoth'],
         );
@@ -15214,7 +15223,40 @@ final class Engine
                 $compensationRemaining,
             )
             : 0.0;
-        if ($specialStatutoryExtra > $agePotential) {
+        // The birth date is load-bearing on a pension-linked emergency savings
+        // account only where a catch-up could still reach room the base allocation
+        // left, which is how the qualified-plan host asks the same question:
+        // IRC 402A(e)(3)(A) caps the account whatever the participant's age, so where
+        // the room is spent no catch-up could change the answer.
+        //
+        // IRC 457(b)(3) does not by itself settle the question, and comparing the
+        // extra actually available under it against what this participant's age would
+        // allow is circular here, since that age is the unknown. The comparison is
+        // made instead against the largest age-based catch-up the year could produce
+        // at any age.
+        $largestPossibleAgeCatchUp = self::maximumAgeCatchUpLimitForYear($context['parameters'], $traits);
+        $catchUpRouteUnresolved =
+            $hasPlesaPool
+            && self::ageAtEndOfTaxYear($person, $context['taxYear']) === null
+            && $largestPossibleAgeCatchUp > 0
+            && $specialStatutoryExtra <= $largestPossibleAgeCatchUp
+            && (self::poolRemaining($context['plesaPools'][$account['id']]) ?? 0.0) > 0
+            && $compensationRemaining > 0;
+        // Where the participant's age is unknown and a catch-up could still reach the
+        // IRC 402A(e)(3)(A) room, the *route* is unknown too, not merely the amount:
+        // IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), and the two draw
+        // different pools and can carry different tax treatment. So nothing is
+        // allocated under either heading. Reporting a floor here would put a figure in
+        // a field named for a maximum and file it under a statutory category the facts
+        // do not establish.
+        //
+        // The comparison is `<=`, not `<`: IRC 414(v)(6)(C) removes the age-based
+        // catch-up only for a year in which a *higher* limitation applies under
+        // IRC 457(b)(3), so an equal IRC 457(b)(3) amount leaves IRC 414(v) available
+        // and the age still decides which route applies.
+        if ($catchUpRouteUnresolved) {
+            $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
+        } elseif ($specialStatutoryExtra > $agePotential) {
             // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)" — a
             // plan-level ceiling on deferrals, not an account-level one — so it
             // composes with the IRC 402A(e)(3)(A) balance cap in exactly the way
@@ -15225,8 +15267,19 @@ final class Engine
                 $specialStatutoryExtra,
                 $sharedLimits,
             );
-            $additional['special457CatchUp'] = $specialAdded;
-            $annual['special457CatchUp'] = self::roundMoney($annual['special457CatchUp'] + $specialAdded);
+            // IRC 457(b)(3) supplies the capacity; what decides the tax treatment is
+            // the account it lands in. On a pension-linked emergency savings account
+            // that is never a choice: IRC 402A(e)(1)(A)(i) treats the account as a
+            // designated Roth account for purposes of the title, so every participant
+            // contribution to it is Roth whatever limitation it was made under.
+            if (self::accountUsesRothEmployeeContributions($account, $traits)) {
+                $additional['special457RothCatchUp'] = $specialAdded;
+                $annual['special457RothCatchUp'] = self::roundMoney($annual['special457RothCatchUp'] + $specialAdded);
+            } else {
+                $additional['special457CatchUp'] = $specialAdded;
+                $annual['special457CatchUp'] = self::roundMoney($annual['special457CatchUp'] + $specialAdded);
+            }
+            $compensationRemaining = self::nonnegative($compensationRemaining - $specialAdded);
             if ($ageLimit > 0.0) {
                 $diagnostics[] = self::diagnostic(
                     'SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP',
@@ -15253,35 +15306,9 @@ final class Engine
                     $additional['employeePreTaxCatchUp'] = $ageAdded;
                     $annual['employeePreTaxCatchUp'] = self::roundMoney($annual['employeePreTaxCatchUp'] + $ageAdded);
                 }
+                $compensationRemaining = self::nonnegative($compensationRemaining - $ageAdded);
             }
         }
-        // The birth date is load-bearing on a pension-linked emergency savings
-        // account only where a catch-up could still reach room the base allocation
-        // left, which is how the qualified-plan host asks the same question:
-        // IRC 402A(e)(3)(A) caps the account whatever the participant's age, so where
-        // the room is spent no catch-up could change the answer.
-        //
-        // IRC 457(b)(3) does not by itself settle the question. IRC 414(v)(6)(C)
-        // removes the age-based catch-up only for a year in which a *higher*
-        // limitation applies under IRC 457(b)(3), so the two have to be compared —
-        // and comparing the extra actually available under IRC 457(b)(3) against what
-        // this participant's age would allow is circular here, since that is the
-        // unknown. The comparison is therefore made against the largest age-based
-        // catch-up the year could produce at any age: at or above it, IRC 457(b)(3) is
-        // the higher limitation however old the participant turns out to be, and below
-        // it the answer genuinely turns on the age.
-        $largestPossibleAgeCatchUp = self::maximumAgeCatchUpLimitForYear($context['parameters'], $traits);
-        if (
-            $hasPlesaPool
-            && self::ageAtEndOfTaxYear($person, $context['taxYear']) === null
-            && $largestPossibleAgeCatchUp > 0
-            && $specialStatutoryExtra < $largestPossibleAgeCatchUp
-            && (self::poolRemaining($context['plesaPools'][$account['id']]) ?? 0.0) > 0
-            && $compensationRemaining > 0
-        ) {
-            $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
-        }
-
         if (!$traits['governmental457']) {
             $diagnostics[] = self::diagnostic(
                 'NONGOVERNMENTAL_457B_ASSETS_REMAIN_EMPLOYER_PROPERTY',
@@ -15871,6 +15898,7 @@ final class Engine
                 $totals['employeeRothOrAfterTaxContribution']
                 + $components['employeeRothDeferral']
                 + $components['employeeRothCatchUp']
+                + $components['special457RothCatchUp']
                 + $components['employeeAfterTax']
                 + $components['rothIra']
                 + $components['nondeductibleIra']
