@@ -348,7 +348,10 @@ function randomScenario() {
     : fsaHeavy
       ? pick([integer(1979, 1990), integer(2009, 2028)])
       : plesaHeavy
-        ? integer(2023, 2028)
+        // 2023 weighted up on its own: the account type does not exist that year,
+        // and an unavailable account must not select the IRC 457(e)(18) method,
+        // seed a pool or contribute a ceiling for the valid plans beside it.
+        ? (chance(0.25) ? 2023 : integer(2023, 2028))
         : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
   const filingStatus = pick(FILING_STATUSES);
   const personCount = chance(0.55) ? 2 : 1;
@@ -648,8 +651,23 @@ function randomScenario() {
     // amount clears the year's largest age-based catch-up, so it is dropped
     // outright a good part of the time rather than left to the generic 10%.
     if (chance(0.35)) { delete owner.birthYear; delete owner.birthDate; }
+    // 26 CFR 1.457-5(b) applies the individual limitation across "eligible plans of
+    // all employers for whom a participant has performed services", so the two
+    // plans belong to two employers part of the time: the aggregate bounds and the
+    // both-methods pairing have to hold across that split as much as within one
+    // employer, and a shared employer id alone never showed it.
+    const splitEmployers = chance(0.4);
     const twins = [0, 1].map((index) => {
-      const rules = { includibleCompensation457: pick([0, 5000, 24500, 60000, 350000]) };
+      // Compensation below the IRC 457(e)(15) amount is what separates the two
+      // catch-up methods: 26 CFR 1.457-4(c)(3)(ii)(A) builds the IRC 457(b)(3)
+      // ceiling on the compensation-bounded paragraph (2) ceiling, so the special
+      // amount grows as compensation falls, while IRC 414(v)(2)(A)(ii) shrinks the
+      // age-based one to nothing over the same range. Unequal values across the
+      // pair also separate the participant's IRC 414(v) entitlement -- the largest
+      // one plan allows under 1.457-5(c) -- from the sum of what both allow.
+      const rules = {
+        includibleCompensation457: pick([0, 5000, 10000, 24500, 26000, 30000, 60000, 350000]),
+      };
       if (chance(0.7)) {
         rules.section457SpecialCatchUp = {
           eligible: chance(0.85),
@@ -663,7 +681,7 @@ function randomScenario() {
         id: `s45${index}`,
         ownerId: owner.id,
         type: pick(["governmental_457b", "roth_governmental_457b", "nongovernmental_457b"]),
-        employerId,
+        employerId: splitEmployers && index === 1 ? "e2" : employerId,
         planRules: rules,
       };
       // Existing contributions under either heading, so the aggregate bound and
@@ -685,6 +703,11 @@ function randomScenario() {
             employeeRothCatchUp: pick([1000, 4000, 8000]),
             special457RothCatchUp: pick([1000, 4000, 19000]),
           },
+          // A single heading at a size that clears the participant's entitlement
+          // only once both accounts are counted, so 26 CFR 1.457-5(b)'s aggregate
+          // bound is reachable with every per-account and per-plan figure lawful.
+          { employeePreTaxCatchUp: pick([4000, 5000, 6000]) },
+          { special457CatchUp: pick([4000, 5000, 6000]) },
           randomExisting(),
         ]);
       }

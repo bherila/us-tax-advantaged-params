@@ -846,18 +846,45 @@ given account happens to see:
 
 | | Rule |
 |---|---|
-| Which method | §1.457-4(c)(2)(ii): the special catch-up applies "if and only if" the plan ceiling counting it "is larger than" the plan ceiling counting the age 50 catch-up. Both sides share the basic limitation, so the test is between the two catch-up amounts alone. **Larger than is strict** — an equal §457(b)(3) amount leaves §414(v) available, as §414(v)(6)(C) and §457(e)(18) also read |
-| How much | §1.457-5(c): where a participant's plans provide different amounts, the limitation uses "the catch-up amount under whichever plan has the **largest** catch-up amount applicable to the participant" — the largest, not the sum |
-| Which accounts may draw it | §1.457-5(c) again: the special catch-up counts "only to the extent that an annual deferral is made … under an eligible plan as a result of plan provisions permitted under §1.457-4(c)(3)", and §414(v)(6)(A)(ii) reaches only a governmental plan. No account absorbs more of the resolved amount than its own plan provides |
-| Bounded by compensation | §457(b)(2)(B) caps a deferral at 100 percent of includible compensation and no catch-up lifts that, so an account whose compensation the basic limitation already exhausts reports no catch-up capacity |
-| When the age is unknown | The method itself is unresolved, not merely its size, so no catch-up is allocated under either heading and `BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP` is raised — on the accounts where a catch-up could actually have reached room, and not elsewhere. Room is measured **after the base deferral is allocated**, so an account the basic limitation has already filled asks no age question: an isolated §457(b)-hosted PLESA whose whole §402A(e)(3)(A) room the base deferral takes is fully determinate without a birth date. The exception is a §457(b)(3) amount exceeding the largest age-based catch-up the year can produce **at any age**, which §414(v)(6)(C) settles without the age |
-| Existing contributions under both | Diagnosed directly as `SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE` (error). §1.457-5(a) permits the basic limitation plus one method, so recording contributions under both breaches it **as a pair, at any size** — including across two employers' plans, which §1.457-5(b) aggregates — and cannot be left to the excess test, which sees nothing while the two together still fit under the reported ceiling |
+| The plan ceilings compared | §1.457-4(c)(2)(ii) applies the special catch-up "if and only if" the plan ceiling counting it "is **larger than**" the plan ceiling counting the age 50 catch-up. Those are the ceilings the statute produces, not the two headline dollar figures. With `D` the §457(e)(15) amount, `C` includible compensation and `U` the prior-year underutilized limitation: the basic ceiling is `B = min(D, C)`; §457(b)(3) makes the special ceiling `S = min(2D, B + U)`, so the special catch-up above the basic ceiling is `min(2D − B, U)` — which equals `min(D, U)` only where compensation does not bind; §414(v)(2)(A)(ii) caps the age-based catch-up at `C − B`. As compensation falls the special amount **grows** and the age-based one **shrinks**, so the two figures can order oppositely to the raw dollar amounts. **Larger than is strict** — an equal §457(b)(3) ceiling leaves §414(v) available, as §414(v)(6)(C) and §457(e)(18) also read |
+| Compensation bounds one method, not both | §457(b)(3) provides that the paragraph (2) ceiling "**shall be**" the special amount, replacing the 100-percent-of-includible-compensation bound inside that paragraph rather than reapplying it. §414(v) instead *adds* to the paragraph (2) ceiling and carries its own §414(v)(2)(A)(ii) compensation cap. A salary reduction is of course still bounded by the compensation there is to reduce, so where the special plan ceiling stands above it the difference is reported as `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_DEFERRABLE_COMPENSATION` (info) and left unfunded — reachable only by a nonelective employer contribution, which this engine allocates no higher than the paragraph (c)(1) ceiling |
+| How much, participant-wide | §1.457-5(c): where a participant's plans provide different amounts, the limitation uses "the catch-up amount under whichever plan has the **largest** catch-up amount applicable to the participant" — the largest, not the sum. That applies to each method separately, since every plan bounds each method with its own includible compensation |
+| How much, per plan | The participant's entitlement is not every plan's ceiling. §1.457-5(d) Example 2 states both figures for one participant: the individual limitation is $23,000, from Plan Y, while "$22,000 to Plan W and none to any of the other three plans" is separately lawful — W's own ceiling. Each account reports **its own** plan ceiling, and no account absorbs more of the resolved amount than its own plan provides **net of what it already holds** under that provision |
+| Which accounts may draw it | §1.457-5(c) again: the special catch-up counts "only to the extent that an annual deferral is made … under an eligible plan as a result of plan provisions permitted under §1.457-4(c)(3)", and §414(v)(6)(A)(ii) reaches only a governmental plan |
+| Accounts the year does not offer | Excluded from method resolution and from pool seeding entirely. An account type the year does not offer is not one of the "eligible plans" §1.457-5(b) aggregates, so it cannot select a method, contribute a ceiling, or spend a pool that a valid plan then finds empty. It is reported as `unavailable` with its supplied contributions preserved and diagnosed |
+| When the age is unknown | The method itself is unresolved, not merely its size, so no catch-up is allocated under either heading and `BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP` is raised — on the accounts where a catch-up could actually have reached room, and not elsewhere. Room is measured **after the base deferral is allocated**, so an account the basic limitation has already filled asks no age question: an isolated §457(b)-hosted PLESA whose whole §402A(e)(3)(A) room the base deferral takes is fully determinate without a birth date. Nor does an age question arise where §414(v)(2)(A)(ii) leaves no compensation for an age-based catch-up at any age, or where a §457(b)(3) ceiling exceeds the largest age-route ceiling the year can produce at any age, which §414(v)(6)(C) settles without the age |
+
+Existing catch-up contributions carry a statutory provenance the caller chose
+through the component key, so five invariants are checked on that provenance
+before any further catch-up is allocated. None of them reduces to a dollar
+total — each is satisfiable by figures sitting under every ceiling in play, so
+the ordinary excess test sees nothing. Where one fails, the supplied components
+are kept for audit, the account is `indeterminate`, and no further catch-up is
+allocated: reclassifying a component would answer a question only the caller can
+answer.
+
+| Existing contributions | Diagnostic |
+|---|---|
+| Recorded under **both** methods | `SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE` (error). §1.457-5(a) permits the basic limitation plus one method, so the pairing breaches it **at any size** — including across two employers' plans, which §1.457-5(b) aggregates |
+| Recorded solely under the **unselected** method | `SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD` (error). §1.457-4(c)(2)(ii) makes the selection a determination, not an election: the age 50 catch-up "does not apply for any taxable year for which a higher limitation applies" under the special catch-up, and §414(v)(6)(C) says the same from the other side |
+| Selected-method total above the participant's amount | `SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT` (error). §1.457-5(b) determines deferrals "on an aggregate basis" across every employer's plans, so two accounts each within their own ceiling can still exceed the one amount the participant is entitled to |
+| Age-based catch-up on a plan that cannot host one | `SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN` (error). §414(v)(6)(A)(ii) makes only an eligible **governmental** §457(b) plan an applicable employer plan |
+| Special catch-up on a plan providing none | `SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN` (error). §1.457-5(c) counts it only as a result of plan provisions permitted under §1.457-4(c)(3) |
+| Special catch-up above that plan's own amount | `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT` (error), even where the participant is entitled to more elsewhere |
+
+**One `AccountInput` is one eligible plan** for all of the above. That matters
+for a §457(b)-hosted PLESA, which is an account *inside* a host plan rather than
+a plan of its own: a host plan's `section457SpecialCatchUp` facts must be stated
+on the PLESA record too for that record to draw the amount. Issue #53 tracks the
+plan-group key that would let one statement cover both records.
 
 Account order therefore decides only *where* interchangeable capacity lands,
-never which statutory method applies or what the participant's aggregate is.
-§1.457-5(d) Example 2 is committed as a conformance vector: four plans offering
-$7,000, $2,000, $8,000 and nothing yield one ceiling of $15,000 + $8,000 =
-$23,000 for 2006, which is the figure the regulation itself reaches.
+never which statutory method applies, what each plan's own ceiling is, or what
+the participant's aggregate is. §1.457-5(d) Example 2 is committed as a
+conformance vector: four plans offering $7,000, $2,000, $8,000 and nothing yield
+one participant-wide ceiling of $15,000 + $8,000 = $23,000 for 2006, which is the
+figure the regulation itself reaches, while the four accounts report the $22,000,
+$17,000, $23,000 and $15,000 their own plans permit.
 
 ## Roth conversions and in-plan Roth rollovers
 
