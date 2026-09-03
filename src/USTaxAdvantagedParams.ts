@@ -10094,6 +10094,10 @@ interface Section457CatchUpResolution {
   ageAmount: Money;
   /** The largest IRC 457(b)(3) amount any of the participant's plans provides. */
   specialAmount: Money;
+  /** Aggregate IRC 414(v) catch-up already recorded across the IRC 457 accounts. */
+  existingAgeCatchUp: Money;
+  /** Aggregate IRC 457(b)(3) catch-up already recorded across the same accounts. */
+  existingSpecialCatchUp: Money;
   eligibleAccountIds: ReadonlySet<string>;
 }
 
@@ -10154,6 +10158,8 @@ function resolveSection457CatchUpModes(
         headroom: 0,
         ageAmount: 0,
         specialAmount: 0,
+        existingAgeCatchUp: 0,
+        existingSpecialCatchUp: 0,
         eligibleAccountIds: new Set(),
       });
       continue;
@@ -10184,28 +10190,6 @@ function resolveSection457CatchUpModes(
       0,
     );
 
-    // A catch-up can only matter where some account has room above its own
-    // paragraph (c)(1) ceiling for one to occupy. IRC 457(b)(2)(B) bounds every
-    // deferral by includible compensation, so an account whose compensation
-    // already binds at or below that ceiling cannot take a catch-up whatever the
-    // participant's age, and the age is then not a fact the answer turns on.
-    const accountsWithRoomForACatchUp = new Set(owned.filter((account) => {
-      const includible = money(
-        account.planRules.includibleCompensation457 ??
-          account.planRules.planCompensation ??
-          planCompensation(account, context.persons.get(account.ownerId)!),
-        `${account.id}.includibleCompensation457`,
-      );
-      const hostBaseLimit = minMoney(statutoryBase, includible * compensationFraction);
-      if (includible * compensationFraction <= hostBaseLimit) return false;
-      if (!ACCOUNT_TRAITS[account.type].isPlesa) return true;
-      // On a pension-linked emergency savings account the IRC 402A(e)(3)(A)
-      // balance cap binds a catch-up as much as a base deferral, so room there
-      // is room the catch-up could actually reach.
-      const caps = pensionLinkedEmergencySavingsCaps(context, account);
-      return caps !== null && caps.plesaRoom > 0;
-    }).map((account) => account.id));
-
     const largestPossibleAgeCatchUp =
       governmentalAccounts.length === 0
         ? 0
@@ -10235,25 +10219,45 @@ function resolveSection457CatchUpModes(
 
     const headroom = mode === "special" ? specialAmount : mode === "age" ? ageAmount : 0;
     // For a resolved method the set is the statutory one: which plans provide
-    // it. For an unresolved one it names instead the accounts whose reported
-    // answer the missing age actually changes -- those that could take a
-    // catch-up under either method and have room for one -- so the diagnostic
-    // lands there and not on an account the age could not move.
+    // it. For an unresolved one it names every account either method could
+    // reach, so the missing-age diagnostic can be considered for each; whether
+    // an account has room left for a catch-up to occupy is settled in the
+    // allocator, after the base deferral has been made, where the figures are
+    // exact.
     const eligible =
       mode === "special"
         ? specialAccounts
         : mode === "age"
           ? governmentalAccounts
           : mode === "indeterminate"
-            ? [...governmentalAccounts, ...specialAccounts].filter((account) =>
-                accountsWithRoomForACatchUp.has(account.id),
-              )
+            ? [...governmentalAccounts, ...specialAccounts]
             : [];
+    // 26 CFR 1.457-5(a) states the individual limitation as the basic annual
+    // limitation plus *either* the age 50 catch-up or the special IRC 457(b)(3)
+    // catch-up, and 1.457-5(b) applies it "on an aggregate basis" across the
+    // eligible plans of every employer the participant served. Contributions
+    // already recorded under both methods therefore breach the limitation as a
+    // pair, however small each one is, so the totals are carried here for the
+    // allocator to diagnose.
+    const existingAgeCatchUp = roundMoney(
+      owned.reduce((total, account) => total + ageCatchUpDeferrals(account.existingContributions), 0),
+    );
+    const existingSpecialCatchUp = roundMoney(
+      owned.reduce(
+        (total, account) =>
+          total +
+          account.existingContributions.special457CatchUp +
+          account.existingContributions.special457RothCatchUp,
+        0,
+      ),
+    );
     context.section457CatchUpResolutions.set(person.id, {
       mode,
       headroom,
       ageAmount,
       specialAmount,
+      existingAgeCatchUp,
+      existingSpecialCatchUp,
       eligibleAccountIds: new Set(eligible.map((account) => account.id)),
     });
   }
@@ -14538,8 +14542,51 @@ function allocateSection457(
     ? minMoney(poolRemaining(catchUpPool), compensationRemaining, accountSpecialPlanAmount)
     : 0;
 
+  // 26 CFR 1.457-5(a) allows the basic annual limitation plus *either* catch-up,
+  // and 1.457-5(b) applies that on an aggregate basis across every eligible plan
+  // the participant is in. Contributions already recorded under both methods are
+  // therefore invalid as a pair, at any size: the breach is the pairing, not an
+  // amount, so it cannot be left to the generic excess test, which sees nothing
+  // whenever the two together still fit under the reported ceiling.
+  const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
+  const accountExistingSpecialCatchUp = roundMoney(
+    account.existingContributions.special457CatchUp +
+      account.existingContributions.special457RothCatchUp,
+  );
+  if (
+    resolution.existingAgeCatchUp > 0 &&
+    resolution.existingSpecialCatchUp > 0 &&
+    (accountExistingAgeCatchUp > 0 || accountExistingSpecialCatchUp > 0)
+  ) {
+    diagnostics.push(
+      diagnostic(
+        "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+        DiagnosticSeverity.ERROR,
+        `Existing contributions record $${resolution.existingAgeCatchUp.toLocaleString()} of IRC 414(v) age-based catch-up and $${resolution.existingSpecialCatchUp.toLocaleString()} of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation plus either the age 50 catch-up or the special 457 catch-up, taking into account the combined annual deferral under all eligible plans, and 1.457-5(b) applies it on an aggregate basis across every employer; IRC 457(e)(18) likewise gives the greater of the two methods and never their sum. Record each existing contribution under the single method actually used.`,
+        `accounts.${account.id}.existingContributions`,
+        "26 CFR 1.457-5(a); IRC 457(e)(18)",
+      ),
+    );
+  }
+
+  // A missing age changes the reported answer only where a catch-up could
+  // actually land. Testing that after the base deferral has been allocated --
+  // rather than from the account's opening room -- is what separates a question
+  // the supplied facts leave open from one they already settle: on an isolated
+  // pension-linked emergency savings account the base deferral fills the whole
+  // IRC 402A(e)(3)(A) room, so no catch-up of any size fits and the participant's
+  // age cannot move a single figure. The age pool is deliberately not consulted:
+  // it is zero precisely when the age is unknown, so reading it would answer the
+  // question with its own premise.
+  const roomACatchUpCouldOccupy = minMoney(
+    compensationRemaining,
+    plesaPool ? poolRemaining(plesaPool) : Infinity,
+  );
+
   if (resolution.mode === "indeterminate") {
-    if (mayDrawCatchUp) diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
+    if (mayDrawCatchUp && roomACatchUpCouldOccupy > 0) {
+      diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
+    }
   } else if (resolution.mode === "special" && catchUpPotential > 0) {
     // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)" -- a
     // plan-level ceiling on deferrals, not an account-level one -- so it

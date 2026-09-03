@@ -10354,8 +10354,8 @@
       }
     },
     {
-      "name": "2026 catch-ups supplied under both IRC 457 methods are an excess, not a lawful sum",
-      "description": "IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the participant the greater of the age-based catch-up and the last-three-years catch-up for a year, never their sum, and 1.457-5(a) applies that single choice \"by taking into account the combined annual deferral for the participant for any taxable year under all eligible plans\". Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. The supplied existing contributions record $8,000 under IRC 414(v) and $5,000 under IRC 457(b)(3) for the same participant and year, which no combination of the two methods permits. The plan's $20,000 of underutilized limitation makes the IRC 457(b)(3) amount min($24,500, $20,000) = $20,000, larger than the $8,000 age-based amount, so 26 CFR 1.457-4(c)(2)(ii) selects IRC 457(b)(3) and the account's ceiling is $24,500 + $20,000 = $44,500. The $8,000 recorded under the method that was not selected is not converted into capacity under the one that was: the annual figure exceeds the ceiling by exactly that $8,000, the excess is reported, and the account is indeterminate rather than silently legitimising the stack.",
+      "name": "2026 catch-ups supplied under both IRC 457 methods are diagnosed as a pair",
+      "description": "26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation \"plus either the age 50 catch-up amount under Sec. 1.457-4(c)(2), or the special section 457 catch-up amount under Sec. 1.457-4(c)(3), applied by taking into account the combined annual deferral for the participant for any taxable year under all eligible plans\", and 1.457-5(b) applies that on an aggregate basis across the eligible plans of every employer; IRC 457(e)(18) likewise gives the greater of the two methods and never their sum. Contributions recorded under both methods therefore breach the limitation as a pair, whatever their sizes, so the pairing is diagnosed directly rather than left to the generic excess test. Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. The plan's $20,000 of underutilized limitation makes the IRC 457(b)(3) amount min($24,500, $20,000) = $20,000 under 26 CFR 1.457-4(c)(3)(i), larger than the $8,000 age-based amount, so 1.457-4(c)(2)(ii) selects IRC 457(b)(3) and the account's ceiling is $24,500 + $20,000 = $44,500. The $8,000 recorded under the method that was not selected is not converted into capacity under the one that was, so on these particular figures the annual total also exceeds the ceiling by exactly that $8,000 and the excess is reported as well; both diagnostics are asserted here, in that order.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -10395,7 +10395,9 @@
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": 44500,
         "accounts.0.maximumAnnualContributionBasedOnInputs": 52500,
-        "accounts.0.diagnostics.1.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM"
+        "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.diagnostics.2.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM"
       }
     },
     {
@@ -10748,6 +10750,245 @@
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 5500,
         "accounts.0.contributionComponents.special457CatchUp": 0,
         "totals.employeePreTaxContribution": 30000
+      }
+    },
+    {
+      "name": "2026 an isolated governmental PLESA whose room the base deferral fills asks no age question",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 402A(e)(3)(A)(i) amount as $2,600. IRC 402A(e)(3)(A) caps the portion of the account balance attributable to participant contributions, and the supplied balance is $0, so the room is the full $2,600. The IRC 457(b)(2) ceiling is the lesser of $24,500 and 100 percent of the $200,000 of includible compensation, so the balance cap binds first and the base deferral alone fills all $2,600; IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account for purposes of the title, so it lands as a Roth deferral. 26 CFR 1.457-5(a) offers the participant the basic limitation plus either catch-up, but neither can occupy a dollar of a balance cap already exhausted, so no figure this vector asserts turns on the participant's age and none is supplied. The account is determinate: $2,600 of statutory maximum, all of it still contributable, and no missing-age error.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+        "accounts.0.diagnostics.0.severity": "info"
+      }
+    },
+    {
+      "name": "2026 a governmental PLESA whose room outlives the base pool still asks the age question",
+      "description": "The control for the vector above, differing only in that an ordinary governmental 457(b) account sharing the participant's IRC 457(e)(15) limitation is allocated first. Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000 and the IRC 402A(e)(3)(A)(i) amount as $2,600. The ordinary account's base deferral takes the whole $24,500, so nothing of it reaches the emergency savings account, whose IRC 402A(e)(3)(A) room is therefore still $2,600 and whose includible compensation is nowhere near exhausted. IRC 414(v)(6)(A)(ii) makes an eligible governmental plan an applicable employer plan, so an age-based catch-up could put up to $8,000 into these accounts, $2,600 of it into the emergency savings account, and the 26 CFR 1.457-5(a) choice between the two methods turns on an age no supplied fact states. Both accounts are therefore indeterminate and both carry the missing-age error.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000
+            }
+          },
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "priority": 2,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.diagnostics.0.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
+        "accounts.1.diagnostics.1.severity": "error"
+      }
+    },
+    {
+      "name": "2026 both IRC 457 catch-up methods are invalid together even below the dollar ceiling",
+      "description": "The pairing itself breaches 26 CFR 1.457-5(a), so it has to be diagnosed without relying on the total exceeding a dollar amount. Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. IRC 457(b)(2)(B) caps deferrals at 100 percent of includible compensation, here $32,500, so the paragraph (2) ceiling is min($24,500, $32,500) = $24,500 and only $8,000 of compensation remains above it for any catch-up. The plan's $20,000 of underutilized limitation makes the IRC 457(b)(3) amount min($24,500, $20,000) = $20,000 under 26 CFR 1.457-4(c)(3)(i), which exceeds the $8,000 age-based amount, so 1.457-4(c)(2)(ii) selects the special method; bounded by the $8,000 of remaining compensation the account's ceiling is $24,500 + $8,000 = $32,500. The supplied $4,000 of age-based and $4,000 of special catch-up bring the annual total to exactly that $32,500, so no excess arises and the generic excess test has nothing to report, yet the individual limitation permits the basic amount plus one method, never both. The account is indeterminate on the mutual-exclusivity error alone.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 32500,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 4000,
+              "special457CatchUp": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 32500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 32500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 24500,
+        "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+        "accounts.0.diagnostics.0.severity": "error"
+      }
+    },
+    {
+      "name": "2026 the two IRC 457 catch-up methods are exclusive across employers, not just within a plan",
+      "description": "26 CFR 1.457-5(b) determines the individual limitation \"on an aggregate basis\" across \"eligible plans of all employers for whom a participant has performed services\", so splitting the two methods between two employers' plans does not make them compatible. Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. Plan A records $3,000 of age-based catch-up and Plan B $3,000 of special catch-up; neither account on its own holds contributions under both methods, and the aggregate $6,000 is far below any ceiling in play. The 26 CFR 1.457-5(a) breach is nonetheless present, and lands on both accounts because each holds part of it. Plan B's $20,000 of underutilized limitation makes the IRC 457(b)(3) amount min($24,500, $20,000) = $20,000 under 1.457-4(c)(3)(i), which exceeds $8,000, so the special method is the one 1.457-4(c)(2)(ii) selects and Plan A, providing no such catch-up, has a ceiling of the $24,500 basic amount alone.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000,
+              "f": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 100000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "f",
+            "priority": 2,
+            "planRules": {
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 24500,
+        "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": 44500,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+        "accounts.1.diagnostics.0.severity": "error"
+      }
+    },
+    {
+      "name": "2026 existing catch-up under the one selected IRC 457 method is not a mutual-exclusivity breach",
+      "description": "The narrowness control for the two vectors above: 26 CFR 1.457-5(a) forbids combining the methods, not using one of them. Notice 2025-67 states the 2026 IRC 457(e)(15) amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. IRC 457(b)(2)(B) caps deferrals at the $32,500 of includible compensation, leaving $8,000 above the $24,500 paragraph (2) ceiling. The plan's $20,000 of underutilized limitation makes the IRC 457(b)(3) amount min($24,500, $20,000) = $20,000 under 1.457-4(c)(3)(i), so 1.457-4(c)(2)(ii) selects the special method and the ceiling is $24,500 + $8,000 = $32,500. The whole $8,000 of existing catch-up sits under that one selected method, so the input is lawful and the account is determinate with the $24,500 basic amount still contributable.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 32500,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 8000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 32500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 32500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 8000
       }
     }
   ]

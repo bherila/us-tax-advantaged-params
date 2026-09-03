@@ -10438,6 +10438,8 @@ final class Engine
                     'headroom' => 0.0,
                     'ageAmount' => 0.0,
                     'specialAmount' => 0.0,
+                    'existingAgeCatchUp' => 0.0,
+                    'existingSpecialCatchUp' => 0.0,
                     'eligibleAccountIds' => [],
                 ];
                 continue;
@@ -10471,37 +10473,6 @@ final class Engine
                 }
             }
 
-            // A catch-up can only matter where some account has room above its own
-            // paragraph (c)(1) ceiling for one to occupy. IRC 457(b)(2)(B) bounds
-            // every deferral by includible compensation, so an account whose
-            // compensation already binds at or below that ceiling cannot take a
-            // catch-up whatever the participant's age, and the age is then not a fact
-            // the answer turns on.
-            $accountsWithRoomForACatchUp = [];
-            foreach ($owned as $account) {
-                $includible = self::money(
-                    $account['planRules']['includibleCompensation457']
-                        ?? $account['planRules']['planCompensation']
-                        ?? self::planCompensation($account, $context['persons'][$account['ownerId']]),
-                    "{$account['id']}.includibleCompensation457",
-                );
-                $hostBaseLimit = self::minMoney((float) $statutoryBase, $includible * (float) $compensationFraction);
-                if ($includible * (float) $compensationFraction <= $hostBaseLimit) {
-                    continue;
-                }
-                if (empty(self::traits($account['type'])['isPlesa'])) {
-                    $accountsWithRoomForACatchUp[$account['id']] = true;
-                    continue;
-                }
-                // On a pension-linked emergency savings account the IRC 402A(e)(3)(A)
-                // balance cap binds a catch-up as much as a base deferral, so room
-                // there is room the catch-up could actually reach.
-                $caps = self::pensionLinkedEmergencySavingsCaps($context, $account);
-                if ($caps !== null && $caps['plesaRoom'] > 0.0) {
-                    $accountsWithRoomForACatchUp[$account['id']] = true;
-                }
-            }
-
             $largestPossibleAgeCatchUp = $governmentalAccounts === []
                 ? 0.0
                 : self::maximumAgeCatchUpLimitForYear($context['parameters'], $governmentalTraits);
@@ -10526,8 +10497,11 @@ final class Engine
             }
 
             // For a resolved method the set is the statutory one: which plans provide
-            // it. For an unresolved one it names instead the accounts whose reported
-            // answer the missing age actually changes.
+            // it. For an unresolved one it names every account either method could
+            // reach, so the missing-age diagnostic can be considered for each; whether
+            // an account has room left for a catch-up to occupy is settled in the
+            // allocator, after the base deferral has been made, where the figures are
+            // exact.
             $eligibleIds = [];
             if ($mode === 'special') {
                 foreach ($specialAccounts as $account) {
@@ -10539,10 +10513,23 @@ final class Engine
                 }
             } elseif ($mode === 'indeterminate') {
                 foreach (array_merge($governmentalAccounts, $specialAccounts) as $account) {
-                    if (isset($accountsWithRoomForACatchUp[$account['id']])) {
-                        $eligibleIds[] = $account['id'];
-                    }
+                    $eligibleIds[] = $account['id'];
                 }
+            }
+
+            // 26 CFR 1.457-5(a) states the individual limitation as the basic annual
+            // limitation plus *either* the age 50 catch-up or the special IRC 457(b)(3)
+            // catch-up, and 1.457-5(b) applies it "on an aggregate basis" across the
+            // eligible plans of every employer the participant served. Contributions
+            // already recorded under both methods therefore breach the limitation as a
+            // pair, however small each one is, so the totals are carried here for the
+            // allocator to diagnose.
+            $existingAgeCatchUp = 0.0;
+            $existingSpecialCatchUp = 0.0;
+            foreach ($owned as $account) {
+                $existingAgeCatchUp += self::ageCatchUps($account['existingContributions']);
+                $existingSpecialCatchUp += $account['existingContributions']['special457CatchUp']
+                    + $account['existingContributions']['special457RothCatchUp'];
             }
 
             $context['section457CatchUpResolutions'][$personId] = [
@@ -10550,6 +10537,8 @@ final class Engine
                 'headroom' => $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0),
                 'ageAmount' => $ageAmount,
                 'specialAmount' => $specialAmount,
+                'existingAgeCatchUp' => self::roundMoney($existingAgeCatchUp),
+                'existingSpecialCatchUp' => self::roundMoney($existingSpecialCatchUp),
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -15496,8 +15485,57 @@ final class Engine
             )
             : 0.0;
 
+        // 26 CFR 1.457-5(a) allows the basic annual limitation plus *either* catch-up,
+        // and 1.457-5(b) applies that on an aggregate basis across every eligible plan
+        // the participant is in. Contributions already recorded under both methods are
+        // therefore invalid as a pair, at any size: the breach is the pairing, not an
+        // amount, so it cannot be left to the generic excess test, which sees nothing
+        // whenever the two together still fit under the reported ceiling.
+        $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
+        $accountExistingSpecialCatchUp = self::roundMoney(
+            $account['existingContributions']['special457CatchUp']
+                + $account['existingContributions']['special457RothCatchUp'],
+        );
+        if (
+            $resolution['existingAgeCatchUp'] > 0.0
+            && $resolution['existingSpecialCatchUp'] > 0.0
+            && ($accountExistingAgeCatchUp > 0.0 || $accountExistingSpecialCatchUp > 0.0)
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($resolution['existingAgeCatchUp'])
+                    . ' of IRC 414(v) age-based catch-up and $'
+                    . self::localeNumber($resolution['existingSpecialCatchUp'])
+                    . ' of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a)'
+                    . ' states the individual limitation as the basic annual limitation plus either'
+                    . ' the age 50 catch-up or the special 457 catch-up, taking into account the'
+                    . ' combined annual deferral under all eligible plans, and 1.457-5(b) applies it'
+                    . ' on an aggregate basis across every employer; IRC 457(e)(18) likewise gives'
+                    . ' the greater of the two methods and never their sum. Record each existing'
+                    . ' contribution under the single method actually used.',
+                "accounts.{$account['id']}.existingContributions",
+                '26 CFR 1.457-5(a); IRC 457(e)(18)',
+            );
+        }
+
+        // A missing age changes the reported answer only where a catch-up could
+        // actually land. Testing that after the base deferral has been allocated —
+        // rather than from the account's opening room — is what separates a question
+        // the supplied facts leave open from one they already settle: on an isolated
+        // pension-linked emergency savings account the base deferral fills the whole
+        // IRC 402A(e)(3)(A) room, so no catch-up of any size fits and the participant's
+        // age cannot move a single figure. The age pool is deliberately not consulted:
+        // it is zero precisely when the age is unknown, so reading it would answer the
+        // question with its own premise.
+        $roomACatchUpCouldOccupy = self::minMoney(
+            $compensationRemaining,
+            $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
+        );
+
         if ($resolution['mode'] === 'indeterminate') {
-            if ($mayDrawCatchUp) {
+            if ($mayDrawCatchUp && $roomACatchUpCouldOccupy > 0.0) {
                 $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
             }
         } elseif ($resolution['mode'] === 'special' && $catchUpPotential > 0.0) {

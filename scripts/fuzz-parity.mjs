@@ -606,6 +606,14 @@ function randomScenario() {
       if (chance(0.5)) plesaRules.section457SpecialCatchUp = special;
       else hostRules.section457SpecialCatchUp = special;
     }
+    // Sometimes the emergency savings account stands alone, with no host
+    // account sharing the participant's base pool. That is the shape where the
+    // base deferral itself fills the whole IRC 402A(e)(3)(A) room, leaving no
+    // room for a catch-up of any size, so it is the shape that separates an
+    // answer the age cannot move from one it can. Generated as a pair only, it
+    // never occurred: the host always either spent the base pool, leaving the
+    // account-local room intact, or was reached second.
+    const isolatedPlesa = chance(0.2);
     const pair = [
       { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
       { id: "p1", ownerId: owner.id, type: plesaType, employerId, planRules: plesaRules },
@@ -619,6 +627,7 @@ function randomScenario() {
     else if (chance(0.3)) pair[0].existingContributions = randomExisting();
     if (chance(0.5)) pair.reverse();
     pair.forEach((account) => {
+      if (isolatedPlesa && account.id === "p0") return;
       if (chance(0.4)) account.priority = integer(1, 200);
       accounts.splice(integer(0, accounts.length), 0, account);
     });
@@ -658,13 +667,24 @@ function randomScenario() {
         planRules: rules,
       };
       // Existing contributions under either heading, so the aggregate bound and
-      // the both-methods-supplied case are reachable.
+      // the both-methods-supplied case are reachable. One shape carries both
+      // headings at once: 26 CFR 1.457-5(a) allows the basic limitation plus
+      // either catch-up, so the pairing is a breach at any size, and picking one
+      // heading per account left the within-one-account form of it unreachable.
       if (chance(0.35)) {
         account.existingContributions = pick([
           { special457CatchUp: pick([1000, 19000, money()]) },
           { special457RothCatchUp: pick([1000, 19000, money()]) },
           { employeePreTaxCatchUp: pick([1000, 8000, money()]) },
           { employeePreTaxDeferral: pick([23000, 24500, money()]) },
+          {
+            employeePreTaxCatchUp: pick([1000, 4000, 8000]),
+            special457CatchUp: pick([1000, 4000, 19000]),
+          },
+          {
+            employeeRothCatchUp: pick([1000, 4000, 8000]),
+            special457RothCatchUp: pick([1000, 4000, 19000]),
+          },
           randomExisting(),
         ]);
       }
