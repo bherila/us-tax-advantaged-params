@@ -10092,6 +10092,7 @@ final class Engine
             'section457BasePools' => [],
             'section457CatchUpPools' => [],
             'section457SpecialCatchUpPools' => [],
+            'section457CatchUpResolutions' => [],
             'hsaBasePools' => [],
             'hsaCatchUpPools' => [],
             'hsaFamilyPools' => [],
@@ -10363,8 +10364,200 @@ final class Engine
     /** @param array<string,mixed> $context
      *  @param list<array<string,mixed>> $accounts
      */
+    /**
+     * The IRC 457(b)(3) ceiling a single plan states, as an amount above the
+     * paragraph (c)(1) ceiling.
+     *
+     * 26 CFR 1.457-4(c)(3)(i) caps the plan ceiling for such a year at the lesser
+     * of twice the paragraph (c)(1)(i)(A) dollar amount and the underutilized
+     * limitation, and (c)(3)(ii) builds that limitation as the current year's
+     * ceiling *plus* prior years' unused amounts. Subtracting the current year's
+     * ceiling from both sides leaves the extra above it as
+     * min(dollarAmount, priorUnused), which is the form the rest of the engine
+     * works in.
+     *
+     * @param array<string,mixed> $account
+     */
+    private static function section457SpecialCatchUpPlanAmount(float $statutoryBase, array $account): float
+    {
+        $special = $account['planRules']['section457SpecialCatchUp'] ?? null;
+        if (!is_array($special) || empty($special['eligible'])) {
+            return 0.0;
+        }
+
+        return self::minMoney(
+            $statutoryBase,
+            self::money(
+                $special['unusedDeferralsFromPriorYears'] ?? null,
+                "{$account['id']}.unused457Deferrals",
+            ),
+        );
+    }
+
+    /**
+     * Resolves the participant-wide catch-up method for every person holding an
+     * IRC 457 account, from annual ceilings rather than from whatever pool
+     * capacity happens to survive to a given account.
+     *
+     * 26 CFR 1.457-5(a) states the individual limitation as the basic annual
+     * limitation "plus either the age 50 catch-up amount under 1.457-4(c)(2), or
+     * the special section 457 catch-up amount under 1.457-4(c)(3), applied by
+     * taking into account the combined annual deferral for the participant for
+     * any taxable year under all eligible plans", and 1.457-5(b) aggregates that
+     * across the plans of every employer the participant has served. The
+     * selection test is the one 1.457-4(c)(2)(ii) states: the special catch-up
+     * applies "if and only if" the plan ceiling counting paragraph (c)(1) and the
+     * special catch-up "is larger than" the plan ceiling counting paragraph
+     * (c)(1) and the age 50 catch-up. Both sides share the paragraph (c)(1) term,
+     * so it cancels and the test is between the two catch-up amounts alone.
+     * "Larger than" is strict, as IRC 414(v)(6)(C) and IRC 457(e)(18) also read.
+     *
+     * @param array<string,mixed> $context
+     * @param list<array<string,mixed>> $accounts
+     */
+    private static function resolveSection457CatchUpModes(array &$context, array $accounts): void
+    {
+        $statutoryBase = $context['parameters']['section457b']['baseDeferralLimit'];
+        $compensationFraction = $context['parameters']['section457b']['includibleCompensationFraction'];
+        $governmentalTraits = self::traits(AccountType::GOVERNMENTAL_457B->value);
+
+        foreach ($context['persons'] as $person) {
+            $personId = $person['id'];
+            $owned = [];
+            foreach ($accounts as $account) {
+                if ($account['ownerId'] === $personId && self::traits($account['type'])['family'] === 'section457') {
+                    $owned[] = $account;
+                }
+            }
+            if ($owned === []) {
+                continue;
+            }
+            if ($statutoryBase === null || $compensationFraction === null) {
+                $context['section457CatchUpResolutions'][$personId] = [
+                    'mode' => 'none',
+                    'headroom' => 0.0,
+                    'ageAmount' => 0.0,
+                    'specialAmount' => 0.0,
+                    'eligibleAccountIds' => [],
+                ];
+                continue;
+            }
+
+            // IRC 414(v)(6)(A)(ii) reaches only an eligible governmental plan, so a
+            // participant with no such account has no age-based method to choose.
+            $governmentalAccounts = [];
+            foreach ($owned as $account) {
+                $accountTraits = self::traits($account['type']);
+                if (!empty($accountTraits['governmental457']) && !empty($accountTraits['permitsAgeCatchUpByStatute'])) {
+                    $governmentalAccounts[] = $account;
+                }
+            }
+            $ageAmount = $governmentalAccounts === []
+                ? 0.0
+                : self::workplaceCatchUpLimit($context['parameters'], $person, $governmentalTraits);
+
+            // The largest, not the sum: 26 CFR 1.457-5(c) applies the limitation
+            // "using the catch-up amount under whichever plan has the largest
+            // catch-up amount applicable to the participant", worked through in its
+            // own Example 2, where four plans offering $7,000, $2,000, $8,000 and
+            // nothing yield one $8,000 catch-up deferred under the plan offering it.
+            $specialAccounts = [];
+            $specialAmount = 0.0;
+            foreach ($owned as $account) {
+                $planAmount = self::section457SpecialCatchUpPlanAmount((float) $statutoryBase, $account);
+                if ($planAmount > 0.0) {
+                    $specialAccounts[] = $account;
+                    $specialAmount = max($specialAmount, $planAmount);
+                }
+            }
+
+            // A catch-up can only matter where some account has room above its own
+            // paragraph (c)(1) ceiling for one to occupy. IRC 457(b)(2)(B) bounds
+            // every deferral by includible compensation, so an account whose
+            // compensation already binds at or below that ceiling cannot take a
+            // catch-up whatever the participant's age, and the age is then not a fact
+            // the answer turns on.
+            $accountsWithRoomForACatchUp = [];
+            foreach ($owned as $account) {
+                $includible = self::money(
+                    $account['planRules']['includibleCompensation457']
+                        ?? $account['planRules']['planCompensation']
+                        ?? self::planCompensation($account, $context['persons'][$account['ownerId']]),
+                    "{$account['id']}.includibleCompensation457",
+                );
+                $hostBaseLimit = self::minMoney((float) $statutoryBase, $includible * (float) $compensationFraction);
+                if ($includible * (float) $compensationFraction <= $hostBaseLimit) {
+                    continue;
+                }
+                if (empty(self::traits($account['type'])['isPlesa'])) {
+                    $accountsWithRoomForACatchUp[$account['id']] = true;
+                    continue;
+                }
+                // On a pension-linked emergency savings account the IRC 402A(e)(3)(A)
+                // balance cap binds a catch-up as much as a base deferral, so room
+                // there is room the catch-up could actually reach.
+                $caps = self::pensionLinkedEmergencySavingsCaps($context, $account);
+                if ($caps !== null && $caps['plesaRoom'] > 0.0) {
+                    $accountsWithRoomForACatchUp[$account['id']] = true;
+                }
+            }
+
+            $largestPossibleAgeCatchUp = $governmentalAccounts === []
+                ? 0.0
+                : self::maximumAgeCatchUpLimitForYear($context['parameters'], $governmentalTraits);
+            $ageUnknown = self::ageAtEndOfTaxYear($person, $context['taxYear']) === null;
+
+            if ($specialAmount > $largestPossibleAgeCatchUp) {
+                // IRC 414(v)(6)(C) removes the age-based method for a year in which a
+                // higher IRC 457(b)(3) limitation applies. Where the IRC 457(b)(3)
+                // amount beats the largest figure the year could produce at *any* age,
+                // that is settled without knowing this participant's age.
+                $mode = 'special';
+            } elseif ($ageUnknown && $largestPossibleAgeCatchUp > 0.0) {
+                // Not merely the amount but the *method* turns on the age, and the two
+                // draw different pools and can carry different tax treatment.
+                $mode = 'indeterminate';
+            } elseif ($specialAmount > $ageAmount) {
+                $mode = 'special';
+            } elseif ($ageAmount > 0.0) {
+                $mode = 'age';
+            } else {
+                $mode = 'none';
+            }
+
+            // For a resolved method the set is the statutory one: which plans provide
+            // it. For an unresolved one it names instead the accounts whose reported
+            // answer the missing age actually changes.
+            $eligibleIds = [];
+            if ($mode === 'special') {
+                foreach ($specialAccounts as $account) {
+                    $eligibleIds[] = $account['id'];
+                }
+            } elseif ($mode === 'age') {
+                foreach ($governmentalAccounts as $account) {
+                    $eligibleIds[] = $account['id'];
+                }
+            } elseif ($mode === 'indeterminate') {
+                foreach (array_merge($governmentalAccounts, $specialAccounts) as $account) {
+                    if (isset($accountsWithRoomForACatchUp[$account['id']])) {
+                        $eligibleIds[] = $account['id'];
+                    }
+                }
+            }
+
+            $context['section457CatchUpResolutions'][$personId] = [
+                'mode' => $mode,
+                'headroom' => $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0),
+                'ageAmount' => $ageAmount,
+                'specialAmount' => $specialAmount,
+                'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
+            ];
+        }
+    }
+
     private static function initializeSection457Pools(array &$context, array $accounts): void
     {
+        self::resolveSection457CatchUpModes($context, $accounts);
         foreach ($context['persons'] as $person) {
             $id = $person['id'];
             $context['section457BasePools'][$id] = [
@@ -10388,9 +10581,10 @@ final class Engine
             $context['section457SpecialCatchUpPools'][$id] = [
                 'id' => "457b-special-catch-up:{$id}",
                 'legalLimit' => 'IRC 457(b)(3) special last-three-years catch-up',
-                'limit' => $context['parameters']['section457b']['baseDeferralLimit'] === null
-                    ? null
-                    : (float) $context['parameters']['section457b']['baseDeferralLimit'],
+                // The largest amount any one of the participant's plans provides, not
+                // the sum of what they all provide: 26 CFR 1.457-5(c). A pool limited
+                // to the statutory base instead let two plans' separate amounts add.
+                'limit' => $context['section457CatchUpResolutions'][$id]['specialAmount'] ?? 0.0,
                 'used' => 0.0,
             ];
         }
@@ -15264,66 +15458,49 @@ final class Engine
             - $annual['employerPreTax']
             - $annual['employerRoth'],
         );
-        $ageLimit = $traits['governmental457']
-            ? self::accountPlanCatchUpLimit($context, $account, $traits)
-            : 0.0;
-        $existingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
-        $agePotential = self::minMoney(
-            self::nonnegative($ageLimit - $existingAgeCatchUp),
-            self::poolRemaining($context['section457CatchUpPools'][$ownerId]),
-            $compensationRemaining,
-        );
-        // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)", but
-        // IRC 402A(e)(3)(A) independently forbids any contribution that would push
-        // the balance past its own cap, so neither catch-up can lift a pension-linked
-        // emergency savings account above it. Same reasoning as IRC 414(v) for the
-        // other hosts.
-        $specialInput = $account['planRules']['section457SpecialCatchUp'] ?? null;
-        $specialStatutoryExtra = is_array($specialInput) && !empty($specialInput['eligible'])
+        // IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the participant the greater
+        // of the two catch-up methods for the year, never their sum, and 1.457-5(a)
+        // applies that choice across every eligible plan at once. It is therefore
+        // resolved for the participant before any account allocates — see
+        // resolveSection457CatchUpModes — so that account priority decides only where
+        // interchangeable capacity lands. Deciding it here, from whatever pool capacity
+        // survived to this account, let two accounts pick different methods and use
+        // both in one year.
+        $resolution = $context['section457CatchUpResolutions'][$ownerId];
+        // 26 CFR 1.457-5(c): the special catch-up counts only to the extent the
+        // deferral is actually made under a plan providing it, and the age-based method
+        // reaches only a governmental plan. An account outside the selected method's
+        // set draws nothing, whatever its priority.
+        $mayDrawCatchUp = isset($resolution['eligibleAccountIds'][$account['id']]);
+        $catchUpPoolCategory = $resolution['mode'] === 'special'
+            ? 'section457SpecialCatchUpPools'
+            : 'section457CatchUpPools';
+        // The pool's own `used` already carries the participant's aggregate existing
+        // catch-up contributions under this method, so no per-account subtraction is
+        // made here: doing both charged this account's existing amount twice.
+        // 26 CFR 1.457-5(c) recognises the special catch-up "only to the extent that
+        // an annual deferral is made for a participant under an eligible plan as a
+        // result of plan provisions permitted under 1.457-4(c)(3)", so the largest
+        // amount the participant is entitled to is not absorbable by a plan whose own
+        // provisions are smaller. Its Example 2 is explicit: the $8,000 figure comes
+        // from Plan Y and has to be deferred under Plan Y, even though Plan W also
+        // offers the catch-up, at $7,000.
+        $accountSpecialPlanAmount = $resolution['mode'] === 'special'
+            ? self::section457SpecialCatchUpPlanAmount((float) $statutoryBase, $account)
+            : INF;
+        $catchUpPotential = $mayDrawCatchUp
             ? self::minMoney(
-                (float) $statutoryBase,
-                self::money(
-                    $specialInput['unusedDeferralsFromPriorYears'] ?? null,
-                    "{$account['id']}.unused457Deferrals",
-                ),
-                self::poolRemaining($context['section457SpecialCatchUpPools'][$ownerId]),
+                self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
+                $accountSpecialPlanAmount,
             )
             : 0.0;
-        // The birth date is load-bearing on a pension-linked emergency savings
-        // account only where a catch-up could still reach room the base allocation
-        // left, which is how the qualified-plan host asks the same question:
-        // IRC 402A(e)(3)(A) caps the account whatever the participant's age, so where
-        // the room is spent no catch-up could change the answer.
-        //
-        // IRC 457(b)(3) does not by itself settle the question, and comparing the
-        // extra actually available under it against what this participant's age would
-        // allow is circular here, since that age is the unknown. The comparison is
-        // made instead against the largest age-based catch-up the year could produce
-        // at any age.
-        $largestPossibleAgeCatchUp = self::maximumAgeCatchUpLimitForYear($context['parameters'], $traits);
-        $catchUpRouteUnresolved =
-            $hasPlesaPool
-            && self::ageAtEndOfTaxYear($person, $context['taxYear']) === null
-            && $largestPossibleAgeCatchUp > 0
-            && $specialStatutoryExtra <= $largestPossibleAgeCatchUp
-            && (self::poolRemaining($context['plesaPools'][$account['id']]) ?? 0.0) > 0
-            && $compensationRemaining > 0;
-        // Where the participant's age is unknown and a catch-up could still reach the
-        // IRC 402A(e)(3)(A) room, the *route* is unknown too, not merely the amount:
-        // IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), and the two draw
-        // different pools and can carry different tax treatment. So nothing is
-        // allocated under either heading. Reporting a floor here would put a figure in
-        // a field named for a maximum and file it under a statutory category the facts
-        // do not establish.
-        //
-        // The comparison is `<=`, not `<`: IRC 414(v)(6)(C) removes the age-based
-        // catch-up only for a year in which a *higher* limitation applies under
-        // IRC 457(b)(3), so an equal IRC 457(b)(3) amount leaves IRC 414(v) available
-        // and the age still decides which route applies.
-        if ($catchUpRouteUnresolved) {
-            $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
-        } elseif ($specialStatutoryExtra > $agePotential) {
+
+        if ($resolution['mode'] === 'indeterminate') {
+            if ($mayDrawCatchUp) {
+                $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
+            }
+        } elseif ($resolution['mode'] === 'special' && $catchUpPotential > 0.0) {
             // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)" — a
             // plan-level ceiling on deferrals, not an account-level one — so it
             // composes with the IRC 402A(e)(3)(A) balance cap in exactly the way
@@ -15331,7 +15508,7 @@ final class Engine
             $specialAdded = self::takeAcrossPools(
                 $context,
                 array_merge([['section457SpecialCatchUpPools', $ownerId]], $plesaRefs),
-                $specialStatutoryExtra,
+                $catchUpPotential,
                 $sharedLimits,
             );
             // IRC 457(b)(3) supplies the capacity; what decides the tax treatment is
@@ -15347,7 +15524,7 @@ final class Engine
                 $annual['special457CatchUp'] = self::roundMoney($annual['special457CatchUp'] + $specialAdded);
             }
             $compensationRemaining = self::nonnegative($compensationRemaining - $specialAdded);
-            if ($ageLimit > 0.0) {
+            if ($resolution['ageAmount'] > 0.0) {
                 $diagnostics[] = self::diagnostic(
                     'SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP',
                     DiagnosticSeverity::INFO,
@@ -15355,7 +15532,7 @@ final class Engine
                     "accounts.{$account['id']}",
                 );
             }
-        } elseif ($agePotential > 0.0) {
+        } elseif ($resolution['mode'] === 'age' && $catchUpPotential > 0.0) {
             $treatment = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
             if ($treatment === 'unknown') {
                 self::reportPoolWithoutConsuming($context['section457CatchUpPools'][$ownerId], $sharedLimits);
@@ -15363,7 +15540,7 @@ final class Engine
                 $ageAdded = self::takeAcrossPools(
                     $context,
                     array_merge([['section457CatchUpPools', $ownerId]], $plesaRefs),
-                    $agePotential,
+                    $catchUpPotential,
                     $sharedLimits,
                 );
                 if ($treatment === 'roth') {
@@ -15376,6 +15553,21 @@ final class Engine
                 $compensationRemaining = self::nonnegative($compensationRemaining - $ageAdded);
             }
         }
+        // The catch-up this account may reach for the year, as a ceiling rather than as
+        // whatever survived allocation. Built from residual capacity it shrank as other
+        // accounts spent the pool, so an account holding existing IRC 457(b)(3)
+        // contributions reported a maximum smaller than what it already held and
+        // tripped the excess diagnostic by exactly that amount.
+        // IRC 457(b)(2)(B) caps a deferral at 100 percent of includible compensation and a
+        // catch-up does not lift that, so an account whose compensation the base
+        // limitation already exhausts reports no catch-up capacity. The bound is annual
+        // rather than residual, so it does not vary with account order.
+        $catchUpCompensationRoom = self::nonnegative(
+            $includibleCompensation * (float) $compensationFraction - $statutoryHostBaseLimit,
+        );
+        $applicableCatchUpHeadroom = $mayDrawCatchUp
+            ? self::minMoney($resolution['headroom'], $catchUpCompensationRoom)
+            : 0.0;
         if (!$traits['governmental457']) {
             $diagnostics[] = self::diagnostic(
                 'NONGOVERNMENTAL_457B_ASSETS_REMAIN_EMPLOYER_PROPERTY',
@@ -15394,9 +15586,9 @@ final class Engine
             // exactly as on the IRC 401(a) and IRC 403(b) hosts.
             'statutoryMaximum' => self::roundMoney(
                 $plesaCaps === null
-                    ? $statutoryHostBaseLimit + max($ageLimit, $specialStatutoryExtra)
+                    ? $statutoryHostBaseLimit + $applicableCatchUpHeadroom
                     : self::minMoney(
-                        $statutoryHostBaseLimit + max($ageLimit, $specialStatutoryExtra),
+                        $statutoryHostBaseLimit + $applicableCatchUpHeadroom,
                         $existingParticipantContributions + $plesaCaps['statutoryPlesaRoom'],
                     ),
             ),

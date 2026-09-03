@@ -625,6 +625,57 @@ function randomScenario() {
     if (chance(0.3)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
   }
 
+  // A second targeted shape: two ordinary IRC 457(b) accounts for one
+  // participant. IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the greater of
+  // the two catch-up methods, and 1.457-5(c) takes the largest single plan's
+  // IRC 457(b)(3) amount rather than the sum, so both rules only bind once a
+  // participant holds more than one such account. The PLESA pair above emits at
+  // most one IRC 457(b)(3) declaration per participant, which left the whole
+  // multi-account conflict outside the fuzz space.
+  if (chance(0.3)) {
+    const owner = pick(persons);
+    const employerId = pick(["e0", "e1"]);
+    // The age is the fact the method choice turns on where neither IRC 457(b)(3)
+    // amount clears the year's largest age-based catch-up, so it is dropped
+    // outright a good part of the time rather than left to the generic 10%.
+    if (chance(0.35)) { delete owner.birthYear; delete owner.birthDate; }
+    const twins = [0, 1].map((index) => {
+      const rules = { includibleCompensation457: pick([0, 5000, 24500, 60000, 350000]) };
+      if (chance(0.7)) {
+        rules.section457SpecialCatchUp = {
+          eligible: chance(0.85),
+          // Deliberately unequal across the two, since equal amounts cannot show
+          // a largest-of rule apart from a sum-of one.
+          unusedDeferralsFromPriorYears: pick([0, 1000, 5000, 8000, 11250, 20000, 24500, money()]),
+        };
+      }
+      if (chance(0.2)) rules.planDocumentEmployeeDeferralLimit = money();
+      const account = {
+        id: `s45${index}`,
+        ownerId: owner.id,
+        type: pick(["governmental_457b", "roth_governmental_457b", "nongovernmental_457b"]),
+        employerId,
+        planRules: rules,
+      };
+      // Existing contributions under either heading, so the aggregate bound and
+      // the both-methods-supplied case are reachable.
+      if (chance(0.35)) {
+        account.existingContributions = pick([
+          { special457CatchUp: pick([1000, 19000, money()]) },
+          { special457RothCatchUp: pick([1000, 19000, money()]) },
+          { employeePreTaxCatchUp: pick([1000, 8000, money()]) },
+          { employeePreTaxDeferral: pick([23000, 24500, money()]) },
+          randomExisting(),
+        ]);
+      }
+      if (chance(0.4)) account.priority = integer(1, 200);
+      return account;
+    });
+    if (chance(0.5)) twins.reverse();
+    twins.forEach((account) => accounts.splice(integer(0, accounts.length), 0, account));
+    if (chance(0.4)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+  }
+
   const scenario = { taxYear, filingStatus, persons, accounts };
 
   if (chance(0.25)) {

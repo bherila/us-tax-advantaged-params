@@ -401,7 +401,7 @@ precisely so the account can be replenished.
 | Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`: the portion of the balance attributable to participant contributions **immediately before the proposed allocation** — including amounts contributed earlier in the same year that are still in the account, net of withdrawals under the plan's accounting, excluding earnings. Pass 0 for a new account. Omitted — or supplied as an explicit `null`, which states the absence of the fact in exactly the same way — the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` (whose "prior" means *immediately prior to the allocation*, not an opening or prior-year figure) rather than defaulted to an empty account. This differs from the optional §402A(e)(3)(A)(ii) sponsor amount above, where a `null` means the sponsor set none |
 | §402(g) and §415(c) | On a §401(a)- or §403(b)-hosted account, base deferrals are consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools; a §414(v) catch-up draws the owner's catch-up pool and, per §414(v)(3)(A)(i), not the annual-additions group. A governmental §457(b)-hosted account consumes neither: it draws the owner's §457(e)(15) pool and joins no annual-additions group, whatever `annualAdditionsGroupId` the caller supplies |
 | §457(b)(2)(B) includible compensation | Applies to a §457(b)-hosted account, capped at 100 percent of includible compensation like any other deferral under that plan |
-| §457(b)(3) last-three-years catch-up | Available on a §457(b)-hosted account, within the balance cap, on the same reasoning as §414(v): it raises "the ceiling set forth in paragraph (2)", a limit on deferrals under the plan, while §402A(e)(3)(A) gates the account balance. §457(e)(18) gives the participant the greater of it and the §414(v) catch-up, never their sum. Reported as `special457RothCatchUp`, since a PLESA contribution is Roth whatever limitation supplied its capacity. **Known limitation:** that greater-of rule is enforced within a single account, not across a participant's §457(b) accounts — two accounts can each take a catch-up under a different heading and stack past what §457(e)(18) allows, and the §457(b)(3) ceiling does not subtract catch-up amounts already supplied as existing contributions. Both predate the PLESA work and are tracked in [issue #49](https://github.com/bherila/us-tax-advantaged-params/issues/49) |
+| §457(b)(3) last-three-years catch-up | Available on a §457(b)-hosted account, within the balance cap, on the same reasoning as §414(v): it raises "the ceiling set forth in paragraph (2)", a limit on deferrals under the plan, while §402A(e)(3)(A) gates the account balance. §457(e)(18) gives the participant the greater of it and the §414(v) catch-up, never their sum, and that choice is made once for the participant across every eligible plan — see [Choosing between the two §457 catch-ups](#choosing-between-the-two-457-catch-ups). Reported as `special457RothCatchUp`, since a PLESA contribution is Roth whatever limitation supplied its capacity |
 | §402A(e)(3)(A) room | An account-local pool, reported in `sharedLimits` as `plesa402Ae3:{accountId}`, seeded with the supplied balance and drawn by base deferrals and catch-up alike |
 | Age-based catch-up | Available, within the balance cap. §402A(e)(3)(A) gates a *balance*, while §414(v) relieves a plan- or employee-level *deferral* limit — 26 CFR §1.414(v)-1(b)(1)(i) lists them and none is account-level — so the two compose and both bind. Once the host's §402(g) pool is spent, remaining room may be filled from the §414(v) catch-up; a catch-up is outside §415(c) under §414(v)(3)(A)(i). As elsewhere in this package, capacity follows from age rather than a plan-document election, under the standing assumption that the plan permits and so characterises it. A birth year is required only where a catch-up could reach unfilled room — not where the host's base capacity already covers it, and not on a §457(b) host where the §457(b)(3) catch-up **exceeds** the largest age-based catch-up the year offers at any age, since §414(v)(6)(C) then removes the age-based one whatever the participant's age. An equal §457(b)(3) amount is not enough: §414(v)(6)(C) speaks of a *higher* limitation, so the age still decides which route applies. Where the route is unresolved, no catch-up is allocated under either heading — §457(e)(18) chooses between pools that are reported separately, so a figure known to be reachable one way or the other is still not attributable to either |
 | Employer contributions | Never allocated here. §402A(e)(6)(A) directs any match earned on PLESA contributions to the participant's *other* account under the plan, and §402A(e)(8)(B) bars transfers in |
@@ -826,8 +826,37 @@ Supported catch-up logic includes:
 - Enhanced age-60-to-63 catch-up beginning in 2025.
 - 403(b) 15-years-of-service catch-up, including annual and lifetime residuals.
 - Governmental 457(b) age catch-up.
-- The 457(b) special last-three-years catch-up, selecting the larger applicable method rather than combining incompatible methods.
+- The 457(b) special last-three-years catch-up, selecting the larger applicable method once per participant rather than combining incompatible methods.
 - High-wage Roth catch-up classification using prior-year FICA wages for the sponsoring employer when applicable.
+
+## Choosing between the two §457 catch-ups
+
+A participant may use the age-based §414(v) catch-up or the §457(b)(3)
+last-three-years catch-up for a year, never both. 26 CFR §1.457-5(a) states the
+individual limitation as the basic annual limitation "plus **either** the age 50
+catch-up amount under §1.457-4(c)(2), **or** the special section 457 catch-up
+amount under §1.457-4(c)(3), applied by taking into account the combined annual
+deferral for the participant for any taxable year under **all eligible plans**",
+and §1.457-5(b) aggregates that across the plans of every employer the
+participant has served.
+
+So the choice is resolved **once per participant, before any account is
+allocated**, from annual ceilings rather than from whatever pool capacity a
+given account happens to see:
+
+| | Rule |
+|---|---|
+| Which method | §1.457-4(c)(2)(ii): the special catch-up applies "if and only if" the plan ceiling counting it "is larger than" the plan ceiling counting the age 50 catch-up. Both sides share the basic limitation, so the test is between the two catch-up amounts alone. **Larger than is strict** — an equal §457(b)(3) amount leaves §414(v) available, as §414(v)(6)(C) and §457(e)(18) also read |
+| How much | §1.457-5(c): where a participant's plans provide different amounts, the limitation uses "the catch-up amount under whichever plan has the **largest** catch-up amount applicable to the participant" — the largest, not the sum |
+| Which accounts may draw it | §1.457-5(c) again: the special catch-up counts "only to the extent that an annual deferral is made … under an eligible plan as a result of plan provisions permitted under §1.457-4(c)(3)", and §414(v)(6)(A)(ii) reaches only a governmental plan. No account absorbs more of the resolved amount than its own plan provides |
+| Bounded by compensation | §457(b)(2)(B) caps a deferral at 100 percent of includible compensation and no catch-up lifts that, so an account whose compensation the basic limitation already exhausts reports no catch-up capacity |
+| When the age is unknown | The method itself is unresolved, not merely its size, so no catch-up is allocated under either heading and `BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP` is raised — on the accounts where a catch-up could actually have reached room, and not elsewhere. The exception is a §457(b)(3) amount exceeding the largest age-based catch-up the year can produce **at any age**, which §414(v)(6)(C) settles without the age |
+
+Account order therefore decides only *where* interchangeable capacity lands,
+never which statutory method applies or what the participant's aggregate is.
+§1.457-5(d) Example 2 is committed as a conformance vector: four plans offering
+$7,000, $2,000, $8,000 and nothing yield one ceiling of $15,000 + $8,000 =
+$23,000 for 2006, which is the figure the regulation itself reaches.
 
 ## Roth conversions and in-plan Roth rollovers
 
