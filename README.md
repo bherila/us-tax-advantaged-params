@@ -267,7 +267,7 @@ code and the same message for the same bad input.
 | `UNKNOWN_ACCOUNT_OWNER` / `UNKNOWN_CONVERSION_OWNER` | An `ownerId` that names no supplied person |
 | `INVALID_ACCOUNT_TYPE` / `INVALID_CONVERSION_TYPE` | A type that is not a string, or an unrecognized one |
 | `INVALID_INPUT_OBJECT` | A structured field — `planRules`, `existingContributions`, `compensation`, `magi`, `priorYearFicaWagesByEmployer`, `hsa`, `hsaCoverage`, `special403bCatchUp`, `section457SpecialCatchUp` — holding something other than an object |
-| `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` |
+| `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` (a *valid* preference that a pension-linked emergency savings account cannot honour is reported as a diagnostic, not rejected — see [Pension-linked emergency savings accounts](#pension-linked-emergency-savings-accounts-irc-402ae)) |
 | `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
 | `INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD` | A `simpleEmployerContributionMethod` outside `match_3_percent`, `nonelective_2_percent`, `custom` |
 | `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
@@ -293,7 +293,7 @@ cannot tell it apart from a JSON array, so neither engine may.
 | Small-employer arrangements | SEP IRA, Roth SEP IRA, SIMPLE IRA, Roth SIMPLE IRA, grandfathered SARSEP |
 | Qualified elective plans | Traditional/Roth 401(k), Solo/Roth Solo 401(k), SIMPLE/Roth SIMPLE 401(k), starter 401(k), pension-linked emergency savings account (PLESA) |
 | Tax-sheltered annuities | Traditional/Roth 403(b), safe-harbor deferral-only 403(b) — see the §403(b)(2) note below for tax years 1987-2001 |
-| Deferred compensation | Governmental/Roth governmental 457(b), nongovernmental eligible 457(b), 457(f) |
+| Deferred compensation | Governmental/Roth governmental 457(b), nongovernmental eligible 457(b), 457(f), governmental 457(b)-hosted PLESA |
 | Federal plan | Traditional and Roth TSP |
 | Employer-only defined-contribution plans | 401(a), profit-sharing, money-purchase, Keogh, ESOP |
 | Pension arrangements | Defined-benefit and cash-balance plans |
@@ -328,11 +328,39 @@ result.accounts[0].definedBenefit?.annualBenefitLimit; // 290000
 ## Pension-linked emergency savings accounts (IRC §402A(e))
 
 SECURE 2.0 §127 added §402A(e), effective for plan years beginning after
-December 31, 2023. A PLESA is not a new limit system: §402A(e)(1)(A)(i) treats
-it "for purposes of this title as a designated Roth account", so its
-contributions are Roth, share the §402(g) elective-deferral limit, and are
-annual additions under §415(c). Model it as its own account inside the plan,
-with the same `annualAdditionsGroupId` as the plan's other accounts.
+December 31, 2023. §402A(e)(1)(A)(i) treats a PLESA "for purposes of this title
+as a designated Roth account", so its contributions are always Roth.
+
+That is a characteristic of the account rather than an election, so it precedes
+the caller's: `planRules.contributionPreference`, `permitsRothContributions` and
+`permitsRothCatchUp` are disregarded on a PLESA — with an INFO
+`PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH` saying so —
+rather than honoured into a pre-tax contribution the statute leaves no capacity
+for. No accepted input produces a pre-tax contribution to a PLESA. On every
+other account type, including an ordinary designated Roth 401(k) or 403(b),
+those fields keep their ordinary effect: §402A(b)(1) offers the designated Roth
+election *in addition to* pre-tax deferrals, so there the split is a plan and
+participant choice.
+
+§402A(f)(1) names three plans that may host one, and **which limits apply turns
+on the host**, so the third is a distinct account type:
+
+| Host | Account type | Deferral limit | §415(c) |
+|---|---|---|---|
+| §401(a) trust — §402A(f)(1)(A) | `pension_linked_emergency_savings` | §402(g) | Yes |
+| §403(b) plan — §402A(f)(1)(B) | `pension_linked_emergency_savings` | §402(g) | Yes |
+| Governmental §457(b) — §402A(f)(1)(C) | `governmental_457b_pension_linked_emergency_savings` | §457(e)(15) | **No** |
+
+For the first two, model the account inside the plan with the same
+`annualAdditionsGroupId` as the plan's other accounts. The third shares no pool
+with them: §402(g)(3) enumerates elective deferrals exhaustively and lists no
+§457(b) deferral, so its contributions run against the §457(e)(15) applicable
+dollar amount through §457(b)(2)(A); and §415(a)(1)–(2) enumerates the plans the
+annual-additions limit reaches without naming §457(b), so it joins no
+annual-additions group at all. One person may hold a PLESA on more than one host
+in the same year, and the ceilings then stand side by side rather than as one —
+§402A(e)(3)(A) caps "the portion of the account balance", so each account has its
+own.
 
 **The §402A(e)(3)(A)(i) figure is a cap on a balance, not an annual allowance.**
 The statute bars a contribution "to the extent such contribution would cause the
@@ -359,15 +387,25 @@ result.accounts[0].statutoryMaximumAnnualContribution; // 1600 — 2600 less the
 result.accounts[0].contributionComponents.employeeRothDeferral; // 1600
 ```
 
+Because the cap is on a balance, a year's gross contributions may exceed it. A
+participant who contributed $600, withdrew $400 under §402A(e)(7), and so holds
+$200 attributable to participant contributions has $2,400 of room left and may
+reach $3,000 for the year — the Department of Labor's PLESA guidance is explicit
+that a plan may **not** impose a separate annual PLESA contribution limit,
+precisely so the account can be replenished.
+
 | Rule | Treatment |
 |---|---|
 | §402A(e)(3)(A)(i) dollar figure | `parameters.pensionLinkedEmergencySavingsBalanceCap402A`. $2,500 for 2024 and 2025, $2,600 for 2026 |
 | §402A(e)(3)(A)(ii) plan sponsor amount | Supplied as `planRules.planDocumentEmployeeDeferralLimit`; it lowers the contributable amount but not the reported statutory maximum |
-| Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`; pass 0 for a new account. Omitted, the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` rather than defaulted to an empty account |
-| §402(g) and §415(c) | Consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools |
-| Age-based catch-up | None. §414(v) permits exceeding an applicable deferral limit; §402A(e)(3)(A) bars exceeding this one at any age. A PLESA needs no birth year |
+| Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`: the portion of the balance attributable to participant contributions **immediately before the proposed allocation** — including amounts contributed earlier in the same year that are still in the account, net of withdrawals under the plan's accounting, excluding earnings. Pass 0 for a new account. Omitted — or supplied as an explicit `null`, which states the absence of the fact in exactly the same way — the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` (whose "prior" means *immediately prior to the allocation*, not an opening or prior-year figure) rather than defaulted to an empty account. This differs from the optional §402A(e)(3)(A)(ii) sponsor amount above, where a `null` means the sponsor set none |
+| §402(g) and §415(c) | On a §401(a)- or §403(b)-hosted account, base deferrals are consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools; a §414(v) catch-up draws the owner's catch-up pool and, per §414(v)(3)(A)(i), not the annual-additions group. A governmental §457(b)-hosted account consumes neither: it draws the owner's §457(e)(15) pool and joins no annual-additions group, whatever `annualAdditionsGroupId` the caller supplies |
+| §457(b)(2)(B) includible compensation | Applies to a §457(b)-hosted account, capped at 100 percent of includible compensation like any other deferral under that plan |
+| §457(b)(3) last-three-years catch-up | Available on a §457(b)-hosted account, within the balance cap, on the same reasoning as §414(v): it raises "the ceiling set forth in paragraph (2)", a limit on deferrals under the plan, while §402A(e)(3)(A) gates the account balance. §457(e)(18) gives the participant the greater of it and the §414(v) catch-up, never their sum. Reported as `special457RothCatchUp`, since a PLESA contribution is Roth whatever limitation supplied its capacity. **Known limitation:** that greater-of rule is enforced within a single account, not across a participant's §457(b) accounts — two accounts can each take a catch-up under a different heading and stack past what §457(e)(18) allows, and the §457(b)(3) ceiling does not subtract catch-up amounts already supplied as existing contributions. Both predate the PLESA work and are tracked in [issue #49](https://github.com/bherila/us-tax-advantaged-params/issues/49) |
+| §402A(e)(3)(A) room | An account-local pool, reported in `sharedLimits` as `plesa402Ae3:{accountId}`, seeded with the supplied balance and drawn by base deferrals and catch-up alike |
+| Age-based catch-up | Available, within the balance cap. §402A(e)(3)(A) gates a *balance*, while §414(v) relieves a plan- or employee-level *deferral* limit — 26 CFR §1.414(v)-1(b)(1)(i) lists them and none is account-level — so the two compose and both bind. Once the host's §402(g) pool is spent, remaining room may be filled from the §414(v) catch-up; a catch-up is outside §415(c) under §414(v)(3)(A)(i). As elsewhere in this package, capacity follows from age rather than a plan-document election, under the standing assumption that the plan permits and so characterises it. A birth year is required only where a catch-up could reach unfilled room — not where the host's base capacity already covers it, and not on a §457(b) host where the §457(b)(3) catch-up **exceeds** the largest age-based catch-up the year offers at any age, since §414(v)(6)(C) then removes the age-based one whatever the participant's age. An equal §457(b)(3) amount is not enough: §414(v)(6)(C) speaks of a *higher* limitation, so the age still decides which route applies. Where the route is unresolved, no catch-up is allocated under either heading — §457(e)(18) chooses between pools that are reported separately, so a figure known to be reachable one way or the other is still not attributable to either |
 | Employer contributions | Never allocated here. §402A(e)(6)(A) directs any match earned on PLESA contributions to the participant's *other* account under the plan, and §402A(e)(8)(B) bars transfers in |
-| 2023 and earlier | `unavailable`. Pub. L. 117-328 §127(g) applies §127 to plan years beginning after December 31, 2023 |
+| 2023 and earlier | `unavailable`, on every host. Pub. L. 117-328 §127(g) applies §127 to plan years beginning after December 31, 2023 |
 
 The 2024 figure comes from the Code rather than from a notice: Notice 2023-75
 does not state one, and the flush text of §402A(e)(3)(A) adjusts the $2,500 only
@@ -706,13 +744,13 @@ ownership, so it is a caller-supplied fact rather than something inferred from t
 
 | Field | Meaning |
 |---|---|
-| `statutoryMaximumAnnualContribution` | Overall monetary legal ceiling when determinable from encoded law and supplied facts |
+| `statutoryMaximumAnnualContribution` | Overall monetary legal ceiling when determinable from encoded law and supplied facts. Restrictions the plan document imposes are **not** folded in — they lower `maximumAnnualContributionBasedOnInputs` instead — so a §457(b) plan writing a deferral limit below the §457(e)(15) amount, or a PLESA sponsor setting a §402A(e)(3)(A)(ii) amount below the published figure, lowers what may be contributed without lowering this field |
 | `maximumAnnualContributionBasedOnInputs` | Maximum supported by law and supplied plan capabilities/formulas |
 | `maximumAdditionalContributionBasedOnInputs` | Remaining supported amount after existing contributions |
 | `existingAnnualContribution` | Existing contribution components supplied by the caller |
 | `excessContribution` | Supplied amount above the account's determinable statutory ceiling; `null` when that ceiling is indeterminate |
 | `planTermDependentCapacity` | Potential space that cannot be allocated without additional plan/employer facts |
-| `contributionComponents` | Pretax, Roth, after-tax, employer, IRA, and catch-up components |
+| `contributionComponents` | Pretax, Roth, after-tax, employer, IRA, and catch-up components. The statutory source of a catch-up and its tax treatment are independent, so both are recorded: a §457(b)(3) last-three-years catch-up is `special457CatchUp` when pre-tax and `special457RothCatchUp` when made to a designated Roth account — including any PLESA, where §402A(e)(1)(A)(i) makes Roth the only possibility. Both seed the same §457(b)(3) pool when handed back as an existing contribution |
 | `federalTaxEffects` | Federal AGI, taxable-income, W-2 box 1, nondeductible, after-tax/Roth, and conversion effects |
 | `sharedLimits` | Audit trail showing each statutory pool used by the account |
 | `diagnostics` | Assumptions, warnings, unavailable rules, and legal references |
@@ -729,7 +767,7 @@ The engine tracks, among other pools:
 - Joint-return compensation available for spousal IRAs.
 - The owner-level §402(g) elective-deferral limit across applicable 401(k), 403(b), TSP, SARSEP, and SIMPLE sources.
 - The owner-level §414(v) age-based catch-up pool.
-- A separate §457(b) limit.
+- A separate §457(b) limit, drawn on by every §457(b) account including a §402A(f)(1)(C)-hosted PLESA.
 - §415(c) annual additions per participant and controlled-employer group.
 - The owner-level 403(b) 15-years-of-service catch-up pool.
 - The 457(b) last-three-years special catch-up.
@@ -922,7 +960,7 @@ The package does not calculate:
 - Full payroll, self-employment tax, or tax-return MAGI.
 - The pre-2002 §403(b)(2) maximum exclusion allowance and the §415(c)(4) alternative elections. Both are diagnosed and the affected years return `indeterminate`; neither is computed.
 - Defined-benefit or cash-balance actuarial funding, and the participant-specific §415(b)(2) and §415(b)(5) adjustments to the annual benefit limit. The flat §415(b)(1)(A) figure itself *is* reported.
-- Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. A PLESA held inside a governmental §457(b) plan — the third "applicable retirement plan" at §402A(f)(1)(C) — is likewise not modelled: its deferrals run against §457(e)(15) rather than §402(g), and §415(c) does not reach a §457(b) plan at all, so it is a different calculation and not merely a different label.
+- Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. All three §402A(f)(1) hosts are modelled, the governmental §457(b) one as its own account type. §402A(e)(9), which orders excess deferrals distributed under §402(g)(2)(A) out of the emergency account first, is not implemented at all — no excess-deferral ordering is — and its reach is in any case unsettled for a §457(b)-hosted account: it speaks of "any pension-linked emergency savings account of the participant", while a §457(b) deferral is not among the elective deferrals §402(g)(3) enumerates and so can produce no §402(g)(2)(A) excess of its own. No regulation or notice addresses the cross-plan case.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 
 ## License

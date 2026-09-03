@@ -58,9 +58,12 @@ export enum AccountType {
 
   /**
    * IRC 402A(e) pension-linked emergency savings account, as included in a
-   * qualified trust under IRC 401(a) or a plan under IRC 403(b). Modeled as the
-   * designated Roth account IRC 402A(e)(1)(A)(i) says it is treated as, so its
-   * contributions run against IRC 402(g) and IRC 415(c).
+   * qualified trust under IRC 401(a) -- IRC 402A(f)(1)(A) -- or a plan under
+   * IRC 403(b) -- IRC 402A(f)(1)(B). Modeled as the designated Roth account
+   * IRC 402A(e)(1)(A)(i) says it is treated as, so its contributions run
+   * against IRC 402(g) and IRC 415(c). The third host at IRC 402A(f)(1)(C) is
+   * GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS, which runs against
+   * neither.
    */
   PENSION_LINKED_EMERGENCY_SAVINGS = "pension_linked_emergency_savings",
 
@@ -70,6 +73,20 @@ export enum AccountType {
 
   GOVERNMENTAL_457B = "governmental_457b",
   ROTH_GOVERNMENTAL_457B = "roth_governmental_457b",
+
+  /**
+   * IRC 402A(e) pension-linked emergency savings account hosted in an eligible
+   * deferred compensation plan of a governmental employer -- the third
+   * "applicable retirement plan" at IRC 402A(f)(1)(C). It is not the same
+   * calculation as the other two hosts wearing a different label: deferrals
+   * under such a plan are not IRC 402(g)(3) elective deferrals, so they run
+   * against the IRC 457(e)(15) applicable dollar amount through
+   * IRC 457(b)(2)(A) rather than IRC 402(g)(1), and IRC 415(a)(1) and (a)(2)
+   * do not reach an IRC 457(b) plan at all, so no annual-additions limit
+   * applies to it.
+   */
+  GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS =
+    "governmental_457b_pension_linked_emergency_savings",
   NONGOVERNMENTAL_457B = "nongovernmental_457b",
   SECTION_457F = "section_457f",
 
@@ -228,7 +245,15 @@ export interface ExistingContributionInput {
   nondeductibleIra?: Money;
   rothIra?: Money;
   special403bCatchUp?: Money;
+  /**
+   * A pre-tax IRC 457(b)(3) last-three-years catch-up. The statutory source and
+   * the tax treatment are independent: the same catch-up made to a designated
+   * Roth account is `special457RothCatchUp`, and both seed the same
+   * IRC 457(b)(3) pool.
+   */
   special457CatchUp?: Money;
+  /** A Roth IRC 457(b)(3) last-three-years catch-up. */
+  special457RothCatchUp?: Money;
   /** HSA contribution deductible under IRC 223(a). */
   hsaDeductible?: Money;
   /** HSA contribution excluded under IRC 106(d), including cafeteria-plan salary reduction. */
@@ -673,6 +698,7 @@ export interface ContributionComponents {
   rothIra: Money;
   special403bCatchUp: Money;
   special457CatchUp: Money;
+  special457RothCatchUp: Money;
   /** Known regular contribution whose tax classification cannot be resolved. */
   unclassifiedIra: Money;
   /** HSA contribution deductible under IRC 223(a). */
@@ -8281,6 +8307,8 @@ const ACCOUNT_TRAITS: Record<AccountType, AccountTraits> = {
   [AccountType.ROTH_403B]: qualified403bTraits(true),
   [AccountType.SAFE_HARBOR_403B_DEFERRAL_ONLY]: starter403bTraits(),
 
+  [AccountType.GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS]:
+    governmental457bPensionLinkedEmergencySavingsTraits(),
   [AccountType.GOVERNMENTAL_457B]: section457Traits(false, true),
   [AccountType.ROTH_GOVERNMENTAL_457B]: section457Traits(true, true),
   [AccountType.NONGOVERNMENTAL_457B]: section457Traits(false, false),
@@ -8429,6 +8457,77 @@ function pensionLinkedEmergencySavingsTraits(): AccountTraits {
     shares402g: true,
     uses415c: true,
     isPlesa: true,
+    // IRC 402A(e)(3)(A) bars a contribution only "to the extent such
+    // contribution would cause the portion of the account balance attributable
+    // to participant contributions to exceed" the cap: a gate on a balance,
+    // indifferent to how the contribution is characterised. IRC 414(v) relieves
+    // a *deferral* limit at the plan, and 26 CFR 1.414(v)-1(b)(1)(i) lists the
+    // limits it relieves — IRC 401(a)(30), 402(h), 403(b), 408, 415(c) and
+    // 457(b)(2) — every one a plan- or employee-level limit and none of them
+    // account-level. The two compose, and both still bind: a contribution past
+    // an applicable host limit may be treated as a catch-up under
+    // 26 CFR 1.414(v)-1(a)(1), which requires that the plan so treat it, while
+    // the balance cap continues to bar anything above the account-local room.
+    //
+    // As everywhere else in this engine, capacity is derived from age and this
+    // trait rather than from a plan-document catch-up election, so this states
+    // that the statute permits it, under the package-wide assumption that the
+    // represented plan permits and characterises what is modelled. A PLESA
+    // contribution does not become a catch-up merely because the host's base
+    // pool is exhausted.
+    permitsAgeCatchUpByStatute: true,
+  });
+}
+
+/**
+ * IRC 402A(f)(1)(C) makes an eligible deferred compensation plan (as defined in
+ * IRC 457(b)) of an eligible employer described in IRC 457(e)(1)(A) the third
+ * applicable retirement plan that may include a pension-linked emergency
+ * savings account, and IRC 402A(f)(2)(B) reads "elective deferral" for this
+ * purpose to include a deferral of compensation under such a plan.
+ *
+ * Two limits that reach the other two hosts do not reach this one, which is why
+ * it is a separate account type rather than another permitted plan type on the
+ * existing one:
+ *
+ * - IRC 402(g)(3) enumerates elective deferrals exhaustively -- IRC 401(k)
+ *   arrangements, IRC 402(h)(1)(B), IRC 403(b) salary-reduction annuities and
+ *   IRC 408(p)(2)(A)(i) -- and no IRC 457(b) deferral appears among them, so
+ *   these contributions are outside IRC 402(g)(1) and run instead against the
+ *   IRC 457(e)(15) applicable dollar amount that IRC 457(b)(2)(A) imposes.
+ *   IRC 402A(e)(9), which orders excess deferrals distributed under
+ *   IRC 402(g)(2)(A) out of the emergency account first, is therefore not the
+ *   authority it is for the other hosts and is deliberately not restated here.
+ * - IRC 415(a)(1) reaches a trust that is part of a pension, profit-sharing or
+ *   stock bonus plan and IRC 415(a)(2) extends it to IRC 403(a) annuity plans,
+ *   IRC 403(b) annuity contracts and IRC 408(k) simplified employee pensions.
+ *   An IRC 457(b) plan appears in neither, so there is no annual-additions
+ *   group for this account to join.
+ *
+ * Both catch-ups this host offers compose with the balance cap, for the reason
+ * the other hosts' catch-up does. IRC 414(v)(6)(A)(ii) makes an IRC 457(b) plan
+ * of an IRC 457(e)(1)(A) employer an applicable employer plan, and
+ * 26 CFR 1.414(v)-1(b)(1)(i) lists IRC 457(b)(2) among the limits the catch-up
+ * relieves; the IRC 457(b)(3) last-three-years catch-up likewise raises "the
+ * ceiling set forth in paragraph (2)". Every one of those is a limit on
+ * deferrals under the plan. IRC 402A(e)(3)(A) is not: it bars a contribution
+ * that would carry the participant-contribution portion of the *account
+ * balance* past the cap, whatever the contribution is called. So the two bind
+ * together rather than one displacing the other, and the room is drawn by base
+ * deferrals and by whichever catch-up applies alike.
+ *
+ * Which catch-up that is remains the existing IRC 457(e)(18) question, and
+ * IRC 414(v)(6)(C) states it from the other side: this plan is not an
+ * applicable employer plan for a year in which a higher limitation applies
+ * under IRC 457(b)(3). The two are alternatives, never a sum.
+ */
+function governmental457bPensionLinkedEmergencySavingsTraits(): AccountTraits {
+  return baseTraits("section457", {
+    availabilityKey: "pensionLinkedEmergencySavings",
+    designatedRoth: true,
+    governmental457: true,
+    isPlesa: true,
+    permitsAgeCatchUpByStatute: true,
   });
 }
 
@@ -8521,6 +8620,9 @@ const ACCOUNT_TYPE_ALIASES: Record<string, AccountType> = {
   ROTH_SIMPLE_401K: AccountType.ROTH_SIMPLE_401K,
   STARTER_401K: AccountType.STARTER_401K,
   PLESA: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
+  GOVERNMENTAL_457B_PLESA: AccountType.GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS,
+  PLESA_457B: AccountType.GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS,
+  "457B_PLESA": AccountType.GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS,
   PENSION_LINKED_EMERGENCY_SAVINGS: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
   PENSION_LINKED_EMERGENCY_SAVINGS_ACCOUNT: AccountType.PENSION_LINKED_EMERGENCY_SAVINGS,
   "403B": AccountType.TRADITIONAL_403B,
@@ -8786,6 +8888,7 @@ function zeroComponents(): ContributionComponents {
     rothIra: 0,
     special403bCatchUp: 0,
     special457CatchUp: 0,
+    special457RothCatchUp: 0,
     unclassifiedIra: 0,
     hsaDeductible: 0,
     hsaEmployerOrCafeteria: 0,
@@ -8810,6 +8913,7 @@ function cloneComponents(source?: ExistingContributionInput): ContributionCompon
   result.rothIra = money(source.rothIra, "existing.rothIra");
   result.special403bCatchUp = money(source.special403bCatchUp, "existing.special403bCatchUp");
   result.special457CatchUp = money(source.special457CatchUp, "existing.special457CatchUp");
+  result.special457RothCatchUp = money(source.special457RothCatchUp, "existing.special457RothCatchUp");
   result.hsaDeductible = money(source.hsaDeductible, "existing.hsaDeductible");
   result.hsaEmployerOrCafeteria = money(source.hsaEmployerOrCafeteria, "existing.hsaEmployerOrCafeteria");
   result.healthFsaSalaryReduction = money(source.healthFsaSalaryReduction, "existing.healthFsaSalaryReduction");
@@ -8958,7 +9062,8 @@ function contributionTaxEffects(
       components.employeeRothCatchUp +
       components.employeeAfterTax +
       components.employerRoth +
-      components.rothIra,
+      components.rothIra +
+      components.special457RothCatchUp,
   );
 
   if (pretaxEmployee > 0 && !planRules.isSelfEmployedOwner) {
@@ -9568,6 +9673,25 @@ function workplaceCatchUpLimit(
   return parameters.generalAge50CatchUp;
 }
 
+/**
+ * The largest IRC 414(v) catch-up this account could take in this year at any
+ * age. Used only where the participant's age is unknown, to decide whether it
+ * could matter: the owner's catch-up pool cannot answer that question, because
+ * its own limit is sized from the same unknown age and so reads empty exactly
+ * when the question is open.
+ */
+function maximumAgeCatchUpLimitForYear(parameters: YearParameters, traits: AccountTraits): Money {
+  if (!traits.permitsAgeCatchUpByStatute) return 0;
+  const atFifty =
+    traits.family === "section457"
+      ? parameters.section457b.governmentalAge50CatchUp
+      : parameters.generalAge50CatchUp;
+  // IRC 414(v)(2)(E) gives ages 60 through 63 a larger figure where the year
+  // encodes one, and workplaceCatchUpLimit prefers it over every family's own
+  // age-50 amount, so it is part of the maximum.
+  return Math.max(atFifty, parameters.age60To63CatchUp ?? 0);
+}
+
 function ownerGeneralCatchUpLimit(parameters: YearParameters, person: NormalizedPerson): Money {
   const age = ageAtEndOfTaxYear(person, parameters.year);
   if (age === null || age < 50) return 0;
@@ -9975,7 +10099,13 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + catchUp);
     const specialPool = context.section457SpecialCatchUpPools.get(account.ownerId);
     if (specialPool) {
-      specialPool.used = roundMoney(specialPool.used + account.existingContributions.special457CatchUp);
+      // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
+      // catch-up does not change which statutory limitation it was made under.
+      specialPool.used = roundMoney(
+        specialPool.used +
+          account.existingContributions.special457CatchUp +
+          account.existingContributions.special457RothCatchUp,
+      );
     }
   }
 }
@@ -12840,28 +12970,97 @@ function accountPlanCatchUpLimit(
 }
 
 /**
- * Room left under IRC 402A(e)(3)(A) for a pension-linked emergency savings
- * account, or null for a year with no encoded limitation. The statute caps the
- * portion of the *account balance* attributable to participant contributions at
- * the lesser of the published figure and any lower amount the plan sponsor sets,
- * so what a participant may still contribute is the figure less the balance
- * already attributable to their contributions. The sponsor's lower amount is
- * supplied as `planDocumentEmployeeDeferralLimit` and applied with the other
- * plan-document ceilings.
+ * The IRC 402A(e)(3)(A) ceilings for a pension-linked emergency savings account,
+ * or null for a year with no encoded limitation.
+ *
+ * The statute caps the portion of the *account balance* attributable to
+ * participant contributions at the lesser of the published figure — clause (i) —
+ * and any lower amount the plan sponsor sets — clause (ii), supplied as
+ * `planDocumentEmployeeDeferralLimit`. Clause (ii) is a plan term rather than
+ * encoded law, so it binds what may be contributed but not the statutory
+ * maximum this package reports; the two rooms are kept apart for that reason.
+ *
+ * The supplied balance is the portion attributable to participant contributions
+ * *immediately before the proposed allocation*: it includes amounts contributed
+ * earlier in the same year that are still in the account and is net of
+ * withdrawals under the plan's accounting. IRC 402A(e)(7) requires the plan to
+ * permit withdrawal at least monthly, and the Department of Labor's PLESA
+ * guidance states a plan may not impose a separate annual PLESA contribution
+ * limit, so a year's gross contributions may exceed the cap once the balance has
+ * been drawn down. A reading of the field as an opening or prior-year balance
+ * could not express that without a withdrawal input the package does not have.
  */
-function pensionLinkedEmergencySavingsRoom(
+interface PensionLinkedEmergencySavingsCaps {
+  /** The clause (i) published figure, before any lower sponsor amount. */
+  statutoryCap: Money;
+  /** The lesser of clause (i) and the clause (ii) sponsor amount. */
+  effectiveCap: Money;
+  /** Participant-contribution balance immediately before this allocation. */
+  balance: Money;
+  /** What may still be contributed: the effective cap less that balance. */
+  plesaRoom: Money;
+  /** Room under clause (i) alone, for the reported statutory maximum. */
+  statutoryPlesaRoom: Money;
+}
+
+function pensionLinkedEmergencySavingsCaps(
   context: CalculationContext,
   account: NormalizedAccount,
-): Money | null {
-  const cap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
-  if (cap === null) return null;
-  return nonnegative(
-    cap -
-      money(
-        account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance,
-        `${account.id}.pensionLinkedEmergencySavingsParticipantContributionBalance`,
-      ),
+): PensionLinkedEmergencySavingsCaps | null {
+  const statutoryCap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
+  if (statutoryCap === null) return null;
+  // `== null` rather than `=== undefined`: an explicitly supplied null means the
+  // sponsor set no clause (ii) amount, exactly as omitting the field does. Read
+  // as a number it would pass through money() as zero and bar every contribution
+  // to the account, which is not what a caller serialising an absent value from
+  // a nullable column is saying — and PHP's `?? null` already read it that way,
+  // so the two engines answered the same input differently.
+  const sponsorCap = account.planRules.planDocumentEmployeeDeferralLimit;
+  const effectiveCap =
+    sponsorCap == null
+      ? statutoryCap
+      : minMoney(
+          statutoryCap,
+          money(sponsorCap, `${account.id}.planDocumentEmployeeDeferralLimit`),
+        );
+  const balance = money(
+    account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance,
+    `${account.id}.pensionLinkedEmergencySavingsParticipantContributionBalance`,
   );
+  return {
+    statutoryCap,
+    effectiveCap,
+    balance,
+    plesaRoom: nonnegative(effectiveCap - balance),
+    statutoryPlesaRoom: nonnegative(statutoryCap - balance),
+  };
+}
+
+/**
+ * IRC 402A(e)(3)(A) as an account-local pool rather than as a deferral limit.
+ *
+ * Every participant-contribution component draws the same pool — a base
+ * elective deferral and an IRC 414(v) catch-up alike — because the statute gates
+ * the resulting *balance* and not the character of the contribution that would
+ * produce it. Expressing the room as a base deferral limit instead would let a
+ * catch-up allocated afterwards carry the balance past the cap.
+ *
+ * `used` is seeded from the supplied balance and never from
+ * `existingContributions`. The balance is stated as of immediately before this
+ * allocation and so already reflects contributions made earlier in the year that
+ * are still in the account, while existing contributions separately seed the
+ * host plan's annual pools; charging both would subtract the same dollars twice.
+ */
+function pensionLinkedEmergencySavingsPool(
+  account: NormalizedAccount,
+  caps: PensionLinkedEmergencySavingsCaps,
+): LimitPool {
+  return {
+    id: `plesa402Ae3:${account.id}`,
+    legalLimit: "IRC 402A(e)(3)(A) participant-contribution balance cap",
+    limit: caps.effectiveCap,
+    used: caps.balance,
+  };
 }
 
 function baseDeferralLimitForAccount(
@@ -12870,10 +13069,25 @@ function baseDeferralLimitForAccount(
   traits: AccountTraits,
 ): Money | null {
   if (traits.isPlesa) {
-    const room = pensionLinkedEmergencySavingsRoom(context, account);
-    const statutory = context.parameters.electiveDeferral402g;
-    if (room === null || statutory === null) return null;
-    return minMoney(statutory, room);
+    // The IRC 402A(e)(3)(A) room is enforced as an account-local pool that both
+    // the base and the catch-up allocation draw, not as a deferral limit, so
+    // what governs here is the host plan's own dollar deferral limit. A year
+    // that encodes no cap has no such account at all, and returning null there
+    // keeps the account indeterminate rather than letting it defer under the
+    // host limit alone.
+    //
+    // Which host limit that is turns on the host. An IRC 457(b) deferral is not
+    // among the elective deferrals IRC 402(g)(3) enumerates, so an
+    // IRC 402A(f)(1)(C) account runs against the IRC 457(e)(15) applicable
+    // dollar amount that IRC 457(b)(2)(A) imposes rather than IRC 402(g)(1).
+    // The two figures happen to be equal for every year a pension-linked
+    // emergency savings account has been available, so this branch is not
+    // observable as a dollar difference -- only as which pool the contribution
+    // is drawn from.
+    if (context.parameters.pensionLinkedEmergencySavingsBalanceCap402A === null) return null;
+    return traits.family === "section457"
+      ? context.parameters.section457b.baseDeferralLimit
+      : context.parameters.electiveDeferral402g;
   }
   if (traits.isStarter) return context.parameters.starterDeferralOnly.baseDeferralLimit;
   if (traits.isSimple) {
@@ -12917,6 +13131,16 @@ function catchUpTaxTreatment(
     threshold === null ||
     traits.family === "simple" ||
     traits.isSarsep ||
+    // IRC 414(v)(7)(A) requires a high-wage participant's catch-up to be a
+    // designated Roth contribution. Every contribution to a pension-linked
+    // emergency savings account is one already, because IRC 402A(e)(1)(A)(i)
+    // treats the account "for purposes of this title as a designated Roth
+    // account", so the wage test has nothing left to decide and the prior-year
+    // wage figure it would need is not required. The same reasoning reaches
+    // other designated Roth accounts; it is stated for this one only because
+    // widening it would change the treatment of accounts this change is not
+    // about.
+    traits.isPlesa ||
     accountPlanCatchUpLimit(context, account, traits) === 0
   ) {
     return defaultTreatment;
@@ -12979,11 +13203,64 @@ function accountUsesRothEmployeeContributions(
   account: NormalizedAccount,
   traits: AccountTraits,
 ): boolean {
+  // IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account "for
+  // purposes of this title as a designated Roth account", so every participant
+  // contribution to one is a designated Roth contribution. That is a
+  // characteristic of the account, not an allocation choice, so it precedes the
+  // caller's preference: a supplied preference or Roth-permission flag states a
+  // plan election the statute does not leave open, and honouring it would
+  // produce a pre-tax contribution to an account that cannot hold one. The
+  // preference keeps its ordinary meaning on every other account type.
+  if (traits.isPlesa) return true;
   if (account.planRules.contributionPreference === "roth_first") {
     return account.planRules.permitsRothContributions ?? traits.designatedRoth;
   }
   if (account.planRules.contributionPreference === "pretax_first") return false;
   return traits.designatedRoth;
+}
+
+/**
+ * The diagnostic that records a caller-supplied tax-treatment election which
+ * IRC 402A(e)(1)(A)(i) does not leave open on a pension-linked emergency
+ * savings account. The election is disregarded rather than honoured, because
+ * honouring it would allocate a pre-tax contribution to an account the statute
+ * treats as a designated Roth account; saying so keeps the disregard visible to
+ * a caller who supplied the field believing it would take effect.
+ */
+function pensionLinkedEmergencySavingsRothTreatmentDiagnostic(
+  account: NormalizedAccount,
+): Diagnostic | null {
+  const rules = account.planRules;
+  const stated =
+    rules.contributionPreference === "pretax_first"
+      ? "planRules.contributionPreference is pretax_first"
+      : rules.permitsRothContributions === false
+        ? "planRules.permitsRothContributions is false"
+        : rules.permitsRothCatchUp === false
+          ? "planRules.permitsRothCatchUp is false"
+          : null;
+  if (stated === null) return null;
+  return diagnostic(
+    "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+    DiagnosticSeverity.INFO,
+    `${stated}, but IRC 402A(e)(1)(A)(i) treats a pension-linked emergency savings account as a designated Roth account for purposes of the whole title, so every participant contribution to it is a designated Roth contribution. The supplied election was disregarded; no amount was allocated as a pre-tax contribution.`,
+    `accounts.${account.id}.planRules`,
+    "IRC 402A(e)(1)(A)(i)",
+  );
+}
+
+/**
+ * The one diagnostic that says an age-based workplace catch-up cannot be sized
+ * because the participant's age is unknown. Shared, because more than one
+ * allocation path has to be able to raise it.
+ */
+function workplaceCatchUpAgeDiagnostic(personId: string): Diagnostic {
+  return diagnostic(
+    "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
+    DiagnosticSeverity.ERROR,
+    "Birth year or birth date is required to determine the maximum age-based workplace catch-up contribution.",
+    `persons.${personId}`,
+  );
 }
 
 function allocateBaseAndCatchUp(
@@ -13002,20 +13279,16 @@ function allocateBaseAndCatchUp(
     context.parameters.generalAge50CatchUp > 0 ||
     context.parameters.simple.generalAge50CatchUp > 0 ||
     context.parameters.starterDeferralOnly.age50CatchUp > 0;
-  // Only an account that can take an age-based catch-up needs an age. Every
-  // family that reaches this function permits one by statute except the
-  // pension-linked emergency savings account, where IRC 402A(e)(3)(A) forbids a
-  // contribution past the balance cap outright and IRC 414(v) adds nothing.
-  if (age === null && anyCatchUpAvailable && traits.permitsAgeCatchUpByStatute) {
-    diagnostics.push(
-      diagnostic(
-        "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
-        DiagnosticSeverity.ERROR,
-        "Birth year or birth date is required to determine the maximum age-based workplace catch-up contribution.",
-        `persons.${person.id}`,
-      ),
-    );
-  }
+  // Only an account that can take an age-based catch-up needs an age.
+  const catchUpNeedsAge = age === null && anyCatchUpAvailable && traits.permitsAgeCatchUpByStatute;
+  const ageDiagnostic = () => workplaceCatchUpAgeDiagnostic(person.id);
+  // A pension-linked emergency savings account is the one family where the age
+  // is not always load-bearing: IRC 402A(e)(3)(A) caps the account whatever the
+  // participant's age, so where the host's own base capacity already covers the
+  // remaining room, no catch-up could change the answer and no birth date is
+  // required. The question is therefore asked after the base allocation, once
+  // the room it leaves is known.
+  if (catchUpNeedsAge && !traits.isPlesa) diagnostics.push(ageDiagnostic());
   const basePool = context.elective402gPools.get(account.ownerId)!;
   const catchUpPool = context.catchUpPools.get(account.ownerId)!;
   const special403bPool = context.special403bCatchUpPools.get(account.ownerId)!;
@@ -13038,7 +13311,17 @@ function allocateBaseAndCatchUp(
   }
 
   const existingBaseForAccount = baseElectiveDeferrals(account.existingContributions);
-  const planDocumentEmployeeLimit = account.planRules.planDocumentEmployeeDeferralLimit;
+  // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than clause
+  // (i), and it is supplied through this same field. But clause (ii) caps the
+  // account *balance*, exactly as clause (i) does, and the account-local pool
+  // below already enforces it against the balance the caller supplied. Reading
+  // it a second time here — as an annual limit on what may be deferred — charges
+  // this year's contributions against the sponsor's amount twice, and strands
+  // room the statute leaves the participant. A plan may not impose a separate
+  // annual limit on a pension-linked emergency savings account in any event.
+  const planDocumentEmployeeLimit = traits.isPlesa
+    ? undefined
+    : account.planRules.planDocumentEmployeeDeferralLimit;
   const employeePlanLimit = minMoney(
     basePlanLimit,
     planDocumentEmployeeLimit ?? basePlanLimit,
@@ -13054,8 +13337,15 @@ function allocateBaseAndCatchUp(
     nonnegative(employeePlanLimit - existingBaseForAccount),
     accountAnnualRemainingBefore,
   );
+  // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
+  // the room is a pool this account's base and catch-up allocations both draw.
+  // IRC 414(v)(3)(A)(i) puts catch-up contributions outside IRC 415(c), so only
+  // the base draw carries the annual-additions group.
+  const plesaCaps = traits.isPlesa ? pensionLinkedEmergencySavingsCaps(context, account) : null;
+  const plesaPool = plesaCaps === null ? null : pensionLinkedEmergencySavingsPool(account, plesaCaps);
   const pools: LimitPool[] = [basePool];
   if (annualGroup) pools.push(annualGroup);
+  if (plesaPool) pools.push(plesaPool);
   const baseAdded = takeAcrossPools(pools, desiredBase, sharedLimits);
   const useRoth = accountUsesRothEmployeeContributions(account, traits);
   if (useRoth) {
@@ -13096,6 +13386,23 @@ function allocateBaseAndCatchUp(
     }
   }
 
+  // A birth date the base allocation made irrelevant is not demanded: it matters
+  // only where the account still has room that a catch-up could fill, which
+  // takes both unfilled IRC 402A(e)(3)(A) room and compensation left to defer.
+  // The owner's IRC 414(v) pool is deliberately not consulted — it is itself
+  // sized from the age being asked for, so it reads as empty exactly when the
+  // question is open, and testing it would answer the question with its own
+  // premise. `anyCatchUpAvailable`, folded into `catchUpNeedsAge`, is the part
+  // of that test the year alone can settle.
+  if (
+    catchUpNeedsAge &&
+    traits.isPlesa &&
+    (poolRemaining(plesaPool!) ?? 0) > 0 &&
+    compensationRemaining > 0
+  ) {
+    diagnostics.push(ageDiagnostic());
+  }
+
   const planCatchUpLimit = accountPlanCatchUpLimit(context, account, traits);
   const existingCatchUpForAccount = ageCatchUpDeferrals(account.existingContributions);
   const desiredCatchUp = minMoney(
@@ -13103,11 +13410,12 @@ function allocateBaseAndCatchUp(
     compensationRemaining,
   );
   let catchUpAdded = 0;
+  const catchUpPools: LimitPool[] = plesaPool ? [catchUpPool, plesaPool] : [catchUpPool];
   const treatment = catchUpTaxTreatment(context, account, traits, diagnostics);
   if (treatment === "unknown") {
     reportPoolWithoutConsuming(catchUpPool, sharedLimits);
   } else if (treatment !== "unavailable" && desiredCatchUp > 0) {
-    catchUpAdded = takeAcrossPools([catchUpPool], desiredCatchUp, sharedLimits);
+    catchUpAdded = takeAcrossPools(catchUpPools, desiredCatchUp, sharedLimits);
     if (treatment === "roth") {
       additional.employeeRothCatchUp = catchUpAdded;
       annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + catchUpAdded);
@@ -13383,8 +13691,14 @@ function allocateQualifiedElective(
   // other supplied fact expresses, and assuming an empty account would state a
   // ceiling the statute may not allow.
   if (traits.isPlesa) {
+    const rothTreatmentDiagnostic = pensionLinkedEmergencySavingsRothTreatmentDiagnostic(account);
+    if (rothTreatmentDiagnostic !== null) diagnostics.push(rothTreatmentDiagnostic);
     const balance = account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance;
-    if (balance === undefined) {
+    // An explicitly supplied null states no more about the balance than omitting
+    // the field does. Reading it as zero would answer a required question the
+    // caller did not answer, and would answer it with the one value that yields
+    // the largest ceiling the statute allows.
+    if (balance == null) {
       diagnostics.push(
         diagnostic(
           "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
@@ -13405,14 +13719,13 @@ function allocateQualifiedElective(
         diagnostics,
       };
     }
-    const cap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
-    const room = pensionLinkedEmergencySavingsRoom(context, account);
-    if (cap !== null && room !== null) {
+    const caps = pensionLinkedEmergencySavingsCaps(context, account);
+    if (caps !== null) {
       diagnostics.push(
         diagnostic(
           "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
           DiagnosticSeverity.INFO,
-          `$${cap.toLocaleString()} is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $${money(balance, `accounts.${account.id}`).toLocaleString()} was supplied as already attributable to them, leaving $${room.toLocaleString()}. Contributions are Roth by IRC 402A(e)(1)(A)(i), count against IRC 402(g) and IRC 415(c), and take no age-based catch-up. Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7), and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.`,
+          `$${caps.statutoryCap.toLocaleString()} is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $${caps.balance.toLocaleString()} was supplied as attributable to them immediately before this allocation, leaving $${caps.plesaRoom.toLocaleString()}. That room is drawn by base deferrals and by any IRC 414(v) catch-up alike, because IRC 402A(e)(3)(A) gates the resulting balance rather than the character of the contribution. Contributions are Roth by IRC 402A(e)(1)(A)(i); base deferrals count against IRC 402(g) and IRC 415(c), while a catch-up is outside IRC 415(c) under IRC 414(v)(3)(A)(i). Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7), and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.`,
           `accounts.${account.id}`,
           "IRC 402A(e)(3)(A)(i)",
         ),
@@ -13519,13 +13832,45 @@ function allocateQualifiedElective(
   }
 
   const planCatchUp = accountPlanCatchUpLimit(context, account, traits);
-  const statutoryMaximum = deferralOnly
-    ? roundMoney((baseDeferralLimitForAccount(context, account, traits) ?? 0) + planCatchUp)
-    : roundMoney(
-        accountAnnualLimit +
-          planCatchUp +
-          (traits.isSimple ? Math.max(0, statutoryEmployerPotential - accountAnnualLimit) : 0),
-      );
+  // The reported statutory maximum folds in encoded law and supplied facts but
+  // not the plan's own restrictions, so it is built from the statutory host base
+  // limit rather than from `employeePlanLimit`.
+  const statutoryHostBaseLimit = baseDeferralLimitForAccount(context, account, traits) ?? 0;
+  const statutoryHostAnnualCapacity = roundMoney(statutoryHostBaseLimit + planCatchUp);
+  let statutoryMaximum: Money;
+  if (traits.isPlesa) {
+    // A pension-linked emergency savings account is bounded twice over: by what
+    // the host plan may take in a year, and by IRC 402A(e)(3)(A), which stops
+    // contributions once the participant-contribution *balance* reaches the cap.
+    // Reporting the host figure alone would state a ceiling this account can
+    // never reach; reporting the room alone would understate it where the
+    // balance already holds contributions made this year, since those are
+    // themselves part of the annual total. The maximum is therefore the lesser
+    // of the host's annual capacity and what the participant has already put in
+    // plus the room that remains. Clause (ii) — the plan sponsor's lower amount —
+    // is a plan term, so it lowers what may be contributed without lowering the
+    // statutory figure reported here.
+    const caps = pensionLinkedEmergencySavingsCaps(context, account);
+    const existingParticipantContributions = roundMoney(
+      baseElectiveDeferrals(account.existingContributions) +
+        ageCatchUpDeferrals(account.existingContributions),
+    );
+    statutoryMaximum =
+      caps === null
+        ? statutoryHostAnnualCapacity
+        : minMoney(
+            statutoryHostAnnualCapacity,
+            roundMoney(existingParticipantContributions + caps.statutoryPlesaRoom),
+          );
+  } else if (deferralOnly) {
+    statutoryMaximum = statutoryHostAnnualCapacity;
+  } else {
+    statutoryMaximum = roundMoney(
+      accountAnnualLimit +
+        planCatchUp +
+        (traits.isSimple ? Math.max(0, statutoryEmployerPotential - accountAnnualLimit) : 0),
+    );
+  }
   return {
     status: accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, diagnostics),
     statutoryMaximum,
@@ -13811,15 +14156,96 @@ function allocateSection457(
     };
   }
 
+  // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
+  // participant contributions, not the contributions of any one year, and
+  // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
+  // room back. What may still be contributed therefore depends on a balance no
+  // other supplied fact expresses, and assuming an empty account would state a
+  // ceiling the statute may not allow.
+  if (traits.isPlesa) {
+    const rothTreatmentDiagnostic = pensionLinkedEmergencySavingsRothTreatmentDiagnostic(account);
+    if (rothTreatmentDiagnostic !== null) diagnostics.push(rothTreatmentDiagnostic);
+  }
+  // An explicitly supplied null states no more about the balance than omitting
+  // the field does. Reading it as zero would answer a required question the
+  // caller did not answer, and would answer it with the one value that yields
+  // the largest ceiling the statute allows.
+  if (traits.isPlesa && account.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance == null) {
+    diagnostics.push(
+      diagnostic(
+        "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        DiagnosticSeverity.ERROR,
+        "IRC 402A(e)(3)(A) caps the portion of a pension-linked emergency savings account balance attributable to participant contributions rather than the contributions of a single year, so the balance already attributable to them is required. Supply planRules.pensionLinkedEmergencySavingsParticipantContributionBalance, using 0 for a newly established account.",
+        `accounts.${account.id}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`,
+        "IRC 402A(e)(3)(A)",
+      ),
+    );
+    reportPoolWithoutConsuming(basePool, sharedLimits);
+    return {
+      status: CalculationStatus.INDETERMINATE,
+      statutoryMaximum: null,
+      annualComponents: annual,
+      additionalComponents: additional,
+      planTermDependentCapacity: 0,
+      sharedLimits,
+      diagnostics,
+    };
+  }
+
   const includibleCompensation = money(
     account.planRules.includibleCompensation457 ?? account.planRules.planCompensation ?? planCompensation(account, person),
     `${account.id}.includibleCompensation457`,
   );
-  const accountBaseLimit = minMoney(
+  // IRC 457(b)(2) sets the ceiling as the lesser of the applicable dollar amount
+  // and 100 percent of includible compensation. Both are encoded law applied to
+  // supplied facts, so both belong in the statutory figure this package reports.
+  // A plan-document deferral limit is neither: it is a restriction the plan
+  // chose, so it lowers what may actually be deferred without lowering the
+  // reported statutory maximum. The qualified-plan path has always drawn that
+  // line — README documents it — and drawing it here too is what lets a
+  // pension-linked emergency savings account report the same kind of figure on
+  // either host.
+  const statutoryHostBaseLimit = minMoney(
     statutoryBase,
     includibleCompensation * compensationFraction,
-    account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryBase,
   );
+  // On a pension-linked emergency savings account the same input field carries
+  // the sponsor's IRC 402A(e)(3)(A)(ii) amount, which caps the account *balance*
+  // and is enforced as the account-local pool below. Reading it a second time as
+  // an annual deferral limit would charge this year's contributions against it
+  // once through the pool's balance and again through the limit, which is what
+  // the qualified-plan host does not do either.
+  const appliedHostBaseLimit = traits.isPlesa
+    ? statutoryHostBaseLimit
+    : minMoney(
+        statutoryHostBaseLimit,
+        account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryHostBaseLimit,
+      );
+  // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
+  // the room is an account-local pool that this account's base deferral and its
+  // catch-up both draw. On this host that is the whole of the account's
+  // interaction with IRC 415(c): there is none, because IRC 415(a) does not
+  // reach an IRC 457(b) plan.
+  const plesaCaps = traits.isPlesa ? pensionLinkedEmergencySavingsCaps(context, account) : null;
+  const plesaPool = plesaCaps === null ? null : pensionLinkedEmergencySavingsPool(account, plesaCaps);
+  const existingParticipantContributions = roundMoney(
+    baseElectiveDeferrals(account.existingContributions) +
+      ageCatchUpDeferrals(account.existingContributions) +
+      account.existingContributions.special457CatchUp +
+      account.existingContributions.special457RothCatchUp,
+  );
+  if (plesaCaps !== null) {
+    diagnostics.push(
+      diagnostic(
+        "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+        DiagnosticSeverity.INFO,
+        `$${plesaCaps.statutoryCap.toLocaleString()} is the IRC 402A(e)(3)(A)(i) ceiling on the portion of the account balance attributable to participant contributions; $${plesaCaps.balance.toLocaleString()} was supplied as attributable to them immediately before this allocation, leaving $${plesaCaps.plesaRoom.toLocaleString()}. That room is drawn by base deferrals and by a catch-up alike, because IRC 402A(e)(3)(A) gates the resulting balance rather than the character of the contribution. Contributions are Roth by IRC 402A(e)(1)(A)(i) and count against IRC 457(e)(15) rather than IRC 402(g)(1), because IRC 402(g)(3) does not enumerate an IRC 457(b) deferral; IRC 415(c) does not reach an IRC 457(b) plan at all. Eligibility under IRC 402A(e)(2), automatic enrollment under IRC 402A(e)(4), the withdrawal right under IRC 402A(e)(7), and the IRC 402A(e)(6)(A) rule directing matching contributions to the participant's other account are not modeled.`,
+        `accounts.${account.id}`,
+        "IRC 402A(e)(3)(A)(i)",
+      ),
+    );
+  }
+
   const existingRegularAccountAmount = roundMoney(
     baseElectiveDeferrals(annual) + annual.employeeAfterTax + annual.employerPreTax + annual.employerRoth,
   );
@@ -13831,9 +14257,14 @@ function allocateSection457(
   const existingEmployer = roundMoney(annual.employerPreTax + annual.employerRoth);
   const employerDesired = minMoney(
     nonnegative(expectedEmployer - existingEmployer),
-    nonnegative(accountBaseLimit - existingRegularAccountAmount),
+    nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
   );
+  // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
+  // contributions to the participant's *other* account under the plan, and
+  // IRC 402A(e)(8)(B) bars transfers in, so no employer contribution is ever
+  // allocated here.
   if (
+    !traits.isPlesa &&
     employerDesired > 0 &&
     validateEmployerRothAvailability(context, account, traits, diagnostics)
   ) {
@@ -13844,8 +14275,12 @@ function allocateSection457(
   const regularBeforeEmployee = roundMoney(
     baseElectiveDeferrals(annual) + annual.employeeAfterTax + annual.employerPreTax + annual.employerRoth,
   );
-  const regularDesired = nonnegative(accountBaseLimit - regularBeforeEmployee);
-  const regularAdded = takeAcrossPools([basePool], regularDesired, sharedLimits);
+  const regularDesired = nonnegative(appliedHostBaseLimit - regularBeforeEmployee);
+  const regularAdded = takeAcrossPools(
+    plesaPool ? [basePool, plesaPool] : [basePool],
+    regularDesired,
+    sharedLimits,
+  );
   if (accountUsesRothEmployeeContributions(account, traits)) {
     additional.employeeRothDeferral = regularAdded;
     annual.employeeRothDeferral = roundMoney(annual.employeeRothDeferral + regularAdded);
@@ -13859,6 +14294,7 @@ function allocateSection457(
       baseElectiveDeferrals(annual) -
       ageCatchUpDeferrals(annual) -
       annual.special457CatchUp -
+      annual.special457RothCatchUp -
       annual.employerPreTax -
       annual.employerRoth,
   );
@@ -13870,6 +14306,7 @@ function allocateSection457(
     compensationRemaining,
   );
 
+  // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)", but
   const specialInput = account.planRules.section457SpecialCatchUp;
   const specialStatutoryExtra = specialInput?.eligible
     ? minMoney(
@@ -13880,10 +14317,61 @@ function allocateSection457(
       )
     : 0;
 
-  if (specialStatutoryExtra > agePotential) {
-    const specialAdded = takeAcrossPools([specialPool], specialStatutoryExtra, sharedLimits);
-    additional.special457CatchUp = specialAdded;
-    annual.special457CatchUp = roundMoney(annual.special457CatchUp + specialAdded);
+  // The birth date is load-bearing on a pension-linked emergency savings account
+  // only where a catch-up could still reach room the base allocation left, which
+  // is how the qualified-plan host asks the same question: IRC 402A(e)(3)(A) caps
+  // the account whatever the participant's age, so where the room is spent no
+  // catch-up could change the answer.
+  //
+  // IRC 457(b)(3) does not by itself settle the question, and comparing the
+  // extra actually available under it against what this participant's age would
+  // allow is circular here, since that age is the unknown. The comparison is
+  // made instead against the largest age-based catch-up the year could produce
+  // at any age.
+  const largestPossibleAgeCatchUp = maximumAgeCatchUpLimitForYear(context.parameters, traits);
+  const catchUpRouteUnresolved =
+    plesaPool !== null &&
+    ageAtEndOfTaxYear(person, context.taxYear) === null &&
+    largestPossibleAgeCatchUp > 0 &&
+    specialStatutoryExtra <= largestPossibleAgeCatchUp &&
+    (poolRemaining(plesaPool) ?? 0) > 0 &&
+    compensationRemaining > 0;
+  // Where the participant's age is unknown and a catch-up could still reach the
+  // IRC 402A(e)(3)(A) room, the *route* is unknown too, not merely the amount:
+  // IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), and the two draw
+  // different pools and can carry different tax treatment. So nothing is
+  // allocated under either heading. Reporting a floor here would put a figure in
+  // a field named for a maximum and file it under a statutory category the facts
+  // do not establish.
+  //
+  // The comparison is `<=`, not `<`: IRC 414(v)(6)(C) removes the age-based
+  // catch-up only for a year in which a *higher* limitation applies under
+  // IRC 457(b)(3), so an equal IRC 457(b)(3) amount leaves IRC 414(v) available
+  // and the age still decides which route applies.
+  if (catchUpRouteUnresolved) {
+    diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
+  } else if (specialStatutoryExtra > agePotential) {
+    // IRC 457(b)(3) raises "the ceiling set forth in paragraph (2)" — a plan-level
+    // ceiling on deferrals, not an account-level one — so it composes with the
+    // IRC 402A(e)(3)(A) balance cap in exactly the way IRC 414(v) does, and draws
+    // the same account-local room.
+    const specialAdded = takeAcrossPools(
+      plesaPool ? [specialPool, plesaPool] : [specialPool],
+      specialStatutoryExtra,
+      sharedLimits,
+    );
+    // IRC 457(b)(3) supplies the capacity; what decides the tax treatment is the
+    // account it lands in. On a pension-linked emergency savings account that is
+    // never a choice: IRC 402A(e)(1)(A)(i) treats the account as a designated
+    // Roth account for purposes of the title, so every participant contribution
+    // to it is Roth whatever limitation it was made under.
+    if (accountUsesRothEmployeeContributions(account, traits)) {
+      additional.special457RothCatchUp = specialAdded;
+      annual.special457RothCatchUp = roundMoney(annual.special457RothCatchUp + specialAdded);
+    } else {
+      additional.special457CatchUp = specialAdded;
+      annual.special457CatchUp = roundMoney(annual.special457CatchUp + specialAdded);
+    }
     compensationRemaining = nonnegative(compensationRemaining - specialAdded);
     if (ageLimit > 0) {
       diagnostics.push(
@@ -13900,7 +14388,11 @@ function allocateSection457(
     if (treatment === "unknown") {
       reportPoolWithoutConsuming(ageCatchUpPool, sharedLimits);
     } else if (treatment !== "unavailable") {
-      const ageAdded = takeAcrossPools([ageCatchUpPool], agePotential, sharedLimits);
+      const ageAdded = takeAcrossPools(
+        plesaPool ? [ageCatchUpPool, plesaPool] : [ageCatchUpPool],
+        agePotential,
+        sharedLimits,
+      );
       if (treatment === "roth") {
         additional.employeeRothCatchUp = ageAdded;
         annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + ageAdded);
@@ -13925,7 +14417,20 @@ function allocateSection457(
 
   return {
     status: accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, diagnostics),
-    statutoryMaximum: roundMoney(accountBaseLimit + Math.max(ageLimit, specialStatutoryExtra)),
+    // The host's own statutory annual capacity, and — for a pension-linked
+    // emergency savings account — the IRC 402A(e)(3)(A)(i) room on top of what
+    // the participant has already contributed. Only clause (i) is statutory: a
+    // sponsor's lower clause (ii) amount is a plan term, so it lowers what may
+    // actually be contributed without lowering the figure the statute reports,
+    // exactly as on the IRC 401(a) and IRC 403(b) hosts.
+    statutoryMaximum: roundMoney(
+      plesaCaps === null
+        ? statutoryHostBaseLimit + Math.max(ageLimit, specialStatutoryExtra)
+        : minMoney(
+            statutoryHostBaseLimit + Math.max(ageLimit, specialStatutoryExtra),
+            existingParticipantContributions + plesaCaps.statutoryPlesaRoom,
+          ),
+    ),
     annualComponents: annual,
     additionalComponents: additional,
     planTermDependentCapacity: 0,
@@ -14545,6 +15050,7 @@ function calculateScenarioTotals(
       totals.employeeRothOrAfterTaxContribution +
         components.employeeRothDeferral +
         components.employeeRothCatchUp +
+        components.special457RothCatchUp +
         components.employeeAfterTax +
         components.rothIra +
         components.nondeductibleIra +

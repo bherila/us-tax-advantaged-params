@@ -8308,6 +8308,1786 @@
         "totals.hsaContribution": 8750
       },
       "expectDiagnosticCodes": []
+    },
+    {
+      "name": "2026 an age-50 catch-up fills pension-linked emergency savings room the 401(k) host's base pool has no space for",
+      "description": "IRC 402A(e)(3)(A) bars a contribution only \"to the extent such contribution would cause the portion of the account balance attributable to participant contributions to exceed\" the cap, so it gates a balance and is indifferent to how the contribution is characterised. IRC 414(v)(1) lets a participant who attains age 50 before the close of the year (IRC 414(v)(5)(A)) contribute in excess of an applicable limit, and 26 CFR 1.414(v)-1(b)(1)(i) enumerates the limits it relieves — IRC 401(a)(30), 402(h), 403(b), 408, 415(c) and 457(b)(2) — every one a plan- or employee-level limit and none of them account-level. The two compose, so a contribution the host's base limit can no longer accept may still be made within the account's own room. Here the 401(k) recognizes $24,500 of compensation and defers all of it, exhausting the $24,500 IRC 402(g)(1) limit Notice 2025-67 states for 2026 and leaving the emergency savings account no base capacity, while the host's own recognized compensation is spent so it takes no catch-up of its own. The participant attained age 56 in 2026, so the $8,000 IRC 414(v)(2)(B)(i) catch-up the same notice states is still available, and the account's IRC 402A(e)(3)(A)(i) room of $2,600 less a $0 balance is filled from it: $2,600 is the lesser of the room and the $8,000 remaining. IRC 414(v)(3)(A)(i) provides that a catch-up contribution is not taken into account for IRC 415, so the annual-additions group is not charged for it, and the amount is Roth because IRC 402A(e)(1)(A)(i) treats the account \"for purposes of this title as a designated Roth account\". The reported statutory maximum is the lesser of the host's statutory annual capacity ($24,500 + $8,000) and what the participant has contributed plus the room that remains ($0 + $2,600), so $2,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          },
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "plesa",
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.contributionComponents.employeeRothDeferral": 0,
+        "accounts.1.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.1.sharedLimits.2.legalLimit": "IRC 402A(e)(3)(A) participant-contribution balance cap",
+        "accounts.1.sharedLimits.2.limit": 2600,
+        "accounts.1.sharedLimits.3.id": "414v:t",
+        "accounts.1.sharedLimits.3.usedByAccount": 2600,
+        "accounts.1.sharedLimits.4.id": "plesa402Ae3:plesa",
+        "accounts.1.sharedLimits.4.usedByAccount": 2600,
+        "accounts.1.sharedLimits.4.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 the same age-50 catch-up fills pension-linked emergency savings room on a 403(b) host",
+      "description": "IRC 402A(f)(1)(B) names a plan under IRC 403(b) as an applicable retirement plan that may include a pension-linked emergency savings account, and IRC 402(g)(3)(C) makes an amount deferred under a IRC 403(b) annuity contract an elective deferral against the same IRC 402(g)(1) limit, so the host's base pool is exhausted exactly as the 401(k) case exhausts it. Nothing in IRC 402A(e)(3)(A) or IRC 414(v) turns on which of the two hosts the account sits in, so the same $2,600 of room is filled from the same $8,000 IRC 414(v)(2)(B)(i) catch-up. This vector exists because the two hosts reach the allocation through different account types and traits, and a change that fixed only the 401(k) path would leave the 403(b) one reporting a maximum it never allocates.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "traditional_403b",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          },
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.sharedLimits.4.id": "plesa402Ae3:plesa",
+        "accounts.1.sharedLimits.4.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 a plan sponsor's lower IRC 402A(e)(3)(A)(ii) amount binds the base and the catch-up together",
+      "description": "IRC 402A(e)(3)(A) caps the participant-contribution portion of the balance at the lesser of the clause (i) figure and \"such lower amount as the plan sponsor may determine\" under clause (ii). Because the cap is on the resulting balance rather than on a category of contribution, a $1,000 sponsor amount bounds base deferrals and IRC 414(v) catch-up contributions together: with the host's IRC 402(g)(1) pool exhausted the catch-up may add $1,000 and no more, where a cap applied to the base allocation alone would have let a later catch-up carry the balance past it. The reported statutory maximum stays $2,600 — the clause (i) figure less a $0 balance, bounded by the host's statutory capacity — because a sponsor amount is a plan term rather than encoded law, which is the same line README documents for every other plan-document restriction.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          },
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g",
+              "planDocumentEmployeeDeferralLimit": 1000
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 1000,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 1000,
+        "accounts.1.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.1.sharedLimits.2.limit": 1000,
+        "accounts.1.sharedLimits.4.usedByAccount": 1000,
+        "accounts.1.sharedLimits.4.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 the pension-linked emergency savings balance and existing contributions are not subtracted twice",
+      "description": "IRC 402A(e)(3)(A) caps \"the portion of the account balance attributable to participant contributions\", a quantity stated as of the moment before the contribution in question. The supplied balance therefore already contains the $600 deferred earlier in the same year that is still in the account: the $600 is inside the $1,000, not beside it. Room is $2,600 less $1,000 = $1,600, and that is what may still be contributed; subtracting the existing $600 a second time would charge the same dollars twice and would report $1,000. The annual maximum is the $600 already contributed plus that $1,600, so $2,200, and the statutory maximum is the lesser of the host's statutory annual capacity ($24,500 under IRC 402(g)(1) plus the $8,000 IRC 414(v)(2)(B)(i) catch-up available at age 56) and what the participant has contributed plus the room that remains ($600 + $1,600), so $2,200 as well. Reporting only the additional amount would leave the statutory maximum free to contradict the annual total, which is why all four figures are asserted.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 1000,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1600,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2200,
+        "accounts.0.existingAnnualContribution": 600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2200,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 1000,
+        "accounts.0.sharedLimits.2.usedByAccount": 1600
+      }
+    },
+    {
+      "name": "2026 a replenished pension-linked emergency savings account may take more in the year than the balance cap",
+      "description": "IRC 402A(e)(7) requires the plan to permit withdrawal from the account at least once a month, and the Department of Labor's PLESA guidance states that a plan may not impose a separate annual contribution limit on the account, precisely because a participant must be able to replenish it after a withdrawal. IRC 402A(e)(3)(A) caps a balance and not a year's contributions, so the two are different quantities: $600 was contributed this year but only $200 is still attributable to participant contributions, the rest having been withdrawn. Room is $2,600 less $200 = $2,400, the annual total reaches $600 + $2,400 = $3,000, and $3,000 exceeds the $2,600 cap without offending it, because at no point does the balance. A reading of the supplied figure as an opening or prior-year balance could not produce this result without a withdrawal input the package does not have, which is why the field is defined as the balance immediately before the proposed allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 200,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3000,
+        "accounts.0.existingAnnualContribution": 600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 3000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 200,
+        "accounts.0.sharedLimits.2.usedByAccount": 2400
+      }
+    },
+    {
+      "name": "2026 a pension-linked emergency savings account needs a birth year only once a catch-up could reach its room",
+      "description": "A birth year is required to size an IRC 414(v) catch-up, but only where the catch-up could change the answer. The companion vector \"a pension-linked emergency savings account needs no birth year\" holds the case where the host's base capacity covers the whole of the IRC 402A(e)(3)(A) room, so the account is determinate without one. Here the 401(k) has exhausted the $24,500 IRC 402(g)(1) limit, the account's $2,600 of room is untouched, and the participant still has compensation to defer, so whether a catch-up is available — a question only the birth year answers — decides whether the answer is $0 or $2,600. The engine reports BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP and returns null rather than guessing, because an overstated ceiling is what exposes a taxpayer to the IRC 4973 excise. The owner's IRC 414(v) pool is deliberately not part of that test: it is sized from the very age in question, so it reads as empty exactly when the question is open.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          },
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "plesa",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP",
+        "accounts.1.diagnostics.1.severity": "error"
+      }
+    },
+    {
+      "name": "2026 a pension-linked emergency savings catch-up needs no prior-year FICA wages",
+      "description": "IRC 414(v)(7)(A) requires that a catch-up contribution by a participant whose prior-year FICA wages from the sponsoring employer exceeded the indexed threshold be a designated Roth contribution, and this package asks for those wages so it can classify the catch-up. For a pension-linked emergency savings account the classification is already settled: IRC 402A(e)(1)(A)(i) treats the account \"for purposes of this title as a designated Roth account\", so every contribution to it is a designated Roth contribution whatever the participant earned. The test has nothing left to decide, and demanding a fact that cannot change the answer would make an age-50 participant's account indeterminate for no statutory reason. This vector is the same scenario as the 401(k)-host catch-up case with the prior-year wage figure removed; the amount, its Roth character and the determinate status are unchanged.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "annualAdditionsGroupId": "g",
+              "expectedEmployerContribution": 0
+            }
+          },
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600
+      }
+    },
+    {
+      "name": "2026 a 457(b) plan-document deferral limit lowers the contributable amount but not the statutory maximum",
+      "description": "IRC 457(b)(2) permits a plan to provide that the amount deferred for a year not exceed the lesser of the applicable dollar amount under IRC 457(e)(15) and 100 percent of the participant's includible compensation. Both terms are encoded law applied to supplied facts, so both belong in the statutory ceiling this package reports: with $200,000 of includible compensation the binding term is the $24,500 IRC 457(e)(15) figure Notice 2025-67 states for 2026. A $10,000 limit written into the plan document is neither — it is a restriction the sponsor chose — so it lowers what may actually be deferred to $10,000 while the statutory maximum stays $24,500. That is the line README draws for `statutoryMaximumAnnualContribution` and the line the qualified-plan path has always drawn; the IRC 457 path previously folded the plan-document limit into the reported figure and returned $10,000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "expectedEmployerContribution": 0,
+              "planDocumentEmployeeDeferralLimit": 10000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 24500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 10000,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 10000,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.usedByAccount": 10000
+      }
+    },
+    {
+      "name": "2026 a 457(b) account with no plan-document limit is unchanged by the statutory-maximum split",
+      "description": "The control for the preceding vector. Splitting the IRC 457(b)(2) ceiling into the statutory figure — the lesser of the IRC 457(e)(15) dollar amount and 100 percent of includible compensation — and the figure the plan document further restricts must change nothing where the plan document supplies no restriction: both are $24,500 for a 2026 participant with $200,000 of includible compensation, so the deferral, the pool draw and the reported statutory maximum all stay where they were. Without this vector the split could silently move the ordinary case while the plan-document case alone was watched.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 24500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 24500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.sharedLimits.0.usedByAccount": 24500
+      }
+    },
+    {
+      "name": "2026 a sponsor's IRC 402A(e)(3)(A)(ii) amount caps the balance and not the year's deferrals",
+      "description": "IRC 402A(e)(3)(A) bars a contribution only to the extent it would cause the portion of the account balance attributable to participant contributions to exceed the lesser of clause (i)'s $2,600 for 2026 and clause (ii)'s amount set by the plan sponsor, here $1,000. Both clauses cap the same quantity -- a balance -- so the sponsor's amount is not a second, annual limit on deferrals, and the Department of Labor's PLESA guidance states that a plan may not impose a separate annual contribution limit on the account at all. $600 was contributed this year and withdrawn under the IRC 402A(e)(7) monthly withdrawal right, so the balance immediately before this allocation is $0 and the room is $1,000 - $0 = $1,000; the annual total reaches $600 + $1,000 = $1,600. Charging the year's $600 against the sponsor's $1,000 as well as against the balance would leave $400, stranding $600 of room the statute allows. The reported statutory maximum uses clause (i) only, because clause (ii) is a plan term: min($24,500 under IRC 402(g)(1) with no catch-up at age 36, $600 already contributed + ($2,600 - $0)) = $3,200.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": 1000,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1600,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 1000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedByAccount": 1000
+      }
+    },
+    {
+      "name": "2026 an unwithdrawn balance leaves the sponsor's IRC 402A(e)(3)(A)(ii) room correctly reduced",
+      "description": "The control for the vector above, differing only in the supplied balance. Here the $600 contributed this year is still in the account, so the balance immediately before this allocation is $600 and IRC 402A(e)(3)(A) leaves $1,000 - $600 = $400 of room against the sponsor's clause (ii) amount. The annual total is $600 + $400 = $1,000, which is the sponsor's amount exactly, as it must be when nothing was withdrawn. Reading clause (ii) as a balance cap and reading it as an annual deferral limit give the same answer on these facts, which is why only the withdrawal case above distinguishes them; asserting both pins that the fix narrowed nothing. The statutory maximum again uses clause (i): min($24,500, $600 + ($2,600 - $600)) = $2,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 600,
+              "planDocumentEmployeeDeferralLimit": 1000,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 400,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1000,
+        "accounts.0.contributionComponents.employeeRothDeferral": 1000,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 1000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 600,
+        "accounts.0.sharedLimits.2.usedByAccount": 400
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b)-hosted PLESA draws the IRC 457(e)(15) pool and not IRC 402(g)",
+      "description": "IRC 402A(f)(1)(C) makes an eligible deferred compensation plan under IRC 457(b) of an IRC 457(e)(1)(A) employer a third applicable retirement plan that may hold a pension-linked emergency savings account. IRC 402(g)(3) enumerates elective deferrals exhaustively -- IRC 401(k) arrangements, IRC 402(h)(1)(B), IRC 403(b) salary-reduction annuities and IRC 408(p)(2)(A)(i) -- and no IRC 457(b) deferral is among them, so these contributions run against the IRC 457(e)(15) applicable dollar amount that IRC 457(b)(2)(A) imposes, $24,500 for 2026, and not against IRC 402(g)(1). IRC 402(g)(1) and IRC 457(e)(15) are the same figure in 2026, so no dollar amount can distinguish the two hosts; the pool identity can, and that is what is asserted here. IRC 402A(e)(3)(A)(i) caps the participant-contribution portion of the balance at $2,600 for 2026, and the supplied balance is $0, so the room is the whole $2,600 and the base deferral takes all of it. IRC 457(b)(2)(B) caps the deferral at 100 percent of includible compensation, which at $200,000 does not bind.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.1.id": "plesa402Ae3:p457",
+        "accounts.0.sharedLimits.1.limit": 2600,
+        "accounts.0.sharedLimits.1.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b)-hosted PLESA joins no IRC 415(c) group even when one is supplied",
+      "description": "IRC 415(a)(1) reaches a trust forming part of a pension, profit-sharing or stock bonus plan, and IRC 415(a)(2) extends it to IRC 403(a) annuity plans, IRC 403(b) annuity contracts and IRC 408(k) simplified employee pensions. An IRC 457(b) plan is in neither list, so no annual-additions limitation reaches this account whatever the caller supplies. Both accounts here declare annualAdditionsGroupId 'g', and the 401(k) alone uses it: it defers the full IRC 402(g)(1) $24,500 against a $72,000 IRC 415(c)(1)(A) limitation. The PLESA's second pool is its own IRC 402A(e)(3)(A) room rather than that group, which is the positive form of the negative claim -- an index that would hold a 415c entry instead holds the room.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "annualAdditionsGroupId": "g",
+              "planCompensation": 200000
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.1.id": "415c:t:g",
+        "accounts.0.sharedLimits.1.usedByAccount": 24500,
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.sharedLimits.0.id": "457b:t",
+        "accounts.1.sharedLimits.1.id": "plesa402Ae3:p457",
+        "accounts.1.sharedLimits.1.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 the two PLESA hosts share no pool with each other",
+      "description": "IRC 402A(f)(1) makes three plan types an applicable retirement plan, and a participant may hold an emergency savings account in more than one. The limits they run against are different -- IRC 402(g)(1) for the IRC 401(a) trust, IRC 457(e)(15) for the governmental IRC 457(b) plan -- and IRC 402A(e)(3)(A) caps each account's own balance, since it speaks of 'the portion of the account balance'. So each takes its own $2,600 for 2026 and the participant contributes $5,200 across the two, which no single IRC 402A(e)(3)(A) balance cap could produce -- $5,200 is twice the 2026 figure. The $5,200 says nothing about the deferral limits, which are $24,500 apiece and could accommodate it either way; the pool identities asserted below are what separate those. The pool identities assert the separation directly: 402g:t against 457b:t, and one room pool per account.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "pq",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "annualAdditionsGroupId": "g"
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.sharedLimits.0.id": "402g:t",
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:pq",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.sharedLimits.0.id": "457b:t",
+        "accounts.1.sharedLimits.1.id": "plesa402Ae3:p457"
+      }
+    },
+    {
+      "name": "2023 a governmental 457(b)-hosted PLESA does not yet exist",
+      "description": "SECURE 2.0 Act section 127 added IRC 402A(e) effective for plan years beginning after 31 December 2023, so no pension-linked emergency savings account of any host exists for 2023 and there is no IRC 402A(e)(3)(A)(i) figure to apply. The account is reported unavailable rather than given a zero limit.",
+      "input": {
+        "taxYear": 2023,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "unavailable",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.diagnostics.0.code": "ACCOUNT_TYPE_NOT_AVAILABLE_FOR_YEAR"
+      }
+    },
+    {
+      "name": "2026 an IRC 414(v) catch-up fills governmental 457(b) PLESA room the IRC 457(e)(15) pool cannot",
+      "description": "IRC 414(v)(6)(A)(ii) makes an IRC 457(b) plan of an IRC 457(e)(1)(A) employer an applicable employer plan, and 26 CFR 1.414(v)-1(b)(1)(i) lists IRC 457(b)(2) among the limits a catch-up relieves. That is a limit on deferrals under the plan; IRC 402A(e)(3)(A) is a limit on an account balance. The two compose. The sibling governmental 457(b) account recognizes exactly $24,500 of includible compensation and defers all of it, so the shared IRC 457(e)(15) pool is spent and the PLESA's base deferral draws $0 from it. The $8,000 IRC 414(v)(2)(B)(i) catch-up for 2026 is untouched, and the participant turns 56, so the whole $2,600 of IRC 402A(e)(3)(A)(i) room is funded as a catch-up. It is Roth because IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account for purposes of the title. The statutory maximum is min($24,500 + $8,000, $0 already contributed + $2,600 of room) = $2,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.sharedLimits.0.id": "457b:t",
+        "accounts.1.sharedLimits.0.usedByAccount": 0,
+        "accounts.1.sharedLimits.2.id": "457b-catch-up:t",
+        "accounts.1.sharedLimits.2.limit": 8000,
+        "accounts.1.sharedLimits.2.usedByAccount": 2600,
+        "accounts.1.sharedLimits.3.id": "plesa402Ae3:p457",
+        "accounts.1.sharedLimits.3.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 the IRC 457(b)(3) last-three-years catch-up fills governmental 457(b) PLESA room",
+      "description": "The catch-up this host has and the others do not. IRC 457(b)(3) raises 'the ceiling set forth in paragraph (2)' -- again a limit on deferrals under the plan and not on an account balance -- so it composes with IRC 402A(e)(3)(A) exactly as IRC 414(v) does. The sibling account spends the IRC 457(e)(15) pool, and the participant has $20,000 of unused deferrals from prior years, so the extra available under IRC 457(b)(3) is min($24,500, $20,000) = $20,000, which exceeds the $8,000 IRC 414(v) catch-up. IRC 457(e)(18) gives the participant the greater of the two and never their sum, and the engine reports which it chose. The $2,600 of room caps what that catch-up may actually fund. The statutory maximum is min($24,500 + $20,000, $0 + $2,600) = $2,600. The catch-up is Roth: IRC 457(b)(3) supplies the capacity, but IRC 402A(e)(1)(A)(i) treats the account as a designated Roth account for purposes of the title, so a participant contribution to it is Roth whatever limitation it was made under. The two facts are independent, and the component records both -- special457RothCatchUp rather than special457CatchUp -- so the IRC 457(b)(3) pool is still the one seeded on a later calculation. The account reduces no Form W-2 box 1 wages and the whole $2,600 lands in the scenario's Roth total.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 2600,
+        "accounts.1.sharedLimits.2.id": "457b-special-catch-up:t",
+        "accounts.1.sharedLimits.2.usedByAccount": 2600,
+        "accounts.1.sharedLimits.3.id": "plesa402Ae3:p457",
+        "accounts.1.sharedLimits.3.usedByAccount": 2600,
+        "accounts.1.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_SELECTED_OVER_AGE_CATCH_UP",
+        "accounts.1.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.1.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "totals.employeeRothOrAfterTaxContribution": 2600,
+        "totals.employeePreTaxContribution": 24500
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) year needs no birth date, because IRC 414(v)(6)(C) removes the age catch-up",
+      "description": "The same facts as the vector above but with no birth year supplied. IRC 414(v)(6)(C) provides that an IRC 457(b) plan is not an applicable employer plan for a participant for any year for which a *higher* limitation applies under IRC 457(b)(3), so the two limitations have to be compared -- and the comparison cannot be made against what this participant's age allows, because that is the unknown. It is made instead against the largest age-based catch-up 2026 could produce at any age: $11,250 under IRC 414(v)(2)(E) for ages 60 through 63, which exceeds the $8,000 IRC 414(v)(2)(B)(i) figure. The $20,000 available under IRC 457(b)(3) here is above that, so IRC 457(b)(3) is the higher limitation however old the participant turns out to be, the age is not load-bearing, and the result stays determinate at $2,600. The sibling account's own silence about the missing birth date is pre-existing behaviour this vector does not assert.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 2600,
+        "accounts.1.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED"
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b) PLESA needs a birth date once a catch-up could reach its room",
+      "description": "The mirror of the vector above, without the IRC 457(b)(3) eligibility that displaced the age-based catch-up. The sibling account has spent the IRC 457(e)(15) pool, so the base deferral draws nothing and $2,600 of IRC 402A(e)(3)(A)(i) room is left that only an IRC 414(v) catch-up could reach. Whether it can be reached turns on an age that was not supplied, so the account is indeterminate rather than reporting a confident zero. The question is asked only here: where the base allocation had already spent the room, or where IRC 414(v)(6)(C) had removed the catch-up, no age could change the answer and none is demanded.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "indeterminate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
+      }
+    },
+    {
+      "name": "2026 a sponsor's IRC 402A(e)(3)(A)(ii) amount binds base and catch-up together on the 457(b) host",
+      "description": "IRC 402A(e)(3)(A) caps the balance at the lesser of clause (i)'s $2,600 and the plan sponsor's clause (ii) amount, here $1,000. Because it is one cap on one balance rather than a limit on each kind of contribution, the base deferral and the catch-up draw the same $1,000 of room: the sibling account has spent the IRC 457(e)(15) pool so the base takes $0, and the IRC 414(v) catch-up is then held to $1,000 rather than the $8,000 its own pool would allow. A model that applied the room as a base deferral limit would let the catch-up carry the balance past the sponsor's amount. Clause (ii) is a plan term, so the reported statutory maximum stays on clause (i): min($24,500 + $8,000, $0 + $2,600) = $2,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 1000,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 1000,
+        "accounts.1.sharedLimits.1.limit": 1000,
+        "accounts.1.sharedLimits.2.id": "457b-catch-up:t",
+        "accounts.1.sharedLimits.2.usedByAccount": 1000,
+        "accounts.1.sharedLimits.3.usedByAccount": 1000
+      }
+    },
+    {
+      "name": "2026 the sponsor's clause (ii) amount caps the balance on the 457(b) host too",
+      "description": "The IRC 457(b) host mirror of the IRC 401(a) case: clause (ii) caps the same quantity clause (i) does, an account balance, so it is not a second annual limit on deferrals and the Department of Labor's PLESA guidance forbids the plan imposing one. $600 was contributed this year and withdrawn under the IRC 402A(e)(7) monthly withdrawal right, leaving $200 attributable to participant contributions immediately before this allocation, so the room against the sponsor's $1,000 is $800 and the annual total reaches $600 + $800 = $1,400. The participant is 36, so no catch-up can mask the base allocation. The statutory maximum uses clause (i): min($24,500, $600 + ($2,600 - $200)) = $3,000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 200,
+              "planDocumentEmployeeDeferralLimit": 1000
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 3000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 800,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1400,
+        "accounts.0.sharedLimits.1.limit": 1000,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 200,
+        "accounts.0.sharedLimits.1.usedByAccount": 800
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) extra below the year's largest age catch-up still needs the birth date",
+      "description": "The boundary the vector above sits on the other side of. IRC 457(b)(3) makes only $1,000 of unused prior deferrals available here, and $1,000 is below the $11,250 that IRC 414(v)(2)(E) would give a participant aged 60 through 63 in 2026. So IRC 457(b)(3) is not necessarily the higher limitation, IRC 414(v)(6)(C) does not remove the age-based catch-up, and the account is indeterminate. What is unknown is the *route* and not merely the amount: IRC 457(e)(18) picks between IRC 414(v) and IRC 457(b)(3), the two draw different pools, and on another host they would carry different tax treatment. So no catch-up is allocated under either heading and no catch-up pool is consumed -- reporting the $1,000 that IRC 457(b)(3) would certainly allow would put a floor in a field named for a maximum and file it under a statutory category these facts do not establish. Only the IRC 402A(e)(3)(A)(i) room and the spent IRC 457(e)(15) pool are reported.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "indeterminate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.sharedLimits.1.id": "plesa402Ae3:p457",
+        "accounts.1.sharedLimits.1.usedByAccount": 0,
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
+      }
+    },
+    {
+      "name": "2026 the same IRC 457(b)(3) facts with a known age take the larger IRC 414(v) catch-up instead",
+      "description": "The control that shows the age in the vector above was load-bearing, and not merely unsupplied. The participant turns 56, so IRC 414(v)(2)(B)(i) offers $8,000 against the $1,000 available under IRC 457(b)(3). IRC 457(e)(18) gives the greater of the two and never their sum, so the age-based catch-up is the one that applies and it funds the whole $2,600 of IRC 402A(e)(3)(A)(i) room rather than $1,000 -- a different answer from the same inputs plus one birth year, which is why the missing one leaves the account indeterminate. It is Roth by IRC 402A(e)(1)(A)(i), and the special457CatchUp component is empty.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.contributionComponents.special457CatchUp": 0,
+        "accounts.1.sharedLimits.2.id": "457b-catch-up:t"
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) extra equal to the year's largest age catch-up still needs the birth date",
+      "description": "IRC 414(v)(6)(C) removes the age-based catch-up only for a year in which a *higher* limitation applies under IRC 457(b)(3). Equal is not higher. The $11,250 of unused prior deferrals here exactly matches the IRC 414(v)(2)(E) figure for ages 60 through 63 in 2026, so IRC 414(v) remains available and which route applies still turns on the age. The dollar amounts the two routes would fund happen to coincide, but the routes do not: they draw different pools and record different components, which is why an equal amount cannot be treated as settling the question. Supplying the age resolves it, as the paired vector shows.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 11250
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "indeterminate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.diagnostics.1.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
+      }
+    },
+    {
+      "name": "2026 the same equal IRC 457(b)(3) amount with a known age of 61 takes the IRC 414(v) route",
+      "description": "The control for the vector above. At 61 the participant is inside the IRC 414(v)(2)(E) band, so the age-based catch-up is $11,250 -- equal to what IRC 457(b)(3) offers. IRC 457(e)(18) gives the greater of the two, and on a tie the age-based route applies because IRC 414(v)(6)(C) has not displaced it. The $2,600 of IRC 402A(e)(3)(A)(i) room is funded from the IRC 414(v) pool, whose limit reads $11,250 rather than the $8,000 of IRC 414(v)(2)(B)(i), and is recorded as employeeRothCatchUp rather than as an IRC 457(b)(3) amount. Same dollars as the indeterminate case, different route -- which is what makes the age load-bearing there.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 11250
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.sharedLimits.2.id": "457b-catch-up:t",
+        "accounts.1.sharedLimits.2.limit": 11250
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) catch-up to a Roth governmental 457(b) is Roth, not pre-tax",
+      "description": "IRC 457(b)(3) is a limitation on deferrals, not a tax characterisation. What decides the tax treatment is the account: a designated Roth account under IRC 402A takes Roth contributions whatever limitation they were made under. The base deferral is the IRC 457(e)(15) figure of $24,500 for 2026 -- includible compensation of $30,000 does not bind under IRC 457(b)(2)(B) -- and IRC 457(b)(3) adds min($24,500, $5,000) = $5,000, for $29,500. All of it is Roth: no Form W-2 box 1 wage reduction and no federal AGI reduction. The component is special457RothCatchUp so that the IRC 457(b)(3) provenance survives being serialized and supplied back as an existing contribution for this same taxable year, and seeds the IRC 457(b)(3) pool rather than the IRC 414(v) one when it is.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r457",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeeRothDeferral": 24500,
+        "accounts.0.contributionComponents.special457RothCatchUp": 5000,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 29500,
+        "totals.employeeRothOrAfterTaxContribution": 29500,
+        "totals.employeePreTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an IRC 457(b)(3) catch-up to a traditional governmental 457(b) stays pre-tax",
+      "description": "The control for the vector above, differing only in the account type. A traditional IRC 457(b) account takes pre-tax deferrals, so the same $24,500 + $5,000 is pre-tax: it reduces Form W-2 box 1 wages by $29,500 and contributes nothing to the Roth total. Asserting both directions pins that the tax treatment follows the account rather than the limitation, and that separating the Roth case did not simply reclassify every IRC 457(b)(3) catch-up.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.special457CatchUp": 5000,
+        "accounts.0.contributionComponents.special457RothCatchUp": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 29500,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 0,
+        "totals.employeePreTaxContribution": 29500,
+        "totals.employeeRothOrAfterTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an explicitly null plan-document limit means the sponsor set no IRC 402A(e)(3)(A)(ii) amount",
+      "description": "IRC 402A(e)(3)(A) caps the balance at the lesser of clause (i) and any lower amount the plan sponsor sets under clause (ii). A caller who serialises an absent clause (ii) amount as JSON null is saying the sponsor set none, exactly as omitting the field does, so the cap is clause (i)'s $2,600 and the room is the whole of it. Read instead as a supplied number, null would become zero and bar every contribution to the account -- which is what one engine did while the other treated it as absent, so the same input got two different answers. This vector and the omitted-field vectors it matches pin the two readings together in both engines.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "planDocumentEmployeeDeferralLimit": null,
+              "annualAdditionsGroupId": "g"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.sharedLimits.2.id": "plesa402Ae3:plesa",
+        "accounts.0.sharedLimits.2.limit": 2600,
+        "accounts.0.sharedLimits.2.usedByAccount": 2600
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b) PLESA seeds neither the IRC 402(g) pool nor an IRC 415(c) group",
+      "description": "The routing vectors elsewhere assert which pools this account draws. This one asserts what it leaves untouched, from the other side: a later account observes the pools after the PLESA has run. The PLESA holds an existing $600 Roth deferral and declares annualAdditionsGroupId 'g', and the 401(k) that follows declares the same group. If IRC 402(g)(3) reached an IRC 457(b) deferral, or IRC 415(a) reached an IRC 457(b) plan, the 401(k) would see that $600 already used. It sees zero in both, so it takes the full IRC 402(g)(1) $24,500 against an untouched IRC 415(c)(1)(A) $72,000. The PLESA's own room is $2,600 - $600 = $2,000, drawn from the IRC 457(e)(15) pool that the $600 did seed.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p457",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 600,
+              "annualAdditionsGroupId": "g"
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          },
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "annualAdditionsGroupId": "g",
+              "planCompensation": 400000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2000,
+        "accounts.0.sharedLimits.0.id": "457b:t",
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 600,
+        "accounts.1.sharedLimits.0.id": "402g:t",
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.0.usedByAccount": 24500,
+        "accounts.1.sharedLimits.1.id": "415c:t:g",
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.1.usedByAccount": 24500
+      }
+    },
+    {
+      "name": "2026 an existing Roth IRC 457(b)(3) catch-up seeds the IRC 457(b)(3) pool, not the age pool",
+      "description": "The round trip. A catch-up made under IRC 457(b)(3) to a designated Roth account carries two independent facts -- the limitation that supplied the capacity and the tax treatment of the account it entered -- and both have to survive being handed back as an existing contribution for the same taxable year. (These are contributions already made for the scenario's own tax year, not a carryforward: the pools reset for a later year.) If the Roth case were recorded as an ordinary employeeRothCatchUp it would seed the IRC 414(v) pool when it was supplied back as an existing contribution for the same taxable year, and leave the IRC 457(b)(3) pool untouched, overstating what remains under IRC 457(b)(3) and understating IRC 414(v). Here $5,000 was contributed under IRC 457(b)(3) to the first account; the second account's IRC 457(b)(3) pool therefore opens at $5,000 used against the $24,500 IRC 457(e)(15)-sized ceiling, leaving $19,500, which is what it takes once the first account has spent the shared IRC 457(b)(2)(A) base pool. Only the second account is asserted: the first reports an excess against a statutory maximum that omits what was already contributed, which is pre-existing behaviour on this path and not what this vector is about.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r457",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 24500,
+              "special457RothCatchUp": 5000
+            }
+          },
+          {
+            "id": "r457b",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 30000,
+              "permitsRothContributions": true,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 24500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 19500,
+        "accounts.1.contributionComponents.special457RothCatchUp": 19500,
+        "accounts.1.sharedLimits.1.id": "457b-special-catch-up:t",
+        "accounts.1.sharedLimits.1.limit": 24500,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 5000,
+        "accounts.1.sharedLimits.1.usedByAccount": 19500
+      }
+    },
+    {
+      "name": "2026 a qualified-plan PLESA ignores a pretax_first preference and stays Roth",
+      "description": "IRC 402A(e)(1)(A)(i) provides that a pension-linked emergency savings account \"shall be treated for purposes of this title as a designated Roth account\", so a participant contribution to one is a designated Roth contribution because of what the account is, not because of an election the plan or the caller makes. planRules.contributionPreference selects between pre-tax and Roth capacity; the statute leaves no pre-tax capacity in this account for it to select, so the supplied preference is disregarded and reported as disregarded rather than honoured. The Form W-2 box 1 wage reduction is $0 because IRC 402A(a)(1) makes a designated Roth contribution not excludable from gross income. $2,600 is the IRC 402A(e)(3)(A)(i) limitation Notice 2025-67 states for 2026, and $0 is supplied as the portion of the balance attributable to participant contributions, so the whole $2,600 of that ceiling is available. It is therefore allocated as employeeRothDeferral; employeePreTaxDeferral stays $0.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "pretax_first"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+        "accounts.0.diagnostics.0.severity": "info",
+        "totals.employeePreTaxContribution": 0,
+        "totals.employeeRothOrAfterTaxContribution": 2600
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b) PLESA ignores a pretax_first preference and stays Roth",
+      "description": "IRC 402A(e)(1)(A)(i) provides that a pension-linked emergency savings account \"shall be treated for purposes of this title as a designated Roth account\", so a participant contribution to one is a designated Roth contribution because of what the account is, not because of an election the plan or the caller makes. planRules.contributionPreference selects between pre-tax and Roth capacity; the statute leaves no pre-tax capacity in this account for it to select, so the supplied preference is disregarded and reported as disregarded rather than honoured. The Form W-2 box 1 wage reduction is $0 because IRC 402A(a)(1) makes a designated Roth contribution not excludable from gross income. $2,600 is the IRC 402A(e)(3)(A)(i) limitation Notice 2025-67 states for 2026, and $0 is supplied as the portion of the balance attributable to participant contributions, so the whole $2,600 of that ceiling is available. IRC 402A(f)(1)(C) makes a governmental IRC 457(b) plan an eligible host and IRC 402A(e)(1)(A)(i) is not conditioned on which host holds the account, so the same characterization applies here; the deferral counts against IRC 457(e)(15) through IRC 457(b)(2)(A) rather than IRC 402(g)(1), because IRC 402(g)(3) does not enumerate an IRC 457(b) deferral among elective deferrals. It is allocated as employeeRothDeferral; employeePreTaxDeferral stays $0.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "pretax_first",
+              "includibleCompensation457": 90000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+        "totals.employeePreTaxContribution": 0,
+        "totals.employeeRothOrAfterTaxContribution": 2600
+      }
+    },
+    {
+      "name": "2026 a qualified-plan PLESA age-based catch-up ignores a pretax_first preference",
+      "description": "IRC 402A(e)(1)(A)(i) provides that a pension-linked emergency savings account \"shall be treated for purposes of this title as a designated Roth account\", so a participant contribution to one is a designated Roth contribution because of what the account is, not because of an election the plan or the caller makes. planRules.contributionPreference selects between pre-tax and Roth capacity; the statute leaves no pre-tax capacity in this account for it to select, so the supplied preference is disregarded and reported as disregarded rather than honoured. The Form W-2 box 1 wage reduction is $0 because IRC 402A(a)(1) makes a designated Roth contribution not excludable from gross income. The participant was born in 1960 and so attains age 66 during 2026: age 50 or over, but outside the 60-to-63 window of IRC 414(v)(2)(E), so the applicable catch-up is the general IRC 414(v)(2)(B)(i) amount Notice 2025-67 states as $8,000. Prior-year FICA wages of $10,000 are below the $150,000 IRC 414(v)(7)(A) threshold the same notice states, so nothing in IRC 414(v)(7) requires Roth treatment: the Roth character asserted here can come only from IRC 402A(e)(1)(A)(i). A sibling traditional 401(k) already holds $24,500 of elective deferrals, which exhausts the IRC 402(g)(1) limitation Notice 2025-67 states for 2026, so no base capacity remains and what is allocated to the PLESA is IRC 414(v) catch-up capacity. IRC 402A(e)(3)(A) caps the resulting balance at the $2,600 of IRC 402A(e)(3)(A)(i) room, which binds before the $8,000 catch-up does. It is allocated as employeeRothCatchUp; employeePreTaxCatchUp stays $0.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "pretax_first"
+            }
+          },
+          {
+            "id": "k401",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "existingContributions": {
+              "employeePreTaxDeferral": 24500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH"
+      }
+    },
+    {
+      "name": "2026 a governmental 457(b) PLESA age-based catch-up ignores a pretax_first preference",
+      "description": "IRC 402A(e)(1)(A)(i) provides that a pension-linked emergency savings account \"shall be treated for purposes of this title as a designated Roth account\", so a participant contribution to one is a designated Roth contribution because of what the account is, not because of an election the plan or the caller makes. planRules.contributionPreference selects between pre-tax and Roth capacity; the statute leaves no pre-tax capacity in this account for it to select, so the supplied preference is disregarded and reported as disregarded rather than honoured. The Form W-2 box 1 wage reduction is $0 because IRC 402A(a)(1) makes a designated Roth contribution not excludable from gross income. The participant was born in 1960 and so attains age 66 during 2026: age 50 or over, but outside the 60-to-63 window of IRC 414(v)(2)(E), so the applicable catch-up is the general IRC 414(v)(2)(B)(i) amount Notice 2025-67 states as $8,000. Prior-year FICA wages of $10,000 are below the $150,000 IRC 414(v)(7)(A) threshold the same notice states, so nothing in IRC 414(v)(7) requires Roth treatment: the Roth character asserted here can come only from IRC 402A(e)(1)(A)(i). A sibling governmental IRC 457(b) account already holds $24,500 of deferrals, which exhausts the IRC 457(e)(15) limitation Notice 2025-67 states for 2026, so no base capacity remains. IRC 414(v)(6)(A)(ii) makes a governmental IRC 457(b) plan an applicable employer plan, so the catch-up is available on this host, and IRC 402A(e)(3)(A) caps the resulting balance at the $2,600 of IRC 402A(e)(3)(A)(i) room, which binds before the $8,000 catch-up does. It is allocated as employeeRothCatchUp; employeePreTaxCatchUp stays $0.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "pretax_first",
+              "includibleCompensation457": 200000
+            }
+          },
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 200000
+            },
+            "existingContributions": {
+              "employeePreTaxDeferral": 24500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 2600,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH"
+      }
+    },
+    {
+      "name": "2026 a PLESA IRC 457(b)(3) catch-up ignores a pretax_first preference and stays Roth",
+      "description": "IRC 402A(e)(1)(A)(i) provides that a pension-linked emergency savings account \"shall be treated for purposes of this title as a designated Roth account\", so a participant contribution to one is a designated Roth contribution because of what the account is, not because of an election the plan or the caller makes. planRules.contributionPreference selects between pre-tax and Roth capacity; the statute leaves no pre-tax capacity in this account for it to select, so the supplied preference is disregarded and reported as disregarded rather than honoured. The Form W-2 box 1 wage reduction is $0 because IRC 402A(a)(1) makes a designated Roth contribution not excludable from gross income. Includible compensation is $30,000, so IRC 457(b)(2) sets the base limitation at the lesser of that and the $24,500 IRC 457(e)(15) amount Notice 2025-67 states, namely $24,500, which the supplied existing Roth deferral of $24,500 exhausts. IRC 457(b)(3)(A) then permits an additional amount equal to the lesser of the $5,000 of underutilized limitation supplied from prior years and that same $24,500 figure, namely $5,000. IRC 402A(e)(3)(A) independently caps the portion of the account balance attributable to participant contributions at $2,600, so the cap binds and $2,600 is allocated; the statutory maximum is correspondingly $24,500 of existing participant contributions plus that $2,600, or $27,100. The additional capacity comes from IRC 457(b)(3), not IRC 414(v), so it is reported in special457RothCatchUp rather than employeeRothCatchUp, and the pre-tax IRC 457(b)(3) component special457CatchUp stays $0.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "pretax_first",
+              "includibleCompensation457": 30000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 24500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 27100,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.special457RothCatchUp": 2600,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 27100,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+        "totals.employeePreTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 a PLESA whose supplied plan rules forbid Roth still contributes Roth, not pre-tax",
+      "description": "planRules states contributionPreference roth_first together with permitsRothContributions false: the plan is said not to permit the only kind of contribution IRC 402A(e)(1)(A)(i) allows the account to hold, since that provision treats a pension-linked emergency savings account \"for purposes of this title as a designated Roth account\". The contradiction is not resolved by falling back to a pre-tax contribution, because the statute leaves no pre-tax capacity in the account to fall back to; a supplied prohibition on Roth contributions is not permission to make a pre-tax one. The impossible flag is disregarded and reported as disregarded, and the $2,600 IRC 402A(e)(3)(A)(i) limitation Notice 2025-67 states for 2026, undiminished by the $0 balance attributable to participant contributions, is allocated as employeeRothDeferral. This pins the input contract: no accepted input produces a pre-tax contribution to a PLESA.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "contributionPreference": "roth_first",
+              "permitsRothContributions": false,
+              "includibleCompensation457": 90000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 0,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_CONTRIBUTIONS_ARE_ALWAYS_ROTH",
+        "totals.employeePreTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an ordinary designated Roth 401(k) still honours a pretax_first preference",
+      "description": "IRC 402A(b)(1) lets a qualified cash-or-deferred arrangement offer a designated Roth election in addition to pre-tax elective deferrals, so on an ordinary designated Roth 401(k) the division between the two is a plan and participant election rather than a characteristic the statute fixes. planRules.contributionPreference therefore keeps its ordinary effect here: pretax_first allocates the $24,500 IRC 402(g)(1) limitation Notice 2025-67 states for 2026 as employeePreTaxDeferral, and IRC 402(e)(3) excludes that amount from gross income, so Form W-2 box 1 wages fall by the same $24,500 and the Roth total is $0. The account states a planDocumentEmployeeDeferralLimit equal to that figure so the reported amount is the elective deferral limitation and not IRC 415(c) capacity. This vector bounds the pension-linked emergency savings rule: that rule is keyed on the account whose character IRC 402A(e)(1)(A)(i) fixes, and does not reach an account merely because its default treatment is Roth.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "roth401k",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "planRules": {
+              "contributionPreference": "pretax_first",
+              "planDocumentEmployeeDeferralLimit": 24500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeeRothDeferral": 0,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 24500,
+        "accounts.0.federalTaxEffects.afterTaxOrRothContribution": 0,
+        "totals.employeePreTaxContribution": 24500,
+        "totals.employeeRothOrAfterTaxContribution": 0
+      }
+    },
+    {
+      "name": "2026 an explicitly null PLESA participant-contribution balance is indeterminate",
+      "description": "IRC 402A(e)(3)(A) caps the portion of the account balance attributable to participant contributions rather than the contributions of any one year, and IRC 402A(e)(7) gives the participant a withdrawal right at least monthly, so the balance immediately before the allocation is a fact the calculation requires and that no other supplied fact expresses. A JSON null supplied for planRules.pensionLinkedEmergencySavingsParticipantContributionBalance states the absence of that fact exactly as omitting the key does; it is not an assertion that the balance is zero. It therefore yields the same indeterminate result and the same PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED diagnostic as omission. Reading it as zero would answer the required question with the one value that maximizes the room the statute allows, on the strength of an input that says nothing. This is the qualified-plan host.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": null
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.0.diagnostics.0.severity": "error"
+      }
+    },
+    {
+      "name": "2026 an explicitly null PLESA balance is indeterminate on the governmental 457(b) host",
+      "description": "IRC 402A(e)(3)(A) caps the portion of the account balance attributable to participant contributions rather than the contributions of any one year, and IRC 402A(e)(7) gives the participant a withdrawal right at least monthly, so the balance immediately before the allocation is a fact the calculation requires and that no other supplied fact expresses. A JSON null supplied for planRules.pensionLinkedEmergencySavingsParticipantContributionBalance states the absence of that fact exactly as omitting the key does; it is not an assertion that the balance is zero. It therefore yields the same indeterminate result and the same PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED diagnostic as omission. Reading it as zero would answer the required question with the one value that maximizes the room the statute allows, on the strength of an input that says nothing. This is the IRC 402A(f)(1)(C) governmental IRC 457(b) host, whose allocation path is separate from the qualified-plan one and states the same required-input contract.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "compensation": {
+              "w2Compensation": 90000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "plesa",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": null,
+              "includibleCompensation457": 90000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.0.diagnostics.0.severity": "error"
+      }
     }
   ]
 }
