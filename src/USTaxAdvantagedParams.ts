@@ -13612,6 +13612,16 @@ function workplaceCatchUpAgeDiagnostic(personId: string): Diagnostic {
   );
 }
 
+function section457UnreconciledCatchUpDiagnostic(accountId: string): Diagnostic {
+  return diagnostic(
+    "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
+    DiagnosticSeverity.ERROR,
+    "No further IRC 457 catch-up is allocated while this participant's existing catch-up contributions cannot be reconciled to one permitted method and its participant-wide limit. Review the catch-up components on every IRC 457 account before relying on this account's remaining capacity.",
+    `accounts.${accountId}.existingContributions`,
+    "26 CFR 1.457-5(a); 26 CFR 1.457-5(b)",
+  );
+}
+
 function allocateBaseAndCatchUp(
   context: CalculationContext,
   account: NormalizedAccount,
@@ -14505,6 +14515,8 @@ function allocateSection457(
     };
   }
 
+  const resolution = context.section457CatchUpResolutions.get(account.ownerId)!;
+
   // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
   // participant contributions, not the contributions of any one year, and
   // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
@@ -14529,6 +14541,11 @@ function allocateSection457(
         "IRC 402A(e)(3)(A)",
       ),
     );
+    if (resolution.mode === "indeterminate" && resolution.existingCatchUpClassificationUnreconciled) {
+      diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
+    } else if (resolution.existingCatchUpClassificationUnreconciled) {
+      diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
+    }
     reportPoolWithoutConsuming(basePool, sharedLimits);
     return {
       status: CalculationStatus.INDETERMINATE,
@@ -14658,7 +14675,6 @@ function allocateSection457(
   // interchangeable capacity lands. Deciding it here, from whatever pool
   // capacity survived to this account, let two accounts pick different methods
   // and use both in one year.
-  const resolution = context.section457CatchUpResolutions.get(account.ownerId)!;
   // 26 CFR 1.457-5(c): the special catch-up counts only to the extent the
   // deferral is actually made under a plan providing it, and the age-based
   // method reaches only a governmental plan. An account outside the selected
@@ -14805,6 +14821,13 @@ function allocateSection457(
     );
   }
   const existingCatchUpClassificationInvalid = diagnostics.length > classificationDiagnosticCount;
+  if (
+    resolution.mode !== "indeterminate" &&
+    resolution.existingCatchUpClassificationUnreconciled &&
+    !existingCatchUpClassificationInvalid
+  ) {
+    diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
+  }
 
   // The pool's own `used` already carries the participant's aggregate existing
   // catch-up under this method, so it is not subtracted a second time here. The

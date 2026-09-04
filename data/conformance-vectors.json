@@ -11333,9 +11333,10 @@
         ]
       },
       "expect": {
-        "accounts.0.status": "determinate",
+        "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": 32500,
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
         "accounts.1.status": "indeterminate",
         "accounts.1.statutoryMaximumAnnualContribution": 24500,
         "accounts.1.diagnostics.0.code": "SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN",
@@ -11831,11 +11832,77 @@
         "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 1000,
         "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD",
-        "accounts.1.status": "determinate",
+        "accounts.1.status": "indeterminate",
         "accounts.1.statutoryMaximumAnnualContribution": 44500,
-        "accounts.1.maximumAnnualContributionBasedOnInputs": 0,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": null,
         "accounts.1.contributionComponents.special457CatchUp": 0,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
         "totals.employeePreTaxContribution": 25500
+      }
+    },
+    {
+      "name": "2026 missing PLESA balance does not hide participant-wide IRC 457 catch-up classification block",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) catch-up as $8,000. The participant turns 56, while both governmental plans provide $20,000 of IRC 457(b)(3) special catch-up underutilized limitation. Under 26 CFR 1.457-4(c)(2)(ii), the $20,000 special amount is larger than the $8,000 age amount, so the special method applies participant-wide. The first account is a pension-linked emergency savings account whose prior participant-contribution balance is absent, which independently makes its IRC 402A(e)(3)(A) room indeterminate, and it also records $1,000 under the unselected age method. Returning for the missing balance must not hide that classification problem: 26 CFR 1.457-5(a) permits the basic limitation plus either catch-up, and paragraph (b) determines the combined annual deferral across all eligible plans of every employer. The first account therefore reports both missing-input and unreconciled-classification diagnostics, while the second account keeps its independently determinable $24,500 basic deferral but is itself indeterminate and explains why no $20,000 special catch-up was allocated.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "a": 10000,
+              "b": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "a",
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "employeeRothCatchUp": 1000
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "b",
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1000,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.0.diagnostics.1.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": 44500,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 24500,
+        "accounts.1.contributionComponents.special457CatchUp": 0,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
+        "totals.employeeRothOrAfterTaxContribution": 1000,
+        "totals.employeePreTaxContribution": 24500
       }
     }
   ]

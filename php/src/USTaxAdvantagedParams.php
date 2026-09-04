@@ -9087,6 +9087,18 @@ final class Engine
         );
     }
 
+    /** @return array<string,mixed> */
+    private static function section457UnreconciledCatchUpDiagnostic(string $accountId): array
+    {
+        return self::diagnostic(
+            'SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS',
+            DiagnosticSeverity::ERROR,
+            "No further IRC 457 catch-up is allocated while this participant's existing catch-up contributions cannot be reconciled to one permitted method and its participant-wide limit. Review the catch-up components on every IRC 457 account before relying on this account's remaining capacity.",
+            "accounts.{$accountId}.existingContributions",
+            '26 CFR 1.457-5(a); 26 CFR 1.457-5(b)',
+        );
+    }
+
     /** @param array<string,float> $components */
     private static function baseDeferrals(array $components): float
     {
@@ -15453,6 +15465,7 @@ final class Engine
                 'diagnostics' => $diagnostics,
             ];
         }
+        $resolution = $context['section457CatchUpResolutions'][$ownerId];
         // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
         // participant contributions, not the contributions of any one year, and
         // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
@@ -15484,6 +15497,11 @@ final class Engine
                 "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
                 'IRC 402A(e)(3)(A)',
             );
+            if ($resolution['mode'] === 'indeterminate' && $resolution['existingCatchUpClassificationUnreconciled']) {
+                $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
+            } elseif ($resolution['existingCatchUpClassificationUnreconciled']) {
+                $diagnostics[] = self::section457UnreconciledCatchUpDiagnostic($account['id']);
+            }
             self::reportPoolWithoutConsuming($context['section457BasePools'][$ownerId], $sharedLimits);
             return [
                 'status' => CalculationStatus::INDETERMINATE->value,
@@ -15633,7 +15651,6 @@ final class Engine
         // interchangeable capacity lands. Deciding it here, from whatever pool capacity
         // survived to this account, let two accounts pick different methods and use
         // both in one year.
-        $resolution = $context['section457CatchUpResolutions'][$ownerId];
         // 26 CFR 1.457-5(c): the special catch-up counts only to the extent the
         // deferral is actually made under a plan providing it, and the age-based method
         // reaches only a governmental plan. An account outside the selected method's
@@ -15830,6 +15847,13 @@ final class Engine
             );
         }
         $existingCatchUpClassificationInvalid = count($diagnostics) > $classificationDiagnosticCount;
+        if (
+            $resolution['mode'] !== 'indeterminate'
+            && $resolution['existingCatchUpClassificationUnreconciled']
+            && !$existingCatchUpClassificationInvalid
+        ) {
+            $diagnostics[] = self::section457UnreconciledCatchUpDiagnostic($account['id']);
+        }
 
         // The pool's own `used` already carries the participant's aggregate existing
         // catch-up under this method, so it is not subtracted a second time here. The
