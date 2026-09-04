@@ -1,6 +1,6 @@
 # Release Status
 
-## us-tax-advantaged-params@0.3.0
+## us-tax-advantaged-params@0.4.0
 
 **Local validation:** PASS
 
@@ -18,7 +18,7 @@ The engines encode 1975-2026, include 278 shared conformance vectors, and produc
 ### Publication gate
 
 All checks available in this local environment passed.
-The local runtime is PHP 8.4.19, below the PHP 8.5 floor; the PHP CI matrix remains a publication gate.
+The PHP target was validated locally on a supported PHP version.
 Composer manifest validation ran locally.
 
 See `VALIDATION.md` and `validation-status.json` for exact commands and output.
