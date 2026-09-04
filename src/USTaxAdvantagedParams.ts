@@ -14869,7 +14869,12 @@ function allocateSection457(
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
   const catchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
-    ? minMoney(poolRemaining(catchUpPool), compensationRemaining, accountSpecialRemaining)
+    ? minMoney(
+        poolRemaining(catchUpPool),
+        compensationRemaining,
+        accountSpecialRemaining,
+        plesaPool ? poolRemaining(plesaPool) : Infinity,
+      )
     : 0;
   if (
     resolution.mode !== "indeterminate" &&

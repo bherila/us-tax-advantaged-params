@@ -15896,6 +15896,7 @@ final class Engine
                 self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
                 $accountSpecialRemaining,
+                $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
             )
             : 0.0;
         if (

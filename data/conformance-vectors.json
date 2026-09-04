@@ -11966,6 +11966,73 @@
       }
     },
     {
+      "name": "2026 an exhausted governmental PLESA remains determinate when another plan blocks special catch-up",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the indexed IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as $2,600. The participant turns 56. Both plans provide $20,000 of IRC 457(b)(3) underutilized limitation, so 26 CFR 1.457-4(c)(2)(ii) selects the special method, but the ordinary plan records $1,000 under the unselected age method. The pension-linked emergency savings account has no prior balance and takes $2,600 of the basic limitation, exhausting its account-local IRC 402A(e)(3)(A) pool. The other plan's classification defect therefore suppresses no catch-up that the PLESA could accept, so the PLESA remains determinate and receives no allocation-blocked diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "p": 10000,
+              "o": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "p",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            }
+          },
+          {
+            "id": "o",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "o",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 2600,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2600,
+        "accounts.0.contributionComponents.employeeRothDeferral": 2600,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_BALANCE_CAP_APPLIED",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 1000,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD",
+        "totals.employeeRothOrAfterTaxContribution": 2600,
+        "totals.employeePreTaxContribution": 22900
+      }
+    },
+    {
       "name": "2026 missing PLESA balance preserves age-independent mutually exclusive catch-up error",
       "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) amount as $8,000. The participant's age is absent, while the governmental pension-linked emergency savings account supplies $5,000 of IRC 457(b)(3) underutilized limitation and $29,500 of includible compensation. The special and potential age additions are each $5,000, so the strict comparison in 26 CFR 1.457-4(c)(2)(ii) cannot select the method without age. The account also records $1,000 under each catch-up method. Regardless of age, 26 CFR 1.457-5(a) permits the basic limitation plus either catch-up, never both, and paragraph (b) applies that rule across the participant's plans. The absent IRC 402A(e)(3)(A) prior balance makes the account ceiling independently indeterminate, but that early return must preserve both the age-independent mutually-exclusive-method error and the missing-age diagnostic; both supplied components remain visible and none is reclassified.",
       "input": {
