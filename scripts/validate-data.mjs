@@ -361,6 +361,9 @@ if (conformance) {
       }
       for (const field of ["expectDiagnosticCodes", "expectAbsentDiagnosticCodes"]) {
         if (vector?.[field] !== undefined) {
+          if (hasExpectError) {
+            fail(`${prefix}.${field} requires expect because throwing vectors produce no diagnostics.`);
+          }
           if (!Array.isArray(vector[field])) {
             fail(`${prefix}.${field} must be an array when supplied.`);
           } else if (

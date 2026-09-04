@@ -11841,8 +11841,8 @@
       }
     },
     {
-      "name": "2026 missing PLESA balance does not hide participant-wide IRC 457 catch-up classification block",
-      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) catch-up as $8,000. The participant turns 56, while both governmental plans provide $20,000 of IRC 457(b)(3) special catch-up underutilized limitation. Under 26 CFR 1.457-4(c)(2)(ii), the $20,000 special amount is larger than the $8,000 age amount, so the special method applies participant-wide. The first account is a pension-linked emergency savings account whose prior participant-contribution balance is absent, which independently makes its IRC 402A(e)(3)(A) room indeterminate, and it also records $1,000 under the unselected age method. Returning for the missing balance must not hide that classification problem: 26 CFR 1.457-5(a) permits the basic limitation plus either catch-up, and paragraph (b) determines the combined annual deferral across all eligible plans of every employer. The first account therefore reports both missing-input and unreconciled-classification diagnostics, while the second account keeps its independently determinable $24,500 basic deferral but is itself indeterminate and explains why no $20,000 special catch-up was allocated.",
+      "name": "2026 missing PLESA balance does not hide its local or participant-wide IRC 457 catch-up classification effects",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) catch-up as $8,000. The participant turns 56, while both governmental plans provide $20,000 of IRC 457(b)(3) special catch-up underutilized limitation. Under 26 CFR 1.457-4(c)(2)(ii), the $20,000 special amount is larger than the $8,000 age amount, so the special method applies participant-wide. The first account is a pension-linked emergency savings account whose prior participant-contribution balance is absent, which independently makes its IRC 402A(e)(3)(A) room indeterminate, and it also records $1,000 under the unselected age method. Returning for the missing balance must not hide the account-local provenance error. The first account therefore reports both the missing input and the unselected-method diagnostic, while the second account keeps its independently determinable $24,500 basic deferral but is itself indeterminate and explains why no $20,000 special catch-up was allocated until the participant-wide classification is reconciled.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -11895,7 +11895,7 @@
         "accounts.0.status": "indeterminate",
         "accounts.0.maximumAnnualContributionBasedOnInputs": 1000,
         "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
-        "accounts.0.diagnostics.1.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
+        "accounts.0.diagnostics.1.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD",
         "accounts.1.status": "indeterminate",
         "accounts.1.statutoryMaximumAnnualContribution": 44500,
         "accounts.1.maximumAnnualContributionBasedOnInputs": 24500,
@@ -12201,6 +12201,122 @@
         "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
         "accounts.0.diagnostics.1.code": "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
         "accounts.0.diagnostics.2.code": "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP"
+      }
+    },
+    {
+      "name": "2026 missing-balance PLESA with no account-local age catch-up room does not inherit a classification block",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) amount as $8,000. The participant turns 56, but this pension-linked emergency savings account has exactly $24,500 of includible compensation, so IRC 414(v)(2)(A)(ii) leaves it no age-based catch-up capacity above the basic plan ceiling. Another governmental plan records $1,000 under an unselected special-catch-up component without supplying an IRC 457(b)(3) provision. The PLESA's absent prior participant-contribution balance independently leaves its IRC 402A(e)(3)(A) ceiling indeterminate, but reconciliation of the other plan cannot create account-local age catch-up room. The PLESA therefore does not report that the classification defect blocked an allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "p": 10000,
+              "o": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "p",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 24500
+            }
+          },
+          {
+            "id": "o",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "o",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000
+            },
+            "existingContributions": {
+              "special457CatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.special457CatchUp": 1000,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD"
+      },
+      "expectAbsentDiagnosticCodes": [
+        "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS"
+      ]
+    },
+    {
+      "name": "2026 missing-balance PLESA preserves its unsupported existing special catch-up diagnostic",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) amount as $8,000. An ordinary governmental plan provides $20,000 of IRC 457(b)(3) underutilized limitation, so 26 CFR 1.457-4(c)(2)(ii) selects the special method. The pension-linked emergency savings account does not provide that special method but records $1,000 under its special Roth component. Its absent participant-contribution balance independently makes its IRC 402A(e)(3)(A) room unknown. The balance-dependent early return must still report that 26 CFR 1.457-5(c) does not recognize a special catch-up on an account whose plan supplied no such provision.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "p": 10000,
+              "o": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "p",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 200000
+            },
+            "existingContributions": {
+              "special457RothCatchUp": 1000
+            }
+          },
+          {
+            "id": "o",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "o",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1000,
+        "accounts.0.contributionComponents.special457RothCatchUp": 1000,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.0.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS"
       }
     }
   ]
