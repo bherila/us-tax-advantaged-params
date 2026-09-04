@@ -13622,6 +13622,20 @@ function section457UnreconciledCatchUpDiagnostic(accountId: string): Diagnostic 
   );
 }
 
+function section457MutuallyExclusiveCatchUpDiagnostic(
+  accountId: string,
+  existingAgeCatchUp: Money,
+  existingSpecialCatchUp: Money,
+): Diagnostic {
+  return diagnostic(
+    "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
+    DiagnosticSeverity.ERROR,
+    `Existing contributions record $${existingAgeCatchUp.toLocaleString()} of IRC 414(v) age-based catch-up and $${existingSpecialCatchUp.toLocaleString()} of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation plus either the age 50 catch-up or the special 457 catch-up, taking into account the combined annual deferral under all eligible plans, and 1.457-5(b) applies it on an aggregate basis across every employer; IRC 457(e)(18) likewise gives the greater of the two methods and never their sum. Record each existing contribution under the single method actually used.`,
+    `accounts.${accountId}.existingContributions`,
+    "26 CFR 1.457-5(a); IRC 457(e)(18)",
+  );
+}
+
 function allocateBaseAndCatchUp(
   context: CalculationContext,
   account: NormalizedAccount,
@@ -14541,9 +14555,27 @@ function allocateSection457(
         "IRC 402A(e)(3)(A)",
       ),
     );
+    const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
+    const accountExistingSpecialCatchUp = roundMoney(
+      account.existingContributions.special457CatchUp +
+        account.existingContributions.special457RothCatchUp,
+    );
+    const hasMutuallyExclusiveCatchUps =
+      resolution.existingAgeCatchUp > 0 &&
+      resolution.existingSpecialCatchUp > 0 &&
+      (accountExistingAgeCatchUp > 0 || accountExistingSpecialCatchUp > 0);
+    if (hasMutuallyExclusiveCatchUps) {
+      diagnostics.push(
+        section457MutuallyExclusiveCatchUpDiagnostic(
+          account.id,
+          resolution.existingAgeCatchUp,
+          resolution.existingSpecialCatchUp,
+        ),
+      );
+    }
     if (resolution.mode === "indeterminate" && resolution.existingCatchUpClassificationUnreconciled) {
       diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
-    } else if (resolution.existingCatchUpClassificationUnreconciled) {
+    } else if (resolution.existingCatchUpClassificationUnreconciled && !hasMutuallyExclusiveCatchUps) {
       diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
     }
     reportPoolWithoutConsuming(basePool, sharedLimits);
@@ -14729,12 +14761,10 @@ function allocateSection457(
     (accountExistingAgeCatchUp > 0 || accountExistingSpecialCatchUp > 0)
   ) {
     diagnostics.push(
-      diagnostic(
-        "SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE",
-        DiagnosticSeverity.ERROR,
-        `Existing contributions record $${resolution.existingAgeCatchUp.toLocaleString()} of IRC 414(v) age-based catch-up and $${resolution.existingSpecialCatchUp.toLocaleString()} of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation plus either the age 50 catch-up or the special 457 catch-up, taking into account the combined annual deferral under all eligible plans, and 1.457-5(b) applies it on an aggregate basis across every employer; IRC 457(e)(18) likewise gives the greater of the two methods and never their sum. Record each existing contribution under the single method actually used.`,
-        `accounts.${account.id}.existingContributions`,
-        "26 CFR 1.457-5(a); IRC 457(e)(18)",
+      section457MutuallyExclusiveCatchUpDiagnostic(
+        account.id,
+        resolution.existingAgeCatchUp,
+        resolution.existingSpecialCatchUp,
       ),
     );
   } else if (
@@ -14821,14 +14851,6 @@ function allocateSection457(
     );
   }
   const existingCatchUpClassificationInvalid = diagnostics.length > classificationDiagnosticCount;
-  if (
-    resolution.mode !== "indeterminate" &&
-    resolution.existingCatchUpClassificationUnreconciled &&
-    !existingCatchUpClassificationInvalid
-  ) {
-    diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
-  }
-
   // The pool's own `used` already carries the participant's aggregate existing
   // catch-up under this method, so it is not subtracted a second time here. The
   // account's own IRC 457(b)(3) allowance is a separate bound: 26 CFR 1.457-5(c)
@@ -14846,11 +14868,22 @@ function allocateSection457(
     resolution.mode === "special"
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
+  const catchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+    ? minMoney(poolRemaining(catchUpPool), compensationRemaining, accountSpecialRemaining)
+    : 0;
+  if (
+    resolution.mode !== "indeterminate" &&
+    resolution.existingCatchUpClassificationUnreconciled &&
+    !existingCatchUpClassificationInvalid &&
+    catchUpCapacityWithoutClassificationBlock > 0
+  ) {
+    diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
+  }
   const catchUpPotential =
     mayDrawCatchUp &&
     !existingCatchUpClassificationInvalid &&
     !resolution.existingCatchUpClassificationUnreconciled
-      ? minMoney(poolRemaining(catchUpPool), compensationRemaining, accountSpecialRemaining)
+      ? catchUpCapacityWithoutClassificationBlock
       : 0;
 
 
