@@ -13,7 +13,7 @@
  */
 
 export const PACKAGE_NAME = "us-tax-advantaged-params" as const;
-export const ENGINE_VERSION = "0.4.0" as const;
+export const ENGINE_VERSION = "0.4.1" as const;
 
 export type Money = number;
 export type PersonRole = "taxpayer" | "spouse" | "other";

@@ -1,6 +1,6 @@
 # Release Status
 
-## us-tax-advantaged-params@0.4.0
+## us-tax-advantaged-params@0.4.1
 
 **Local validation:** PASS
 
