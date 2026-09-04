@@ -348,7 +348,10 @@ function randomScenario() {
     : fsaHeavy
       ? pick([integer(1979, 1990), integer(2009, 2028)])
       : plesaHeavy
-        ? integer(2023, 2028)
+        // 2023 weighted up on its own: the account type does not exist that year,
+        // and an unavailable account must not select the IRC 457(e)(18) method,
+        // seed a pool or contribute a ceiling for the valid plans beside it.
+        ? (chance(0.25) ? 2023 : integer(2023, 2028))
         : pick([integer(1973, 1980), integer(1981, 2000), integer(2001, 2015), integer(2016, 2028)]);
   const filingStatus = pick(FILING_STATUSES);
   const personCount = chance(0.55) ? 2 : 1;
@@ -606,6 +609,14 @@ function randomScenario() {
       if (chance(0.5)) plesaRules.section457SpecialCatchUp = special;
       else hostRules.section457SpecialCatchUp = special;
     }
+    // Sometimes the emergency savings account stands alone, with no host
+    // account sharing the participant's base pool. That is the shape where the
+    // base deferral itself fills the whole IRC 402A(e)(3)(A) room, leaving no
+    // room for a catch-up of any size, so it is the shape that separates an
+    // answer the age cannot move from one it can. Generated as a pair only, it
+    // never occurred: the host always either spent the base pool, leaving the
+    // account-local room intact, or was reached second.
+    const isolatedPlesa = chance(0.2);
     const pair = [
       { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
       { id: "p1", ownerId: owner.id, type: plesaType, employerId, planRules: plesaRules },
@@ -619,10 +630,93 @@ function randomScenario() {
     else if (chance(0.3)) pair[0].existingContributions = randomExisting();
     if (chance(0.5)) pair.reverse();
     pair.forEach((account) => {
+      if (isolatedPlesa && account.id === "p0") return;
       if (chance(0.4)) account.priority = integer(1, 200);
       accounts.splice(integer(0, accounts.length), 0, account);
     });
     if (chance(0.3)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+  }
+
+  // A second targeted shape: two ordinary IRC 457(b) accounts for one
+  // participant. IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the greater of
+  // the two catch-up methods, and 1.457-5(c) takes the largest single plan's
+  // IRC 457(b)(3) amount rather than the sum, so both rules only bind once a
+  // participant holds more than one such account. The PLESA pair above emits at
+  // most one IRC 457(b)(3) declaration per participant, which left the whole
+  // multi-account conflict outside the fuzz space.
+  if (chance(0.3)) {
+    const owner = pick(persons);
+    const employerId = pick(["e0", "e1"]);
+    // The age is the fact the method choice turns on where neither IRC 457(b)(3)
+    // amount clears the year's largest age-based catch-up, so it is dropped
+    // outright a good part of the time rather than left to the generic 10%.
+    if (chance(0.35)) { delete owner.birthYear; delete owner.birthDate; }
+    // 26 CFR 1.457-5(b) applies the individual limitation across "eligible plans of
+    // all employers for whom a participant has performed services", so the two
+    // plans belong to two employers part of the time: the aggregate bounds and the
+    // both-methods pairing have to hold across that split as much as within one
+    // employer, and a shared employer id alone never showed it.
+    const splitEmployers = chance(0.4);
+    const twins = [0, 1].map((index) => {
+      // Compensation below the IRC 457(e)(15) amount is what separates the two
+      // catch-up methods: 26 CFR 1.457-4(c)(3)(ii)(A) builds the IRC 457(b)(3)
+      // ceiling on the compensation-bounded paragraph (2) ceiling, so the special
+      // amount grows as compensation falls, while IRC 414(v)(2)(A)(ii) shrinks the
+      // age-based one to nothing over the same range. Unequal values across the
+      // pair also separate the participant's IRC 414(v) entitlement -- the largest
+      // one plan allows under 1.457-5(c) -- from the sum of what both allow.
+      const rules = {
+        includibleCompensation457: pick([0, 5000, 10000, 24500, 26000, 30000, 60000, 350000]),
+      };
+      if (chance(0.7)) {
+        rules.section457SpecialCatchUp = {
+          eligible: chance(0.85),
+          // Deliberately unequal across the two, since equal amounts cannot show
+          // a largest-of rule apart from a sum-of one.
+          unusedDeferralsFromPriorYears: pick([0, 1000, 5000, 8000, 11250, 20000, 24500, money()]),
+        };
+      }
+      if (chance(0.2)) rules.planDocumentEmployeeDeferralLimit = money();
+      const account = {
+        id: `s45${index}`,
+        ownerId: owner.id,
+        type: pick(["governmental_457b", "roth_governmental_457b", "nongovernmental_457b"]),
+        employerId: splitEmployers && index === 1 ? "e2" : employerId,
+        planRules: rules,
+      };
+      // Existing contributions under either heading, so the aggregate bound and
+      // the both-methods-supplied case are reachable. One shape carries both
+      // headings at once: 26 CFR 1.457-5(a) allows the basic limitation plus
+      // either catch-up, so the pairing is a breach at any size, and picking one
+      // heading per account left the within-one-account form of it unreachable.
+      if (chance(0.35)) {
+        account.existingContributions = pick([
+          { special457CatchUp: pick([1000, 19000, money()]) },
+          { special457RothCatchUp: pick([1000, 19000, money()]) },
+          { employeePreTaxCatchUp: pick([1000, 8000, money()]) },
+          { employeePreTaxDeferral: pick([23000, 24500, money()]) },
+          {
+            employeePreTaxCatchUp: pick([1000, 4000, 8000]),
+            special457CatchUp: pick([1000, 4000, 19000]),
+          },
+          {
+            employeeRothCatchUp: pick([1000, 4000, 8000]),
+            special457RothCatchUp: pick([1000, 4000, 19000]),
+          },
+          // A single heading at a size that clears the participant's entitlement
+          // only once both accounts are counted, so 26 CFR 1.457-5(b)'s aggregate
+          // bound is reachable with every per-account and per-plan figure lawful.
+          { employeePreTaxCatchUp: pick([4000, 5000, 6000]) },
+          { special457CatchUp: pick([4000, 5000, 6000]) },
+          randomExisting(),
+        ]);
+      }
+      if (chance(0.4)) account.priority = integer(1, 200);
+      return account;
+    });
+    if (chance(0.5)) twins.reverse();
+    twins.forEach((account) => accounts.splice(integer(0, accounts.length), 0, account));
+    if (chance(0.4)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
   }
 
   const scenario = { taxYear, filingStatus, persons, accounts };
