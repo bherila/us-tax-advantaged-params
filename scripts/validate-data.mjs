@@ -359,6 +359,20 @@ if (conformance) {
       if (hasExpectError && (typeof vector.expectError.code !== "string" || vector.expectError.code.trim() === "")) {
         fail(`${prefix}.expectError.code must be a nonempty string.`);
       }
+      for (const field of ["expectDiagnosticCodes", "expectAbsentDiagnosticCodes"]) {
+        if (vector?.[field] !== undefined) {
+          if (hasExpectError) {
+            fail(`${prefix}.${field} requires expect because throwing vectors produce no diagnostics.`);
+          }
+          if (!Array.isArray(vector[field])) {
+            fail(`${prefix}.${field} must be an array when supplied.`);
+          } else if (
+            vector[field].some((code) => typeof code !== "string" || code.trim() === "")
+          ) {
+            fail(`${prefix}.${field} must contain only nonempty strings.`);
+          }
+        }
+      }
       if (!hasExpectError) {
         const year = vector?.input?.taxYear;
         const minimum = parameters?.supportedTaxYears?.minimum;

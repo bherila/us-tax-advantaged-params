@@ -8,6 +8,7 @@ interface ConformanceVector {
   input: Parameters<typeof USTaxAdvantagedParams.calculate>[0];
   expect?: Record<string, unknown>;
   expectDiagnosticCodes?: string[];
+  expectAbsentDiagnosticCodes?: string[];
   expectError?: { code: string };
 }
 
@@ -49,6 +50,9 @@ for (const vector of conformance.vectors) {
     const codes = new Set(result.diagnostics.map((entry) => entry.code));
     for (const expectedCode of vector.expectDiagnosticCodes ?? []) {
       assert.ok(codes.has(expectedCode), `${vector.name}: missing diagnostic ${expectedCode}`);
+    }
+    for (const absentCode of vector.expectAbsentDiagnosticCodes ?? []) {
+      assert.ok(!codes.has(absentCode), `${vector.name}: unexpected diagnostic ${absentCode}`);
     }
   });
 }

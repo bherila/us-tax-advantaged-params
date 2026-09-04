@@ -66,6 +66,11 @@ foreach ($decoded['vectors'] as $vector) {
                 throw new RuntimeException("{$vector['name']}: missing diagnostic {$code}");
             }
         }
+        foreach ($vector['expectAbsentDiagnosticCodes'] ?? [] as $code) {
+            if (in_array($code, $codes, true)) {
+                throw new RuntimeException("{$vector['name']}: unexpected diagnostic {$code}");
+            }
+        }
         fwrite(STDOUT, "ok - {$vector['name']}\n");
     } catch (Throwable $error) {
         $failed++;

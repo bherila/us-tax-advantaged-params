@@ -9087,6 +9087,277 @@ final class Engine
         );
     }
 
+    /** @return array<string,mixed> */
+    private static function section457UnreconciledCatchUpDiagnostic(string $accountId): array
+    {
+        return self::diagnostic(
+            'SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS',
+            DiagnosticSeverity::ERROR,
+            "No further IRC 457 catch-up is allocated while this participant's existing catch-up contributions cannot be reconciled to one permitted method and its participant-wide limit. Review the catch-up components on every IRC 457 account before relying on this account's remaining capacity.",
+            "accounts.{$accountId}.existingContributions",
+            '26 CFR 1.457-5(a); 26 CFR 1.457-5(b)',
+        );
+    }
+
+    /** @return array<string,mixed> */
+    private static function section457MutuallyExclusiveCatchUpDiagnostic(
+        string $accountId,
+        float $existingAgeCatchUp,
+        float $existingSpecialCatchUp,
+    ): array {
+        return self::diagnostic(
+            'SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE',
+            DiagnosticSeverity::ERROR,
+            'Existing contributions record $'
+                . self::localeNumber($existingAgeCatchUp)
+                . ' of IRC 414(v) age-based catch-up and $'
+                . self::localeNumber($existingSpecialCatchUp)
+                . ' of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a)'
+                . ' states the individual limitation as the basic annual limitation plus either'
+                . ' the age 50 catch-up or the special 457 catch-up, taking into account the'
+                . ' combined annual deferral under all eligible plans, and 1.457-5(b) applies it'
+                . ' on an aggregate basis across every employer; IRC 457(e)(18) likewise gives'
+                . ' the greater of the two methods and never their sum. Record each existing'
+                . ' contribution under the single method actually used.',
+            "accounts.{$accountId}.existingContributions",
+            '26 CFR 1.457-5(a); IRC 457(e)(18)',
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param array<string,mixed> $resolution
+     * @param array<string,float> $ceilings
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendSection457ExistingCatchUpDiagnostics(
+        array $context,
+        array $account,
+        array $traits,
+        array $resolution,
+        array $ceilings,
+        array &$diagnostics,
+    ): bool {
+        $diagnosticCountBefore = count($diagnostics);
+        $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
+        $accountExistingSpecialCatchUp = self::roundMoney(
+            $account['existingContributions']['special457CatchUp']
+                + $account['existingContributions']['special457RothCatchUp'],
+        );
+        $selectedExistingCatchUp = match ($resolution['mode']) {
+            'age' => $resolution['existingAgeCatchUp'],
+            'special' => $resolution['existingSpecialCatchUp'],
+            default => 0.0,
+        };
+        $unselectedExistingCatchUp = self::roundMoney(
+            $resolution['existingAgeCatchUp'] + $resolution['existingSpecialCatchUp']
+                - $selectedExistingCatchUp,
+        );
+        $accountSelectedExistingCatchUp = match ($resolution['mode']) {
+            'age' => $accountExistingAgeCatchUp,
+            'special' => $accountExistingSpecialCatchUp,
+            default => 0.0,
+        };
+        $accountUnselectedExistingCatchUp = self::roundMoney(
+            $accountExistingAgeCatchUp + $accountExistingSpecialCatchUp
+                - $accountSelectedExistingCatchUp,
+        );
+        $selectedMethodName = $resolution['mode'] === 'age'
+            ? 'IRC 414(v) age-based'
+            : 'IRC 457(b)(3) special';
+
+        if (
+            $resolution['existingAgeCatchUp'] > 0.0
+            && $resolution['existingSpecialCatchUp'] > 0.0
+            && ($accountExistingAgeCatchUp > 0.0 || $accountExistingSpecialCatchUp > 0.0)
+        ) {
+            $diagnostics[] = self::section457MutuallyExclusiveCatchUpDiagnostic(
+                $account['id'],
+                $resolution['existingAgeCatchUp'],
+                $resolution['existingSpecialCatchUp'],
+            );
+        } elseif (
+            $resolution['mode'] !== 'indeterminate'
+            && $unselectedExistingCatchUp > 0.0
+            && $accountUnselectedExistingCatchUp > 0.0
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD',
+                DiagnosticSeverity::ERROR,
+                $resolution['mode'] === 'none'
+                    ? 'Existing contributions record $'
+                        . self::localeNumber($unselectedExistingCatchUp)
+                        . ' of IRC 457 catch-up, but no catch-up method applies to this participant'
+                        . " for {$context['taxYear']}: no plan supplied provides the IRC 457(b)(3)"
+                        . ' catch-up, and no eligible governmental plan offers an IRC 414(v) amount'
+                        . " the participant's age and compensation reach. Record the contribution"
+                        . ' under the limitation it was actually made under, or supply the facts'
+                        . ' that make a method apply.'
+                    : 'Existing contributions record $'
+                        . self::localeNumber($unselectedExistingCatchUp)
+                        . ' of catch-up under the method that does not apply. 26 CFR'
+                        . " 1.457-4(c)(2)(ii) selects the {$selectedMethodName} catch-up for this"
+                        . ' participant, and makes that a determination rather than an election: the'
+                        . ' age 50 catch-up "does not apply for any taxable year for which a higher'
+                        . ' limitation applies" under the special 457 catch-up, and IRC 414(v)(6)(C)'
+                        . ' states the same rule from the other side. Record the contribution under'
+                        . ' the method actually used, or supply the plan facts that make the other'
+                        . ' one apply.',
+                "accounts.{$account['id']}.existingContributions",
+                '26 CFR 1.457-4(c)(2)(ii); IRC 414(v)(6)(C)',
+            );
+        }
+        if (
+            $resolution['mode'] !== 'indeterminate'
+            && $selectedExistingCatchUp > $resolution['headroom']
+            && $accountSelectedExistingCatchUp > 0.0
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($selectedExistingCatchUp)
+                    . " of {$selectedMethodName} catch-up across this participant's IRC 457 plans,"
+                    . ' against the $'
+                    . self::localeNumber($resolution['headroom'])
+                    . ' that 26 CFR 1.457-5(a) allows above the basic annual limitation. 1.457-5(b)'
+                    . ' determines the amounts "on an aggregate basis" across the eligible plans of'
+                    . ' every employer, so the excess is the participant\'s even where no single'
+                    . ' plan exceeds its own ceiling.',
+                "accounts.{$account['id']}.existingContributions",
+                '26 CFR 1.457-5(a); 26 CFR 1.457-5(b)',
+            );
+        }
+        if (
+            $accountExistingAgeCatchUp > 0.0
+            && !(!empty($traits['governmental457']) && !empty($traits['permitsAgeCatchUpByStatute']))
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($accountExistingAgeCatchUp)
+                    . ' of IRC 414(v) age-based catch-up on this account, but IRC 414(v)(6)(A)(ii)'
+                    . ' makes only an eligible governmental IRC 457(b) plan an applicable employer'
+                    . ' plan, so this plan cannot host one. Record the contribution under the'
+                    . ' limitation it was actually made under.',
+                "accounts.{$account['id']}.existingContributions",
+                'IRC 414(v)(6)(A)(ii)',
+            );
+        }
+        $accountProvidesSpecialCatchUp = is_array($account['planRules']['section457SpecialCatchUp'] ?? null)
+            && !empty($account['planRules']['section457SpecialCatchUp']['eligible']);
+        if ($accountExistingSpecialCatchUp > 0.0 && !$accountProvidesSpecialCatchUp) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($accountExistingSpecialCatchUp)
+                    . ' of IRC 457(b)(3) special catch-up on this account, but no such plan'
+                    . ' provision was supplied for it. 26 CFR 1.457-5(c) counts the special'
+                    . ' catch-up only to the extent an annual deferral is made "as a result of plan'
+                    . ' provisions permitted under Sec. 1.457-4(c)(3)". Supply'
+                    . ' planRules.section457SpecialCatchUp for this plan, or record the contribution'
+                    . ' under the limitation it was actually made under.',
+                "accounts.{$account['id']}.existingContributions",
+                '26 CFR 1.457-5(c)',
+            );
+        } elseif ($accountExistingSpecialCatchUp > $ceilings['specialAdditional']) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($accountExistingSpecialCatchUp)
+                    . ' of IRC 457(b)(3) special catch-up on this account, above the $'
+                    . self::localeNumber($ceilings['specialAdditional'])
+                    . ' its own plan ceiling provides above the basic annual limitation. 26 CFR'
+                    . ' 1.457-4(c)(3)(i) caps that ceiling at the lesser of twice the IRC 457(e)(15)'
+                    . ' amount and the (c)(3)(ii) underutilized limitation, and 1.457-5(c)'
+                    . ' recognises the amount only under the plan whose provisions produce it.',
+                "accounts.{$account['id']}.existingContributions",
+                '26 CFR 1.457-4(c)(3)(i); 26 CFR 1.457-5(c)',
+            );
+        }
+
+        return count($diagnostics) > $diagnosticCountBefore;
+    }
+
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $resolution
+     * @param array<string,float> $ceilings
+     * @param array<string,mixed> $basePool
+     * @param array<string,mixed> $catchUpPool
+     */
+    private static function section457PlesaCatchUpCapacityUpperBoundBeforeBalance(
+        array $context,
+        array $account,
+        array $resolution,
+        array $ceilings,
+        array $basePool,
+        array $catchUpPool,
+    ): float {
+        if (!isset($resolution['eligibleAccountIds'][$account['id']])) {
+            return 0.0;
+        }
+        $statutoryPlesaCap = $context['parameters']['pensionLinkedEmergencySavingsBalanceCap402A'];
+        if ($statutoryPlesaCap === null) {
+            return 0.0;
+        }
+        $sponsorCap = $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? null;
+        $effectivePlesaCap = $sponsorCap === null
+            ? (float) $statutoryPlesaCap
+            : self::minMoney(
+                (float) $statutoryPlesaCap,
+                self::money($sponsorCap, "{$account['id']}.planDocumentEmployeeDeferralLimit"),
+            );
+        $existing = $account['existingContributions'];
+        $regularBeforeEmployee = self::roundMoney(
+            self::baseDeferrals($existing)
+                + $existing['employeeAfterTax']
+                + $existing['employerPreTax']
+                + $existing['employerRoth'],
+        );
+        $baseCapacity = self::minMoney(
+            self::poolRemaining($basePool),
+            self::nonnegative($ceilings['basicPlanCeiling'] - $regularBeforeEmployee),
+            $effectivePlesaCap,
+        );
+        $plesaRoomAfterBase = self::nonnegative($effectivePlesaCap - $baseCapacity);
+        $compensationBeforeBase = self::nonnegative(
+            $ceilings['includibleCompensation']
+                - self::baseDeferrals($existing)
+                - self::ageCatchUps($existing)
+                - $existing['special457CatchUp']
+                - $existing['special457RothCatchUp']
+                - $existing['employerPreTax']
+                - $existing['employerRoth'],
+        );
+        $compensationAfterBase = self::nonnegative($compensationBeforeBase - $baseCapacity);
+        $accountExistingCatchUp = match ($resolution['mode']) {
+            'age' => self::ageCatchUps($existing),
+            'special' => self::roundMoney(
+                $existing['special457CatchUp'] + $existing['special457RothCatchUp'],
+            ),
+            default => 0.0,
+        };
+        $accountCatchUpCeiling = match ($resolution['mode']) {
+            'age' => $ceilings['ageAdditional'],
+            'special' => $ceilings['specialAdditional'],
+            default => 0.0,
+        };
+
+        return self::minMoney(
+            self::poolRemaining($catchUpPool),
+            $compensationAfterBase,
+            self::nonnegative($accountCatchUpCeiling - $accountExistingCatchUp),
+            $plesaRoomAfterBase,
+        );
+    }
+
     /** @param array<string,float> $components */
     private static function baseDeferrals(array $components): float
     {
@@ -10534,6 +10805,7 @@ final class Engine
                     'specialAmount' => 0.0,
                     'existingAgeCatchUp' => 0.0,
                     'existingSpecialCatchUp' => 0.0,
+                    'existingCatchUpClassificationUnreconciled' => false,
                     'eligibleAccountIds' => [],
                 ];
                 continue;
@@ -10643,13 +10915,66 @@ final class Engine
                     + $account['existingContributions']['special457RothCatchUp'];
             }
 
+            $existingAgeCatchUp = self::roundMoney($existingAgeCatchUp);
+            $existingSpecialCatchUp = self::roundMoney($existingSpecialCatchUp);
+            $headroom = $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0);
+            $selectedExistingCatchUp = match ($mode) {
+                'age' => $existingAgeCatchUp,
+                'special' => $existingSpecialCatchUp,
+                default => 0.0,
+            };
+            $unselectedExistingCatchUp = self::roundMoney(
+                $existingAgeCatchUp + $existingSpecialCatchUp - $selectedExistingCatchUp,
+            );
+            $existingCatchUpClassificationUnreconciled = (
+                $mode === 'indeterminate'
+                && $existingAgeCatchUp + $existingSpecialCatchUp > 0.0
+            ) || (
+                $existingAgeCatchUp > 0.0
+                && $existingSpecialCatchUp > 0.0
+            ) || (
+                $mode !== 'indeterminate'
+                && $unselectedExistingCatchUp > 0.0
+            ) || (
+                $mode !== 'indeterminate'
+                && $selectedExistingCatchUp > $headroom
+            );
+            foreach ($owned as $account) {
+                $accountTraits = self::traits($account['type']);
+                $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
+                $accountExistingSpecialCatchUp = self::roundMoney(
+                    $account['existingContributions']['special457CatchUp']
+                    + $account['existingContributions']['special457RothCatchUp'],
+                );
+                $accountProvidesSpecialCatchUp = is_array($account['planRules']['section457SpecialCatchUp'] ?? null)
+                    && !empty($account['planRules']['section457SpecialCatchUp']['eligible']);
+                if (
+                    (
+                        $accountExistingAgeCatchUp > 0.0
+                        && !(
+                            !empty($accountTraits['governmental457'])
+                            && !empty($accountTraits['permitsAgeCatchUpByStatute'])
+                        )
+                    ) || (
+                        $accountExistingSpecialCatchUp > 0.0
+                        && (
+                            !$accountProvidesSpecialCatchUp
+                            || $accountExistingSpecialCatchUp > $ceilings[$account['id']]['specialAdditional']
+                        )
+                    )
+                ) {
+                    $existingCatchUpClassificationUnreconciled = true;
+                    break;
+                }
+            }
             $context['section457CatchUpResolutions'][$personId] = [
                 'mode' => $mode,
-                'headroom' => $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0),
+                'headroom' => $headroom,
                 'ageAmount' => $ageAmount,
                 'specialAmount' => $specialAmount,
-                'existingAgeCatchUp' => self::roundMoney($existingAgeCatchUp),
-                'existingSpecialCatchUp' => self::roundMoney($existingSpecialCatchUp),
+                'existingAgeCatchUp' => $existingAgeCatchUp,
+                'existingSpecialCatchUp' => $existingSpecialCatchUp,
+                'existingCatchUpClassificationUnreconciled' => $existingCatchUpClassificationUnreconciled,
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -14310,6 +14635,7 @@ final class Engine
         array $account,
         array $traits,
         array &$diagnostics,
+        bool $reportSuccessfulRothAllocation = true,
     ): string {
         $person = $context['persons'][$account['ownerId']];
         $defaultTreatment = self::accountUsesRothEmployeeContributions($account, $traits) ? 'roth' : 'pretax';
@@ -14372,14 +14698,16 @@ final class Engine
             );
             return 'unavailable';
         }
-        $diagnostics[] = self::diagnostic(
-            'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
-            DiagnosticSeverity::INFO,
-            'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
-                . ', so the age-based catch-up is allocated as Roth.',
-            "accounts.{$account['id']}",
-            'IRC 414(v)(7)',
-        );
+        if ($reportSuccessfulRothAllocation) {
+            $diagnostics[] = self::diagnostic(
+                'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
+                DiagnosticSeverity::INFO,
+                'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
+                    . ', so the age-based catch-up is allocated as Roth.',
+                "accounts.{$account['id']}",
+                'IRC 414(v)(7)',
+            );
+        }
         return 'roth';
     }
 
@@ -15399,6 +15727,22 @@ final class Engine
                 'diagnostics' => $diagnostics,
             ];
         }
+        $resolution = $context['section457CatchUpResolutions'][$ownerId];
+        $ceilings = self::section457PlanCeilings(
+            $context['parameters'],
+            $person,
+            $account,
+            (float) $statutoryBase,
+            (float) $compensationFraction,
+        );
+        $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
+        $accountExistingSpecialCatchUp = self::roundMoney(
+            $account['existingContributions']['special457CatchUp']
+                + $account['existingContributions']['special457RothCatchUp'],
+        );
+        $catchUpPoolCategory = $resolution['mode'] === 'special'
+            ? 'section457SpecialCatchUpPools'
+            : 'section457CatchUpPools';
         // IRC 402A(e)(3)(A) caps the portion of the *account balance* attributable to
         // participant contributions, not the contributions of any one year, and
         // IRC 402A(e)(7) lets the participant withdraw at least monthly, which puts
@@ -15430,6 +15774,30 @@ final class Engine
                 "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
                 'IRC 402A(e)(3)(A)',
             );
+            $existingCatchUpClassificationInvalid = self::appendSection457ExistingCatchUpDiagnostics(
+                $context,
+                $account,
+                $traits,
+                $resolution,
+                $ceilings,
+                $diagnostics,
+            );
+            if ($resolution['mode'] === 'indeterminate' && $resolution['existingCatchUpClassificationUnreconciled']) {
+                $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
+            } elseif (
+                $resolution['existingCatchUpClassificationUnreconciled']
+                && !$existingCatchUpClassificationInvalid
+                && self::section457PlesaCatchUpCapacityUpperBoundBeforeBalance(
+                    $context,
+                    $account,
+                    $resolution,
+                    $ceilings,
+                    $context['section457BasePools'][$ownerId],
+                    $context[$catchUpPoolCategory][$ownerId],
+                ) > 0.0
+            ) {
+                $diagnostics[] = self::section457UnreconciledCatchUpDiagnostic($account['id']);
+            }
             self::reportPoolWithoutConsuming($context['section457BasePools'][$ownerId], $sharedLimits);
             return [
                 'status' => CalculationStatus::INDETERMINATE->value,
@@ -15452,13 +15820,6 @@ final class Engine
         // either host. section457PlanCeilings builds it, and the two catch-up amounts
         // above it, from the same facts the resolver used, so an account's own ceiling
         // and the participant's method are never derived from different figures.
-        $ceilings = self::section457PlanCeilings(
-            $context['parameters'],
-            $person,
-            $account,
-            (float) $statutoryBase,
-            (float) $compensationFraction,
-        );
         $includibleCompensation = $ceilings['includibleCompensation'];
         $statutoryHostBaseLimit = $ceilings['basicPlanCeiling'];
         // On a pension-linked emergency savings account the same input field carries
@@ -15579,15 +15940,11 @@ final class Engine
         // interchangeable capacity lands. Deciding it here, from whatever pool capacity
         // survived to this account, let two accounts pick different methods and use
         // both in one year.
-        $resolution = $context['section457CatchUpResolutions'][$ownerId];
         // 26 CFR 1.457-5(c): the special catch-up counts only to the extent the
         // deferral is actually made under a plan providing it, and the age-based method
         // reaches only a governmental plan. An account outside the selected method's
         // set draws nothing, whatever its priority.
         $mayDrawCatchUp = isset($resolution['eligibleAccountIds'][$account['id']]);
-        $catchUpPoolCategory = $resolution['mode'] === 'special'
-            ? 'section457SpecialCatchUpPools'
-            : 'section457CatchUpPools';
 
         // Every existing catch-up contribution carries a statutory provenance the
         // caller chose through the component key, so the invariants 26 CFR 1.457-4 and
@@ -15636,22 +15993,10 @@ final class Engine
             && $resolution['existingSpecialCatchUp'] > 0.0
             && ($accountExistingAgeCatchUp > 0.0 || $accountExistingSpecialCatchUp > 0.0)
         ) {
-            $diagnostics[] = self::diagnostic(
-                'SECTION_457_CATCH_UP_METHODS_ARE_MUTUALLY_EXCLUSIVE',
-                DiagnosticSeverity::ERROR,
-                'Existing contributions record $'
-                    . self::localeNumber($resolution['existingAgeCatchUp'])
-                    . ' of IRC 414(v) age-based catch-up and $'
-                    . self::localeNumber($resolution['existingSpecialCatchUp'])
-                    . ' of IRC 457(b)(3) special catch-up for this participant. 26 CFR 1.457-5(a)'
-                    . ' states the individual limitation as the basic annual limitation plus either'
-                    . ' the age 50 catch-up or the special 457 catch-up, taking into account the'
-                    . ' combined annual deferral under all eligible plans, and 1.457-5(b) applies it'
-                    . ' on an aggregate basis across every employer; IRC 457(e)(18) likewise gives'
-                    . ' the greater of the two methods and never their sum. Record each existing'
-                    . ' contribution under the single method actually used.',
-                "accounts.{$account['id']}.existingContributions",
-                '26 CFR 1.457-5(a); IRC 457(e)(18)',
+            $diagnostics[] = self::section457MutuallyExclusiveCatchUpDiagnostic(
+                $account['id'],
+                $resolution['existingAgeCatchUp'],
+                $resolution['existingSpecialCatchUp'],
             );
         } elseif (
             $resolution['mode'] !== 'indeterminate'
@@ -15776,7 +16121,6 @@ final class Engine
             );
         }
         $existingCatchUpClassificationInvalid = count($diagnostics) > $classificationDiagnosticCount;
-
         // The pool's own `used` already carries the participant's aggregate existing
         // catch-up under this method, so it is not subtracted a second time here. The
         // account's own IRC 457(b)(3) allowance is a separate bound: 26 CFR 1.457-5(c)
@@ -15793,12 +16137,45 @@ final class Engine
         $accountSpecialRemaining = $resolution['mode'] === 'special'
             ? self::nonnegative($ceilings['specialAdditional'] - $accountExistingSpecialCatchUp)
             : INF;
-        $catchUpPotential = ($mayDrawCatchUp && !$existingCatchUpClassificationInvalid)
+        $monetaryCatchUpCapacityWithoutClassificationBlock = $mayDrawCatchUp
             ? self::minMoney(
                 self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
                 $accountSpecialRemaining,
+                $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
             )
+            : 0.0;
+        $ageCatchUpTreatmentBeforeClassificationBlock = (
+            $resolution['mode'] === 'age'
+            && !$existingCatchUpClassificationInvalid
+            && $monetaryCatchUpCapacityWithoutClassificationBlock > 0.0
+        )
+            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, false)
+            : null;
+        $catchUpCapacityWithoutClassificationBlock = in_array(
+            $ageCatchUpTreatmentBeforeClassificationBlock,
+            ['unknown', 'unavailable'],
+            true,
+        )
+            ? 0.0
+            : $monetaryCatchUpCapacityWithoutClassificationBlock;
+        if ($ageCatchUpTreatmentBeforeClassificationBlock === 'unknown') {
+            self::reportPoolWithoutConsuming($context[$catchUpPoolCategory][$ownerId], $sharedLimits);
+        }
+        if (
+            $resolution['mode'] !== 'indeterminate'
+            && $resolution['existingCatchUpClassificationUnreconciled']
+            && !$existingCatchUpClassificationInvalid
+            && $catchUpCapacityWithoutClassificationBlock > 0.0
+        ) {
+            $diagnostics[] = self::section457UnreconciledCatchUpDiagnostic($account['id']);
+        }
+        $catchUpPotential = (
+            $mayDrawCatchUp
+            && !$existingCatchUpClassificationInvalid
+            && !$resolution['existingCatchUpClassificationUnreconciled']
+        )
+            ? $catchUpCapacityWithoutClassificationBlock
             : 0.0;
 
 
@@ -15821,7 +16198,13 @@ final class Engine
         $compensationBeforeCatchUp = $compensationRemaining;
 
         if ($resolution['mode'] === 'indeterminate') {
-            if ($mayDrawCatchUp && $roomACatchUpCouldOccupy > 0.0) {
+            if (
+                $mayDrawCatchUp
+                && (
+                    $roomACatchUpCouldOccupy > 0.0
+                    || $accountExistingAgeCatchUp + $accountExistingSpecialCatchUp > 0.0
+                )
+            ) {
                 $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
             }
         } elseif ($resolution['mode'] === 'special' && $catchUpPotential > 0.0) {
