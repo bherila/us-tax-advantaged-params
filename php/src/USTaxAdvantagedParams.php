@@ -10534,6 +10534,7 @@ final class Engine
                     'specialAmount' => 0.0,
                     'existingAgeCatchUp' => 0.0,
                     'existingSpecialCatchUp' => 0.0,
+                    'existingCatchUpClassificationUnreconciled' => false,
                     'eligibleAccountIds' => [],
                 ];
                 continue;
@@ -10643,13 +10644,66 @@ final class Engine
                     + $account['existingContributions']['special457RothCatchUp'];
             }
 
+            $existingAgeCatchUp = self::roundMoney($existingAgeCatchUp);
+            $existingSpecialCatchUp = self::roundMoney($existingSpecialCatchUp);
+            $headroom = $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0);
+            $selectedExistingCatchUp = match ($mode) {
+                'age' => $existingAgeCatchUp,
+                'special' => $existingSpecialCatchUp,
+                default => 0.0,
+            };
+            $unselectedExistingCatchUp = self::roundMoney(
+                $existingAgeCatchUp + $existingSpecialCatchUp - $selectedExistingCatchUp,
+            );
+            $existingCatchUpClassificationUnreconciled = (
+                $mode === 'indeterminate'
+                && $existingAgeCatchUp + $existingSpecialCatchUp > 0.0
+            ) || (
+                $existingAgeCatchUp > 0.0
+                && $existingSpecialCatchUp > 0.0
+            ) || (
+                $mode !== 'indeterminate'
+                && $unselectedExistingCatchUp > 0.0
+            ) || (
+                $mode !== 'indeterminate'
+                && $selectedExistingCatchUp > $headroom
+            );
+            foreach ($owned as $account) {
+                $accountTraits = self::traits($account['type']);
+                $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
+                $accountExistingSpecialCatchUp = self::roundMoney(
+                    $account['existingContributions']['special457CatchUp']
+                    + $account['existingContributions']['special457RothCatchUp'],
+                );
+                $accountProvidesSpecialCatchUp = is_array($account['planRules']['section457SpecialCatchUp'] ?? null)
+                    && !empty($account['planRules']['section457SpecialCatchUp']['eligible']);
+                if (
+                    (
+                        $accountExistingAgeCatchUp > 0.0
+                        && !(
+                            !empty($accountTraits['governmental457'])
+                            && !empty($accountTraits['permitsAgeCatchUpByStatute'])
+                        )
+                    ) || (
+                        $accountExistingSpecialCatchUp > 0.0
+                        && (
+                            !$accountProvidesSpecialCatchUp
+                            || $accountExistingSpecialCatchUp > $ceilings[$account['id']]['specialAdditional']
+                        )
+                    )
+                ) {
+                    $existingCatchUpClassificationUnreconciled = true;
+                    break;
+                }
+            }
             $context['section457CatchUpResolutions'][$personId] = [
                 'mode' => $mode,
-                'headroom' => $mode === 'special' ? $specialAmount : ($mode === 'age' ? $ageAmount : 0.0),
+                'headroom' => $headroom,
                 'ageAmount' => $ageAmount,
                 'specialAmount' => $specialAmount,
-                'existingAgeCatchUp' => self::roundMoney($existingAgeCatchUp),
-                'existingSpecialCatchUp' => self::roundMoney($existingSpecialCatchUp),
+                'existingAgeCatchUp' => $existingAgeCatchUp,
+                'existingSpecialCatchUp' => $existingSpecialCatchUp,
+                'existingCatchUpClassificationUnreconciled' => $existingCatchUpClassificationUnreconciled,
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -15793,7 +15847,11 @@ final class Engine
         $accountSpecialRemaining = $resolution['mode'] === 'special'
             ? self::nonnegative($ceilings['specialAdditional'] - $accountExistingSpecialCatchUp)
             : INF;
-        $catchUpPotential = ($mayDrawCatchUp && !$existingCatchUpClassificationInvalid)
+        $catchUpPotential = (
+            $mayDrawCatchUp
+            && !$existingCatchUpClassificationInvalid
+            && !$resolution['existingCatchUpClassificationUnreconciled']
+        )
             ? self::minMoney(
                 self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
@@ -15821,7 +15879,13 @@ final class Engine
         $compensationBeforeCatchUp = $compensationRemaining;
 
         if ($resolution['mode'] === 'indeterminate') {
-            if ($mayDrawCatchUp && $roomACatchUpCouldOccupy > 0.0) {
+            if (
+                $mayDrawCatchUp
+                && (
+                    $roomACatchUpCouldOccupy > 0.0
+                    || $accountExistingAgeCatchUp + $accountExistingSpecialCatchUp > 0.0
+                )
+            ) {
                 $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
             }
         } elseif ($resolution['mode'] === 'special' && $catchUpPotential > 0.0) {

@@ -852,15 +852,19 @@ given account happens to see:
 | How much, per plan | The participant's entitlement is not every plan's ceiling. §1.457-5(d) Example 2 states both figures for one participant: the individual limitation is $23,000, from Plan Y, while "$22,000 to Plan W and none to any of the other three plans" is separately lawful — W's own ceiling. Each account reports **its own** plan ceiling, and no account absorbs more of the resolved amount than its own plan provides **net of what it already holds** under that provision |
 | Which accounts may draw it | §1.457-5(c) again: the special catch-up counts "only to the extent that an annual deferral is made … under an eligible plan as a result of plan provisions permitted under §1.457-4(c)(3)", and §414(v)(6)(A)(ii) reaches only a governmental plan |
 | Accounts the year does not offer | Excluded from method resolution and from pool seeding entirely. An account type the year does not offer is not one of the "eligible plans" §1.457-5(b) aggregates, so it cannot select a method, contribute a ceiling, or spend a pool that a valid plan then finds empty. It is reported as `unavailable` with its supplied contributions preserved and diagnosed |
-| When the age is unknown | The method itself is unresolved, not merely its size, so no catch-up is allocated under either heading and `BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP` is raised — on the accounts where a catch-up could actually have reached room, and not elsewhere. Room is measured **after the base deferral is allocated**, so an account the basic limitation has already filled asks no age question: an isolated §457(b)-hosted PLESA whose whole §402A(e)(3)(A) room the base deferral takes is fully determinate without a birth date. Nor does an age question arise where §414(v)(2)(A)(ii) leaves no compensation for an age-based catch-up at any age, or where a §457(b)(3) ceiling exceeds the largest age-route ceiling the year can produce at any age, which §414(v)(6)(C) settles without the age |
+| When the age is unknown | The method itself is unresolved, not merely its size, so no catch-up is allocated under either heading and `BIRTH_YEAR_OR_DATE_REQUIRED_FOR_WORKPLACE_CATCH_UP` is raised where either a new catch-up could reach room **or an existing age/special component still needs classification**. New room is measured after the base deferral is allocated, so an account the basic limitation has already filled asks no age question when it carries no catch-up: an isolated §457(b)-hosted PLESA whose whole §402A(e)(3)(A) room the base deferral takes is fully determinate without a birth date. An existing catch-up is different because age can still decide whether its supplied component key names the method the law selected, even when the account has no room for another dollar. Nor does an age question arise where §414(v)(2)(A)(ii) leaves no compensation for an age-based catch-up at any age, or where a §457(b)(3) ceiling exceeds the largest age-route ceiling the year can produce at any age, which §414(v)(6)(C) settles without the age |
 
 Existing catch-up contributions carry a statutory provenance the caller chose
-through the component key, so five invariants are checked on that provenance
+through the component key, so six invariants are checked on that provenance
 before any further catch-up is allocated. None of them reduces to a dollar
 total — each is satisfiable by figures sitting under every ceiling in play, so
 the ordinary excess test sees nothing. Where one fails, the supplied components
-are kept for audit, the account is `indeterminate`, and no further catch-up is
-allocated: reclassifying a component would answer a question only the caller can
+are kept for audit, the affected account is `indeterminate`, and no further
+catch-up is allocated on any of that participant's §457 plans: §1.457-5(b)
+determines the combined annual deferral on an aggregate basis, so adding the
+selected method elsewhere could itself construct the prohibited two-method
+combination. Independently determinable base deferrals remain available;
+reclassifying an existing component would answer a question only the caller can
 answer.
 
 | Existing contributions | Diagnostic |

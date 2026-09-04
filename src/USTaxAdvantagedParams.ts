@@ -10098,6 +10098,8 @@ interface Section457CatchUpResolution {
   existingAgeCatchUp: Money;
   /** Aggregate IRC 457(b)(3) catch-up already recorded across the same accounts. */
   existingSpecialCatchUp: Money;
+  /** Whether any existing catch-up component needs participant-wide reconciliation. */
+  existingCatchUpClassificationUnreconciled: boolean;
   eligibleAccountIds: ReadonlySet<string>;
 }
 
@@ -10251,6 +10253,7 @@ function resolveSection457CatchUpModes(
         specialAmount: 0,
         existingAgeCatchUp: 0,
         existingSpecialCatchUp: 0,
+        existingCatchUpClassificationUnreconciled: false,
         eligibleAccountIds: new Set(),
       });
       continue;
@@ -10350,6 +10353,32 @@ function resolveSection457CatchUpModes(
         0,
       ),
     );
+    const selectedExistingCatchUp =
+      mode === "age" ? existingAgeCatchUp : mode === "special" ? existingSpecialCatchUp : 0;
+    const unselectedExistingCatchUp = roundMoney(
+      existingAgeCatchUp + existingSpecialCatchUp - selectedExistingCatchUp,
+    );
+    const existingCatchUpClassificationUnreconciled =
+      (mode === "indeterminate" && existingAgeCatchUp + existingSpecialCatchUp > 0) ||
+      (existingAgeCatchUp > 0 && existingSpecialCatchUp > 0) ||
+      (mode !== "indeterminate" && unselectedExistingCatchUp > 0) ||
+      (mode !== "indeterminate" && selectedExistingCatchUp > headroom) ||
+      owned.some((account) => {
+        const traits = ACCOUNT_TRAITS[account.type];
+        const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
+        const accountExistingSpecialCatchUp = roundMoney(
+          account.existingContributions.special457CatchUp +
+            account.existingContributions.special457RothCatchUp,
+        );
+
+        return (
+          (accountExistingAgeCatchUp > 0 &&
+            !(traits.governmental457 && traits.permitsAgeCatchUpByStatute)) ||
+          (accountExistingSpecialCatchUp > 0 &&
+            (!account.planRules.section457SpecialCatchUp?.eligible ||
+              accountExistingSpecialCatchUp > ceilings.get(account.id)!.specialAdditional))
+        );
+      });
     context.section457CatchUpResolutions.set(person.id, {
       mode,
       headroom,
@@ -10357,6 +10386,7 @@ function resolveSection457CatchUpModes(
       specialAmount,
       existingAgeCatchUp,
       existingSpecialCatchUp,
+      existingCatchUpClassificationUnreconciled,
       eligibleAccountIds: new Set(eligible.map((account) => account.id)),
     });
   }
@@ -14794,7 +14824,9 @@ function allocateSection457(
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
   const catchUpPotential =
-    mayDrawCatchUp && !existingCatchUpClassificationInvalid
+    mayDrawCatchUp &&
+    !existingCatchUpClassificationInvalid &&
+    !resolution.existingCatchUpClassificationUnreconciled
       ? minMoney(poolRemaining(catchUpPool), compensationRemaining, accountSpecialRemaining)
       : 0;
 
@@ -14818,7 +14850,10 @@ function allocateSection457(
   const compensationBeforeCatchUp = compensationRemaining;
 
   if (resolution.mode === "indeterminate") {
-    if (mayDrawCatchUp && roomACatchUpCouldOccupy > 0) {
+    if (
+      mayDrawCatchUp &&
+      (roomACatchUpCouldOccupy > 0 || accountExistingAgeCatchUp + accountExistingSpecialCatchUp > 0)
+    ) {
       diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
     }
   } else if (resolution.mode === "special" && catchUpPotential > 0) {
