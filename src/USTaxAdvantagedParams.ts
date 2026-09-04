@@ -13472,6 +13472,7 @@ function catchUpTaxTreatment(
   account: NormalizedAccount,
   traits: AccountTraits,
   diagnostics: Diagnostic[],
+  reportSuccessfulRothAllocation = true,
 ): CatchUpTaxTreatment {
   const person = context.persons.get(account.ownerId)!;
   const defaultTreatment = accountUsesRothEmployeeContributions(account, traits) ? "roth" : "pretax";
@@ -13536,15 +13537,17 @@ function catchUpTaxTreatment(
     );
     return "unavailable";
   }
-  diagnostics.push(
-    diagnostic(
-      "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
-      DiagnosticSeverity.INFO,
-      `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
-      `accounts.${account.id}`,
-      "IRC 414(v)(7)",
-    ),
-  );
+  if (reportSuccessfulRothAllocation) {
+    diagnostics.push(
+      diagnostic(
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
+        DiagnosticSeverity.INFO,
+        `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
+        `accounts.${account.id}`,
+        "IRC 414(v)(7)",
+      ),
+    );
+  }
   return "roth";
 }
 
@@ -14575,7 +14578,11 @@ function allocateSection457(
     }
     if (resolution.mode === "indeterminate" && resolution.existingCatchUpClassificationUnreconciled) {
       diagnostics.push(workplaceCatchUpAgeDiagnostic(person.id));
-    } else if (resolution.existingCatchUpClassificationUnreconciled && !hasMutuallyExclusiveCatchUps) {
+    } else if (
+      resolution.existingCatchUpClassificationUnreconciled &&
+      !hasMutuallyExclusiveCatchUps &&
+      resolution.eligibleAccountIds.has(account.id)
+    ) {
       diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
     }
     reportPoolWithoutConsuming(basePool, sharedLimits);
@@ -14868,7 +14875,7 @@ function allocateSection457(
     resolution.mode === "special"
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
-  const catchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+  const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
     ? minMoney(
         poolRemaining(catchUpPool),
         compensationRemaining,
@@ -14876,6 +14883,20 @@ function allocateSection457(
         plesaPool ? poolRemaining(plesaPool) : Infinity,
       )
     : 0;
+  const ageCatchUpTreatmentBeforeClassificationBlock =
+    resolution.mode === "age" &&
+    !existingCatchUpClassificationInvalid &&
+    monetaryCatchUpCapacityWithoutClassificationBlock > 0
+      ? catchUpTaxTreatment(context, account, traits, diagnostics, false)
+      : null;
+  const catchUpCapacityWithoutClassificationBlock =
+    ageCatchUpTreatmentBeforeClassificationBlock === "unknown" ||
+    ageCatchUpTreatmentBeforeClassificationBlock === "unavailable"
+      ? 0
+      : monetaryCatchUpCapacityWithoutClassificationBlock;
+  if (ageCatchUpTreatmentBeforeClassificationBlock === "unknown") {
+    reportPoolWithoutConsuming(catchUpPool, sharedLimits);
+  }
   if (
     resolution.mode !== "indeterminate" &&
     resolution.existingCatchUpClassificationUnreconciled &&

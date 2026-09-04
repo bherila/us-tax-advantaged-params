@@ -14401,6 +14401,7 @@ final class Engine
         array $account,
         array $traits,
         array &$diagnostics,
+        bool $reportSuccessfulRothAllocation = true,
     ): string {
         $person = $context['persons'][$account['ownerId']];
         $defaultTreatment = self::accountUsesRothEmployeeContributions($account, $traits) ? 'roth' : 'pretax';
@@ -14463,14 +14464,16 @@ final class Engine
             );
             return 'unavailable';
         }
-        $diagnostics[] = self::diagnostic(
-            'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
-            DiagnosticSeverity::INFO,
-            'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
-                . ', so the age-based catch-up is allocated as Roth.',
-            "accounts.{$account['id']}",
-            'IRC 414(v)(7)',
-        );
+        if ($reportSuccessfulRothAllocation) {
+            $diagnostics[] = self::diagnostic(
+                'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
+                DiagnosticSeverity::INFO,
+                'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
+                    . ', so the age-based catch-up is allocated as Roth.',
+                "accounts.{$account['id']}",
+                'IRC 414(v)(7)',
+            );
+        }
         return 'roth';
     }
 
@@ -15539,7 +15542,11 @@ final class Engine
             }
             if ($resolution['mode'] === 'indeterminate' && $resolution['existingCatchUpClassificationUnreconciled']) {
                 $diagnostics[] = self::workplaceCatchUpAgeDiagnostic($person['id']);
-            } elseif ($resolution['existingCatchUpClassificationUnreconciled'] && !$hasMutuallyExclusiveCatchUps) {
+            } elseif (
+                $resolution['existingCatchUpClassificationUnreconciled']
+                && !$hasMutuallyExclusiveCatchUps
+                && isset($resolution['eligibleAccountIds'][$account['id']])
+            ) {
                 $diagnostics[] = self::section457UnreconciledCatchUpDiagnostic($account['id']);
             }
             self::reportPoolWithoutConsuming($context['section457BasePools'][$ownerId], $sharedLimits);
@@ -15891,7 +15898,7 @@ final class Engine
         $accountSpecialRemaining = $resolution['mode'] === 'special'
             ? self::nonnegative($ceilings['specialAdditional'] - $accountExistingSpecialCatchUp)
             : INF;
-        $catchUpCapacityWithoutClassificationBlock = $mayDrawCatchUp
+        $monetaryCatchUpCapacityWithoutClassificationBlock = $mayDrawCatchUp
             ? self::minMoney(
                 self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
@@ -15899,6 +15906,23 @@ final class Engine
                 $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
             )
             : 0.0;
+        $ageCatchUpTreatmentBeforeClassificationBlock = (
+            $resolution['mode'] === 'age'
+            && !$existingCatchUpClassificationInvalid
+            && $monetaryCatchUpCapacityWithoutClassificationBlock > 0.0
+        )
+            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, false)
+            : null;
+        $catchUpCapacityWithoutClassificationBlock = in_array(
+            $ageCatchUpTreatmentBeforeClassificationBlock,
+            ['unknown', 'unavailable'],
+            true,
+        )
+            ? 0.0
+            : $monetaryCatchUpCapacityWithoutClassificationBlock;
+        if ($ageCatchUpTreatmentBeforeClassificationBlock === 'unknown') {
+            self::reportPoolWithoutConsuming($context[$catchUpPoolCategory][$ownerId], $sharedLimits);
+        }
         if (
             $resolution['mode'] !== 'indeterminate'
             && $resolution['existingCatchUpClassificationUnreconciled']

@@ -11966,6 +11966,133 @@
       }
     },
     {
+      "name": "2026 a missing-balance PLESA outside the selected method does not inherit another plan's classification block",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the general IRC 414(v)(2)(B)(i) amount as $8,000. The participant turns 56. The ordinary governmental plan provides $20,000 of IRC 457(b)(3) underutilized limitation, so 26 CFR 1.457-4(c)(2)(ii) selects the $20,000 special method over the $8,000 age method, but that plan records $1,000 under the unselected age method. The pension-linked emergency savings account does not provide the selected special catch-up, so 26 CFR 1.457-5(c) gives it no capacity under that method. Its absent prior participant-contribution balance independently leaves its IRC 402A(e)(3)(A) ceiling indeterminate, but the other plan's classification error suppresses no contribution this account could receive. It therefore reports the missing-balance error without the participant-wide allocation-blocked diagnostic; the ordinary plan preserves and diagnoses its own $1,000 component.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "p": 10000,
+              "o": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "p",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 200000
+            }
+          },
+          {
+            "id": "o",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "o",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAnnualContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": 44500,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 25500,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 1000,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD",
+        "totals.employeePreTaxContribution": 25500
+      },
+      "expectAbsentDiagnosticCodes": [
+        "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS"
+      ]
+    },
+    {
+      "name": "2026 a plan without required Roth catch-up does not inherit another plan's classification block",
+      "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500, the general IRC 414(v)(2)(B)(i) catch-up as $8,000, and the IRC 414(v)(7) prior-year FICA-wage threshold as $150,000. The participant turns 56 and has $150,001 of prior-year wages from the first plan's employer, so IRC 414(v)(7) requires any age catch-up there to be designated Roth. That plan expressly does not permit Roth catch-up and therefore can receive its $24,500 basic deferral but none of the $8,000 age amount. A second governmental plan records $1,000 under an unselected special-catch-up component without supplying an IRC 457(b)(3) provision. Reconciliation of that second plan cannot unlock catch-up capacity on the first plan because its independent Roth restriction remains dispositive. The first result therefore reports HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT and remains determinate rather than inheriting the participant-wide allocation-blocked error.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 200000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "r": 150001,
+              "o": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "r",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "r",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 200000,
+              "permitsRothCatchUp": false
+            }
+          },
+          {
+            "id": "o",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "o",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000
+            },
+            "existingContributions": {
+              "special457CatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 32500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 24500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.0.diagnostics.0.code": "HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.special457CatchUp": 1000,
+        "accounts.1.diagnostics.0.code": "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD",
+        "totals.employeePreTaxContribution": 25500
+      },
+      "expectAbsentDiagnosticCodes": [
+        "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS"
+      ]
+    },
+    {
       "name": "2026 an exhausted governmental PLESA remains determinate when another plan blocks special catch-up",
       "description": "Notice 2025-67 states the 2026 IRC 457(e)(15) basic amount as $24,500 and the indexed IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as $2,600. The participant turns 56. Both plans provide $20,000 of IRC 457(b)(3) underutilized limitation, so 26 CFR 1.457-4(c)(2)(ii) selects the special method, but the ordinary plan records $1,000 under the unselected age method. The pension-linked emergency savings account has no prior balance and takes $2,600 of the basic limitation, exhausting its account-local IRC 402A(e)(3)(A) pool. The other plan's classification defect therefore suppresses no catch-up that the PLESA could accept, so the PLESA remains determinate and receives no allocation-blocked diagnostic.",
       "input": {
