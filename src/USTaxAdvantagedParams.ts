@@ -15876,18 +15876,29 @@ function allocateSection457(
     resolution.mode === "special"
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
-  const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+  // The account's own room, before the shared IRC 414(v) pool is consulted. It
+  // is what decides whether the classification is worth asking for, because the
+  // pool residue is the very thing an unreconciled sibling puts in doubt: an
+  // invalid existing catch-up on another of the participant's IRC 457 plans
+  // fills the pool, which would read here as "no capacity" and skip the
+  // classification -- and with it the sibling block -- leaving this account
+  // reported as a determinate zero when reconciling the sibling could restore
+  // the whole amount. The qualified-plan site is bounded by `desiredCatchUp`,
+  // which is already pool-independent for the same reason.
+  const ownCatchUpRoomWithoutPool = mayDrawCatchUp
     ? minMoney(
-        poolRemaining(catchUpPool),
         compensationRemaining,
         accountSpecialRemaining,
         plesaPool ? poolRemaining(plesaPool) : Infinity,
       )
     : 0;
+  const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+    ? minMoney(poolRemaining(catchUpPool), ownCatchUpRoomWithoutPool)
+    : 0;
   const ageCatchUpTreatmentBeforeClassificationBlock =
     resolution.mode === "age" &&
     !existingCatchUpClassificationInvalid &&
-    monetaryCatchUpCapacityWithoutClassificationBlock > 0
+    ownCatchUpRoomWithoutPool > 0
       ? catchUpTaxTreatment(context, account, traits, diagnostics).treatment
       : null;
   const catchUpCapacityWithoutClassificationBlock =
