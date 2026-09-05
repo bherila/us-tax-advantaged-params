@@ -13482,15 +13482,49 @@ function catchUpTaxTreatment(
     traits.family === "simple" ||
     traits.isSarsep ||
     // IRC 414(v)(7)(A) requires a high-wage participant's catch-up to be a
-    // designated Roth contribution. Every contribution to a pension-linked
-    // emergency savings account is one already, because IRC 402A(e)(1)(A)(i)
-    // treats the account "for purposes of this title as a designated Roth
-    // account", so the wage test has nothing left to decide and the prior-year
-    // wage figure it would need is not required. The same reasoning reaches
-    // other designated Roth accounts; it is stated for this one only because
-    // widening it would change the treatment of accounts this change is not
-    // about.
-    traits.isPlesa ||
+    // designated Roth contribution, and that is the only thing it does. It can
+    // therefore have exactly two effects: force Roth treatment where the
+    // default would have been pre-tax, and -- because it makes the catch-up
+    // available "only if" the contribution is a designated Roth contribution --
+    // withdraw the catch-up from a plan that does not offer one. Where the
+    // catch-up would be a designated Roth contribution anyway and the plan
+    // offers it, neither effect is possible: the outcome is the same on both
+    // sides of the threshold, so the prior-year wage figure the test would need
+    // is not required and its absence is not a reason to decline the answer.
+    //
+    // Both halves are load-bearing. A supplied contributionPreference of
+    // pretax_first makes the default pre-tax on a designated Roth account type,
+    // so the test still has Roth treatment to force. A supplied
+    // permitsRothCatchUp of false leaves the two sides genuinely different --
+    // the catch-up below the threshold, none above it -- so the wages are
+    // genuinely needed and the account stays indeterminate without them.
+    //
+    // A pension-linked emergency savings account satisfies both halves by
+    // statute rather than by supplied fact: IRC 402A(e)(1)(A)(i) treats it "for
+    // purposes of this title as a designated Roth account", which is what
+    // accountUsesRothEmployeeContributions and accountPermitsRothCatchUp each
+    // read off it, so this clause reaches it without naming it.
+    //
+    // A third condition guards the same claim from the other direction. The two
+    // effects above are both about the catch-up this engine would allocate, so
+    // reasoning only about them holds only where the catch-up is the engine's to
+    // classify. An existing pre-tax IRC 414(v) catch-up is not: it is a
+    // completed contribution the caller reports, and IRC 414(v)(7)(A) speaks to
+    // whether it was a valid one, which is a question the threshold answers
+    // differently on each side. Below it the component stands; above it the
+    // additional elective deferrals had to be designated Roth contributions for
+    // IRC 414(v)(1) to apply at all. So the wages remain load-bearing whenever
+    // one is supplied, and the account keeps saying so rather than reporting a
+    // determinate result whose pre-tax component carries an exclusion from gross
+    // income the statute may not allow.
+    //
+    // The IRC 402(g)(7) and IRC 457(b)(3) special catch-ups are deliberately not
+    // read here. Each is its own provision rather than an IRC 414(v)(1)
+    // additional elective deferral, and IRC 414(v)(7)(A) reaches only the
+    // latter.
+    (defaultTreatment === "roth" &&
+      accountPermitsRothCatchUp(account, traits) &&
+      account.existingContributions.employeePreTaxCatchUp === 0) ||
     accountPlanCatchUpLimit(context, account, traits) === 0
   ) {
     return defaultTreatment;
@@ -13521,11 +13555,7 @@ function catchUpTaxTreatment(
   }
   if (wages <= threshold) return defaultTreatment;
 
-  const permitsRoth =
-    account.planRules.permitsRothCatchUp ??
-    account.planRules.permitsRothContributions ??
-    traits.designatedRoth;
-  if (!permitsRoth) {
+  if (!accountPermitsRothCatchUp(account, traits)) {
     diagnostics.push(
       diagnostic(
         "HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT",
@@ -13549,6 +13579,32 @@ function catchUpTaxTreatment(
     );
   }
   return "roth";
+}
+
+/**
+ * Whether the plan, as its supplied rules state it, permits a catch-up
+ * contribution to be a designated Roth contribution.
+ *
+ * IRC 414(v)(7)(A) makes a high-wage participant's catch-up available "only if"
+ * it is a designated Roth contribution, so a plan that does not offer one takes
+ * the catch-up away from that participant rather than making it pre-tax. The
+ * fields are read most-specific first: a rule about the catch-up itself, then
+ * the account's general Roth permission, then the account type's own character.
+ *
+ * IRC 402A(e)(1)(A)(i) leaves no such election open on a pension-linked
+ * emergency savings account: it treats the account "for purposes of this title
+ * as a designated Roth account", so a supplied permission flag states a plan
+ * term the statute has already settled and is disregarded here for the same
+ * reason accountUsesRothEmployeeContributions disregards a supplied preference.
+ * pensionLinkedEmergencySavingsRothTreatmentDiagnostic reports the disregard.
+ */
+function accountPermitsRothCatchUp(account: NormalizedAccount, traits: AccountTraits): boolean {
+  if (traits.isPlesa) return true;
+  return (
+    account.planRules.permitsRothCatchUp ??
+    account.planRules.permitsRothContributions ??
+    traits.designatedRoth
+  );
 }
 
 function accountUsesRothEmployeeContributions(
