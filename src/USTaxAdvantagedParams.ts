@@ -12848,6 +12848,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   // Existing contributions consume the base limit first and then the IRC
   // 223(b)(3) increase, which is the only ordering that never reports capacity
   // the statute does not allow.
+  //
+  // IRC 223(b)(3) headroom still unspent by this owner's earlier accounts, used
+  // only where their own limitation is undeterminable and the branch below has
+  // to reason about the family pool without it.
+  const catchUpHeadroom = new Map<string, number>();
   for (const account of hsaAccounts) {
     const existing = roundMoney(
       account.existingContributions.hsaDeductible + account.existingContributions.hsaEmployerOrCafeteria,
@@ -12862,18 +12867,49 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * An owner whose own IRC 223(b)(1) limitation is undeterminable has no split
      * to compute, but the couple's IRC 223(b)(5) ceiling can still be a number:
      * where only the IRC 223(b)(5)(B)(ii) division is unknown, the pool reports
-     * the limitation. Leaving it unseeded then published a ceiling with none of
-     * it used, so a couple who had already contributed were shown their whole
+     * the limitation. Leaving it unseeded published a ceiling with none of it
+     * used, so a couple who had already contributed were shown their whole
      * limitation as though still available.
      *
-     * The amount that consumes family capacity is at most everything paid in, so
-     * charging the whole of it is the bound that never reports capacity the
-     * statute does not allow -- the same principle as the base-first ordering
-     * below. For an individual with no IRC 223(b)(3) amount to spill into, which
-     * is anyone under 55, it is not a bound but the exact figure.
+     * What consumes the family pool is everything paid in *except* what the IRC
+     * 223(b)(3) additional contribution amount can absorb. That amount is
+     * knowable here even though the division is not: it turns on age and months
+     * alone, and IRC 223(b)(5)(B) excludes it from both the reduction and the
+     * division, so it belongs to the individual whatever the spouses agreed.
+     *
+     * Charging the whole contribution instead -- as an upper bound on family
+     * consumption -- fabricated violations. A 56-year-old who paid in 9750 for
+     * 2026 has done nothing wrong: 8750 of family limitation under a 1/0
+     * division plus their own 1000. Billing all 9750 to an 8750 pool reported
+     * negative headroom and raised SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT
+     * against a lawful contribution, which is worse than an imprecise remainder.
+     *
+     * Subtracting the age-55 headroom is not merely safer, it is exact in the
+     * sense that matters: the reported remainder equals the lawful headroom.
+     * With E paid in, a pool limit L and an age-55 amount C, this reports
+     * `used = max(0, E - C)`, so `L - used` is `L + C - E` once E exceeds C and
+     * L otherwise -- in both cases precisely what may still be contributed
+     * before L + C, the individual's true ceiling, is reached. It therefore
+     * never permits an unlawful total nor forbids a lawful one, and a genuine
+     * excess beyond L + C still trips the diagnostic.
+     *
+     * The headroom is the owner's, not the account's, so it is consumed across
+     * that owner's accounts rather than allowed once per account.
      */
     if (basePool.limit === null) {
-      if (familyPool) familyPool.used = roundMoney(familyPool.used + existing);
+      if (familyPool) {
+        const ownerId = account.ownerId;
+        if (!catchUpHeadroom.has(ownerId)) {
+          catchUpHeadroom.set(
+            ownerId,
+            context.hsaPlans.get(ownerId)?.detail?.additionalContributionAmount ?? 0,
+          );
+        }
+        const headroom = catchUpHeadroom.get(ownerId) ?? 0;
+        const absorbed = minMoney(existing, headroom);
+        catchUpHeadroom.set(ownerId, roundMoney(headroom - absorbed));
+        familyPool.used = roundMoney(familyPool.used + existing - absorbed);
+      }
       continue;
     }
     const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));

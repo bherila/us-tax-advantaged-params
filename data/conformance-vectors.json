@@ -13213,6 +13213,82 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE"
       ]
+    },
+    {
+      "name": "2026 an age-55 contribution above the family limitation is not an excess against the pool",
+      "description": "IRC 223(b)(5)(B) excludes the IRC 223(b)(3) additional contribution amount from both the reduction and the division, so it belongs to the individual whatever the spouses agreed and is knowable from age and months even where the division is not. This owner was born in 1970 and so attains age 56 in 2026, which makes the IRC 223(b)(3)(B) amount of 1000 -- a fixed statutory figure for 2009 and after, not an adjusted one -- available in full. The couple's IRC 223(b)(5)(A) limitation is the 2026 family amount of 8750 as adjusted by Rev. Proc. 2025-19. The division is unsettled, because the owner's two accounts state shares of 0.5 and 0.25, but IRC 223(b)(5)(B)(ii) expressly permits a division of 1 and 0, so a lawful ceiling for this individual is 8750 plus 1000, or 9750. They have paid in exactly that. Nothing here is an excess contribution, so SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT must be absent: the IRC 223(b)(3) amount is charged to the individual and only the remaining 8750 is charged to the family pool, which reports usedBeforeAccount 8750 against its limit of 8750 and remainingAfterAccount 0. Charging the whole 9750 to the pool instead -- an upper bound on family consumption -- would report negative headroom and accuse a compliant taxpayer of an excess, which is the failure this vector exists to catch.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "existingContributions": {
+              "hsaDeductible": 9750
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          },
+          {
+            "id": "t-hsa-b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.25
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa-a",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 8750,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
     }
   ]
 }
