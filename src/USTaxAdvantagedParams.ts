@@ -11852,7 +11852,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     lastMonthRuleApplied: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
-    familyLimitIndeterminate: boolean;
+    familyPoolAmountIndeterminate: boolean;
+    familyDivisionIndeterminate: boolean;
   }
 
   const amountsByOwner = new Map<string, HsaOwnerAmounts>();
@@ -11863,15 +11864,30 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const diagnostics: Diagnostic[] = [];
     let indeterminate = false;
     /**
-     * Whether this owner's *family-coverage* limitation is undeterminable, which
-     * is a narrower question than whether their overall result is. A missing
-     * birth year makes only the IRC 223(b)(3) age-55 amount unknown and leaves
-     * the IRC 223(b)(5) family limit perfectly knowable, so it deliberately does
-     * not set this. Neither does the bare fact that this person's coverage
-     * statements disagree: see `familyOperandConflict` below, which asks which
-     * operand they disagree about.
+     * IRC 223(b)(5) asks two questions, and an input that leaves one unanswered
+     * usually leaves the other answered:
+     *
+     *   (A) gives the spouses one family limitation. Whether *that amount* is
+     *       knowable is `familyPoolAmountIndeterminate`.
+     *   (B)(ii) divides that one limitation between them, equally unless they
+     *       agree otherwise. Whether *the division* is knowable is
+     *       `familyDivisionIndeterminate`.
+     *
+     * They were one flag until the two were separated, which nulled a perfectly
+     * knowable couple-wide ceiling whenever the spouses' agreed shares
+     * contradicted each other -- an amount the statute fixes from coverage
+     * facts alone, withheld because of a disagreement about who may use it.
+     *
+     * Both are narrower questions than whether this owner's overall result is
+     * determinable. A missing birth year makes only the IRC 223(b)(3) age-55
+     * amount unknown and leaves the IRC 223(b)(5) family limit perfectly
+     * knowable, so it deliberately sets neither. Neither does the bare fact
+     * that this person's coverage statements disagree: see
+     * `familyOperandConflict` below, which asks which operand they disagree
+     * about.
      */
-    let familyLimitIndeterminate = false;
+    let familyPoolAmountIndeterminate = false;
+    let familyDivisionIndeterminate = false;
 
     /**
      * Does this owner's disagreement actually reach the couple's IRC 223(b)(5)
@@ -11894,7 +11910,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      *       required for it to matter.
      *   useLastMonthRule  reaches it: IRC 223(b)(8) replaces the prorated
      *       amount with December's annualized one.
-     *   familyLimitShare  reaches it: the IRC 223(b)(5)(B)(ii) division.
+     *   familyLimitShare  reaches the division and nothing else. IRC
+     *       223(b)(5)(B)(ii) divides a limitation subparagraph (A) has already
+     *       fixed, so a disagreement about the shares cannot move the amount
+     *       being shared -- which is why it is the one field here that sets the
+     *       division flag rather than the amount one.
      *   testingPeriodSatisfied, testingPeriodFailureByDeathOrDisability  do
      *       not. They are read only into the reported testing-period
      *       obligation, never into either portion, so a disagreement about a
@@ -11906,15 +11926,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const deductibleUnanimous = unanimousField(
       (coverageVariantsByPerson.get(ownerId) ?? []).map((variant) => variant.coverage.hdhpAnnualDeductible),
     );
-    const limitInputsIndeterminate =
+    const amountInputsIndeterminate =
       ownerSlots === undefined ||
       ownerSlots.some((slot) => slot === "unknown") ||
       (parameters.contributionLimitCappedByHdhpAnnualDeductible &&
         !deductibleUnanimous &&
         ownerSlots.some((slot) => slot !== "none")) ||
-      owner.useLastMonthRuleConflict ||
-      owner.familyLimitShareConflict;
-    if (limitInputsIndeterminate) familyLimitIndeterminate = true;
+      owner.useLastMonthRuleConflict;
+    if (amountInputsIndeterminate) familyPoolAmountIndeterminate = true;
+    if (owner.familyLimitShareConflict) familyDivisionIndeterminate = true;
 
     if (owner.conflict) {
       indeterminate = true;
@@ -11942,7 +11962,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
@@ -11987,7 +12007,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       months.some((tier) => tier === "self_only")
     ) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
@@ -12028,7 +12048,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       spouseCoverageAmbiguousOnFamily
     ) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
@@ -12086,7 +12106,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
     if (deductibleMissing) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       // One diagnostic per owner, not one per affected month: the missing fact
       // is a property of the person and their plan, not of each month it
       // reaches. Where the gap is a spouse's, name them, because the input to
@@ -12184,7 +12204,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // refusal if that severity is ever softened. They are redundant on
         // purpose, so no mutation distinguishes them individually.
         indeterminate = true;
-        familyLimitIndeterminate = true;
+        familyPoolAmountIndeterminate = true;
         diagnostics.push(
           diagnostic(
             "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
@@ -12211,7 +12231,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       lastMonthRuleApplied,
       diagnostics,
       indeterminate,
-      familyLimitIndeterminate,
+      familyPoolAmountIndeterminate,
+      familyDivisionIndeterminate,
     });
   }
 
@@ -12259,8 +12280,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * their own, which makes the IRC 223(b)(5) aggregate built from those
    * limitations undeterminable too.
    */
-  const householdLimitIndeterminate = coupleMembersWithAccounts.some(
-    (personId) => amountsByOwner.get(personId)?.familyLimitIndeterminate === true,
+  const householdPoolAmountIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.familyPoolAmountIndeterminate === true,
+  );
+  /**
+   * The other question, asked separately. IRC 223(b)(5)(B)(ii) divides one
+   * limitation between the spouses, so a spouse whose own accounts state
+   * contradictory shares makes *the division* undeterminable while leaving the
+   * amount being divided exactly as computable as it was: subparagraph (A)
+   * fixes that amount from coverage facts, which a disagreement about shares
+   * does not touch.
+   */
+  const householdDivisionIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.familyDivisionIndeterminate === true,
   );
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
@@ -12269,7 +12301,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   );
   const shareByOwner = new Map<string, number>();
   const sharingDiagnostics: Diagnostic[] = [];
-  if (familySharingApplies && householdLimitIndeterminate) {
+  if (familySharingApplies && householdPoolAmountIndeterminate) {
     // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
     // divides it between them, so each share is a function of facts belonging to
     // both. A spouse whose own coverage is coherent still cannot be told their
@@ -12283,6 +12315,26 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         "IRC 223(b)(5) gives the spouses one family limitation to divide, so it is no more determinable than the coverage facts of either of them. Another spouse's health savings account coverage facts are missing or conflicting, so this account's share of that limitation cannot be stated either.",
         "accounts",
         "IRC 223(b)(5)",
+      ),
+    );
+  }
+  /**
+   * The division, reported separately from the amount and in different words.
+   * `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` says the limitation itself cannot
+   * be stated, which is false here: the couple's ceiling is a number and the
+   * IRC 223(b)(5) pool reports it. What is unknown is how much of that number
+   * belongs to each account, so every account drawing on the pool still has a
+   * null maximum -- a share of a known amount is unknown when the share is --
+   * and this is an ERROR for that reason rather than a note.
+   */
+  if (familySharingApplies && householdDivisionIndeterminate) {
+    sharingDiagnostics.push(
+      diagnostic(
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE",
+        DiagnosticSeverity.ERROR,
+        "IRC 223(b)(5)(B)(ii) divides the single family limitation between the spouses as they agree. A spouse's health savings accounts state different planRules.hsa.familyLimitShare values, so the agreed division is not determinable and no account's share of the limitation can be stated. The limitation itself is unaffected and the IRC 223(b)(5) shared limit still reports it: subparagraph (A) fixes that amount from coverage facts, which this disagreement does not touch. State one agreed share on every one of that spouse's health savings accounts.",
+        "accounts",
+        "IRC 223(b)(5)(B)(ii)",
       ),
     );
   }
@@ -12387,7 +12439,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // sum anyway would state a household ceiling on facts that do not
         // support one. The per-owner IRC 223(b)(1) and 223(b)(3) pools already
         // report null in that case; this pool now agrees with them.
-        limit: householdLimitIndeterminate
+        //
+        // Only the amount governs. A disagreement about the IRC
+        // 223(b)(5)(B)(ii) shares leaves this ceiling standing: it is the
+        // couple's, not any one account's, and the statute fixes it before the
+        // division is reached. Nulling it for a share conflict withheld a
+        // number the record did support.
+        limit: householdPoolAmountIndeterminate
           ? null
           : rawSharedFamilyLimit === null
             ? sharedFamilyLimit
@@ -12723,7 +12781,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // leave the ceiling the pool refuses to state still published one field
       // away. The field is already declared nullable for the unrelated case of
       // no family limit being shared at all.
-      sharedFamilyContributionLimit: isSharingMember && !householdLimitIndeterminate
+      //
+      // It follows the amount and not the division, because it is the amount:
+      // its contract is the limitation this owner divides, taken *before* the
+      // IRC 223(b)(5)(B)(ii) share is applied. A share disagreement therefore
+      // leaves it reportable, and `familyLimitShare` beside it is the field
+      // that goes unusable. Reading the division flag here would null the one
+      // figure a caller reconciling contradictory shares actually needs.
+      sharedFamilyContributionLimit: isSharingMember && !householdPoolAmountIndeterminate
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
         : null,
       archerMsaContributionsApplied: archerAmount,

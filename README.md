@@ -571,6 +571,27 @@ one spouse the whole limitation. And where only one spouse owns an HSA, the shar
 be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
 the other spouse has no account to use, and no error applies.
 
+### An unknown division does not make the limitation unknown
+
+§223(b)(5) settles two things, and they fail separately. Subparagraph (A) fixes **one family
+limitation** for the couple; (B)(ii) **divides** it between them. A disagreement about the
+shares — one spouse's HSAs stating different `familyLimitShare` values — reaches only the
+second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
+is reached, so the couple's ceiling is still a number even though nobody can say whose it is.
+
+The engine reports the two separately:
+
+| Unknown | Diagnostic | `hsa223b5` shared limit | Account maximum |
+|---|---|---|---|
+| The amount — coverage, a 2004–2006 annual deductible, the §223(b)(8) election | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
+| The division — conflicting `familyLimitShare` only | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
+
+Both are `ERROR` and both leave every account's `statutoryMaximumAnnualContribution` null: a
+share of a known amount is still unknown when the share is. What differs is the couple-wide
+figure. `sharedFamilyContributionLimit` follows the **amount**, because that is its contract —
+the limitation this owner divides, reported before the share is applied — so a caller
+reconciling contradictory shares can still see the 8750 they are dividing.
+
 Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
 coverage is required exactly when it could change the answer. On a married return, an HSA
 owner with at least one self-only month and no stated spousal coverage returns
