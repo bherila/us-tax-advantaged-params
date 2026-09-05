@@ -92,6 +92,19 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
   why the conformance vectors pin both halves. Quoted from the current Code rather than
   paraphrased, because the natural reading of "SIMPLE plans are excepted" is wrong.
 
+  The same section carries **§414(v)(6)(C)**, "Exception for section 457 plans": *"This
+  subsection shall not apply to a participant for any year for which a higher limitation
+  applies to the participant under section 457(b)(3)."* It disapplies the whole
+  subsection rather than paragraph (1) alone, so paragraph (7) goes with it — where the
+  participant-wide §457 resolution selects the special last-three-years method, the
+  §414(v)(7)(A) wage test has nothing to say about that year, and an existing component
+  recorded as an age-based catch-up is reported only as recorded under the unselected
+  method.
+
+  The enacted text of §414 is committed as
+  `evidence/retirement-limits/sources/usc-26-414.html` and fixed by `SHA256SUMS.txt`.
+  `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section414&num=0&edition=prelim`
+
 ## Health savings account sources (IRC §223)
 
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
