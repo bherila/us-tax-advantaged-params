@@ -571,12 +571,70 @@ one spouse the whole limitation. And where only one spouse owns an HSA, the shar
 be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
 the other spouse has no account to use, and no error applies.
 
-Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
-coverage is required exactly when it could change the answer. On a married return, an HSA
-owner with at least one self-only month and no stated spousal coverage returns
-`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` rather than a number the input
-cannot support. An owner whose months are all family months is unaffected, since family is
-already the higher tier.
+### A known ceiling with an unknown draw
+
+A shared limit can be a number while how much of it is already spent is not. The §223(b)(5) pool is
+where this arises: existing contributions consume the §223(b)(1) limitation before reaching the
+§223(b)(3) additional amount, so once any additional amount exists, how much of a contribution landed
+on the couple's pool depends on the size of that spouse's share — which is exactly what an unresolved
+§223(b)(5)(B)(ii) division leaves unknown. The §223(b)(4) reductions raise the same question, coming
+off the paragraph (1) share first.
+
+In that case the entry reports its `limit` and nulls `usedBeforeAccount`, `usedByAccount` and
+`remainingAfterAccount`, and **no excess is diagnosed against it** — an excess is a statement about the
+draw. The engine does not publish a bound in place of a usage: bounding upwards accused compliant
+taxpayers of excess contributions, and bounding downwards reported a pool as untouched when a
+qualified HSA funding distribution had consumed nearly all of it.
+
+`familyLimitShare` is `null` under the same condition, rather than reporting the share of whichever of
+a spouse's contradictory accounts happened to be listed first.
+
+### An unknown division does not make the limitation unknown
+
+§223(b)(5) settles two things, and they fail separately. Subparagraph (A) fixes **one family
+limitation** for the couple; (B)(ii) **divides** it between them. A disagreement about the
+shares — one spouse's HSAs stating different `familyLimitShare` values — reaches only the
+second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
+is reached, so the couple's ceiling is still a number even though nobody can say whose it is.
+
+The engine reports the two separately:
+
+| Unknown | Diagnostic | `hsa223b5` shared limit | Account maximum |
+|---|---|---|---|
+| The amount — coverage, a 2004–2006 annual deductible, the §223(b)(8) election | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
+| The division — conflicting `familyLimitShare` only | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
+
+Both are `ERROR` and both leave every account's `statutoryMaximumAnnualContribution` null: a
+share of a known amount is still unknown when the share is. What differs is the couple-wide
+figure. `sharedFamilyContributionLimit` follows the **amount**, because that is its contract —
+the limitation this owner divides, reported before the share is applied — so a caller
+reconciling contradictory shares can still see the 8750 they are dividing.
+
+### When the other spouse's coverage is required
+
+§223(b)(5)(A) does two things, and each makes the other spouse's coverage matter in a
+different case. On a married return, an owner with no stated spousal coverage returns
+`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` — rather than a number the input
+cannot support — whenever either applies:
+
+| Sentence | Bites when the owner has | Years |
+|---|---|---|
+| Both spouses treated as having family coverage if either does | at least one **self-only** month, which it can raise | all |
+| Spouses with family coverage under different plans take the **lowest** annual deductible | at least one **family** month, whose deductible it can lower | 2004–2006 only |
+
+The first can only ever raise a self-only month to a family month, so an owner whose months
+are all family months is unaffected by it — family is already the higher tier. The second is
+why that owner is still not safe in 2004–2006: §223(b)(2) capped each month by the plan's
+annual deductible in those years, and an unstated spouse may hold a family plan with a lower
+one, which would make the couple's limitation *lower* than the owner's own plan produces.
+Section 303 of the Tax Relief and Health Care Act of 2006 struck that comparison for years
+after 2006, so from 2007 an unstated spouse's deductible cannot move any amount.
+
+Absence is not an assertion. If the spouse genuinely held no HDHP coverage, say so with
+`persons[].hsaCoverage: {}` — the documented way to record exactly that — and the limitation
+stays determinate. The engine will not read silence as "no competing family plan", because
+that would answer the comparison from a fact you never supplied, and in the direction that
+costs a taxpayer the §4973 excise.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
@@ -773,7 +831,7 @@ ownership, so it is a caller-supplied fact rather than something inferred from t
 | `planTermDependentCapacity` | Potential space that cannot be allocated without additional plan/employer facts |
 | `contributionComponents` | Pretax, Roth, after-tax, employer, IRA, and catch-up components. The statutory source of a catch-up and its tax treatment are independent, so both are recorded: a §457(b)(3) last-three-years catch-up is `special457CatchUp` when pre-tax and `special457RothCatchUp` when made to a designated Roth account — including any PLESA, where §402A(e)(1)(A)(i) makes Roth the only possibility. Both seed the same §457(b)(3) pool when handed back as an existing contribution |
 | `federalTaxEffects` | Federal AGI, taxable-income, W-2 box 1, nondeductible, after-tax/Roth, and conversion effects |
-| `sharedLimits` | Audit trail showing each statutory pool used by the account |
+| `sharedLimits` | Audit trail showing each statutory pool used by the account. Each entry has three states, not two: `limit` is `null` where the statute's ceiling could not be determined, and `usedBeforeAccount` / `usedByAccount` / `remainingAfterAccount` are `null` where the ceiling **is** known but the draw against it is not. Read the usage fields rather than inferring a draw of zero |
 | `diagnostics` | Assumptions, warnings, unavailable rules, and legal references |
 
 `maximumAnnualContributionBasedOnInputs` is a mechanical result, not a contribution recommendation.

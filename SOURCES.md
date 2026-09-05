@@ -96,6 +96,23 @@ cost-of-living notice, so they are cited and verified separately.
   after. It is **not** inflation-adjusted, which is why the annual Rev. Procs are silent on
   it and it is cited to the Code rather than to a Rev. Proc.
 
+- **IRC §223(b)(5)** — the married-couple rule, cited to the Code because it is a rule rather
+  than an adjusted amount. Subparagraph (A) does two distinct things in one sentence, and the
+  engine reads them separately: "both spouses shall be treated as having only such family
+  coverage (**and if such spouses each have family coverage under different plans, as having
+  the family coverage with the lowest annual deductible**)". The first clause can only ever
+  raise a self-only month to a family month; the parenthetical is what makes another spouse's
+  annual deductible an operand of this couple's limitation. Subparagraph (B) then reduces the
+  paragraph (1) limitation "without regard to any additional contribution amount under
+  paragraph (3)" by the spouses' aggregate Archer MSA amount, and "after such reduction"
+  divides it "equally between them unless they agree on a different division".
+
+  The parenthetical **is still in force** — it was not removed in 2007 and appears in the
+  current Code. What changed at 2007 is §223(b)(2) below, which is why a spouse's deductible
+  stops being able to move any amount from that year even though the sentence that reads it
+  survives. The engine therefore gates the lowest-deductible requirement on the §223(b)(2)
+  cap rather than on a year range.
+
 - **Tax Relief and Health Care Act of 2006** — §303 removed the §223(b)(2) cap that limited
   the monthly contribution to 1/12 of the *lesser* of the plan's annual deductible and the
   dollar amount, and §305 added the §223(b)(8) last-month rule, both effective for taxable

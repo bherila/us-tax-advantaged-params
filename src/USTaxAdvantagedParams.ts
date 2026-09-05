@@ -741,8 +741,14 @@ export interface SharedLimitUse {
   id: string;
   legalLimit: string;
   limit: Money | null;
-  usedBeforeAccount: Money;
-  usedByAccount: Money;
+  /**
+   * Null where the pool's ceiling is known but the draw against it is not. The
+   * fields are the named usage, so a consumer that reads them must not be handed
+   * a zero the engine never computed; the null is the third state, not a
+   * sentinel to be reverse-engineered from a missing remainder.
+   */
+  usedBeforeAccount: Money | null;
+  usedByAccount: Money | null;
   remainingAfterAccount: Money | null;
 }
 
@@ -9141,6 +9147,18 @@ interface LimitPool {
   legalLimit: string;
   limit: Money | null;
   used: Money;
+  /**
+   * The pool's ceiling is known but how much of it is already spent is not, so
+   * `used` is not a figure anyone may rely on and no remainder is reported.
+   *
+   * This is a third state, distinct from a null `limit`. A null limit says the
+   * statute's ceiling could not be determined; this says the ceiling is a
+   * number while the draw against it turns on facts the caller did not supply.
+   * Reporting a remainder either way asserts headroom the record does not
+   * establish -- too much of it, or too little, depending on which way the
+   * missing fact resolves.
+   */
+  usageIndeterminate?: boolean;
 }
 
 interface IraOwnerPool extends LimitPool {
@@ -11355,6 +11373,25 @@ interface HsaOwnerPlan {
   statutoryMaximum: Money | null;
   detail: HsaAccountDetail | null;
   familyPoolKey: string | null;
+  /**
+   * Whether this owner's draw on the IRC 223(b)(5) pool is exactly computable.
+   *
+   * Existing contributions consume the paragraph (1) limitation first and reach
+   * the paragraph (3) additional amount only once it is exhausted. So where any
+   * paragraph (3) amount exists, how much of a contribution lands on the pool
+   * depends on the size of this owner's paragraph (1) share -- which is what the
+   * unresolved IRC 223(b)(5)(B)(ii) division leaves unknown. Knowing the
+   * paragraph (3) amount does not rescue it: 500 paid in against a 1000
+   * additional amount draws wholly on the pool under either candidate share,
+   * while 9750 draws 8750 or 4375 depending on which share is real.
+   *
+   * The draw is therefore exact only when there is no paragraph (3) amount to
+   * absorb anything -- anyone under 55 -- and no IRC 223(b)(4) reduction, those
+   * coming off the paragraph (1) share first and so turning on the same unknown.
+   * Then every dollar paid in came out of the couple's limitation whatever the
+   * division, and the pool can say so.
+   */
+  familyPoolUsageDeterminable: boolean;
 }
 
 interface HsaOwnerFacts {
@@ -11589,6 +11626,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         statutoryMaximum: 0,
         detail: null,
         familyPoolKey: null,
+        // No IRC 223 year is encoded, so there is no family pool for the
+        // seeding to reach and nothing to determine a draw against.
+        familyPoolUsageDeterminable: false,
       });
     }
     return;
@@ -11846,13 +11886,16 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     familyPortionWithoutLastMonthRule: number;
     selfPortionWithoutLastMonthRule: number;
     catchUpApplied: Money;
+    /** IRC 223(b)(3) turns on age, so an absent birth year leaves its amount untestable rather than nil. */
+    ageKnown: boolean;
     catchUpWithoutLastMonthRule: Money;
     appliedAnnualLimitByMonth: Array<Money | null>;
     eligibleMonthCount: number;
     lastMonthRuleApplied: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
-    familyLimitIndeterminate: boolean;
+    familyPoolAmountIndeterminate: boolean;
+    familyDivisionIndeterminate: boolean;
   }
 
   const amountsByOwner = new Map<string, HsaOwnerAmounts>();
@@ -11863,15 +11906,30 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const diagnostics: Diagnostic[] = [];
     let indeterminate = false;
     /**
-     * Whether this owner's *family-coverage* limitation is undeterminable, which
-     * is a narrower question than whether their overall result is. A missing
-     * birth year makes only the IRC 223(b)(3) age-55 amount unknown and leaves
-     * the IRC 223(b)(5) family limit perfectly knowable, so it deliberately does
-     * not set this. Neither does the bare fact that this person's coverage
-     * statements disagree: see `familyOperandConflict` below, which asks which
-     * operand they disagree about.
+     * IRC 223(b)(5) asks two questions, and an input that leaves one unanswered
+     * usually leaves the other answered:
+     *
+     *   (A) gives the spouses one family limitation. Whether *that amount* is
+     *       knowable is `familyPoolAmountIndeterminate`.
+     *   (B)(ii) divides that one limitation between them, equally unless they
+     *       agree otherwise. Whether *the division* is knowable is
+     *       `familyDivisionIndeterminate`.
+     *
+     * They were one flag until the two were separated, which nulled a perfectly
+     * knowable couple-wide ceiling whenever the spouses' agreed shares
+     * contradicted each other -- an amount the statute fixes from coverage
+     * facts alone, withheld because of a disagreement about who may use it.
+     *
+     * Both are narrower questions than whether this owner's overall result is
+     * determinable. A missing birth year makes only the IRC 223(b)(3) age-55
+     * amount unknown and leaves the IRC 223(b)(5) family limit perfectly
+     * knowable, so it deliberately sets neither. Neither does the bare fact
+     * that this person's coverage statements disagree: see
+     * `familyOperandConflict` below, which asks which operand they disagree
+     * about.
      */
-    let familyLimitIndeterminate = false;
+    let familyPoolAmountIndeterminate = false;
+    let familyDivisionIndeterminate = false;
 
     /**
      * Does this owner's disagreement actually reach the couple's IRC 223(b)(5)
@@ -11894,7 +11952,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      *       required for it to matter.
      *   useLastMonthRule  reaches it: IRC 223(b)(8) replaces the prorated
      *       amount with December's annualized one.
-     *   familyLimitShare  reaches it: the IRC 223(b)(5)(B)(ii) division.
+     *   familyLimitShare  reaches the division and nothing else. IRC
+     *       223(b)(5)(B)(ii) divides a limitation subparagraph (A) has already
+     *       fixed, so a disagreement about the shares cannot move the amount
+     *       being shared -- which is why it is the one field here that sets the
+     *       division flag rather than the amount one.
      *   testingPeriodSatisfied, testingPeriodFailureByDeathOrDisability  do
      *       not. They are read only into the reported testing-period
      *       obligation, never into either portion, so a disagreement about a
@@ -11906,15 +11968,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const deductibleUnanimous = unanimousField(
       (coverageVariantsByPerson.get(ownerId) ?? []).map((variant) => variant.coverage.hdhpAnnualDeductible),
     );
-    const limitInputsIndeterminate =
+    const amountInputsIndeterminate =
       ownerSlots === undefined ||
       ownerSlots.some((slot) => slot === "unknown") ||
       (parameters.contributionLimitCappedByHdhpAnnualDeductible &&
         !deductibleUnanimous &&
         ownerSlots.some((slot) => slot !== "none")) ||
-      owner.useLastMonthRuleConflict ||
-      owner.familyLimitShareConflict;
-    if (limitInputsIndeterminate) familyLimitIndeterminate = true;
+      owner.useLastMonthRuleConflict;
+    if (amountInputsIndeterminate) familyPoolAmountIndeterminate = true;
+    if (owner.familyLimitShareConflict) familyDivisionIndeterminate = true;
 
     if (owner.conflict) {
       indeterminate = true;
@@ -11942,7 +12004,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
@@ -11957,11 +12019,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const months = owner.months ?? HSA_ALL_MONTHS.map(() => null);
 
     /**
-     * IRC 223(b)(5)(A) can only lower a self-only month, so the other spouse's
-     * coverage is needed exactly when this owner has one. Without it the answer
-     * is genuinely unknown — self-only for the whole year is $4,400 for 2026,
-     * but a spouse's family coverage makes it a divided family limit instead —
-     * and answering with either number would be a guess.
+     * IRC 223(b)(5)(A) makes the other spouse's coverage matter for two
+     * independent reasons, and the sentence does two separate things:
+     *
+     *   *Recharacterization.* Spouses are treated as having family coverage for
+     *   any month in which either has it, which can only ever *raise* a
+     *   self-only month. So this reason bites exactly when the owner has a
+     *   self-only month. Without the spouse's coverage the answer is genuinely
+     *   unknown — self-only for the whole year is $4,400 for 2026, but a
+     *   spouse's family coverage makes it a divided family limit instead — and
+     *   answering with either number would be a guess.
+     *
+     *   *Lowest deductible.* Spouses who each have family coverage under
+     *   different plans are treated as covered by the plan with the lowest
+     *   annual deductible. That changes an amount only for 2004-2006, when IRC
+     *   223(b)(2) capped each month by the deductible, and it bites on the
+     *   owner's *family* months — where recharacterization has nothing left to
+     *   do. An unstated spouse may hold a family plan whose deductible is lower
+     *   than this owner's, in which case the couple's limitation is lower than
+     *   the figure this owner's own plan produces.
+     *
+     * The second reason is why an owner with family coverage every month is not
+     * safe in a capped year merely because no recharacterization is possible.
+     * Treating an absent spouse as holding no competing family plan would answer
+     * the subparagraph (A) comparison from a fact the caller never supplied, and
+     * would fail open in the direction that costs a taxpayer the IRC 4973 excise.
+     * `persons[].hsaCoverage: {}` already exists as the cheap way to state that
+     * the spouse held no high deductible health plan coverage, so absence and
+     * "no coverage" stay distinguishable rather than being conflated here.
      */
     const marriedFiler =
       context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
@@ -11980,19 +12065,31 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
+    const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
+    const lowestDeductibleCouldLowerAmount =
+      parameters.contributionLimitCappedByHdhpAnnualDeductible &&
+      months.some((tier) => tier === "family");
     if (
       marriedFiler &&
       (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
       !spouseCoverageSupplied &&
-      months.some((tier) => tier === "self_only")
+      (recharacterizationCouldRaiseTier || lowestDeductibleCouldLowerAmount)
     ) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
+      // Name the reason that actually applies. Both can, and a caller told only
+      // about self-only months would go looking for one in a record whose months
+      // are all family months.
+      const reason = recharacterizationCouldRaiseTier
+        ? lowestDeductibleCouldLowerAmount
+          ? `This owner has at least one self-only month, which that treatment can raise to a family month, and at least one family month, whose limitation for tax year ${context.taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under IRC 223(b)(2). The other spouse's coverage changes the answer both ways and is not supplied.`
+          : "This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied."
+        : `IRC 223(b)(5)(A) also treats spouses who each have family coverage under different plans as having the family coverage with the lowest annual deductible, and for tax year ${context.taxYear} IRC 223(b)(2) capped each month's limitation by that deductible. This owner has at least one family month, so an unstated spouse holding a family plan with a lower deductible would lower this limitation, and their coverage is not supplied.`;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
           DiagnosticSeverity.ERROR,
-          "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied. State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.",
+          `IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. ${reason} State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.`,
           `persons.${ownerId}`,
           "IRC 223(b)(5)(A)",
         ),
@@ -12028,7 +12125,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       spouseCoverageAmbiguousOnFamily
     ) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
@@ -12086,7 +12183,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
     if (deductibleMissing) {
       indeterminate = true;
-      familyLimitIndeterminate = true;
+      familyPoolAmountIndeterminate = true;
       // One diagnostic per owner, not one per affected month: the missing fact
       // is a property of the person and their plan, not of each month it
       // reaches. Where the gap is a spouse's, name them, because the input to
@@ -12166,6 +12263,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       }
     }
 
+
     // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
     // 223 answer unknown rather than merely unusual: general-purpose coverage
     // is disqualifying and limited-purpose or post-deductible coverage is not,
@@ -12184,7 +12282,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // refusal if that severity is ever softened. They are redundant on
         // purpose, so no mutation distinguishes them individually.
         indeterminate = true;
-        familyLimitIndeterminate = true;
+        familyPoolAmountIndeterminate = true;
         diagnostics.push(
           diagnostic(
             "HEALTH_FSA_PURPOSE_REQUIRED_FOR_HSA_INTERACTION",
@@ -12205,13 +12303,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       familyPortionWithoutLastMonthRule,
       selfPortionWithoutLastMonthRule,
       catchUpApplied,
+      ageKnown: age !== null,
       catchUpWithoutLastMonthRule,
       appliedAnnualLimitByMonth,
       eligibleMonthCount,
       lastMonthRuleApplied,
       diagnostics,
       indeterminate,
-      familyLimitIndeterminate,
+      familyPoolAmountIndeterminate,
+      familyDivisionIndeterminate,
     });
   }
 
@@ -12259,8 +12359,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * their own, which makes the IRC 223(b)(5) aggregate built from those
    * limitations undeterminable too.
    */
-  const householdLimitIndeterminate = coupleMembersWithAccounts.some(
-    (personId) => amountsByOwner.get(personId)?.familyLimitIndeterminate === true,
+  const householdPoolAmountIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.familyPoolAmountIndeterminate === true,
+  );
+  /**
+   * The other question, asked separately. IRC 223(b)(5)(B)(ii) divides one
+   * limitation between the spouses, so a spouse whose own accounts state
+   * contradictory shares makes *the division* undeterminable while leaving the
+   * amount being divided exactly as computable as it was: subparagraph (A)
+   * fixes that amount from coverage facts, which a disagreement about shares
+   * does not touch.
+   */
+  const householdDivisionIndeterminate = coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.familyDivisionIndeterminate === true,
   );
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
@@ -12269,7 +12380,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   );
   const shareByOwner = new Map<string, number>();
   const sharingDiagnostics: Diagnostic[] = [];
-  if (familySharingApplies && householdLimitIndeterminate) {
+  if (familySharingApplies && householdPoolAmountIndeterminate) {
     // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
     // divides it between them, so each share is a function of facts belonging to
     // both. A spouse whose own coverage is coherent still cannot be told their
@@ -12283,6 +12394,26 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         "IRC 223(b)(5) gives the spouses one family limitation to divide, so it is no more determinable than the coverage facts of either of them. Another spouse's health savings account coverage facts are missing or conflicting, so this account's share of that limitation cannot be stated either.",
         "accounts",
         "IRC 223(b)(5)",
+      ),
+    );
+  }
+  /**
+   * The division, reported separately from the amount and in different words.
+   * `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` says the limitation itself cannot
+   * be stated, which is false here: the couple's ceiling is a number and the
+   * IRC 223(b)(5) pool reports it. What is unknown is how much of that number
+   * belongs to each account, so every account drawing on the pool still has a
+   * null maximum -- a share of a known amount is unknown when the share is --
+   * and this is an ERROR for that reason rather than a note.
+   */
+  if (familySharingApplies && householdDivisionIndeterminate) {
+    sharingDiagnostics.push(
+      diagnostic(
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE",
+        DiagnosticSeverity.ERROR,
+        "IRC 223(b)(5)(B)(ii) divides the single family limitation between the spouses as they agree. A spouse's health savings accounts state different planRules.hsa.familyLimitShare values, so the agreed division is not determinable and no account's share of the limitation can be stated. The limitation itself is unaffected and the IRC 223(b)(5) shared limit still reports it: subparagraph (A) fixes that amount from coverage facts, which this disagreement does not touch. State one agreed share on every one of that spouse's health savings accounts.",
+        "accounts",
+        "IRC 223(b)(5)(B)(ii)",
       ),
     );
   }
@@ -12387,7 +12518,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         // sum anyway would state a household ceiling on facts that do not
         // support one. The per-owner IRC 223(b)(1) and 223(b)(3) pools already
         // report null in that case; this pool now agrees with them.
-        limit: householdLimitIndeterminate
+        //
+        // Only the amount governs. A disagreement about the IRC
+        // 223(b)(5)(B)(ii) shares leaves this ceiling standing: it is the
+        // couple's, not any one account's, and the statute fixes it before the
+        // division is reached. Nulling it for a share conflict withheld a
+        // number the record did support.
+        limit: householdPoolAmountIndeterminate
           ? null
           : rawSharedFamilyLimit === null
             ? sharedFamilyLimit
@@ -12716,14 +12853,28 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       proratedContributionLimit: amounts.proratedApplied,
       contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
-      familyLimitShare: share,
+      // Null where the division is undeterminable rather than the placeholder
+      // taken from whichever of the owner's accounts was listed first. Reversing
+      // two contradictory accounts changed this from 0.5 to 0.25 while the
+      // diagnostic said no share could be stated -- an input-order-dependent
+      // number a caller could multiply by the limitation the pool now preserves.
+      // The placeholder stays internal, where the division arithmetic needs a
+      // value it never gets to publish.
+      familyLimitShare: householdDivisionIndeterminate ? null : share,
       // Null where the family limitation could not be determined, for the same
       // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
       // per owner, and reporting the uncompared statutory amount here would
       // leave the ceiling the pool refuses to state still published one field
       // away. The field is already declared nullable for the unrelated case of
       // no family limit being shared at all.
-      sharedFamilyContributionLimit: isSharingMember && !householdLimitIndeterminate
+      //
+      // It follows the amount and not the division, because it is the amount:
+      // its contract is the limitation this owner divides, taken *before* the
+      // IRC 223(b)(5)(B)(ii) share is applied. A share disagreement therefore
+      // leaves it reportable, and `familyLimitShare` beside it is the field
+      // that goes unusable. Reading the division flag here would null the one
+      // figure a caller reconciling contradictory shares actually needs.
+      sharedFamilyContributionLimit: isSharingMember && !householdPoolAmountIndeterminate
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
         : null,
       archerMsaContributionsApplied: archerAmount,
@@ -12742,12 +12893,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
       detail,
       familyPoolKey: isSharingMember ? familyPoolKey : null,
+      familyPoolUsageDeterminable:
+        amounts.ageKnown && amounts.catchUpApplied === 0 && archerAmount === 0 && fundingAmount === 0,
     });
   }
 
   // Existing contributions consume the base limit first and then the IRC
   // 223(b)(3) increase, which is the only ordering that never reports capacity
   // the statute does not allow.
+  //
   for (const account of hsaAccounts) {
     const existing = roundMoney(
       account.existingContributions.hsaDeductible + account.existingContributions.hsaEmployerOrCafeteria,
@@ -12755,15 +12909,47 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     if (existing <= 0) continue;
     const basePool = context.hsaBasePools.get(account.ownerId);
     const catchUpPool = context.hsaCatchUpPools.get(account.ownerId);
-    if (!basePool || !catchUpPool || basePool.limit === null) continue;
+    if (!basePool || !catchUpPool) continue;
+    const poolKey = context.hsaPlans.get(account.ownerId)?.familyPoolKey;
+    const familyPool = poolKey ? context.hsaFamilyPools.get(poolKey) : undefined;
+    /**
+     * An owner whose own IRC 223(b)(1) limitation is undeterminable still has a
+     * couple-wide IRC 223(b)(5) ceiling where only the (B)(ii) division is
+     * unknown, and the pool reports it. What it may not do is publish a draw
+     * against that ceiling it cannot compute.
+     *
+     * The contribution splits between the paragraph (1) limitation the pool
+     * measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B)
+     * keeps out of the division. `familyPoolUsageDeterminable` says whether that
+     * split is arithmetic here: it needs the age that fixes the paragraph (3)
+     * amount, and needs no IRC 223(b)(4) reduction in play, since those come off
+     * the paragraph (1) share first and so turn on the very limitation that is
+     * undeterminable.
+     *
+     * Both bounds were tried and both misreported. Charging everything paid in
+     * accused a 56-year-old who contributed 9750 for 2026 -- 8750 under the 1/0
+     * division IRC 223(b)(5)(B)(ii) permits, plus their own 1000 -- of exceeding
+     * an 8750 pool. Charging everything less the largest possible paragraph (3)
+     * amount then reported a pool as wholly untouched when a 9500 qualified HSA
+     * funding distribution had left at most 250 of room. A bound is not a usage,
+     * and publishing one as though it were is what produced both.
+     */
+    if (basePool.limit === null) {
+      if (familyPool) {
+        if (context.hsaPlans.get(account.ownerId)?.familyPoolUsageDeterminable === true) {
+          // Nothing can absorb a spill, so the whole contribution came out of
+          // the couple's limitation whichever way the division falls.
+          familyPool.used = roundMoney(familyPool.used + existing);
+        } else {
+          familyPool.usageIndeterminate = true;
+        }
+      }
+      continue;
+    }
     const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));
     basePool.used = roundMoney(basePool.used + toBase);
     catchUpPool.used = roundMoney(catchUpPool.used + existing - toBase);
-    const poolKey = context.hsaPlans.get(account.ownerId)?.familyPoolKey;
-    if (poolKey) {
-      const familyPool = context.hsaFamilyPools.get(poolKey);
-      if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
-    }
+    if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
   }
 }
 
@@ -12850,18 +13036,23 @@ function regularIraContributionAmount(components: ContributionComponents): Money
 }
 
 function poolRemaining(pool: LimitPool): Money | null {
-  return pool.limit === null ? null : nonnegative(pool.limit - pool.used);
+  if (pool.limit === null || pool.usageIndeterminate === true) return null;
+  return nonnegative(pool.limit - pool.used);
 }
 
 function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLimitUse[]): Money {
   const usedBefore = pool.used;
-  if (pool.limit === null) {
+  if (pool.limit === null || pool.usageIndeterminate === true) {
     sharedLimits.push({
       id: pool.id,
       legalLimit: pool.legalLimit,
-      limit: null,
-      usedBeforeAccount: usedBefore,
-      usedByAccount: 0,
+      // The ceiling is still reported where it is known. Only the draw against
+      // it is withheld, which is the whole distinction the flag exists to draw.
+      limit: pool.limit,
+      // A null limit leaves the draw perfectly knowable; only the third state
+      // withholds it.
+      usedBeforeAccount: pool.usageIndeterminate === true ? null : usedBefore,
+      usedByAccount: pool.usageIndeterminate === true ? null : 0,
       remainingAfterAccount: null,
     });
     return 0;
@@ -12884,8 +13075,8 @@ function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUs
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
-    usedBeforeAccount: pool.used,
-    usedByAccount: 0,
+    usedBeforeAccount: pool.usageIndeterminate === true ? null : pool.used,
+    usedByAccount: pool.usageIndeterminate === true ? null : 0,
     remainingAfterAccount: poolRemaining(pool),
   });
 }
@@ -12911,7 +13102,7 @@ function takeAcrossPools(
   requested: Money,
   sharedLimits: SharedLimitUse[],
 ): Money {
-  if (pools.some((pool) => pool.limit === null)) {
+  if (pools.some((pool) => pool.limit === null || pool.usageIndeterminate === true)) {
     for (const pool of pools) reportPoolWithoutConsuming(pool, sharedLimits);
     return 0;
   }
@@ -15700,7 +15891,15 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     }
 
     for (const shared of outcome.sharedLimits) {
-      if (shared.limit !== null && shared.usedBeforeAccount > shared.limit + 0.009) {
+      // A pool whose draw is undeterminable reports no remainder, and an excess
+      // is a statement about the draw. Asserting one from a `used` the engine
+      // never computed is how a compliant taxpayer came to be accused.
+      if (
+        shared.limit !== null
+        && shared.usedBeforeAccount !== null
+        && shared.remainingAfterAccount !== null
+        && shared.usedBeforeAccount > shared.limit + 0.009
+      ) {
         diagnostics.push(
           diagnostic(
             "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT",
