@@ -81,6 +81,17 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
   `SHA256SUMS.txt`.
   `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim`
 
+- **26 U.S.C. §414(v)(6)(A) and §414(v)(7)** — which plans the mandatory-Roth catch-up rule
+  reaches. §414(v)(7)(A) opens "Except as provided in subparagraph (C)", and subparagraph (C)
+  disapplies it "in the case of an applicable employer plan described in paragraph
+  (6)(A)(iv)". Clause (iv) is "an arrangement meeting the requirements of section 408(k) or
+  (p)" — a SEP or SARSEP, and a SIMPLE IRA. It is **not** §401(k)(11), so a SIMPLE 401(k) is
+  not excepted: it is an employees' trust described in §401(a) and exempt under §501(a),
+  which is clause (i). The two SIMPLE families therefore part company here, which is why the
+  engine keys the exemption on the account's family rather than on its `isSimple` trait, and
+  why the conformance vectors pin both halves. Quoted from the current Code rather than
+  paraphrased, because the natural reading of "SIMPLE plans are excepted" is wrong.
+
 ## Health savings account sources (IRC §223)
 
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
