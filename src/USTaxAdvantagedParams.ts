@@ -11884,27 +11884,6 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
   }
 
-  /**
-   * Whether the figure this check rejected could have reached this owner's
-   * limitation arithmetic: their own contradiction always does, and a spouse's
-   * does when it is a family plan IRC 223(b)(5)(A) draws into the comparison.
-   *
-   * Read in both passes. The first raises the diagnostic; the second withholds
-   * the limitation detail that was built from the rejected deductible, because
-   * saying in a diagnostic that a figure is not published as a ceiling while
-   * `appliedAnnualLimitByMonth` still carries twelve copies of it publishes it
-   * anyway.
-   */
-  const subminimumDeductibleReaches = (personId: string): boolean => {
-    if (subminimumDeductibleByPerson.has(personId)) return true;
-    if (!familySharingApplies) return false;
-    for (const otherId of couple ?? []) {
-      if (otherId === personId) continue;
-      const entry = subminimumDeductibleByPerson.get(otherId);
-      if (entry !== undefined && entry.tier === "family") return true;
-    }
-    return false;
-  };
 
   /**
    * Stated coverage, projected onto the one question its two readers ask:
@@ -11948,6 +11927,55 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       }
     }
   }
+
+  /**
+   * The spouses whose subminimum *family* plan actually reaches this person's
+   * limitation, month by month rather than for the year.
+   *
+   * IRC 223(b)(5)(A) resolves the lowest-deductible comparison per month --
+   * `familyDeductibleByMonth` below does exactly that -- so a contradiction in
+   * a month this person was not eligible cannot touch the months they were. A
+   * spouse's January-only family plan does not make a December-only limitation
+   * unknowable, and treating `familySharingApplies` as the test would refuse an
+   * answer the engine already has.
+   *
+   * Stated family months are read on the spouse's side, because only a spouse
+   * who *has* a family plan brings a deductible that competes; the owner's side
+   * reads eligibility alone, because a self-only month of theirs is
+   * recharacterized to family in any month the spouse holds family coverage.
+   */
+  const subminimumFamilySpousesFor = (personId: string): Array<[string, HsaSubminimumDeductible]> => {
+    const reaching: Array<[string, HsaSubminimumDeductible]> = [];
+    if (!familySharingApplies) return reaching;
+    const ownMonths = facts.get(personId)?.months ?? null;
+    if (ownMonths === null) return reaching;
+    for (const otherId of couple ?? []) {
+      if (otherId === personId) continue;
+      const entry = subminimumDeductibleByPerson.get(otherId);
+      if (entry === undefined || entry.tier !== "family") continue;
+      const otherFamilyMonths = statedCoverageByPerson.get(otherId) ?? null;
+      if (otherFamilyMonths === null) continue;
+      if (
+        HSA_ALL_MONTHS.some(
+          (month) => otherFamilyMonths[month - 1] === "family" && ownMonths[month - 1] !== null,
+        )
+      ) {
+        reaching.push([otherId, entry]);
+      }
+    }
+    return reaching;
+  };
+
+  /**
+   * Whether the figure this check rejected could have reached this owner's
+   * limitation arithmetic. Read in both passes: the first raises the
+   * diagnostic, the second withholds the limitation detail built from the
+   * rejected deductible, because saying in a diagnostic that a figure is not
+   * published as a ceiling while `appliedAnnualLimitByMonth` still carries
+   * twelve copies of it publishes it anyway.
+   */
+  const subminimumDeductibleReaches = (personId: string): boolean =>
+    subminimumDeductibleByPerson.has(personId) || subminimumFamilySpousesFor(personId).length > 0;
 
   /**
    * IRC 223(b)(5)(A) also treats spouses with family coverage under different
@@ -12341,14 +12369,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * dividing by it.
      */
     const ownSubminimumDeductible = subminimumDeductibleByPerson.get(ownerId);
-    const spouseSubminimumDeductibles: Array<[string, HsaSubminimumDeductible]> = [];
-    if (familySharingApplies) {
-      for (const personId of couple ?? []) {
-        if (personId === ownerId) continue;
-        const entry = subminimumDeductibleByPerson.get(personId);
-        if (entry !== undefined && entry.tier === "family") spouseSubminimumDeductibles.push([personId, entry]);
-      }
-    }
+    const spouseSubminimumDeductibles = subminimumFamilySpousesFor(ownerId);
     if (ownSubminimumDeductible !== undefined || spouseSubminimumDeductibles.length > 0) {
       indeterminate = true;
       // Only a *family*-tier contradiction reaches the couple's shared
@@ -12551,6 +12572,41 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const householdDivisionIndeterminate = coupleMembersWithAccounts.some(
     (personId) => amountsByOwner.get(personId)?.familyDivisionIndeterminate === true,
   );
+  /**
+   * A second reason the division can be unknown, and it is not a disagreement
+   * about shares. IRC 223(b)(5)(B)(ii) divides the limitation between the
+   * spouses, but Notice 2004-50 Q&A-31 is explicit that the division
+   * presupposes two eligible individuals: "if only one spouse is an eligible
+   * individual, only that spouse may contribute to an HSA (notwithstanding the
+   * treatment under section 223(b)(5)(A) of both spouses as having only family
+   * coverage)". Example (1) of that Q&A works it -- H contributes the whole
+   * 5000 while W, whose plan is not a high deductible health plan, contributes
+   * nothing.
+   *
+   * Ordinarily the caller's month list *is* the eligibility assertion and the
+   * equal division follows from it, which is why this engine can divide without
+   * testing IRC 223(c)(1). A subminimum deductible is precisely the case where
+   * that assertion is contradicted by another fact from the same caller, so the
+   * engine cannot tell whether the couple's limitation belongs wholly to the
+   * coherent spouse or is shared with them. Reporting half would assert the
+   * eligibility this check has just called into question.
+   *
+   * The *amount* is untouched, and deliberately so: a self-only plan never
+   * competes for the lowest family deductible, so the pool keeps reporting its
+   * number while the division above it goes unstated. Any tier counts here,
+   * unlike the amount test, because eligibility is what is in doubt and a
+   * self-only contradiction impeaches it just as well.
+   *
+   * Only spouses who own a health savings account are asked about. A spouse
+   * without one receives no share in this model -- the limitation goes whole to
+   * the account owner, as the self-only-spouse vectors already pin -- so there
+   * is no division for their contradiction to make unknowable.
+   */
+  const divisionEligibilityDoubtPersons = familySharingApplies
+    ? coupleMembersWithAccounts.filter((personId) => subminimumDeductibleByPerson.has(personId))
+    : [];
+  const householdDivisionUnknown =
+    householdDivisionIndeterminate || divisionEligibilityDoubtPersons.length > 0;
   const familyPoolKey = couple ? `${couple[0]}|${couple[1]}` : null;
 
   const explicitShareHolders = coupleMembersWithAccounts.filter(
@@ -12584,12 +12640,22 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * null maximum -- a share of a known amount is unknown when the share is --
    * and this is an ERROR for that reason rather than a note.
    */
-  if (familySharingApplies && householdDivisionIndeterminate) {
+  if (familySharingApplies && householdDivisionUnknown) {
+    // Two causes, reported in different words because they call for different
+    // corrections: a share disagreement is fixed by stating one share, an
+    // impeached eligibility assertion by correcting the deductible or the tier.
+    const shareCause =
+      "A spouse's health savings accounts state different planRules.hsa.familyLimitShare values, so the agreed division is not determinable and no account's share of the limitation can be stated. State one agreed share on every one of that spouse's health savings accounts.";
+    const eligibilityCause = `${divisionEligibilityDoubtPersons
+      .map((personId) => `Person ${personId}`)
+      .join(" and ")} stated an annual deductible below the IRC 223(c)(2)(A)(i) minimum for coverage they are also stated to hold, and Notice 2004-50 Q&A-31 divides the limitation only between spouses who are each an eligible individual: "if only one spouse is an eligible individual, only that spouse may contribute to an HSA". The month list supplied for that person asserts eligibility their own deductible contradicts, so the engine cannot tell whether this limitation belongs wholly to the other spouse, as in Example (1) of that Q&A, or is divided. Correct the deductible or the coverage tier.`;
     sharingDiagnostics.push(
       diagnostic(
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE",
         DiagnosticSeverity.ERROR,
-        "IRC 223(b)(5)(B)(ii) divides the single family limitation between the spouses as they agree. A spouse's health savings accounts state different planRules.hsa.familyLimitShare values, so the agreed division is not determinable and no account's share of the limitation can be stated. The limitation itself is unaffected and the IRC 223(b)(5) shared limit still reports it: subparagraph (A) fixes that amount from coverage facts, which this disagreement does not touch. State one agreed share on every one of that spouse's health savings accounts.",
+        `IRC 223(b)(5)(B)(ii) divides the single family limitation between the spouses as they agree. ${
+          householdDivisionIndeterminate ? shareCause : eligibilityCause
+        } The limitation itself is unaffected and the IRC 223(b)(5) shared limit still reports it: subparagraph (A) fixes that amount from coverage facts, which this does not touch.`,
         "accounts",
         "IRC 223(b)(5)(B)(ii)",
       ),
@@ -13045,7 +13111,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // number a caller could multiply by the limitation the pool now preserves.
       // The placeholder stays internal, where the division arithmetic needs a
       // value it never gets to publish.
-      familyLimitShare: householdDivisionIndeterminate ? null : share,
+      familyLimitShare: householdDivisionUnknown ? null : share,
       // Null where the family limitation could not be determined, for the same
       // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
       // per owner, and reporting the uncompared statutory amount here would

@@ -140,6 +140,18 @@ cost-of-living notice, so they are cited and verified separately.
   Deciding eligibility from a scalar the engine cannot qualify would answer a question the
   caller never answered.
 
+  Q&A-31 also settles the *division* where one spouse's facts are contradictory: "if only one
+  spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding
+  the treatment under §223(b)(5)(A) of both spouses as having only family coverage)". Example (1)
+  gives H the whole $5,000. The engine takes the caller's month list as the assertion of
+  eligibility, so a deductible contradicting that list leaves the §223(b)(5)(B)(ii) division
+  unknowable while the amount stays fixed — the pool reports its number and the share goes null.
+
+  Both documents are committed: `evidence/hsa-limits/sources/n-04-50.pdf` and
+  `evidence/hsa-limits/sources/rr-05-25.pdf`, hashed in that corpus's `SHA256SUMS.txt`. Neither
+  publishes an annual amount the corpus does not already take from Notice 2004-2; they are held
+  for the provenance of these rules.
+
 - **Tax Relief and Health Care Act of 2006** — §303 removed the §223(b)(2) cap that limited
   the monthly contribution to 1/12 of the *lesser* of the plan's annual deductible and the
   dollar amount, and §305 added the §223(b)(8) last-month rule, both effective for taxable
