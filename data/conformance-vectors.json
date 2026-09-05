@@ -13883,6 +13883,58 @@
       "expectDiagnosticCodes": [
         "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
       ]
+    },
+    {
+      "name": "2005 a spouse's January-only contradiction leaves the other eleven monthly limits reported",
+      "description": "appliedAnnualLimitByMonth is month-granular by contract, and the IRC 223(b)(5)(A) lowest-deductible comparison it reports is answered per month, so a contradiction confined to one month must not erase the other eleven. The taxpayer holds family coverage all year with a lawful 5000 deductible; the spouse holds family coverage in January only, with a 1500 deductible below the 2005 IRC 223(c)(2)(A)(i) family minimum of 2000 (Rev. Proc. 2004-71). January is unknowable, so the annual figures -- the statutory maximum, proratedContributionLimit and contributionLimitWithoutLastMonthRule -- are null, because each is a sum over every month. February through December rest on nothing but the taxpayer's own lawful deductible and still report the lesser of 5000 and the 2005 family dollar amount of 5250, which is 5000.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "family"
+                }
+              ],
+              "hdhpAnnualDeductible": 1500
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.1": 5000,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 5000,
+        "accounts.0.hsa.proratedContributionLimit": null,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
     }
   ]
 }

@@ -655,10 +655,23 @@ What the engine deliberately does **not** do is as important:
 | publish it as a lower ceiling | the same example makes the consequence an *eligibility* one, not a smaller limitation |
 | return `ineligible` | Rev. Rul. 2005-25 makes that turn on whom the plan covers, and no input here carries that fact |
 
-The tier decides reach. A spouse's subminimum **family** plan reaches the HSA owner, because
-§223(b)(5)(A) draws competing family plans into the lowest-deductible comparison. A spouse's
-subminimum **self-only** plan does not — Notice 2004-50 Q&A-31 Example (1) leaves the owner
-contributing the full family amount in exactly that case.
+The tier decides reach, and it decides it for the **amount** only. A spouse's subminimum
+**family** plan reaches the HSA owner's limitation, because §223(b)(5)(A) draws competing family
+plans into the lowest-deductible comparison; it reaches only the months that plan was in force,
+since that comparison is answered per month. A spouse's subminimum **self-only** plan never
+enters it — Notice 2004-50 Q&A-31 Example (1) leaves the owner contributing the full family
+amount in exactly that case.
+
+The **division** is a separate question with a different answer, and any tier reaches it. Q&A-31
+divides the limitation only between spouses who are each an eligible individual: "if only one
+spouse is an eligible individual, only that spouse may contribute to an HSA". This engine reads
+your month list as the assertion of eligibility, so a deductible contradicting that list
+impeaches it. Where the contradicting spouse **owns an HSA**, the engine therefore cannot tell
+whether the limitation is wholly the other spouse's — as in Example (1) — or divided, so
+`familyLimitShare` and both maximums go null while the §223(b)(5) pool keeps reporting the
+amount. Do not expect the full family maximum in that case; expect nothing, and a diagnostic
+saying why. Where that spouse owns no HSA there is no division to doubt and the owner takes the
+whole limitation.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).

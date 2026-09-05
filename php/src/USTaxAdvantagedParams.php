@@ -12835,6 +12835,54 @@ final class Engine
                 || count($subminimumFamilySpousesFor($personId)) > 0;
         };
 
+        /*
+         * Which of this person's months the rejected deductible actually fed.
+         *
+         * appliedAnnualLimitByMonth is month-granular by contract, and the reach
+         * calculation above is already month-aware, so nulling all twelve threw
+         * away known entries: a spouse's January-only subminimum plan leaves
+         * February through December resting on nothing but the owner's own
+         * lawful deductible. The two annual scalars beside it stay null whenever
+         * *any* month is affected, because they are sums over all of them.
+         *
+         * The owner's own contradiction feeds every month they were eligible --
+         * one deductible covers the whole input -- while a spouse's feeds only
+         * the months their family plan was in force.
+         */
+        $subminimumAffectedMonths = static function (string $personId) use (
+            &$subminimumDeductibleByPerson,
+            &$subminimumFamilySpousesFor,
+            &$facts,
+            &$statedCoverageByPerson,
+        ): array {
+            $ownMonths = $facts[$personId]['months'] ?? null;
+            if ($ownMonths === null) {
+                return array_fill(0, self::HSA_MONTHS_IN_YEAR, false);
+            }
+            $ownContradiction = array_key_exists($personId, $subminimumDeductibleByPerson);
+            $reachingSpouses = $subminimumFamilySpousesFor($personId);
+            $affected = [];
+            for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                if ($ownMonths[$month - 1] === null) {
+                    $affected[] = false;
+                    continue;
+                }
+                if ($ownContradiction) {
+                    $affected[] = true;
+                    continue;
+                }
+                $hit = false;
+                foreach ($reachingSpouses as [$otherId, $entry]) {
+                    if (($statedCoverageByPerson[$otherId][$month - 1] ?? null) === 'family') {
+                        $hit = true;
+                        break;
+                    }
+                }
+                $affected[] = $hit;
+            }
+            return $affected;
+        };
+
         /**
          * IRC 223(b)(5)(A) also treats spouses with family coverage under different
          * plans as covered by the plan with the lowest annual deductible. That only
@@ -14178,7 +14226,11 @@ final class Engine
                 // neither is computed from the deductible; only the three
                 // limitation figures are.
                 'appliedAnnualLimitByMonth' => $subminimumDeductibleReaches($ownerId)
-                    ? array_fill(0, self::HSA_MONTHS_IN_YEAR, null)
+                    ? array_map(
+                        static fn (bool $affected, $value) => $affected ? null : $value,
+                        $subminimumAffectedMonths($ownerId),
+                        $amounts['appliedAnnualLimitByMonth'],
+                    )
                     : $amounts['appliedAnnualLimitByMonth'],
                 'proratedContributionLimit' => $subminimumDeductibleReaches($ownerId)
                     ? null

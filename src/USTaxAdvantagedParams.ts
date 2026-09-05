@@ -11978,6 +11978,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     subminimumDeductibleByPerson.has(personId) || subminimumFamilySpousesFor(personId).length > 0;
 
   /**
+   * Which of this person's months the rejected deductible actually fed.
+   *
+   * `appliedAnnualLimitByMonth` is month-granular by contract, and the reach
+   * calculation above is already month-aware, so nulling all twelve threw away
+   * known entries: a spouse's January-only subminimum plan leaves February
+   * through December resting on nothing but the owner's own lawful deductible.
+   * The two annual scalars beside it stay null whenever *any* month is
+   * affected, because they are sums over all of them.
+   *
+   * The owner's own contradiction feeds every month they were eligible -- one
+   * deductible covers the whole input -- while a spouse's feeds only the months
+   * their family plan was in force.
+   */
+  const subminimumAffectedMonths = (personId: string): boolean[] => {
+    const ownMonths = facts.get(personId)?.months ?? null;
+    if (ownMonths === null) return HSA_ALL_MONTHS.map(() => false);
+    const ownContradiction = subminimumDeductibleByPerson.has(personId);
+    const reachingSpouses = subminimumFamilySpousesFor(personId);
+    return HSA_ALL_MONTHS.map((month) => {
+      if (ownMonths[month - 1] === null) return false;
+      if (ownContradiction) return true;
+      return reachingSpouses.some(
+        ([otherId]) => statedCoverageByPerson.get(otherId)?.[month - 1] === "family",
+      );
+    });
+  };
+
+  /**
    * IRC 223(b)(5)(A) also treats spouses with family coverage under different
    * plans as covered by the plan with the lowest annual deductible. That only
    * changes an amount for 2004-2006, when IRC 223(b)(2) capped the monthly
@@ -13097,7 +13125,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // the IRC 223(b)(3) amount beside them stay, because neither is computed
       // from the deductible; only the three limitation figures are.
       appliedAnnualLimitByMonth: subminimumDeductibleReaches(ownerId)
-        ? HSA_ALL_MONTHS.map(() => null)
+        ? subminimumAffectedMonths(ownerId).map((affected, index) =>
+            affected ? null : amounts.appliedAnnualLimitByMonth[index],
+          )
         : amounts.appliedAnnualLimitByMonth,
       proratedContributionLimit: subminimumDeductibleReaches(ownerId) ? null : amounts.proratedApplied,
       contributionLimitWithoutLastMonthRule: subminimumDeductibleReaches(ownerId)
