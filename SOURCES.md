@@ -101,9 +101,37 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
   recorded as an age-based catch-up is reported only as recorded under the unselected
   method.
 
+  §414(v)(6)(C) says "to a participant", not "to that plan". Read alone it would strip
+  the age-based catch-up from *every* plan of a participant who used the §457(b)(3)
+  catch-up, an unrelated §401(k) included. **26 CFR 1.414(v)-1(a)(3) supplies the scope
+  the statute omits:** *"In the case of an applicable employer plan that is a section 457
+  eligible governmental plan, the catch-up contributions permitted under this section
+  shall not apply to a catch-up eligible participant for any taxable year for which a
+  higher limitation applies to such participant under section 457(b)(3)."*
+  §1.414(v)-1(e)(3) confirms it from the other side — a plan does not fail universal
+  availability *"merely because another applicable employer plan that is a section 457
+  eligible governmental plan does not provide for catch-up contributions to the extent
+  set forth in section 414(v)(6)(C)"* — a sentence with no work to do unless the other
+  plans keep their catch-up. So the exception is confined to the §457 eligible
+  governmental plan, which is how the engine applies it.
+
+  The same regulation settles the separation of the two catch-up pools.
+  §1.414(v)-1(f)(1): *"all applicable employer plans, other than section 457 eligible
+  governmental plans, maintained by the same employer are treated as one plan and all
+  section 457 eligible governmental plans maintained by the same employer are treated as
+  one plan"*, so that each group is separately *"limited to the applicable dollar
+  catch-up limit for the taxable year"*. The engine's split between a §457 pool and a
+  qualified pool had been justified from §415(a) and §457(b)(2); this states it directly.
+
   The enacted text of §414 is committed as
   `evidence/retirement-limits/sources/usc-26-414.html` and fixed by `SHA256SUMS.txt`.
   `https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section414&num=0&edition=prelim`
+
+- **26 CFR §1.414(v)-1** — the catch-up regulation, committed as
+  `evidence/retirement-limits/sources/cfr-26-1.414v-1.xml`, the eCFR API serialization at
+  issue date **2026-09-03**, and fixed by `SHA256SUMS.txt`. Retrieved from
+  `https://www.ecfr.gov/api/versioner/v1/full/2026-09-03/title-26.xml?part=1&section=1.414(v)-1`
+  rather than the eCFR web page, which refuses automated requests.
 
 ## Health savings account sources (IRC §223)
 
