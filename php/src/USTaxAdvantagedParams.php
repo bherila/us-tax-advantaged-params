@@ -15521,7 +15521,22 @@ final class Engine
         // where the participant-wide resolution selected the special method there is no
         // IRC 414(v)(7)(A) question to ask about this account's existing component --
         // the amount was not an IRC 414(v)(1) additional elective deferral in the first
-        // place. It is already reported under
+        // place.
+        //
+        // The statute says "to a participant", not "to that plan", and read alone it
+        // would strip the age-based catch-up from every plan of a participant who used
+        // the IRC 457(b)(3) catch-up -- including an unrelated IRC 401(k). It does not.
+        // 26 CFR 1.414(v)-1(a)(3) supplies the scope: "**In the case of an applicable
+        // employer plan that is a section 457 eligible governmental plan**, the catch-up
+        // contributions permitted under this section shall not apply to a catch-up
+        // eligible participant for any taxable year for which a higher limitation
+        // applies to such participant under section 457(b)(3)." 1.414(v)-1(e)(3)
+        // confirms it from the other side: a plan does not fail universal availability
+        // "merely because another applicable employer plan that is a section 457
+        // eligible governmental plan does not provide for catch-up contributions to the
+        // extent set forth in section 414(v)(6)(C)" -- which only has work to do if the
+        // other plans keep theirs. Hence the family test here rather than a
+        // participant-wide one. It is already reported under
         // SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD, which is the right
         // diagnostic; adding the wage one asserted a statutory test that does not reach
         // the year. Returning null here also keeps the account out of the sibling-pool
