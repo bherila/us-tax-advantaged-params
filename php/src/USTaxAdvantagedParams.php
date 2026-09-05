@@ -12673,18 +12673,31 @@ final class Engine
                         continue;
                     }
                     $minimum = (float) $parameters['hdhp']['minimumAnnualDeductible'][$tier === 'family' ? 'family' : 'selfOnly'];
-                    if ((float) $stated >= $minimum - 0.009) {
+                    // Compared at the cent precision every published figure
+                    // carries, not with the tolerance used for accumulated
+                    // float error elsewhere. A stated 999.991 against a 1000
+                    // minimum is not a rounding artefact of this engine's
+                    // arithmetic -- it is what the caller supplied, and
+                    // subtracting 0.009 from the legal boundary would let it
+                    // through to produce a determinate 999.99 ceiling visibly
+                    // below the minimum.
+                    if (self::roundMoney((float) $stated) >= $minimum) {
                         continue;
                     }
                     // Deterministic in both engines and independent of input
-                    // order: the binding requirement is the highest minimum the
-                    // stated figure falls below, and family precedes self-only
-                    // where two minimums tie.
+                    // order. The binding requirement is the highest minimum the
+                    // stated figure falls below; family precedes self-only where
+                    // two minimums tie; and where two statements fail the same
+                    // minimum the lowest stated figure wins, because without
+                    // that last clause reordering one owner's two contradictory
+                    // accounts changed which deductible the message named.
                     $recorded = $subminimumDeductibleByPerson[$personId] ?? null;
                     if (
                         $recorded === null
                         || $minimum > $recorded['minimum']
                         || ($minimum === $recorded['minimum'] && $tier === 'family' && $recorded['tier'] !== 'family')
+                        || ($minimum === $recorded['minimum'] && $tier === $recorded['tier']
+                            && (float) $stated < $recorded['stated'])
                     ) {
                         $subminimumDeductibleByPerson[$personId] = [
                             'stated' => (float) $stated,
@@ -12695,6 +12708,41 @@ final class Engine
                 }
             }
         }
+
+        /*
+         * Whether the figure this check rejected could have reached this owner's
+         * limitation arithmetic: their own contradiction always does, and a
+         * spouse's does when it is a family plan IRC 223(b)(5)(A) draws into the
+         * comparison.
+         *
+         * Read in both passes. The first raises the diagnostic; the second
+         * withholds the limitation detail that was built from the rejected
+         * deductible, because saying in a diagnostic that a figure is not
+         * published as a ceiling while appliedAnnualLimitByMonth still carries
+         * twelve copies of it publishes it anyway.
+         */
+        $subminimumDeductibleReaches = static function (string $personId) use (
+            &$subminimumDeductibleByPerson,
+            &$familySharingApplies,
+            &$couple,
+        ): bool {
+            if (array_key_exists($personId, $subminimumDeductibleByPerson)) {
+                return true;
+            }
+            if ($familySharingApplies !== true) {
+                return false;
+            }
+            foreach ($couple ?? [] as $otherId) {
+                if ($otherId === $personId) {
+                    continue;
+                }
+                $entry = $subminimumDeductibleByPerson[$otherId] ?? null;
+                if ($entry !== null && $entry['tier'] === 'family') {
+                    return true;
+                }
+            }
+            return false;
+        };
 
         /*
          * Stated coverage, projected onto the one question its two readers ask:
@@ -13217,7 +13265,20 @@ final class Engine
             }
             if ($ownSubminimumDeductible !== null || count($spouseSubminimumDeductibles) > 0) {
                 $indeterminate = true;
-                $familyPoolAmountIndeterminate = true;
+                // Only a *family*-tier contradiction reaches the couple's shared
+                // limitation. A self-only one is the stating person's own
+                // problem and must not null the other spouse's IRC 223(b)(5)
+                // limit: Notice 2004-50 Q&A-31 Example (1) leaves the
+                // family-covered spouse contributing the full amount beside a
+                // self-only plan far below the minimum, and whether that spouse
+                // happens to own an HSA of their own cannot change the coverage
+                // rule.
+                if (
+                    ($ownSubminimumDeductible !== null && $ownSubminimumDeductible['tier'] === 'family')
+                    || count($spouseSubminimumDeductibles) > 0
+                ) {
+                    $familyPoolAmountIndeterminate = true;
+                }
                 $clauses = [];
                 if ($ownSubminimumDeductible !== null) {
                     $clauses[] = 'This person stated ' . self::hsaTierLabel($ownSubminimumDeductible['tier'])
@@ -14030,9 +14091,19 @@ final class Engine
             $detail = [
                 'coverageTierByMonth' => $facts[$ownerId]['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
                 'eligibleMonthCount' => $amounts['eligibleMonthCount'],
-                'appliedAnnualLimitByMonth' => $amounts['appliedAnnualLimitByMonth'],
-                'proratedContributionLimit' => $amounts['proratedApplied'],
-                'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
+                // Withheld where the rejected deductible fed them. Coverage
+                // months and the IRC 223(b)(3) amount beside them stay, because
+                // neither is computed from the deductible; only the three
+                // limitation figures are.
+                'appliedAnnualLimitByMonth' => $subminimumDeductibleReaches($ownerId)
+                    ? array_fill(0, self::HSA_MONTHS_IN_YEAR, null)
+                    : $amounts['appliedAnnualLimitByMonth'],
+                'proratedContributionLimit' => $subminimumDeductibleReaches($ownerId)
+                    ? null
+                    : $amounts['proratedApplied'],
+                'contributionLimitWithoutLastMonthRule' => $subminimumDeductibleReaches($ownerId)
+                    ? null
+                    : $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
                 // Null where the division is undeterminable rather than the
                 // placeholder taken from whichever of the owner's accounts was listed

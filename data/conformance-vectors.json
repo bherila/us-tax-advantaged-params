@@ -13599,7 +13599,7 @@
     },
     {
       "name": "2005 an owner's own subminimum self-only deductible is diagnosed on their own account",
-      "description": "The check is not confined to the spouse route. IRC 223(c)(2)(A)(i) requires an annual deductible of at least 1000 for self-only coverage in 2005 (Rev. Proc. 2004-71); the owner states self-only coverage with a deductible of 800, so the assertion that this is a high deductible health plan's deductible is contradicted by the figure itself. Without the check IRC 223(b)(2)(A) would take the lesser of 800 and the 2005 self-only dollar amount of 2650 and report a confident ceiling of 800 derived from a plan that cannot qualify. The tier matters to the message but not to the outcome: each tier is tested against its own minimum.",
+      "description": "The check is not confined to the spouse route. IRC 223(c)(2)(A)(i) requires an annual deductible of at least 1000 for self-only coverage in 2005 (Rev. Proc. 2004-71); the owner states self-only coverage with a deductible of 800, so the assertion that this is a high deductible health plan's deductible is contradicted by the figure itself. Without the check IRC 223(b)(2)(A) would take the lesser of 800 and the 2005 self-only dollar amount of 2650 and report a confident ceiling of 800 derived from a plan that cannot qualify. The tier matters to the message but not to the outcome: each tier is tested against its own minimum. The three limitation fields in the published detail are withheld for the same reason the statutory maximum is: appliedAnnualLimitByMonth, proratedContributionLimit and contributionLimitWithoutLastMonthRule are all built from the rejected deductible, and a diagnostic that says the figure is not published as a ceiling cannot leave twelve copies of it one field away. The coverage months and the IRC 223(b)(3) amount beside them are not computed from the deductible and stay.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "single",
@@ -13626,10 +13626,151 @@
       "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": null,
+        "accounts.0.hsa.proratedContributionLimit": null,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": null,
+        "accounts.0.hsa.eligibleMonthCount": 12
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 a self-only contradiction does not reach the other spouse's IRC 223(b)(5) limitation",
+      "description": "Notice 2004-50 Q&A-31 Example (1) again, with the difference that the self-only spouse now owns an HSA of their own. Whether a person happens to hold an account cannot change a coverage rule, so the answer must not move: IRC 223(b)(5)(A) reaches the lowest annual deductible only among spouses who each have *family* coverage under different plans, so the spouse's self-only 200 plan is not a candidate however far below the 2005 self-only minimum of 1000 it falls. The couple's single family limitation is therefore the lesser of the taxpayer's 5000 family deductible and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), which is 5000, divided equally under IRC 223(b)(5)(B)(ii) to give the taxpayer 2500. The spouse's own account is indeterminate because their own stated facts contradict each other, and that contradiction is theirs alone: propagating it to the household pool would null a limitation the notice states as a positive number.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 200
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 5000,
+        "accounts.0.sharedLimits.1.limit": 5000,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 a deductible below the minimum by less than a cent is still below the minimum",
+      "description": "The comparison is made at the cent precision every published figure carries, not with the tolerance this engine uses for accumulated floating-point error in its own arithmetic. A stated 999.991 is not a rounding artefact of any computation; it is what the caller supplied, and IRC 223(c)(2)(A)(i) requires at least 1000 for self-only coverage in 2005 (Rev. Proc. 2004-71). Subtracting a tolerance from the legal boundary instead would let this value through and publish a determinate ceiling of 999.99, visibly below the minimum the same engine encodes, so the consistency check must round the stated figure to cents and compare against the minimum itself.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 999.991
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.proratedContributionLimit": null,
         "totals.hsaContribution": 0
       },
       "expectDiagnosticCodes": [
         "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 two contradictory family deductibles are both diagnosed as coverage conflict and as subminimum",
+      "description": "One owner's two HSAs state family deductibles of 1000 and 1500. Both are below the 2005 IRC 223(c)(2)(A)(i) family minimum of 2000 (Rev. Proc. 2004-71), and the two statements also disagree with each other, so two independent defects are present and both are reported: coverage is a fact about the person and must be identical on every one of that person's accounts, and neither stated figure can be a family high deductible health plan's deductible. The account is indeterminate on either ground alone. Which of the two figures the subminimum message names is fixed by taking the lowest, so that reordering the accounts cannot change it.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 1500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
       ]
     }
   ]

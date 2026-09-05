@@ -507,10 +507,21 @@ export interface HsaAccountDetail {
    * carries December's amount.
    */
   appliedAnnualLimitByMonth: Array<Money | null>;
-  /** The IRC 223(b)(1) limitation applied, before the IRC 223(b)(3) increase and the IRC 223(b)(5) division. */
-  proratedContributionLimit: Money;
-  /** The same figure computed month by month, without IRC 223(b)(8). */
-  contributionLimitWithoutLastMonthRule: Money;
+  /**
+   * The IRC 223(b)(1) limitation applied, before the IRC 223(b)(3) increase and
+   * the IRC 223(b)(5) division.
+   *
+   * Null, along with the two fields around it, where
+   * HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM fired: those figures are built
+   * from the very deductible that diagnostic rejects, and a contract that says
+   * "these are the IRC 223(b) limitations that were applied" cannot honestly
+   * carry a limitation derived from a plan the caller's own facts say cannot
+   * qualify. Publishing them would reintroduce the ceiling the check exists to
+   * suppress, one field away from the diagnostic denying it.
+   */
+  proratedContributionLimit: Money | null;
+  /** The same figure computed month by month, without IRC 223(b)(8). Null on the same condition. */
+  contributionLimitWithoutLastMonthRule: Money | null;
   /**
    * IRC 223(b)(3) additional contribution amount, prorated over the same
    * months, before any IRC 223(b)(4)(A) Archer MSA reduction. IRC 223(b)(5)(B)
@@ -11847,21 +11858,53 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       for (const tier of HSA_COVERAGE_TIERS) {
         if (!variant.months.some((slot) => slot === tier)) continue;
         const minimum = parameters.hdhp.minimumAnnualDeductible[tier === "family" ? "family" : "selfOnly"];
-        if (stated >= minimum - 0.009) continue;
-        // Deterministic in both engines and independent of input order: the
+        // Compared at the cent precision every published figure carries, not
+        // with the tolerance used for accumulated float error elsewhere. A
+        // stated 999.991 against a 1000 minimum is not a rounding artefact of
+        // this engine's arithmetic -- it is what the caller supplied, and
+        // subtracting 0.009 from the legal boundary would let it through to
+        // produce a determinate 999.99 ceiling visibly below the minimum.
+        if (roundMoney(stated) >= minimum) continue;
+        // Deterministic in both engines and independent of input order. The
         // binding requirement is the highest minimum the stated figure falls
-        // below, and family precedes self-only where two minimums tie.
+        // below; family precedes self-only where two minimums tie; and where
+        // two statements fail the same minimum the lowest stated figure wins,
+        // because without that last clause reordering one owner's two
+        // contradictory accounts changed which deductible the message named.
         const recorded = subminimumDeductibleByPerson.get(personId);
         if (
           recorded === undefined ||
           minimum > recorded.minimum ||
-          (minimum === recorded.minimum && tier === "family" && recorded.tier !== "family")
+          (minimum === recorded.minimum && tier === "family" && recorded.tier !== "family") ||
+          (minimum === recorded.minimum && tier === recorded.tier && stated < recorded.stated)
         ) {
           subminimumDeductibleByPerson.set(personId, { stated, tier, minimum });
         }
       }
     }
   }
+
+  /**
+   * Whether the figure this check rejected could have reached this owner's
+   * limitation arithmetic: their own contradiction always does, and a spouse's
+   * does when it is a family plan IRC 223(b)(5)(A) draws into the comparison.
+   *
+   * Read in both passes. The first raises the diagnostic; the second withholds
+   * the limitation detail that was built from the rejected deductible, because
+   * saying in a diagnostic that a figure is not published as a ceiling while
+   * `appliedAnnualLimitByMonth` still carries twelve copies of it publishes it
+   * anyway.
+   */
+  const subminimumDeductibleReaches = (personId: string): boolean => {
+    if (subminimumDeductibleByPerson.has(personId)) return true;
+    if (!familySharingApplies) return false;
+    for (const otherId of couple ?? []) {
+      if (otherId === personId) continue;
+      const entry = subminimumDeductibleByPerson.get(otherId);
+      if (entry !== undefined && entry.tier === "family") return true;
+    }
+    return false;
+  };
 
   /**
    * Stated coverage, projected onto the one question its two readers ask:
@@ -12308,7 +12351,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }
     if (ownSubminimumDeductible !== undefined || spouseSubminimumDeductibles.length > 0) {
       indeterminate = true;
-      familyPoolAmountIndeterminate = true;
+      // Only a *family*-tier contradiction reaches the couple's shared
+      // limitation. A self-only one is the stating person's own problem and
+      // must not null the other spouse's IRC 223(b)(5) limit: Notice 2004-50
+      // Q&A-31 Example (1) leaves the family-covered spouse contributing the
+      // full amount beside a self-only plan far below the minimum, and whether
+      // that spouse happens to own an HSA of their own cannot change the
+      // coverage rule.
+      if (
+        ownSubminimumDeductible?.tier === "family" ||
+        spouseSubminimumDeductibles.length > 0
+      ) {
+        familyPoolAmountIndeterminate = true;
+      }
       const clauses: string[] = [];
       if (ownSubminimumDeductible !== undefined) {
         clauses.push(
@@ -12972,9 +13027,16 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const detail: HsaAccountDetail = {
       coverageTierByMonth: facts.get(ownerId)!.months ?? HSA_ALL_MONTHS.map(() => null),
       eligibleMonthCount: amounts.eligibleMonthCount,
-      appliedAnnualLimitByMonth: amounts.appliedAnnualLimitByMonth,
-      proratedContributionLimit: amounts.proratedApplied,
-      contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
+      // Withheld where the rejected deductible fed them. Coverage months and
+      // the IRC 223(b)(3) amount beside them stay, because neither is computed
+      // from the deductible; only the three limitation figures are.
+      appliedAnnualLimitByMonth: subminimumDeductibleReaches(ownerId)
+        ? HSA_ALL_MONTHS.map(() => null)
+        : amounts.appliedAnnualLimitByMonth,
+      proratedContributionLimit: subminimumDeductibleReaches(ownerId) ? null : amounts.proratedApplied,
+      contributionLimitWithoutLastMonthRule: subminimumDeductibleReaches(ownerId)
+        ? null
+        : amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
       // Null where the division is undeterminable rather than the placeholder
       // taken from whichever of the owner's accounts was listed first. Reversing
