@@ -102,7 +102,7 @@ for (const dependency of ["@types/node", "typescript", "undici-types"]) {
 if (composer.name !== "bherila/us-tax-advantaged-params") fail("composer.json package name is incorrect");
 if (composer.type !== "library") fail("composer.json type must be library");
 if (composer.license !== "MIT") fail("composer.json license must be MIT");
-if (composer.require?.php !== ">=8.5") fail("composer.json must require PHP >=8.5");
+if (composer.require?.php !== ">=8.4") fail("composer.json must require PHP >=8.4");
 if (!composer.autoload?.classmap?.includes("php/src/USTaxAdvantagedParams.php")) {
   fail("composer.json must classmap-autoload the native PHP implementation");
 }

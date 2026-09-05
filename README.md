@@ -8,7 +8,7 @@
 The repository contains two native implementations with the same behavior:
 
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
-- **PHP 8.5+** for Packagist, in the `USTaxAdvantagedParams` namespace.
+- **PHP 8.4+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
 Annual legal parameters are maintained once in `data/retirement-parameters.json` and `data/hsa-parameters.json`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
@@ -73,7 +73,7 @@ const USTaxAdvantagedParams = require("us-tax-advantaged-params").default;
 composer require bherila/us-tax-advantaged-params
 ```
 
-The PHP package requires PHP 8.5 or later and loads the native single-file implementation through Composer.
+The PHP package requires PHP 8.4 or later and loads the native single-file implementation through Composer.
 
 ## TypeScript builder example
 
