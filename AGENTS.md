@@ -12,7 +12,7 @@ phase-outs, shared-limit allocation, and Roth-conversion tax effects for tax
 years 1975 onward:
 
 - `src/USTaxAdvantagedParams.ts` — native TypeScript engine (npm).
-- `php/src/USTaxAdvantagedParams.php` — native PHP 8.5+ engine
+- `php/src/USTaxAdvantagedParams.php` — native PHP 8.4+ engine
   (Packagist).
 - `data/retirement-parameters.json` — the single source of truth for annual
   legal parameters.
@@ -147,13 +147,24 @@ Two traps, both hit in practice:
   cd evidence/<corpus>/sources && shasum -a 256 -c ../SHA256SUMS.txt
   ```
 
-PHP 8.5+ and Node 22+ are required locally, and are the declared floors:
-`composer.json` requires `php >=8.5` and `package.json` declares
-`engines.node >=22`. CI runs Node 22 and 24 and PHP 8.5 on GitHub-hosted arm64
-runners (`ubuntu-24.04-arm`). `validate:manifests` asserts both floors, so
-raising or lowering one means changing it in `composer.json` /
-`package.json`, in `scripts/validate-manifests.mjs`, in
-`.github/workflows/ci.yml`, and in `README.md` together.
+Node 22+ is required locally and is a declared floor: `package.json` declares
+`engines.node >=22`, CI runs Node 22 and 24, and `validate:manifests` asserts
+the floor — raising or lowering it means changing it in `package.json`, in
+`scripts/validate-manifests.mjs`, in `.github/workflows/ci.yml`, and in
+`README.md` together.
+
+PHP's floor is intentionally split from its CI target. `composer.json` requires
+`php >=8.4` (asserted by `validate:manifests`) so Packagist consumers — including
+toolchains, such as some AI coding agents, that max out at PHP 8.4 — can install
+and run the library, while CI still tests only PHP 8.5 on GitHub-hosted arm64
+runners (`ubuntu-24.04-arm`) since that is the actively maintained target. The
+engine uses no PHP 8.5-only syntax, so this is safe. This is a deliberate
+widening, not an oversight — don't re-tighten `composer.json` back to `>=8.5`
+on the assumption the gap with CI is a mistake (the floor was raised to `>=8.5`
+once before, deliberately, then widened back down for this reason; see git
+history on `composer.json`'s `require.php`). If CI ever needs to prove PHP 8.4
+compatibility directly rather than by absence of 8.5-only syntax, add an `8.4`
+entry to the `php-version` matrix in `.github/workflows/ci.yml`.
 
 `npm run validate:release` — not `npm run verify` — rewrites `VALIDATION.md`,
 `RELEASE_STATUS.md`, and
