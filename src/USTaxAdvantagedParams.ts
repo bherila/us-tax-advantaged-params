@@ -12855,15 +12855,31 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     if (existing <= 0) continue;
     const basePool = context.hsaBasePools.get(account.ownerId);
     const catchUpPool = context.hsaCatchUpPools.get(account.ownerId);
-    if (!basePool || !catchUpPool || basePool.limit === null) continue;
+    if (!basePool || !catchUpPool) continue;
+    const poolKey = context.hsaPlans.get(account.ownerId)?.familyPoolKey;
+    const familyPool = poolKey ? context.hsaFamilyPools.get(poolKey) : undefined;
+    /**
+     * An owner whose own IRC 223(b)(1) limitation is undeterminable has no split
+     * to compute, but the couple's IRC 223(b)(5) ceiling can still be a number:
+     * where only the IRC 223(b)(5)(B)(ii) division is unknown, the pool reports
+     * the limitation. Leaving it unseeded then published a ceiling with none of
+     * it used, so a couple who had already contributed were shown their whole
+     * limitation as though still available.
+     *
+     * The amount that consumes family capacity is at most everything paid in, so
+     * charging the whole of it is the bound that never reports capacity the
+     * statute does not allow -- the same principle as the base-first ordering
+     * below. For an individual with no IRC 223(b)(3) amount to spill into, which
+     * is anyone under 55, it is not a bound but the exact figure.
+     */
+    if (basePool.limit === null) {
+      if (familyPool) familyPool.used = roundMoney(familyPool.used + existing);
+      continue;
+    }
     const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));
     basePool.used = roundMoney(basePool.used + toBase);
     catchUpPool.used = roundMoney(catchUpPool.used + existing - toBase);
-    const poolKey = context.hsaPlans.get(account.ownerId)?.familyPoolKey;
-    if (poolKey) {
-      const familyPool = context.hsaFamilyPools.get(poolKey);
-      if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
-    }
+    if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
   }
 }
 

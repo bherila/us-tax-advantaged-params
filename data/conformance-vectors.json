@@ -13134,6 +13134,85 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
       ]
+    },
+    {
+      "name": "2026 an existing contribution consumes the known family pool though the division is not known",
+      "description": "The IRC 223(b)(5) pool reports the couple's limitation whenever subparagraph (A) fixes it, even where the (B)(ii) division does not. A reported ceiling has to account for what has already been paid in, or it states capacity that is gone. This is the preceding share-conflict vector with 1000 already contributed to the taxpayer's first health savings account. Both spouses state family coverage for all twelve months of 2026, so the limitation is the IRC 223(b)(2)(B) family amount of 8750 as adjusted by Rev. Proc. 2025-19, and 1000 of it is spent: the pool reports limit 8750, usedBeforeAccount 1000 and remainingAfterAccount 7750. Both owners are aged 41 in 2026 and so have no IRC 223(b)(3) additional contribution amount for any part of the 1000 to fall into, which makes 1000 the exact amount of family capacity consumed rather than merely an upper bound on it. The accounts themselves stay indeterminate with null maximums, because how much of the remaining 7750 belongs to each is still the thing the contradictory shares of 0.5 and 0.25 leave unsettled.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          },
+          {
+            "id": "t-hsa-b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.25
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa-a",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 1000,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": 7750,
+        "accounts.2.accountId": "s-hsa",
+        "accounts.2.sharedLimits.1.usedBeforeAccount": 1000,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 7750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE"
+      ]
     }
   ]
 }

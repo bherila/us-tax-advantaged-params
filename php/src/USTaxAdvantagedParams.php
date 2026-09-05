@@ -13934,8 +13934,31 @@ final class Engine
             if (
                 !isset($context['hsaBasePools'][$ownerId])
                 || !isset($context['hsaCatchUpPools'][$ownerId])
-                || $context['hsaBasePools'][$ownerId]['limit'] === null
             ) {
+                continue;
+            }
+            $poolKeyEarly = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
+            /*
+             * An owner whose own IRC 223(b)(1) limitation is undeterminable has no
+             * split to compute, but the couple's IRC 223(b)(5) ceiling can still be
+             * a number: where only the IRC 223(b)(5)(B)(ii) division is unknown, the
+             * pool reports the limitation. Leaving it unseeded then published a
+             * ceiling with none of it used, so a couple who had already contributed
+             * were shown their whole limitation as though still available.
+             *
+             * The amount that consumes family capacity is at most everything paid
+             * in, so charging the whole of it is the bound that never reports
+             * capacity the statute does not allow -- the same principle as the
+             * base-first ordering below. For an individual with no IRC 223(b)(3)
+             * amount to spill into, which is anyone under 55, it is not a bound but
+             * the exact figure.
+             */
+            if ($context['hsaBasePools'][$ownerId]['limit'] === null) {
+                if ($poolKeyEarly !== null && isset($context['hsaFamilyPools'][$poolKeyEarly])) {
+                    $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
+                        (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing,
+                    );
+                }
                 continue;
             }
             $basePool =& $context['hsaBasePools'][$ownerId];
