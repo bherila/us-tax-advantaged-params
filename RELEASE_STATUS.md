@@ -4,7 +4,7 @@
 
 **Local validation:** PASS
 
-The engines encode 1975-2026, include 310 shared conformance vectors, and produce ESM, CommonJS, declaration, and native PHP artifacts.
+The engines encode 1975-2026, include 315 shared conformance vectors, and produce ESM, CommonJS, declaration, and native PHP artifacts.
 
 ### Completed
 
