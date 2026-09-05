@@ -14746,6 +14746,239 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
+    },
+    {
+      "name": "a numeric employerId is rejected rather than coerced by either runtime",
+      "description": "AccountInput.employerId is declared as an optional string, and it selects the prior-year FICA wage figure the IRC 414(v)(7)(A) test reads. A numeric 0 is therefore malformed input, and the two runtimes disagree about what to make of it: PHP's string cast yields the employer key \"0\" and finds wages under it, while JavaScript's falsiness reads the same value as no employer at all. That divergence is not a rounding difference -- it is the difference between a classified Roth catch-up and an indeterminate account, on identical input. The input contract resolves it in the only direction that does not depend on the runtime: an employerId that is present must be a non-empty string, so 0 is rejected with INVALID_EMPLOYER_ID by both engines. This is the same rule booleanFlag already applies to flag fields, and for the reason its comment gives -- coercing would make the answer depend on the runtime rather than on the input. An absent employerId is unaffected: undefined and null both still mean the caller supplied nothing.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "0": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": 0,
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_EMPLOYER_ID"
+      }
+    },
+    {
+      "name": "an empty-string employerId is rejected under the same rule as a numeric one",
+      "description": "The other half of the identifier contract. An empty string is falsy in JavaScript and equal to '' in PHP, so both engines happened to agree in treating it as absent -- but agreeing by coincidence of two different coercions is not the same as a stated rule, and the numeric case shows what happens when the coincidence fails. An explicitly supplied empty employerId is a caller error rather than an assertion that there is no sponsoring employer, and silently reading it as absent would turn a typo into an untested IRC 414(v)(7)(A) classification. One rule covers both: present means a non-empty string, so this is INVALID_EMPLOYER_ID as well.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_EMPLOYER_ID"
+      }
+    },
+    {
+      "name": "a numeric annualAdditionsGroupId is rejected under the same identifier rule",
+      "description": "annualAdditionsGroupId names the IRC 415(c) group an account shares, and PlanRulesInput declares it a string. Unlike employerId it showed no divergence -- both engines stringify a numeric group key to \"0\" and pool the same accounts -- but the contract is stated once rather than per field, so a value that is not a non-empty string is rejected here too. Encoding the rule for only the field that happened to break would leave the input contract describing a coincidence instead of a rule.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0,
+              "annualAdditionsGroupId": 0
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_ANNUAL_ADDITIONS_GROUP_ID"
+      }
+    },
+    {
+      "name": "2026 an account whose base deferral consumed its compensation is not blocked by a sibling",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. Account b is taken first by priority and recognizes exactly $24,500 of plan compensation, so its base deferral consumes all of it and no compensation remains for a catch-up: IRC 414(v)(2)(A) additional elective deferrals are still elective deferrals, which cannot exceed compensation. Its sibling records $3,000 of pre-tax age-based catch-up against wages of $500,000, which IRC 414(v)(7)(A) did not permit, so the sibling is indeterminate on its own facts. The participant-wide IRC 414(v) pool doubt that follows is doubt about capacity, and capacity is not what stops account b -- reconciling the sibling cannot create compensation here, so the answer for b is the same either way. b is therefore determinate, and CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP is absent. Blocking on the nominal plan catch-up limit instead of the room actually available reported b as indeterminate without changing one of its numbers.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 600000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "sib",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "b",
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectAbsentDiagnosticCodes": [
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP",
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
+    },
+    {
+      "name": "2026 a blocked account does not also report that its catch-up was allocated as Roth",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) limit at $24,500, the IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) threshold at $150,000. Account b has $300,000 of plan compensation and room for a catch-up, prior-year wages of $500,000 from its own employer, and a plan permitting Roth catch-up, so IRC 414(v)(7)(A) classifies its catch-up as Roth. Its sibling holds $3,000 of pre-tax age-based catch-up the same provision did not permit, which leaves the participant-wide IRC 414(v)(2)(B) pool unreconciled and stops any further catch-up being allocated. Both statements cannot stand: HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH says the age-based catch-up is allocated as Roth, and the block says none is allocated, and employeeRothCatchUp is 0. The classification is therefore taken with its success diagnostic withheld and the announcement made only once nothing further can withdraw the allocation. The block itself still stands, because here the sibling's reconciliation genuinely could change b's number.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 900000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sib",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "b",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0
+      },
+      "expectDiagnosticCodes": [
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
     }
   ]
 }

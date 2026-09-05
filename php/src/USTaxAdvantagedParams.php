@@ -8626,6 +8626,38 @@ final class Engine
     }
 
     /**
+     * Optional identifier fields must be non-empty strings, for the same reason flag
+     * fields must be actual booleans: JavaScript and PHP disagree about "0", about 0,
+     * and about "", so a coerced identifier makes the answer depend on the runtime
+     * rather than on the input.
+     *
+     * employerId is the one that costs money. It selects the prior-year FICA wage
+     * figure for the IRC 414(v)(7)(A) test, so a value one runtime reads as present
+     * and the other as absent is the difference between a classified catch-up and an
+     * indeterminate account. A numeric 0 did exactly that. Absent stays absent --
+     * a missing key and null both mean the caller supplied nothing -- but anything
+     * else present must be a usable identifier rather than something to be coerced
+     * into one.
+     *
+     * @param array<string,mixed> $container
+     */
+    private static function optionalIdentifier(
+        array $container,
+        string $key,
+        string $path,
+        string $code,
+    ): ?string {
+        if (!array_key_exists($key, $container) || $container[$key] === null) {
+            return null;
+        }
+        $value = $container[$key];
+        if (!is_string($value) || $value === '') {
+            throw new ParameterException($code, "{$path} must be a non-empty string when supplied.");
+        }
+        return $value;
+    }
+
+    /**
      * Flag fields must be actual booleans. JavaScript and PHP disagree about the
      * truthiness of "0" and of an empty array, so coercing one would make the
      * answer depend on the runtime rather than on the input.
@@ -9713,9 +9745,20 @@ final class Engine
             self::requireInputObject($input, 'existingContributions', "accounts[{$index}].existingContributions");
             $planRules = is_array($input['planRules'] ?? null) ? $input['planRules'] : [];
             self::validatePlanRules($planRules, "accounts[{$index}].planRules");
+            $employerId = self::optionalIdentifier(
+                $input,
+                'employerId',
+                "accounts[{$index}].employerId",
+                'INVALID_EMPLOYER_ID',
+            );
             $normalized = $input;
             $normalized['id'] = $id;
             $normalized['ownerId'] = $ownerId;
+            if ($employerId === null) {
+                unset($normalized['employerId']);
+            } else {
+                $normalized['employerId'] = $employerId;
+            }
             $normalized['type'] = self::parseAccountType(
                 $input['type'] ?? null,
                 array_key_exists('type', $input),
@@ -9734,6 +9777,12 @@ final class Engine
     /** @param array<string,mixed> $rules */
     private static function validatePlanRules(array $rules, string $path): void
     {
+        self::optionalIdentifier(
+            $rules,
+            'annualAdditionsGroupId',
+            "{$path}.annualAdditionsGroupId",
+            'INVALID_ANNUAL_ADDITIONS_GROUP_ID',
+        );
         foreach (
             [
                 'planCompensation',
@@ -15208,33 +15257,84 @@ final class Engine
         array $traits,
         array &$diagnostics,
         bool $reportSuccessfulRothAllocation = true,
+        ?float $availableCatchUp = null,
     ): string {
         if (self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics)) {
             return 'unknown';
         }
-        $treatment = self::classifyCatchUpTaxTreatment(
-            $context,
-            $account,
-            $traits,
-            $diagnostics,
-            $reportSuccessfulRothAllocation,
-        );
+        // Classified with its success diagnostic withheld, because both the capacity
+        // gate and the sibling block below can still take the allocation away. An
+        // account must not report both that its catch-up was allocated as Roth and
+        // that no catch-up was allocated.
+        //
+        // This runs whatever room is left. Classification is not only a choice between
+        // Roth and pre-tax for an amount about to be allocated: where the account
+        // carries an existing pre-tax IRC 414(v) catch-up, it is also what adjudicates
+        // that completed contribution, and the prior-year wages stay load-bearing for
+        // it after the room for a new one is gone.
+        $classification = self::classifyCatchUpTaxTreatment($context, $account, $traits, $diagnostics);
+        $treatment = $classification['treatment'];
         // 'unavailable' means the plan offers no Roth catch-up above the threshold, so
-        // this account has no capacity for the pool doubt to reach; a zero catch-up
-        // amount for the year is the same. Everything else -- including a treatment
-        // still unknown for want of this account's own wages -- keeps the block, so a
-        // caller is told about both in one pass rather than finding the second after
-        // fixing the first.
+        // this account has no capacity for the pool doubt to reach. Everything else --
+        // including a treatment still unknown for want of this account's own wages --
+        // keeps the block, so a caller is told about both in one pass rather than
+        // finding the second after fixing the first.
         if ($treatment === 'unavailable') {
             return $treatment;
         }
-        if (self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0) {
+
+        // What remains below is about allocating new catch-up, so neither is asked of
+        // an account with no room to allocate into. $availableCatchUp is the amount
+        // that would be taken if the classification allowed it, already bounded by the
+        // plan limit, the existing components and remaining compensation; null means
+        // the caller established there was some before calling, which is what the two
+        // IRC 457 sites do.
+        //
+        // The nominal plan catch-up limit is not that test. An account whose base
+        // deferral consumed its compensation still has a positive plan limit, and
+        // reporting the sibling-pool doubt against it made the account indeterminate
+        // without changing a number -- reconciling the sibling cannot create
+        // compensation here. The success diagnostic is withheld for the same reason:
+        // it states that the age-based catch-up "is allocated as Roth", which is not
+        // true of an account that allocated none. This is the principle the age
+        // diagnostic already follows, and the one that makes both IRC 457 sites ask
+        // for a treatment only where catch-up room survives.
+        if ($availableCatchUp !== null && $availableCatchUp <= 0.0) {
             return $treatment;
         }
+
         if (self::appendSiblingCatchUpPoolBlockDiagnostic($context, $account, $traits, $diagnostics)) {
             return 'unknown';
         }
+        if ($classification['reportsHighWageRothAllocation'] && $reportSuccessfulRothAllocation) {
+            self::appendHighWageRothCatchUpAllocatedDiagnostic($context, $account, $diagnostics);
+        }
         return $treatment;
+    }
+
+    /**
+     * The IRC 414(v)(7)(A) success diagnostic, emitted only once nothing further can
+     * withdraw the allocation. The sibling-pool block still can, which is why the
+     * classification reports whether it would announce rather than announcing.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendHighWageRothCatchUpAllocatedDiagnostic(
+        array $context,
+        array $account,
+        array &$diagnostics,
+    ): void {
+        $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
+        $diagnostics[] = self::diagnostic(
+            'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
+            DiagnosticSeverity::INFO,
+            'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
+                . ', so the age-based catch-up is allocated as Roth.',
+            "accounts.{$account['id']}",
+            'IRC 414(v)(7)',
+        );
     }
 
     /**
@@ -15248,9 +15348,12 @@ final class Engine
         array $account,
         array $traits,
         array &$diagnostics,
-        bool $reportSuccessfulRothAllocation,
-    ): string {
+    ): array {
         $person = $context['persons'][$account['ownerId']];
+        $settled = static fn (string $treatment): array => [
+            'treatment' => $treatment,
+            'reportsHighWageRothAllocation' => false,
+        ];
         $defaultTreatment = self::accountUsesRothEmployeeContributions($account, $traits) ? 'roth' : 'pretax';
         $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
         if (
@@ -15305,22 +15408,22 @@ final class Engine
                 && (float) ($account['existingContributions']['employeePreTaxCatchUp'] ?? 0.0) === 0.0)
             || self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0
         ) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
         if (!empty($account['planRules']['isSelfEmployedOwner'])) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
         // Tested against absence rather than with empty(), which reads the accepted
         // identifier "0" as missing while the TypeScript engine does not. The two
         // engines returned different diagnostic codes for that input before this.
-        if (($account['employerId'] ?? null) === null || $account['employerId'] === '') {
+        if (($account['employerId'] ?? null) === null) {
             $diagnostics[] = self::diagnostic(
                 'EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST',
                 DiagnosticSeverity::ERROR,
                 'An employerId is required to apply the prior-year FICA-wage test for catch-up contributions.',
                 "accounts.{$account['id']}.employerId",
             );
-            return 'unknown';
+            return $settled('unknown');
         }
         $employerId = (string) $account['employerId'];
         $wages = $person['priorYearFicaWagesByEmployer'][$employerId] ?? null;
@@ -15331,10 +15434,10 @@ final class Engine
                 "Prior-year FICA wages from employer {$employerId} are required to classify catch-up contributions.",
                 "persons.{$person['id']}.priorYearFicaWagesByEmployer.{$employerId}",
             );
-            return 'unknown';
+            return $settled('unknown');
         }
         if ((float) $wages <= (float) $threshold) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
 
         if (!self::accountPermitsRothCatchUp($account, $traits)) {
@@ -15346,19 +15449,9 @@ final class Engine
                 "accounts.{$account['id']}.planRules.permitsRothCatchUp",
                 'IRC 414(v)(7)',
             );
-            return 'unavailable';
+            return $settled('unavailable');
         }
-        if ($reportSuccessfulRothAllocation) {
-            $diagnostics[] = self::diagnostic(
-                'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
-                DiagnosticSeverity::INFO,
-                'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
-                    . ', so the age-based catch-up is allocated as Roth.',
-                "accounts.{$account['id']}",
-                'IRC 414(v)(7)',
-            );
-        }
-        return 'roth';
+        return ['treatment' => 'roth', 'reportsHighWageRothAllocation' => true];
     }
 
     /**
@@ -15435,10 +15528,9 @@ final class Engine
             return null;
         }
         $employerId = $account['employerId'] ?? null;
-        if ($employerId === null || $employerId === '') {
+        if ($employerId === null) {
             return null;
         }
-        $employerId = (string) $employerId;
         $person = $context['persons'][$account['ownerId']];
         $wages = $person['priorYearFicaWagesByEmployer'][$employerId] ?? null;
         if ($wages === null || (float) $wages <= (float) $threshold) {
@@ -15840,7 +15932,18 @@ final class Engine
         if ($hasPlesaPool) {
             $catchUpRefs[] = ['plesaPools', $account['id']];
         }
-        $treatment = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
+        // $desiredCatchUp is passed so the classification is not asked -- and the
+        // sibling-pool doubt not reported -- against room this account does not have.
+        // The two IRC 457 sites reach their own treatment only where room survives,
+        // which is the same gate stated a different way.
+        $treatment = self::catchUpTaxTreatment(
+            $context,
+            $account,
+            $traits,
+            $diagnostics,
+            true,
+            $desiredCatchUp,
+        );
         if ($treatment === 'unknown') {
             self::reportPoolWithoutConsuming($context['catchUpPools'][$ownerId], $sharedLimits);
         } elseif ($treatment !== 'unavailable' && $desiredCatchUp > 0) {

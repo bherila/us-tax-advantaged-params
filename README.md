@@ -829,6 +829,11 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
 - **§415(c) annual additions** apply **per employer**, so unrelated employers carry
   independent limits. Set `annualAdditionsGroupId` on the plan rules to aggregate plans
   of a controlled or affiliated service group under §414(b)/(c)/(m)/(o) and §415(h).
+- **Identifier fields** — `employerId` and `annualAdditionsGroupId` — must be non-empty
+  strings when supplied; `undefined` and `null` both mean absent. A number or an empty
+  string is rejected with `INVALID_EMPLOYER_ID` / `INVALID_ANNUAL_ADDITIONS_GROUP_ID`
+  rather than coerced, because JavaScript and PHP disagree about `0`, `"0"` and `""`,
+  and `employerId` selects the wage figure the §414(v)(7)(A) test reads.
 - **§414(v)(7)(A)** Roth catch-up classification tests prior-year FICA wages from the
   **sponsoring employer**, supplied through `priorYearFicaWages(employerId, amount)`.
   The figure is required only where the test can change the answer. §414(v)(7)(A) does
@@ -877,6 +882,17 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   eligible deferred compensation plan and §457(b)(2) sets its ceiling from
   §457(e)(15), so a §457 account is unaffected by a qualified plan's unreconciled
   amount, and the reverse.
+
+  It also reaches only accounts the doubt can change. An account with no room
+  left for a catch-up — its plan offers none, or its base deferral has already
+  consumed the compensation a §414(v)(2)(A) additional elective deferral would
+  need — is unaffected, because reconciling the sibling cannot create room there.
+  Such an account stays `determinate`, and it does not report
+  `HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH` either: that diagnostic states the
+  catch-up *was* allocated as Roth, which is not true where none was allocated at
+  all. The wages themselves are still asked for wherever the account carries an
+  existing pre-tax catch-up, since that question is about a contribution already
+  made rather than about room for another.
 
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.

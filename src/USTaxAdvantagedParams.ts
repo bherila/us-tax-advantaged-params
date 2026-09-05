@@ -8743,6 +8743,28 @@ function trimmedIdentifier(value: unknown): string | null {
 }
 
 /**
+ * Optional identifier fields must be non-empty strings, for the same reason flag
+ * fields must be actual booleans: JavaScript and PHP disagree about `"0"`, about
+ * `0`, and about `""`, so a coerced identifier makes the answer depend on the
+ * runtime rather than on the input.
+ *
+ * `employerId` is the one that costs money. It selects the prior-year FICA wage
+ * figure for the IRC 414(v)(7)(A) test, so a value one runtime reads as present
+ * and the other as absent is the difference between a classified catch-up and an
+ * indeterminate account. A numeric `0` did exactly that. Absent stays absent --
+ * `undefined` and `null` both mean the caller supplied nothing -- but anything
+ * else present must be a usable identifier rather than something to be coerced
+ * into one.
+ */
+function optionalIdentifier(value: unknown, path: string, code: string): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string" || value === "") {
+    throw new ParameterError(code, `${path} must be a non-empty string when supplied.`);
+  }
+  return value;
+}
+
+/**
  * Flag fields must be actual booleans. JavaScript and PHP disagree about the
  * truthiness of `"0"` and of an empty array, so coercing one would make the
  * answer depend on the runtime rather than on the input.
@@ -9386,10 +9408,16 @@ function normalizeAccounts(
     requireInputObject(input.existingContributions, `accounts[${index}].existingContributions`);
     const planRules = input.planRules ?? {};
     validatePlanRules(planRules, `accounts[${index}].planRules`);
+    const employerId = optionalIdentifier(
+      input.employerId,
+      `accounts[${index}].employerId`,
+      "INVALID_EMPLOYER_ID",
+    );
     return {
       ...input,
       id,
       ownerId,
+      employerId,
       type: parseAccountType(input.type, input.type !== undefined),
       priority: input.priority ?? 100,
       planRules,
@@ -9400,6 +9428,11 @@ function normalizeAccounts(
 }
 
 function validatePlanRules(rules: PlanRulesInput, path: string): void {
+  optionalIdentifier(
+    rules.annualAdditionsGroupId,
+    `${path}.annualAdditionsGroupId`,
+    "INVALID_ANNUAL_ADDITIONS_GROUP_ID",
+  );
   money(rules.planCompensation, `${path}.planCompensation`);
   money(rules.includibleCompensation457, `${path}.includibleCompensation457`);
   money(rules.planDocumentEmployeeDeferralLimit, `${path}.planDocumentEmployeeDeferralLimit`);
@@ -13964,29 +13997,84 @@ function catchUpTaxTreatment(
   traits: AccountTraits,
   diagnostics: Diagnostic[],
   reportSuccessfulRothAllocation = true,
+  availableCatchUp: Money | null = null,
 ): CatchUpTaxTreatment {
   if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
     return "unknown";
   }
-  const treatment = classifyCatchUpTaxTreatment(
-    context,
-    account,
-    traits,
-    diagnostics,
-    reportSuccessfulRothAllocation,
-  );
+  // Classified with its success diagnostic withheld, because both the capacity
+  // gate and the sibling block below can still take the allocation away. An
+  // account must not report both that its catch-up was allocated as Roth and
+  // that no catch-up was allocated.
+  //
+  // This runs whatever room is left. Classification is not only a choice between
+  // Roth and pre-tax for an amount about to be allocated: where the account
+  // carries an existing pre-tax IRC 414(v) catch-up, it is also what adjudicates
+  // that completed contribution, and the prior-year wages stay load-bearing for
+  // it after the room for a new one is gone.
+  const classification = classifyCatchUpTaxTreatment(context, account, traits, diagnostics);
+  const treatment = classification.treatment;
   // "unavailable" means the plan offers no Roth catch-up above the threshold, so
-  // this account has no capacity for the pool doubt to reach; a zero catch-up
-  // amount for the year is the same. Everything else -- including a treatment
-  // still unknown for want of this account's own wages -- keeps the block, so a
-  // caller is told about both in one pass rather than finding the second after
-  // fixing the first.
+  // this account has no capacity for the pool doubt to reach. Everything else --
+  // including a treatment still unknown for want of this account's own wages --
+  // keeps the block, so a caller is told about both in one pass rather than
+  // finding the second after fixing the first.
   if (treatment === "unavailable") return treatment;
-  if (accountPlanCatchUpLimit(context, account, traits) === 0) return treatment;
+
+  // What remains below is about allocating new catch-up, so neither is asked of
+  // an account with no room to allocate into. `availableCatchUp` is the amount
+  // that would be taken if the classification allowed it, already bounded by the
+  // plan limit, the existing components and remaining compensation; `null` means
+  // the caller established there was some before calling, which is what the two
+  // IRC 457 sites do.
+  //
+  // The nominal plan catch-up limit is not that test. An account whose base
+  // deferral consumed its compensation still has a positive plan limit, and
+  // reporting the sibling-pool doubt against it made the account indeterminate
+  // without changing a number -- reconciling the sibling cannot create
+  // compensation here. The success diagnostic is withheld for the same reason:
+  // it states that the age-based catch-up "is allocated as Roth", which is not
+  // true of an account that allocated none. This is the principle the age
+  // diagnostic above already follows, and the one that makes both IRC 457 sites
+  // ask for a treatment only where catch-up room survives.
+  if (availableCatchUp !== null && availableCatchUp <= 0) return treatment;
+
   if (appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, diagnostics)) {
     return "unknown";
   }
+  if (classification.reportsHighWageRothAllocation && reportSuccessfulRothAllocation) {
+    appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
+  }
   return treatment;
+}
+
+/**
+ * The IRC 414(v)(7)(A) classification, and whether taking it would be worth
+ * announcing. The two are separate because the announcement is only correct once
+ * nothing further can withdraw the allocation, and the sibling-pool block still
+ * can.
+ */
+interface CatchUpClassification {
+  treatment: CatchUpTaxTreatment;
+  /** The high-wage path forced Roth treatment and the plan offers it. */
+  reportsHighWageRothAllocation: boolean;
+}
+
+function appendHighWageRothCatchUpAllocatedDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  diagnostics: Diagnostic[],
+): void {
+  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold!;
+  diagnostics.push(
+    diagnostic(
+      "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
+      DiagnosticSeverity.INFO,
+      `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
+      `accounts.${account.id}`,
+      "IRC 414(v)(7)",
+    ),
+  );
 }
 
 function classifyCatchUpTaxTreatment(
@@ -13994,9 +14082,12 @@ function classifyCatchUpTaxTreatment(
   account: NormalizedAccount,
   traits: AccountTraits,
   diagnostics: Diagnostic[],
-  reportSuccessfulRothAllocation: boolean,
-): CatchUpTaxTreatment {
+): CatchUpClassification {
   const person = context.persons.get(account.ownerId)!;
+  const settled = (treatment: CatchUpTaxTreatment): CatchUpClassification => ({
+    treatment,
+    reportsHighWageRothAllocation: false,
+  });
   const defaultTreatment = accountUsesRothEmployeeContributions(account, traits) ? "roth" : "pretax";
   const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
   if (
@@ -14049,10 +14140,10 @@ function classifyCatchUpTaxTreatment(
       account.existingContributions.employeePreTaxCatchUp === 0) ||
     accountPlanCatchUpLimit(context, account, traits) === 0
   ) {
-    return defaultTreatment;
+    return settled(defaultTreatment);
   }
-  if (account.planRules.isSelfEmployedOwner) return defaultTreatment;
-  if (!account.employerId) {
+  if (account.planRules.isSelfEmployedOwner) return settled(defaultTreatment);
+  if (account.employerId === undefined) {
     diagnostics.push(
       diagnostic(
         "EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST",
@@ -14061,7 +14152,7 @@ function classifyCatchUpTaxTreatment(
         `accounts.${account.id}.employerId`,
       ),
     );
-    return "unknown";
+    return settled("unknown");
   }
   const wages = person.priorYearFicaWagesByEmployer[account.employerId];
   if (wages === undefined) {
@@ -14073,9 +14164,9 @@ function classifyCatchUpTaxTreatment(
         `persons.${person.id}.priorYearFicaWagesByEmployer.${account.employerId}`,
       ),
     );
-    return "unknown";
+    return settled("unknown");
   }
-  if (wages <= threshold) return defaultTreatment;
+  if (wages <= threshold) return settled(defaultTreatment);
 
   if (!accountPermitsRothCatchUp(account, traits)) {
     diagnostics.push(
@@ -14087,20 +14178,9 @@ function classifyCatchUpTaxTreatment(
         "IRC 414(v)(7)",
       ),
     );
-    return "unavailable";
+    return settled("unavailable");
   }
-  if (reportSuccessfulRothAllocation) {
-    diagnostics.push(
-      diagnostic(
-        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
-        DiagnosticSeverity.INFO,
-        `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
-        `accounts.${account.id}`,
-        "IRC 414(v)(7)",
-      ),
-    );
-  }
-  return "roth";
+  return { treatment: "roth", reportsHighWageRothAllocation: true };
 }
 
 /**
@@ -14201,7 +14281,7 @@ function highWageInvalidExistingPreTaxCatchUp(
   if (account.planRules.isSelfEmployedOwner) return null;
   if (accountPlanCatchUpLimit(context, account, traits) === 0) return null;
   const employerId = account.employerId;
-  if (employerId === undefined || employerId === null) return null;
+  if (employerId === undefined) return null;
   const person = context.persons.get(account.ownerId)!;
   const wages = person.priorYearFicaWagesByEmployer[employerId];
   if (wages === undefined || wages <= threshold) return null;
@@ -14770,7 +14850,11 @@ function allocateBaseAndCatchUp(
   );
   let catchUpAdded = 0;
   const catchUpPools: LimitPool[] = plesaPool ? [catchUpPool, plesaPool] : [catchUpPool];
-  const treatment = catchUpTaxTreatment(context, account, traits, diagnostics);
+  // `desiredCatchUp` is passed so the classification is not asked -- and the
+  // sibling-pool doubt not reported -- against room this account does not have.
+  // The two IRC 457 sites reach their own treatment only where room survives,
+  // which is the same gate stated a different way.
+  const treatment = catchUpTaxTreatment(context, account, traits, diagnostics, true, desiredCatchUp);
   if (treatment === "unknown") {
     reportPoolWithoutConsuming(catchUpPool, sharedLimits);
   } else if (treatment !== "unavailable" && desiredCatchUp > 0) {

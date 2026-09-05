@@ -207,7 +207,7 @@ function randomPlanRules(type) {
   const rules = {};
   if (chance(0.8)) rules.planCompensation = money();
   if (chance(0.2)) rules.includibleCompensation457 = money();
-  if (chance(0.2)) rules.annualAdditionsGroupId = pick(["g1", "g2"]);
+  if (chance(0.2)) rules.annualAdditionsGroupId = pick(["g1", "g2", "0", 0, ""]);
   if (chance(0.15)) rules.planDocumentEmployeeDeferralLimit = money();
   if (chance(0.15)) rules.planDocumentAnnualAdditionsLimit = money();
   if (chance(0.4)) rules.permitsRothContributions = chance(0.05) ? junk() : chance(0.7);
@@ -374,7 +374,13 @@ function randomScenario() {
     // "0" is an identifier the input contract accepts, and it is in the pool because
     // PHP's empty() reads it as absent while JavaScript truthiness does not. That
     // divergence shipped and this generator did not reach it.
-    if (chance(0.3)) account.employerId = pick(["e1", "e2", "0"]);
+    //
+    // The malformed values sit beside it for the same reason and cost nothing: the
+    // input contract requires a non-empty string, so both engines must reject them
+    // identically rather than each coercing in its own direction. A numeric 0 was
+    // the second divergence here -- PHP read it as the employer "0" and classified
+    // a catch-up, TypeScript read it as absent and returned indeterminate.
+    if (chance(0.3)) account.employerId = pick(["e1", "e2", "0", 0, "", 1, null]);
     if (chance(0.3)) account.priority = integer(1, 200);
     if (chance(0.85)) account.planRules = randomPlanRules(type);
     if (chance(0.4)) account.existingContributions = randomExisting();
