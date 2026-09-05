@@ -13139,7 +13139,7 @@
     },
     {
       "name": "2026 an existing contribution consumes the known family pool though the division is not known",
-      "description": "The IRC 223(b)(5) pool reports the couple's limitation whenever subparagraph (A) fixes it, even where the (B)(ii) division does not. A reported ceiling has to account for what has already been paid in, or it states capacity that is gone. This is the preceding share-conflict vector with 1000 already contributed to the taxpayer's first health savings account. Both spouses state family coverage for all twelve months of 2026, so the limitation is the IRC 223(b)(2)(B) family amount of 8750 as adjusted by Rev. Proc. 2025-19, and 1000 of it is spent: the pool reports limit 8750, usedBeforeAccount 1000 and remainingAfterAccount 7750. Both owners are aged 41 in 2026 and so have no IRC 223(b)(3) additional contribution amount for any part of the 1000 to fall into, which makes 1000 the exact amount of family capacity consumed rather than merely an upper bound on it. The accounts themselves stay indeterminate with null maximums, because how much of the remaining 7750 belongs to each is still the thing the contradictory shares of 0.5 and 0.25 leave unsettled.",
+      "description": "The IRC 223(b)(5) pool reports the couple's limitation whenever subparagraph (A) fixes it, even where the (B)(ii) division does not. A reported ceiling has to account for what has already been paid in, or it states capacity that is gone. This is the preceding share-conflict vector with 1000 already contributed to the taxpayer's first health savings account. Both spouses state family coverage for all twelve months of 2026, so the limitation is the IRC 223(b)(2)(B) family amount of 8750 as adjusted by Rev. Proc. 2025-19, and 1000 of it is spent: the pool reports limit 8750, usedBeforeAccount 1000 and remainingAfterAccount 7750. Both owners are aged 41 in 2026 and so have no IRC 223(b)(3) additional contribution amount for any part of the 1000 to fall into, which makes 1000 the exact amount of family capacity consumed rather than merely an upper bound on it. The accounts themselves stay indeterminate with null maximums, because how much of the remaining 7750 belongs to each is still the thing the contradictory shares of 0.5 and 0.25 leave unsettled. usedByAccount is asserted as a numeric 0 rather than null, which is the paired half of the third-state vectors: here the draw is determinable and the account simply adds nothing further to the pool, so a zero is a computed figure rather than a withheld one. The two assertions together are what keep the determinate and indeterminate states distinguishable in the output.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13207,7 +13207,8 @@
         "accounts.0.sharedLimits.1.remainingAfterAccount": 7750,
         "accounts.2.accountId": "s-hsa",
         "accounts.2.sharedLimits.1.usedBeforeAccount": 1000,
-        "accounts.2.sharedLimits.1.remainingAfterAccount": 7750
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 7750,
+        "accounts.0.sharedLimits.1.usedByAccount": 0
       },
       "expectDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
@@ -13218,7 +13219,7 @@
     },
     {
       "name": "2026 an age-55 contribution above the family limitation draws no assertion of excess",
-      "description": "IRC 223(b)(5)(B) excludes the IRC 223(b)(3) additional contribution amount from the division, and existing contributions consume the paragraph (1) limitation before reaching it. Those two together are why a draw cannot be stated here. This owner was born in 1970 and attains age 56 in 2026, so the IRC 223(b)(3)(B) amount of 1000 -- a fixed statutory figure for 2009 and after -- is known exactly, and the couple's limitation is the 8750 published by Rev. Proc. 2025-19. They have paid in 9750, which is lawful: IRC 223(b)(5)(B)(ii) expressly permits a division of 1 and 0, giving 8750 of limitation plus their own 1000. But the two accounts state shares of 0.5 and 0.25, so the division is unsettled, and how much of the 9750 reached the pool turns on it -- 8750 under a share of 1, 4375 under a share of 0.5, with the balance falling to the additional amount and beyond. The pool therefore reports its limit of 8750 and withholds the draw: usedBeforeAccount and remainingAfterAccount are both null. What matters most is what is absent. SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT must not be reported, because an excess is a statement about the draw and no draw has been established; asserting one from a computed bound accused this compliant taxpayer of an excess contribution in an earlier revision.",
+      "description": "IRC 223(b)(5)(B) excludes the IRC 223(b)(3) additional contribution amount from the division, and existing contributions consume the paragraph (1) limitation before reaching it. Those two together are why a draw cannot be stated here. This owner was born in 1970 and attains age 56 in 2026, so the IRC 223(b)(3)(B) amount of 1000 -- a fixed statutory figure for 2009 and after -- is known exactly, and the couple's limitation is the 8750 published by Rev. Proc. 2025-19. They have paid in 9750, which is lawful: IRC 223(b)(5)(B)(ii) expressly permits a division of 1 and 0, giving 8750 of limitation plus their own 1000. But the two accounts state shares of 0.5 and 0.25, so the division is unsettled, and how much of the 9750 reached the pool turns on it -- 8750 under a share of 1, 4375 under a share of 0.5, with the balance falling to the additional amount and beyond. The pool therefore reports its limit of 8750 and withholds the draw: usedBeforeAccount and remainingAfterAccount are both null. What matters most is what is absent. SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT must not be reported, because an excess is a statement about the draw and no draw has been established; asserting one from a computed bound accused this compliant taxpayer of an excess contribution in an earlier revision. usedByAccount is asserted null alongside usedBeforeAccount: all three usage fields go together, and a regression that restored a numeric zero to any one of them would otherwise pass both native suites and full-output parity unnoticed.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13284,7 +13285,8 @@
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
         "accounts.0.sharedLimits.1.usedBeforeAccount": null,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": null
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.1.usedByAccount": null
       },
       "expectDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
@@ -13295,7 +13297,7 @@
     },
     {
       "name": "2026 an unknown birth year leaves the IRC 223(b)(5) draw unstated rather than guessed",
-      "description": "The couple's IRC 223(b)(5)(A) limitation turns on coverage, not on age, so it survives an absent birth year: both are family-covered for all of 2026 and the pool reports the 8750 published by Rev. Proc. 2025-19. How much of it this owner has already drawn does not survive. A contribution splits between the paragraph (1) limitation the pool measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B) keeps out of the division, and splitting it needs the age that fixes the paragraph (3) amount. With no birth year or birth date the engine reports indeterminate with BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT, and additionalContributionAmount reads 0 as an amount it declines to grant rather than one it has ruled out. Of the 9000 paid in, anywhere between 8000 and 9000 has come out of the family limitation depending on an age nobody stated. So the pool reports its limit and withholds the draw: usedBeforeAccount and remainingAfterAccount are both null, the named usage fields saying nothing rather than a zero the engine never computed and no excess may be asserted, since an excess is a statement about the draw. Both bounds were tried here and both misreported -- the upper one accused a possibly-compliant taxpayer of exceeding 8750, and the lower one is what the companion funding-distribution vector below shows understating a draw. A bound is not a usage.",
+      "description": "The couple's IRC 223(b)(5)(A) limitation turns on coverage, not on age, so it survives an absent birth year: both are family-covered for all of 2026 and the pool reports the 8750 published by Rev. Proc. 2025-19. How much of it this owner has already drawn does not survive. A contribution splits between the paragraph (1) limitation the pool measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B) keeps out of the division, and splitting it needs the age that fixes the paragraph (3) amount. With no birth year or birth date the engine reports indeterminate with BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT, and additionalContributionAmount reads 0 as an amount it declines to grant rather than one it has ruled out. Of the 9000 paid in, anywhere between 8000 and 9000 has come out of the family limitation depending on an age nobody stated. So the pool reports its limit and withholds the draw: usedBeforeAccount and remainingAfterAccount are both null, the named usage fields saying nothing rather than a zero the engine never computed and no excess may be asserted, since an excess is a statement about the draw. Both bounds were tried here and both misreported -- the upper one accused a possibly-compliant taxpayer of exceeding 8750, and the lower one is what the companion funding-distribution vector below shows understating a draw. A bound is not a usage. usedByAccount is asserted null alongside usedBeforeAccount: all three usage fields go together, and a regression that restored a numeric zero to any one of them would otherwise pass both native suites and full-output parity unnoticed.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13334,7 +13336,8 @@
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
         "accounts.0.sharedLimits.1.usedBeforeAccount": null,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": null
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.1.usedByAccount": null
       },
       "expectDiagnosticCodes": [
         "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
@@ -13345,7 +13348,7 @@
     },
     {
       "name": "2026 a qualified HSA funding distribution leaves the IRC 223(b)(5) draw unstated",
-      "description": "The second reason a draw on the pool can be uncomputable, with the first one excluded so it is tested alone. This owner's birth year is stated and they attain age 56, so the IRC 223(b)(3)(B) amount of 1000 is known exactly; what is unknown is the IRC 223(b)(5)(B)(ii) division, because their two accounts state shares of 0.5 and 0.25. The couple's limitation is unaffected by that and the pool reports the 2026 family amount of 8750 from Rev. Proc. 2025-19. But IRC 223(b)(4)(C) reduces the subsection (b) limitation by the 9500 qualified HSA funding distribution, and that reduction comes off the paragraph (1) share first, spilling into the paragraph (3) amount only once the share is exhausted -- so how much of it reaches each turns on the very limitation the unresolved division leaves undeterminable. The 500 already contributed therefore cannot be apportioned between the pool and the individual's own amount, and the pool withholds the draw: usedBeforeAccount and remainingAfterAccount are both null. Reporting a draw of nil instead would have said the couple's whole 8750 was still available when at most 250 of room exists on the most favourable reading, 8750 plus 1000 less 9500. The IRC 223(b)(1) and 223(b)(3) pools report null limits throughout, which is the separate and older statement that this owner's own limitation is undeterminable.",
+      "description": "The second reason a draw on the pool can be uncomputable, with the first one excluded so it is tested alone. This owner's birth year is stated and they attain age 56, so the IRC 223(b)(3)(B) amount of 1000 is known exactly; what is unknown is the IRC 223(b)(5)(B)(ii) division, because their two accounts state shares of 0.5 and 0.25. The couple's limitation is unaffected by that and the pool reports the 2026 family amount of 8750 from Rev. Proc. 2025-19. But IRC 223(b)(4)(C) reduces the subsection (b) limitation by the 9500 qualified HSA funding distribution, and that reduction comes off the paragraph (1) share first, spilling into the paragraph (3) amount only once the share is exhausted -- so how much of it reaches each turns on the very limitation the unresolved division leaves undeterminable. The 500 already contributed therefore cannot be apportioned between the pool and the individual's own amount, and the pool withholds the draw: usedBeforeAccount and remainingAfterAccount are both null. Reporting a draw of nil instead would have said the couple's whole 8750 was still available when at most 250 of room exists on the most favourable reading, 8750 plus 1000 less 9500. The IRC 223(b)(1) and 223(b)(3) pools report null limits throughout, which is the separate and older statement that this owner's own limitation is undeterminable. usedByAccount is asserted null alongside usedBeforeAccount: all three usage fields go together, and a regression that restored a numeric zero to any one of them would otherwise pass both native suites and full-output parity unnoticed.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13411,7 +13414,8 @@
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
         "accounts.0.sharedLimits.1.usedBeforeAccount": null,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": null
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.1.usedByAccount": null
       },
       "expectDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
