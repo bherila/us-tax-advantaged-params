@@ -12994,6 +12994,146 @@
         "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
+    },
+    {
+      "name": "2005 an unstated spouse leaves a family-coverage owner's limitation indeterminate",
+      "description": "IRC 223(b)(5)(A) does two separate things, and only one of them is about self-only months. It treats both spouses as having family coverage for any month in which either has it -- which can only raise a self-only month, and so cannot bite here, where the owner states family coverage for all twelve months. It also treats spouses who each have family coverage under different plans as covered by the plan with the lowest annual deductible, and that reaches this record. For tax year 2005 IRC 223(b)(2) limited each covered month to one twelfth of the lesser of the plan's annual deductible and the statutory family amount of 5250 (Rev. Proc. 2004-71), so the deductible is an operand of the limitation rather than a detail. The owner's own plan gives 5000, the lesser of 5000 and 5250. The spouse's coverage is not stated anywhere: not on an account, and not on persons[].hsaCoverage. An unstated spouse may hold a family plan whose annual deductible is below 5000, in which case subparagraph (A) makes that lower deductible the couple's and the limitation is less than 5000. Nothing in the record excludes that, so 5000 is not a figure this input supports and the result is indeterminate with HSA_SPOUSE_COVERAGE_FACTS_REQUIRED. Reporting 5000 would fail open in the direction that costs a taxpayer the IRC 4973 excise on an excess contribution. Compare the 2026 self-only vector above, where the same diagnostic is reported for the other of the two reasons, and the sibling vector below, where the same input plus persons[].hsaCoverage of {} is determinate.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2005 a spouse stated to hold no coverage leaves that same limitation determinate",
+      "description": "The other half of the decision, and the reason widening the requirement costs a caller one field rather than an answer. This is the preceding vector's input with one addition: the spouse's persons[].hsaCoverage is an empty object, which is this package's documented way to state that a person held no high deductible health plan coverage. That is an assertion, not a gap. With it the IRC 223(b)(5)(A) lowest-deductible comparison has exactly one candidate plan -- the owner's -- because a spouse with no coverage has no family plan to compete, so the couple's deductible is 5000 and the tax year 2005 limitation is one twelfth of the lesser of 5000 and the statutory family amount of 5250 (Rev. Proc. 2004-71) for each of twelve months, which is 5000. HSA_SPOUSE_COVERAGE_FACTS_REQUIRED must be absent. The owner is aged 20 in 2005 so the IRC 223(b)(3) additional contribution amount is nil and the statutory maximum is the 5000 alone. The status is determinate_with_assumptions because the whole family limitation is allocated to the only spouse who owns a health savings account, which HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT reports and which is a statement about the IRC 223(b)(5)(B)(ii) division rather than about the amount. This vector is what makes absence and stated-no-coverage distinguishable in the output; before the requirement was widened both returned 5000 and the input model's distinction had no observable consequence here.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 5000,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5000
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2007 an unstated spouse does not matter once the IRC 223(b)(2) deductible cap is repealed",
+      "description": "The boundary that bounds the widened requirement. Section 303 of the Tax Relief and Health Care Act of 2006 struck the IRC 223(b)(2) comparison with the plan's annual deductible for taxable years beginning after 2006, so from 2007 the monthly limitation is one twelfth of the statutory amount alone. The lowest-deductible sentence of IRC 223(b)(5)(A) still exists, but with no deductible in the arithmetic there is no amount for a lower one to change: an unstated spouse's plan cannot move this figure. The input is the 2005 indeterminate vector's, moved to 2007 and keeping the now-inert annual deductible of 5000 to prove it is inert. The owner states family coverage for all twelve months, so recharacterization -- the other reason the spouse's coverage can matter -- has nothing to raise either. Neither reason applies, so HSA_SPOUSE_COVERAGE_FACTS_REQUIRED must be absent and the limitation is the 2007 statutory family amount of 5650 (Rev. Proc. 2006-53) in full. A widening that reached beyond the capped years 2004 through 2006 would make previously-working inputs error for no statutory reason, and this vector is what catches it.",
+      "input": {
+        "taxYear": 2007,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 5650,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 5650,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 5650
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
     }
   ]
 }

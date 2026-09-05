@@ -11977,11 +11977,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const months = owner.months ?? HSA_ALL_MONTHS.map(() => null);
 
     /**
-     * IRC 223(b)(5)(A) can only lower a self-only month, so the other spouse's
-     * coverage is needed exactly when this owner has one. Without it the answer
-     * is genuinely unknown — self-only for the whole year is $4,400 for 2026,
-     * but a spouse's family coverage makes it a divided family limit instead —
-     * and answering with either number would be a guess.
+     * IRC 223(b)(5)(A) makes the other spouse's coverage matter for two
+     * independent reasons, and the sentence does two separate things:
+     *
+     *   *Recharacterization.* Spouses are treated as having family coverage for
+     *   any month in which either has it, which can only ever *raise* a
+     *   self-only month. So this reason bites exactly when the owner has a
+     *   self-only month. Without the spouse's coverage the answer is genuinely
+     *   unknown — self-only for the whole year is $4,400 for 2026, but a
+     *   spouse's family coverage makes it a divided family limit instead — and
+     *   answering with either number would be a guess.
+     *
+     *   *Lowest deductible.* Spouses who each have family coverage under
+     *   different plans are treated as covered by the plan with the lowest
+     *   annual deductible. That changes an amount only for 2004-2006, when IRC
+     *   223(b)(2) capped each month by the deductible, and it bites on the
+     *   owner's *family* months — where recharacterization has nothing left to
+     *   do. An unstated spouse may hold a family plan whose deductible is lower
+     *   than this owner's, in which case the couple's limitation is lower than
+     *   the figure this owner's own plan produces.
+     *
+     * The second reason is why an owner with family coverage every month is not
+     * safe in a capped year merely because no recharacterization is possible.
+     * Treating an absent spouse as holding no competing family plan would answer
+     * the subparagraph (A) comparison from a fact the caller never supplied, and
+     * would fail open in the direction that costs a taxpayer the IRC 4973 excise.
+     * `persons[].hsaCoverage: {}` already exists as the cheap way to state that
+     * the spouse held no high deductible health plan coverage, so absence and
+     * "no coverage" stay distinguishable rather than being conflated here.
      */
     const marriedFiler =
       context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
@@ -12000,19 +12023,31 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
+    const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
+    const lowestDeductibleCouldLowerAmount =
+      parameters.contributionLimitCappedByHdhpAnnualDeductible &&
+      months.some((tier) => tier === "family");
     if (
       marriedFiler &&
       (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
       !spouseCoverageSupplied &&
-      months.some((tier) => tier === "self_only")
+      (recharacterizationCouldRaiseTier || lowestDeductibleCouldLowerAmount)
     ) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
+      // Name the reason that actually applies. Both can, and a caller told only
+      // about self-only months would go looking for one in a record whose months
+      // are all family months.
+      const reason = recharacterizationCouldRaiseTier
+        ? lowestDeductibleCouldLowerAmount
+          ? `This owner has at least one self-only month, which that treatment can raise to a family month, and at least one family month, whose limitation for tax year ${context.taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under IRC 223(b)(2). The other spouse's coverage changes the answer both ways and is not supplied.`
+          : "This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied."
+        : `IRC 223(b)(5)(A) also treats spouses who each have family coverage under different plans as covered by the plan with the lowest annual deductible, and for tax year ${context.taxYear} IRC 223(b)(2) capped each month's limitation by that deductible. This owner has at least one family month, so an unstated spouse holding a family plan with a lower deductible would lower this limitation, and their coverage is not supplied.`;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
           DiagnosticSeverity.ERROR,
-          "IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied. State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.",
+          `IRC 223(b)(5)(A) treats both spouses as having family coverage for any month in which either of them has it, whether or not that spouse owns a health savings account. ${reason} State it on that spouse's persons[].hsaCoverage — an empty object records that the spouse held no high deductible health plan coverage.`,
           `persons.${ownerId}`,
           "IRC 223(b)(5)(A)",
         ),

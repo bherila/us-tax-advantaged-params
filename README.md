@@ -592,12 +592,31 @@ figure. `sharedFamilyContributionLimit` follows the **amount**, because that is 
 the limitation this owner divides, reported before the share is applied — so a caller
 reconciling contradictory shares can still see the 8750 they are dividing.
 
-Because §223(b)(5)(A) can only ever raise a self-only month to a family month, the spouse's
-coverage is required exactly when it could change the answer. On a married return, an HSA
-owner with at least one self-only month and no stated spousal coverage returns
-`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` rather than a number the input
-cannot support. An owner whose months are all family months is unaffected, since family is
-already the higher tier.
+### When the other spouse's coverage is required
+
+§223(b)(5)(A) does two things, and each makes the other spouse's coverage matter in a
+different case. On a married return, an owner with no stated spousal coverage returns
+`indeterminate` with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` — rather than a number the input
+cannot support — whenever either applies:
+
+| Sentence | Bites when the owner has | Years |
+|---|---|---|
+| Both spouses treated as having family coverage if either does | at least one **self-only** month, which it can raise | all |
+| Spouses with family coverage under different plans take the **lowest** annual deductible | at least one **family** month, whose deductible it can lower | 2004–2006 only |
+
+The first can only ever raise a self-only month to a family month, so an owner whose months
+are all family months is unaffected by it — family is already the higher tier. The second is
+why that owner is still not safe in 2004–2006: §223(b)(2) capped each month by the plan's
+annual deductible in those years, and an unstated spouse may hold a family plan with a lower
+one, which would make the couple's limitation *lower* than the owner's own plan produces.
+Section 303 of the Tax Relief and Health Care Act of 2006 struck that comparison for years
+after 2006, so from 2007 an unstated spouse's deductible cannot move any amount.
+
+Absence is not an assertion. If the spouse genuinely held no HDHP coverage, say so with
+`persons[].hsaCoverage: {}` — the documented way to record exactly that — and the limitation
+stays determinate. The engine will not read silence as "no competing family plan", because
+that would answer the comparison from a fact you never supplied, and in the direction that
+costs a taxpayer the §4973 excise.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
