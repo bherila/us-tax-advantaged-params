@@ -741,8 +741,14 @@ export interface SharedLimitUse {
   id: string;
   legalLimit: string;
   limit: Money | null;
-  usedBeforeAccount: Money;
-  usedByAccount: Money;
+  /**
+   * Null where the pool's ceiling is known but the draw against it is not. The
+   * fields are the named usage, so a consumer that reads them must not be handed
+   * a zero the engine never computed; the null is the third state, not a
+   * sentinel to be reverse-engineered from a missing remainder.
+   */
+  usedBeforeAccount: Money | null;
+  usedByAccount: Money | null;
   remainingAfterAccount: Money | null;
 }
 
@@ -11370,18 +11376,20 @@ interface HsaOwnerPlan {
   /**
    * Whether this owner's draw on the IRC 223(b)(5) pool is exactly computable.
    *
-   * Their contribution splits between the paragraph (1) limitation the pool
-   * measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B)
-   * keeps out of the division. Splitting it needs the age that fixes the
-   * paragraph (3) amount, and needs no IRC 223(b)(4) reduction to be in play,
-   * since those come off the paragraph (1) share first and so turn on the very
-   * limitation that is undeterminable here.
+   * Existing contributions consume the paragraph (1) limitation first and reach
+   * the paragraph (3) additional amount only once it is exhausted. So where any
+   * paragraph (3) amount exists, how much of a contribution lands on the pool
+   * depends on the size of this owner's paragraph (1) share -- which is what the
+   * unresolved IRC 223(b)(5)(B)(ii) division leaves unknown. Knowing the
+   * paragraph (3) amount does not rescue it: 500 paid in against a 1000
+   * additional amount draws wholly on the pool under either candidate share,
+   * while 9750 draws 8750 or 4375 depending on which share is real.
    *
-   * Where both hold the split is arithmetic. Where either fails the draw is
-   * genuinely unknown, and the pool says so rather than publishing a bound:
-   * bounding it upwards accused compliant taxpayers of excess contributions,
-   * and bounding it downwards reported a pool as untouched when a funding
-   * distribution had already consumed nearly all of it.
+   * The draw is therefore exact only when there is no paragraph (3) amount to
+   * absorb anything -- anyone under 55 -- and no IRC 223(b)(4) reduction, those
+   * coming off the paragraph (1) share first and so turning on the same unknown.
+   * Then every dollar paid in came out of the couple's limitation whatever the
+   * division, and the pool can say so.
    */
   familyPoolUsageDeterminable: boolean;
 }
@@ -12845,7 +12853,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       proratedContributionLimit: amounts.proratedApplied,
       contributionLimitWithoutLastMonthRule: amounts.proratedWithoutLastMonthRule,
       additionalContributionAmount: amounts.catchUpApplied,
-      familyLimitShare: share,
+      // Null where the division is undeterminable rather than the placeholder
+      // taken from whichever of the owner's accounts was listed first. Reversing
+      // two contradictory accounts changed this from 0.5 to 0.25 while the
+      // diagnostic said no share could be stated -- an input-order-dependent
+      // number a caller could multiply by the limitation the pool now preserves.
+      // The placeholder stays internal, where the division arithmetic needs a
+      // value it never gets to publish.
+      familyLimitShare: householdDivisionIndeterminate ? null : share,
       // Null where the family limitation could not be determined, for the same
       // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
       // per owner, and reporting the uncompared statutory amount here would
@@ -12878,7 +12893,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
       detail,
       familyPoolKey: isSharingMember ? familyPoolKey : null,
-      familyPoolUsageDeterminable: amounts.ageKnown && archerAmount === 0 && fundingAmount === 0,
+      familyPoolUsageDeterminable:
+        amounts.ageKnown && amounts.catchUpApplied === 0 && archerAmount === 0 && fundingAmount === 0,
     });
   }
 
@@ -12886,10 +12902,6 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   // 223(b)(3) increase, which is the only ordering that never reports capacity
   // the statute does not allow.
   //
-  // IRC 223(b)(3) amount still unspent by this owner's earlier accounts. The
-  // amount is the owner's, not the account's, so two accounts of one owner draw
-  // on one allowance rather than on one each.
-  const catchUpHeadroom = new Map<string, number>();
   for (const account of hsaAccounts) {
     const existing = roundMoney(
       account.existingContributions.hsaDeductible + account.existingContributions.hsaEmployerOrCafeteria,
@@ -12925,13 +12937,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     if (basePool.limit === null) {
       if (familyPool) {
         if (context.hsaPlans.get(account.ownerId)?.familyPoolUsageDeterminable === true) {
-          // The paragraph (3) amount is exact here, so the draw is too: what is
-          // paid in beyond it is what the pool loses.
-          const catchUp = context.hsaPlans.get(account.ownerId)?.detail?.additionalContributionAmount ?? 0;
-          const headroom = catchUpHeadroom.get(account.ownerId) ?? catchUp;
-          const absorbed = minMoney(existing, headroom);
-          catchUpHeadroom.set(account.ownerId, roundMoney(headroom - absorbed));
-          familyPool.used = roundMoney(familyPool.used + existing - absorbed);
+          // Nothing can absorb a spill, so the whole contribution came out of
+          // the couple's limitation whichever way the division falls.
+          familyPool.used = roundMoney(familyPool.used + existing);
         } else {
           familyPool.usageIndeterminate = true;
         }
@@ -13041,8 +13049,10 @@ function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLim
       // The ceiling is still reported where it is known. Only the draw against
       // it is withheld, which is the whole distinction the flag exists to draw.
       limit: pool.limit,
-      usedBeforeAccount: usedBefore,
-      usedByAccount: 0,
+      // A null limit leaves the draw perfectly knowable; only the third state
+      // withholds it.
+      usedBeforeAccount: pool.usageIndeterminate === true ? null : usedBefore,
+      usedByAccount: pool.usageIndeterminate === true ? null : 0,
       remainingAfterAccount: null,
     });
     return 0;
@@ -13065,8 +13075,8 @@ function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUs
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
-    usedBeforeAccount: pool.used,
-    usedByAccount: 0,
+    usedBeforeAccount: pool.usageIndeterminate === true ? null : pool.used,
+    usedByAccount: pool.usageIndeterminate === true ? null : 0,
     remainingAfterAccount: poolRemaining(pool),
   });
 }
@@ -15886,6 +15896,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       // never computed is how a compliant taxpayer came to be accused.
       if (
         shared.limit !== null
+        && shared.usedBeforeAccount !== null
         && shared.remainingAfterAccount !== null
         && shared.usedBeforeAccount > shared.limit + 0.009
       ) {

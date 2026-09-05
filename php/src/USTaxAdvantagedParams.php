@@ -8274,6 +8274,7 @@ final class Engine
                 // accused.
                 if (
                     $shared['limit'] !== null
+                    && $shared['usedBeforeAccount'] !== null
                     && $shared['remainingAfterAccount'] !== null
                     && $shared['usedBeforeAccount'] > $shared['limit'] + 0.009
                 ) {
@@ -13890,7 +13891,13 @@ final class Engine
                 'proratedContributionLimit' => $amounts['proratedApplied'],
                 'contributionLimitWithoutLastMonthRule' => $amounts['proratedWithoutLastMonthRule'],
                 'additionalContributionAmount' => $amounts['catchUpApplied'],
-                'familyLimitShare' => $share,
+                // Null where the division is undeterminable rather than the
+                // placeholder taken from whichever of the owner's accounts was listed
+                // first. Reversing two contradictory accounts changed this from 0.5 to
+                // 0.25 while the diagnostic said no share could be stated -- an
+                // input-order-dependent number a caller could multiply by the
+                // limitation the pool now preserves.
+                'familyLimitShare' => $householdDivisionIndeterminate ? null : $share,
                 // Null where the family limitation could not be determined, for the
                 // same reason the IRC 223(b)(5) pool is: this field *is* that
                 // limitation, seen per owner, and reporting the uncompared statutory
@@ -13932,6 +13939,7 @@ final class Engine
                 'detail' => $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
                 'familyPoolUsageDeterminable' => $amounts['ageKnown']
+                    && (float) $amounts['catchUpApplied'] === 0.0
                     && $archerAmount === 0.0
                     && $fundingAmount === 0.0,
             ];
@@ -13941,10 +13949,6 @@ final class Engine
         // 223(b)(3) increase, which is the only ordering that never reports capacity
         // the statute does not allow.
         //
-        // IRC 223(b)(3) amount still unspent by this owner's earlier accounts. The
-        // amount is the owner's, not the account's, so two accounts of one owner draw
-        // on one allowance rather than on one each.
-        $catchUpHeadroom = [];
         foreach ($hsaAccounts as $account) {
             $existing = self::roundMoney(
                 $account['existingContributions']['hsaDeductible']
@@ -13967,13 +13971,14 @@ final class Engine
              * unknown, and the pool reports it. What it may not do is publish a draw
              * against that ceiling it cannot compute.
              *
-             * The contribution splits between the paragraph (1) limitation the pool
-             * measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B)
-             * keeps out of the division. familyPoolUsageDeterminable says whether that
-             * split is arithmetic here: it needs the age that fixes the paragraph (3)
-             * amount, and needs no IRC 223(b)(4) reduction in play, since those come
-             * off the paragraph (1) share first and so turn on the very limitation
-             * that is undeterminable.
+             * Existing contributions consume the paragraph (1) limitation first and
+             * reach the paragraph (3) additional amount only once it is exhausted, so
+             * wherever a paragraph (3) amount exists the draw turns on the size of
+             * this owner's paragraph (1) share -- the very thing the unresolved IRC
+             * 223(b)(5)(B)(ii) division leaves unknown. familyPoolUsageDeterminable
+             * therefore requires no paragraph (3) amount at all and no IRC 223(b)(4)
+             * reduction, those coming off the paragraph (1) share first and turning on
+             * the same unknown.
              *
              * Both bounds were tried and both misreported. Charging everything paid in
              * accused a 56-year-old who contributed 9750 for 2026 -- 8750 under the
@@ -13987,17 +13992,11 @@ final class Engine
             if ($context['hsaBasePools'][$ownerId]['limit'] === null) {
                 if ($poolKeyEarly !== null && isset($context['hsaFamilyPools'][$poolKeyEarly])) {
                     if (($context['hsaPlans'][$ownerId]['familyPoolUsageDeterminable'] ?? false) === true) {
-                        // The paragraph (3) amount is exact here, so the draw is too:
-                        // what is paid in beyond it is what the pool loses.
-                        if (!array_key_exists($ownerId, $catchUpHeadroom)) {
-                            $catchUpHeadroom[$ownerId] = (float) (
-                                $context['hsaPlans'][$ownerId]['detail']['additionalContributionAmount'] ?? 0
-                            );
-                        }
-                        $absorbed = self::minMoney($existing, $catchUpHeadroom[$ownerId]);
-                        $catchUpHeadroom[$ownerId] = self::roundMoney($catchUpHeadroom[$ownerId] - $absorbed);
+                        // Nothing can absorb a spill, so the whole contribution came
+                        // out of the couple's limitation whichever way the division
+                        // falls.
                         $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
-                            (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing - $absorbed,
+                            (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing,
                         );
                     } else {
                         $context['hsaFamilyPools'][$poolKeyEarly]['usageIndeterminate'] = true;
@@ -14158,8 +14157,10 @@ final class Engine
                 // against it is withheld, which is the whole distinction the flag
                 // exists to draw.
                 'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-                'usedBeforeAccount' => $usedBefore,
-                'usedByAccount' => 0.0,
+                // A null limit leaves the draw perfectly knowable; only the third
+                // state withholds it.
+                'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : $usedBefore,
+                'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
                 'remainingAfterAccount' => null,
             ];
             return 0.0;
@@ -14186,8 +14187,10 @@ final class Engine
             'id' => $pool['id'],
             'legalLimit' => $pool['legalLimit'],
             'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => (float) $pool['used'],
-            'usedByAccount' => 0.0,
+            'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true
+                ? null
+                : (float) $pool['used'],
+            'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
             'remainingAfterAccount' => self::poolRemaining($pool),
         ];
     }

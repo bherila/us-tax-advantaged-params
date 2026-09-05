@@ -571,6 +571,24 @@ one spouse the whole limitation. And where only one spouse owns an HSA, the shar
 be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
 the other spouse has no account to use, and no error applies.
 
+### A known ceiling with an unknown draw
+
+A shared limit can be a number while how much of it is already spent is not. The §223(b)(5) pool is
+where this arises: existing contributions consume the §223(b)(1) limitation before reaching the
+§223(b)(3) additional amount, so once any additional amount exists, how much of a contribution landed
+on the couple's pool depends on the size of that spouse's share — which is exactly what an unresolved
+§223(b)(5)(B)(ii) division leaves unknown. The §223(b)(4) reductions raise the same question, coming
+off the paragraph (1) share first.
+
+In that case the entry reports its `limit` and nulls `usedBeforeAccount`, `usedByAccount` and
+`remainingAfterAccount`, and **no excess is diagnosed against it** — an excess is a statement about the
+draw. The engine does not publish a bound in place of a usage: bounding upwards accused compliant
+taxpayers of excess contributions, and bounding downwards reported a pool as untouched when a
+qualified HSA funding distribution had consumed nearly all of it.
+
+`familyLimitShare` is `null` under the same condition, rather than reporting the share of whichever of
+a spouse's contradictory accounts happened to be listed first.
+
 ### An unknown division does not make the limitation unknown
 
 §223(b)(5) settles two things, and they fail separately. Subparagraph (A) fixes **one family
@@ -813,7 +831,7 @@ ownership, so it is a caller-supplied fact rather than something inferred from t
 | `planTermDependentCapacity` | Potential space that cannot be allocated without additional plan/employer facts |
 | `contributionComponents` | Pretax, Roth, after-tax, employer, IRA, and catch-up components. The statutory source of a catch-up and its tax treatment are independent, so both are recorded: a §457(b)(3) last-three-years catch-up is `special457CatchUp` when pre-tax and `special457RothCatchUp` when made to a designated Roth account — including any PLESA, where §402A(e)(1)(A)(i) makes Roth the only possibility. Both seed the same §457(b)(3) pool when handed back as an existing contribution |
 | `federalTaxEffects` | Federal AGI, taxable-income, W-2 box 1, nondeductible, after-tax/Roth, and conversion effects |
-| `sharedLimits` | Audit trail showing each statutory pool used by the account |
+| `sharedLimits` | Audit trail showing each statutory pool used by the account. Each entry has three states, not two: `limit` is `null` where the statute's ceiling could not be determined, and `usedBeforeAccount` / `usedByAccount` / `remainingAfterAccount` are `null` where the ceiling **is** known but the draw against it is not. Read the usage fields rather than inferring a draw of zero |
 | `diagnostics` | Assumptions, warnings, unavailable rules, and legal references |
 
 `maximumAnnualContributionBasedOnInputs` is a mechanical result, not a contribution recommendation.
