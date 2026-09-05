@@ -13996,11 +13996,14 @@ function catchUpTaxTreatment(
   account: NormalizedAccount,
   traits: AccountTraits,
   diagnostics: Diagnostic[],
-  reportSuccessfulRothAllocation = true,
   availableCatchUp: Money | null = null,
-): CatchUpTaxTreatment {
+): CatchUpClassification {
+  const blocked: CatchUpClassification = {
+    treatment: "unknown",
+    reportsHighWageRothAllocation: false,
+  };
   if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
-    return "unknown";
+    return blocked;
   }
   // Classified with its success diagnostic withheld, because both the capacity
   // gate and the sibling block below can still take the allocation away. An
@@ -14013,13 +14016,12 @@ function catchUpTaxTreatment(
   // that completed contribution, and the prior-year wages stay load-bearing for
   // it after the room for a new one is gone.
   const classification = classifyCatchUpTaxTreatment(context, account, traits, diagnostics);
-  const treatment = classification.treatment;
   // "unavailable" means the plan offers no Roth catch-up above the threshold, so
   // this account has no capacity for the pool doubt to reach. Everything else --
   // including a treatment still unknown for want of this account's own wages --
   // keeps the block, so a caller is told about both in one pass rather than
   // finding the second after fixing the first.
-  if (treatment === "unavailable") return treatment;
+  if (classification.treatment === "unavailable") return classification;
 
   // What remains below is about allocating new catch-up, so neither is asked of
   // an account with no room to allocate into. `availableCatchUp` is the amount
@@ -14032,20 +14034,15 @@ function catchUpTaxTreatment(
   // deferral consumed its compensation still has a positive plan limit, and
   // reporting the sibling-pool doubt against it made the account indeterminate
   // without changing a number -- reconciling the sibling cannot create
-  // compensation here. The success diagnostic is withheld for the same reason:
-  // it states that the age-based catch-up "is allocated as Roth", which is not
-  // true of an account that allocated none. This is the principle the age
-  // diagnostic above already follows, and the one that makes both IRC 457 sites
-  // ask for a treatment only where catch-up room survives.
-  if (availableCatchUp !== null && availableCatchUp <= 0) return treatment;
+  // compensation here. This is the principle the age diagnostic above already
+  // follows, and the one that makes both IRC 457 sites ask for a treatment only
+  // where catch-up room survives.
+  if (availableCatchUp !== null && availableCatchUp <= 0) return classification;
 
   if (appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, diagnostics)) {
-    return "unknown";
+    return blocked;
   }
-  if (classification.reportsHighWageRothAllocation && reportSuccessfulRothAllocation) {
-    appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
-  }
-  return treatment;
+  return classification;
 }
 
 /**
@@ -14278,6 +14275,24 @@ function highWageInvalidExistingPreTaxCatchUp(
   // isSimple trait, which simple401kTraits keeps while deliberately setting the
   // family to qualified_elective.
   if (threshold === null || traits.family === "simple" || traits.isSarsep) return null;
+  // IRC 414(v)(6)(C): "This subsection shall not apply to a participant for any
+  // year for which a higher limitation applies to the participant under section
+  // 457(b)(3)." It disapplies the whole of IRC 414(v), paragraph (7) included, so
+  // where the participant-wide resolution selected the special method there is no
+  // IRC 414(v)(7)(A) question to ask about this account's existing component --
+  // the amount was not an IRC 414(v)(1) additional elective deferral in the first
+  // place. It is already reported under
+  // SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD, which is the right
+  // diagnostic; adding the wage one asserted a statutory test that does not reach
+  // the year. Returning null here also keeps the account out of the sibling-pool
+  // block, because an amount IRC 414(v) never reached cannot have been charged
+  // against an IRC 414(v)(2)(B) limit.
+  if (
+    traits.family === "section457" &&
+    context.section457CatchUpResolutions.get(account.ownerId)?.mode === "special"
+  ) {
+    return null;
+  }
   if (account.planRules.isSelfEmployedOwner) return null;
   if (accountPlanCatchUpLimit(context, account, traits) === 0) return null;
   const employerId = account.employerId;
@@ -14854,11 +14869,21 @@ function allocateBaseAndCatchUp(
   // sibling-pool doubt not reported -- against room this account does not have.
   // The two IRC 457 sites reach their own treatment only where room survives,
   // which is the same gate stated a different way.
-  const treatment = catchUpTaxTreatment(context, account, traits, diagnostics, true, desiredCatchUp);
+  const classification = catchUpTaxTreatment(context, account, traits, diagnostics, desiredCatchUp);
+  const treatment = classification.treatment;
   if (treatment === "unknown") {
     reportPoolWithoutConsuming(catchUpPool, sharedLimits);
   } else if (treatment !== "unavailable" && desiredCatchUp > 0) {
     catchUpAdded = takeAcrossPools(catchUpPools, desiredCatchUp, sharedLimits);
+    // Announced only now. `desiredCatchUp` is bounded by the plan limit, the
+    // existing components and remaining compensation, but not by the owner's
+    // shared IRC 414(v) pool, so it stays positive on an account that another
+    // plan has already exhausted the pool for. Saying the catch-up "is allocated
+    // as Roth" before takeAcrossPools returns is how an account came to report
+    // that alongside an employeeRothCatchUp of zero.
+    if (catchUpAdded > 0 && classification.reportsHighWageRothAllocation) {
+      appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
+    }
     if (treatment === "roth") {
       additional.employeeRothCatchUp = catchUpAdded;
       annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + catchUpAdded);
@@ -15848,7 +15873,7 @@ function allocateSection457(
     resolution.mode === "age" &&
     !existingCatchUpClassificationInvalid &&
     monetaryCatchUpCapacityWithoutClassificationBlock > 0
-      ? catchUpTaxTreatment(context, account, traits, diagnostics, false)
+      ? catchUpTaxTreatment(context, account, traits, diagnostics).treatment
       : null;
   const catchUpCapacityWithoutClassificationBlock =
     ageCatchUpTreatmentBeforeClassificationBlock === "unknown" ||
@@ -15933,7 +15958,8 @@ function allocateSection457(
       );
     }
   } else if (resolution.mode === "age" && catchUpPotential > 0) {
-    const treatment = catchUpTaxTreatment(context, account, traits, diagnostics);
+    const classification = catchUpTaxTreatment(context, account, traits, diagnostics);
+    const treatment = classification.treatment;
     if (treatment === "unknown") {
       reportPoolWithoutConsuming(ageCatchUpPool, sharedLimits);
     } else if (treatment !== "unavailable") {
@@ -15942,6 +15968,9 @@ function allocateSection457(
         catchUpPotential,
         sharedLimits,
       );
+      if (ageAdded > 0 && classification.reportsHighWageRothAllocation) {
+        appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
+      }
       if (treatment === "roth") {
         additional.employeeRothCatchUp = ageAdded;
         annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + ageAdded);

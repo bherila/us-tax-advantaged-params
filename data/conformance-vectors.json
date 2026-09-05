@@ -14979,6 +14979,118 @@
       "expectAbsentDiagnosticCodes": [
         "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
       ]
+    },
+    {
+      "name": "2026 an account the shared IRC 414(v) pool left nothing for reports no Roth allocation",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The IRC 414(v)(2)(B) catch-up limit is the participant's rather than the plan's, so the two 401(k) plans here share one $8,000 amount. Account first is taken first by priority and takes all of it; its prior-year wages of $100,000 are below the threshold, so IRC 414(v)(7)(A) does not reach it and its catch-up is pre-tax. Account second has $300,000 of plan compensation, prior-year wages of $500,000 from its own employer, and a plan permitting a Roth catch-up, so IRC 414(v)(7)(A) does reach it and would force Roth treatment -- but the shared pool it draws from is empty, so it allocates nothing and its employeeRothCatchUp is 0. HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH states that the age-based catch-up is allocated as Roth, which is false of an account that allocated none, so it must be absent from this scenario entirely: first is below the threshold and second allocated nothing. This is ordinary valid exhaustion of the shared limit -- no unreconciled amount is involved and both accounts are determinate -- which is why the diagnostic is emitted after the pool draw returns rather than when the classification is taken. The classification is bounded by the plan limit and by compensation, but not by the pool.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 900000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 100000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "first",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "second",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "first",
+        "accounts.0.status": "determinate",
+        "accounts.1.accountId": "second",
+        "accounts.1.status": "determinate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 0
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
+    },
+    {
+      "name": "2026 the IRC 457(b)(3) special method displaces the IRC 414(v)(7)(A) wage test entirely",
+      "description": "IRC 414(v)(6)(C) reads: 'This subsection shall not apply to a participant for any year for which a higher limitation applies to the participant under section 457(b)(3).' It disapplies the whole of IRC 414(v), so paragraph (7) goes with it. Notice 2025-67 sets the 2026 IRC 457(e)(15) basic annual limitation at $24,500 and the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, so the age-based method is worth $32,500 here. The participant is eligible for the IRC 457(b)(3) last-three-years catch-up with $20,000 of prior-year underutilised limitation, and 26 CFR 1.457-4(c)(3) caps that method at twice the basic annual limitation, giving $44,500 -- the higher limitation, so the special method is the one that applies and IRC 414(v) does not reach this participant for 2026. The account records $1,000 as employeePreTaxCatchUp, an IRC 414(v) component, and prior-year wages of $500,000 exceed the IRC 414(v)(7)(A) threshold. SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD is the correct and sufficient diagnostic: the amount was recorded under a method the participant did not get. EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD must be absent, because it asserts that IRC 414(v)(1) permitted the contribution only as a designated Roth one, and IRC 414(v)(1) did not apply to this participant this year at all. Suppressing it at the shared gate also keeps the amount from blocking the participant's other IRC 457 accounts, since an amount IRC 414(v) never reached was never charged against an IRC 414(v)(2)(B) limit.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "g457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e1",
+            "planRules": {
+              "includibleCompensation457": 300000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 20000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "g457",
+        "accounts.0.statutoryMaximumAnnualContribution": 44500
+      },
+      "expectDiagnosticCodes": [
+        "SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
     }
   ]
 }

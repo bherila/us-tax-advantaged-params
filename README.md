@@ -883,16 +883,29 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   §457(e)(15), so a §457 account is unaffected by a qualified plan's unreconciled
   amount, and the reverse.
 
+  §414(v)(6)(C) takes the whole question away where it applies: *"This subsection
+  shall not apply to a participant for any year for which a higher limitation
+  applies to the participant under section 457(b)(3)."* Subsection means all of
+  §414(v), paragraph (7) included, so on a §457(b) account whose participant-wide
+  resolution selected the special last-three-years method there is no wage test to
+  run and no existing component for it to reject — the amount is reported under
+  `SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD` and nothing else. It is
+  also not charged against a §414(v)(2)(B) limit, so it blocks no sibling.
+
   It also reaches only accounts the doubt can change. An account with no room
   left for a catch-up — its plan offers none, or its base deferral has already
   consumed the compensation a §414(v)(2)(A) additional elective deferral would
   need — is unaffected, because reconciling the sibling cannot create room there.
-  Such an account stays `determinate`, and it does not report
-  `HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH` either: that diagnostic states the
-  catch-up *was* allocated as Roth, which is not true where none was allocated at
-  all. The wages themselves are still asked for wherever the account carries an
-  existing pre-tax catch-up, since that question is about a contribution already
-  made rather than about room for another.
+  Such an account stays `determinate`. The wages themselves are still asked for
+  wherever the account carries an existing pre-tax catch-up, since that question
+  is about a contribution already made rather than about room for another.
+
+  `HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH` is reported only where a catch-up was
+  actually allocated, because that is what it says. The classification is bounded
+  by the plan limit and by compensation but not by the owner's shared §414(v) pool,
+  so an account whose plan leaves room can still draw nothing once another plan has
+  validly taken the year's whole catch-up — and an account that allocated nothing
+  does not announce that its catch-up went in as Roth.
 
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
