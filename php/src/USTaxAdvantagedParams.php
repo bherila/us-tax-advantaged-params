@@ -12933,7 +12933,7 @@ final class Engine
                         . 'the answer and is not supplied.';
                 } else {
                     $reason = 'IRC 223(b)(5)(A) also treats spouses who each have family coverage under different '
-                        . 'plans as covered by the plan with the lowest annual deductible, and for tax year '
+                        . 'plans as having the family coverage with the lowest annual deductible, and for tax year '
                         . "{$taxYear} IRC 223(b)(2) capped each month's limitation by that deductible. This owner "
                         . 'has at least one family month, so an unstated spouse holding a family plan with a lower '
                         . 'deductible would lower this limitation, and their coverage is not supplied.';

@@ -12042,7 +12042,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         ? lowestDeductibleCouldLowerAmount
           ? `This owner has at least one self-only month, which that treatment can raise to a family month, and at least one family month, whose limitation for tax year ${context.taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under IRC 223(b)(2). The other spouse's coverage changes the answer both ways and is not supplied.`
           : "This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied."
-        : `IRC 223(b)(5)(A) also treats spouses who each have family coverage under different plans as covered by the plan with the lowest annual deductible, and for tax year ${context.taxYear} IRC 223(b)(2) capped each month's limitation by that deductible. This owner has at least one family month, so an unstated spouse holding a family plan with a lower deductible would lower this limitation, and their coverage is not supplied.`;
+        : `IRC 223(b)(5)(A) also treats spouses who each have family coverage under different plans as having the family coverage with the lowest annual deductible, and for tax year ${context.taxYear} IRC 223(b)(2) capped each month's limitation by that deductible. This owner has at least one family month, so an unstated spouse holding a family plan with a lower deductible would lower this limitation, and their coverage is not supplied.`;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
