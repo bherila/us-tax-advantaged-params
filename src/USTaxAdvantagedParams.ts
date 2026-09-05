@@ -13946,6 +13946,18 @@ function catchUpTaxTreatment(
   diagnostics: Diagnostic[],
   reportSuccessfulRothAllocation = true,
 ): CatchUpTaxTreatment {
+  // Ahead of every guard below, because this asks a different question from the
+  // rest of the function. Those guards establish that IRC 414(v)(7)(A) cannot
+  // change how a catch-up this engine allocates would be taxed -- which is true
+  // of an account that is already designated Roth and holds no pre-tax catch-up
+  // of its own. It is not true of that account's capacity, because the
+  // IRC 414(v) limit is the participant's: a sibling account's unreconciled
+  // pre-tax amount has already been charged against the same pool, so the
+  // residue is only real if that amount was valid. Consulting this after the
+  // guards let the sibling collect it.
+  if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
+    return "unknown";
+  }
   const person = context.persons.get(account.ownerId)!;
   const defaultTreatment = accountUsesRothEmployeeContributions(account, traits) ? "roth" : "pretax";
   const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
@@ -14027,14 +14039,6 @@ function catchUpTaxTreatment(
   }
   if (wages <= threshold) return defaultTreatment;
 
-  // The wages are known and above the threshold, so an existing pre-tax catch-up
-  // is a contribution IRC 414(v)(7)(A) did not permit. appendHighWageExistingPreTaxCatchUpDiagnostic
-  // carries the reasoning and the wording; returning "unknown" here is what stops
-  // a further catch-up being allocated on top of an unreconciled one.
-  if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
-    return "unknown";
-  }
-
   if (!accountPermitsRothCatchUp(account, traits)) {
     diagnostics.push(
       diagnostic(
@@ -14103,32 +14107,143 @@ function catchUpTaxTreatment(
  * existing amount that fills the pool leaves none. The same shape is why #56 made
  * the IRC 457 classification checks independent of remaining room.
  */
+/**
+ * Which IRC 414(v) catch-up pool an account draws, for the purpose of deciding how
+ * far an unreconciled contribution reaches.
+ *
+ * A qualified plan and an IRC 403(b) share one participant-wide IRC 414(v) pool
+ * here; an eligible deferred compensation plan has its own, because IRC 457(b)(3)
+ * and the IRC 457(e)(15) ceiling stand apart from IRC 402(g)(1). An amount whose
+ * classification is unresolved therefore casts doubt over the pool it was drawn
+ * from and no further: whether a pre-tax catch-up in a IRC 401(k) was permitted
+ * says nothing about the capacity of a governmental IRC 457(b).
+ */
+function catchUpPoolFamily(traits: AccountTraits): "section457" | "qualified" {
+  return traits.family === "section457" ? "section457" : "qualified";
+}
+
+/**
+ * The facts an existing pre-tax IRC 414(v) catch-up needs for IRC 414(v)(7)(A) to
+ * condemn it, or null where the provision does not reach this account.
+ *
+ * Where the participant's prior-year wages from the employer sponsoring the plan
+ * exceed the IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the
+ * additional elective deferrals are designated Roth contributions. A pre-tax
+ * amount already recorded is therefore not an additional elective deferral the
+ * paragraph permits -- and unlike the classification question the wage figure
+ * usually answers, nothing here is missing. The supplied facts say directly that
+ * the contribution was not one IRC 414(v) allows.
+ *
+ * The guards mirror catchUpTaxTreatment's, because the provision reaches the same
+ * accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP plan,
+ * a self-employed owner with no IRC 3121 wages from a sponsoring employer, and a
+ * plan offering no catch-up at all are all outside it.
+ *
+ * The employer identifier is tested against absence rather than falsiness. An
+ * identifier of "0" is one the input contract accepts, and reading it as missing
+ * would make this engine disagree with its twin on an accepted input.
+ */
+function highWageInvalidExistingPreTaxCatchUp(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+): { existing: Money; wages: Money; threshold: Money; employerId: string } | null {
+  const existing = account.existingContributions.employeePreTaxCatchUp;
+  if (existing <= 0) return null;
+  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
+  if (threshold === null || traits.family === "simple" || traits.isSarsep) return null;
+  if (account.planRules.isSelfEmployedOwner) return null;
+  if (accountPlanCatchUpLimit(context, account, traits) === 0) return null;
+  const employerId = account.employerId;
+  if (employerId === undefined || employerId === null) return null;
+  const person = context.persons.get(account.ownerId)!;
+  const wages = person.priorYearFicaWagesByEmployer[employerId];
+  if (wages === undefined || wages <= threshold) return null;
+  return { existing, wages, threshold, employerId };
+}
+
+/**
+ * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+ * prior-year wages say was not permitted, and says whether catch-up allocation is
+ * blocked for this account.
+ *
+ * Retaining such an amount and reporting a determinate result put an exclusion
+ * from gross income into federalTaxEffects that the statute does not allow, which
+ * is a wrong number rather than an absent warning. The component is still carried
+ * for audit, and no further catch-up is allocated until the caller reconciles the
+ * classification: whether the amount counts against the IRC 414(v)(2)(B) limit at
+ * all is exactly what is in doubt, so the room left above it is not something to
+ * state. That is the treatment 26 CFR 1.457-5 already receives here for its own
+ * mutually exclusive methods.
+ *
+ * The amount is not reclassified as Roth. The caller stated a statutory
+ * provenance through the component key, and inventing a different one would
+ * answer a question about a completed contribution that only the caller and the
+ * plan can answer.
+ *
+ * The doubt is pool-wide rather than account-wide, and that is the point of the
+ * second branch. The IRC 414(v) limit is the participant's, not the plan's, and an
+ * unreconciled amount has already been charged against it as though it were a
+ * valid catch-up. A sibling account drawing the same pool would otherwise be
+ * offered the residue -- a $3,000 amount in doubt leaving an apparent $5,000 for
+ * the next account -- which states a remaining capacity that is only correct if
+ * the contribution in doubt was valid. The block does not cross into the other
+ * pool: see catchUpPoolFamily.
+ *
+ * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3) special
+ * catch-ups are each their own provision rather than an IRC 414(v)(1) additional
+ * elective deferral, so IRC 414(v)(7)(A) does not reach them.
+ *
+ * It is called from several places and pushes at most once per account.
+ * catchUpTaxTreatment reaches it on every account whose catch-up it classifies,
+ * which is where the blocking return is consumed; the IRC 457 and pension-linked
+ * emergency savings allocators reach it directly, because each can return before
+ * consulting catchUpTaxTreatment -- the former when no catch-up room survives, the
+ * latter when the IRC 402A(e)(3)(A) balance is not supplied. The same shape is why
+ * #56 made the IRC 457 classification checks independent of remaining room.
+ */
 function appendHighWageExistingPreTaxCatchUpDiagnostic(
   context: CalculationContext,
   account: NormalizedAccount,
   traits: AccountTraits,
   diagnostics: Diagnostic[],
 ): boolean {
-  const existing = account.existingContributions.employeePreTaxCatchUp;
-  if (existing <= 0) return false;
-  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
-  if (threshold === null || traits.family === "simple" || traits.isSarsep) return false;
-  if (account.planRules.isSelfEmployedOwner) return false;
-  if (accountPlanCatchUpLimit(context, account, traits) === 0) return false;
-  if (!account.employerId) return false;
-  const person = context.persons.get(account.ownerId)!;
-  const wages = person.priorYearFicaWagesByEmployer[account.employerId];
-  if (wages === undefined || wages <= threshold) return false;
+  const own = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+  if (own !== null) {
+    const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
+    if (!diagnostics.some((entry) => entry.code === code)) {
+      diagnostics.push(
+        diagnostic(
+          code,
+          DiagnosticSeverity.ERROR,
+          `Existing contributions record $${own.existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${own.employerId} of $${own.wages.toLocaleString()} exceed the $${own.threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
+          `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
+          "IRC 414(v)(7)(A)",
+        ),
+      );
+    }
+    return true;
+  }
 
-  const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
+  const family = catchUpPoolFamily(traits);
+  const blockedBy = [...context.accountsById.values()].find(
+    (other) =>
+      other.id !== account.id &&
+      other.ownerId === account.ownerId &&
+      catchUpPoolFamily(ACCOUNT_TRAITS[other.type]) === family &&
+      highWageInvalidExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
+  );
+  if (blockedBy === undefined) return false;
+
+  const code = "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP";
   if (!diagnostics.some((entry) => entry.code === code)) {
     diagnostics.push(
       diagnostic(
         code,
         DiagnosticSeverity.ERROR,
-        `Existing contributions record $${existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${account.employerId} of $${wages.toLocaleString()} exceed the $${threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
-        `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
-        "IRC 414(v)(7)(A)",
+        `No further catch-up is allocated because account ${blockedBy.id} records a pre-tax age-based catch-up that IRC 414(v)(7)(A) did not permit for this participant. The IRC 414(v) catch-up limit is the participant's rather than the plan's, and that amount has already been charged against it, so the capacity apparently left for this account is only correct if the contribution in doubt was valid. Reconcile the catch-up components on account ${blockedBy.id} before relying on this account's remaining catch-up capacity.`,
+        `accounts.${account.id}`,
+        "IRC 414(v)(7)(A); IRC 414(v)(2)(B)",
       ),
     );
   }
@@ -14875,6 +14990,14 @@ function allocateQualifiedElective(
     // caller did not answer, and would answer it with the one value that yields
     // the largest ceiling the statute allows.
     if (balance == null) {
+      // Reached before the return below for the same reason the IRC 457 host
+      // reaches it: this path never consults catchUpTaxTreatment, so an existing
+      // pre-tax catch-up that IRC 414(v)(7)(A) did not permit would otherwise go
+      // unreported while its component and its pre-tax effect stayed in the
+      // result. The missing balance and the invalid classification are two
+      // separate things the caller has to fix, and naming only one of them sends
+      // them back for the other.
+      appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
       diagnostics.push(
         diagnostic(
           "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",

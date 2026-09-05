@@ -14305,6 +14305,246 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
+    },
+    {
+      "name": "2026 an unreconciled pre-tax catch-up blocks the same participant's other IRC 414(v) plan",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and prior-year FICA wages from the sponsoring employer are $500,000, above the threshold. Account a1 records $3,000 of pre-tax age-based catch-up, which IRC 414(v)(7)(A) did not permit, and account a2 is a second plan of the same participant holding nothing. The IRC 414(v)(2)(B)(i) amount is the participant's rather than each plan's, and the $3,000 has already been charged against it, so a2 appears to have $5,000 left. That residue is real only if the contribution in doubt was valid, which is precisely what is unresolved: if the pre-tax amount was not an additional elective deferral IRC 414(v)(1) permits, the room is the whole $8,000 rather than $5,000. Allocating the apparent $5,000 to a2 therefore stated a figure that depends on the answer to the open question. Both accounts are indeterminate and neither receives a catch-up; a2 names a1 rather than repeating a1's own diagnostic, because the defect is on a1 and the caller has to fix it there.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a1",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "priority": 0,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "a2",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.diagnostics.0.code": "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 an unreconciled IRC 401(k) catch-up does not block the same participant's governmental 457(b)",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and prior-year FICA wages from the sponsoring employer are $500,000, above the threshold. The same unreconciled $3,000 pre-tax catch-up on a IRC 401(k), alongside a designated Roth governmental IRC 457(b) held by the same participant. IRC 415(a) does not reach an eligible deferred compensation plan and IRC 457(b)(2) sets its ceiling from the IRC 457(e)(15) amount rather than IRC 402(g)(1), so the two plans do not share a catch-up limitation: the IRC 457 account's $8,000 does not come out of the pool the IRC 401(k) amount was charged against. The doubt therefore reaches the pool the contribution was drawn from and no further, and the IRC 457 account remains determinate with its full $24,500 + $8,000. This is the control that keeps the block from being read as participant-wide across every plan the participant holds.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "priority": 0,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "g",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 200000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "determinate",
+        "accounts.1.contributionComponents.employeeRothDeferral": 24500,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 8000,
+        "accounts.1.statutoryMaximumAnnualContribution": 32500
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 a PLESA missing its balance still reports an invalid pre-tax catch-up alongside",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and prior-year FICA wages from the sponsoring employer are $500,000, above the threshold. The account is a pension-linked emergency savings account on a IRC 401(k) host with no planRules.pensionLinkedEmergencySavingsParticipantContributionBalance supplied, and existing contributions record $1,000 of pre-tax age-based catch-up. IRC 402A(e)(3)(A) makes the missing balance its own error, and that path returns before the engine classifies any catch-up. The two are independent defects in the supplied facts: the balance is a fact the caller has not stated, while the pre-tax catch-up is a fact they have stated and IRC 414(v)(7)(A) rejects -- and IRC 402A(e)(1)(A)(i) makes the account a designated Roth account for the whole title besides, so a pre-tax contribution to it is doubly out of place. Reporting only the balance error would send the caller back to supply it and then fail them a second time. Both diagnostics are present.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p",
+            "ownerId": "t",
+            "type": "pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {},
+            "existingContributions": {
+              "employeePreTaxCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 1000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD",
+        "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 an employer identifier of \"0\" is a real identifier, not an absent one",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and prior-year FICA wages from the sponsoring employer are $500,000, above the threshold. The employer identifier is the string \"0\", which the input contract accepts: normalization requires a non-empty trimmed string and imposes no other condition, so \"0\" is as valid an identifier as \"e\". The prior-year wages are recorded against it and the account records $8,000 of pre-tax age-based catch-up, so IRC 414(v)(7)(A) rejects that amount exactly as it would under any other identifier. The vector exists because the two engines disagreed here: a PHP empty() test read the accepted \"0\" as absent, so PHP reported determinate with no diagnostic while TypeScript reported indeterminate, and separately PHP emitted EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST where TypeScript asked for the wages. Both engines now test the identifier against absence rather than against falsiness. EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST must be absent, because an identifier was supplied.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "0": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_governmental_457b",
+            "employerId": "0",
+            "planRules": {
+              "includibleCompensation457": 250000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST"
+      ]
+    },
+    {
+      "name": "2026 an employer identifier of \"0\" with no wages asks for the wages, not for the identifier",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and no prior-year FICA wages are supplied. The employer identifier is \"0\" and the account is a pre-tax IRC 401(k), so IRC 414(v)(7)(A) genuinely decides whether the catch-up is pre-tax or must be designated Roth, and the wage figure is required. The identifier is present, so the engine must ask for the wages rather than for the identifier. This is the second half of the \"0\" divergence: PHP's empty() test produced EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST for an identifier that was supplied, while TypeScript produced PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "0",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST"
+      ]
     }
   ]
 }

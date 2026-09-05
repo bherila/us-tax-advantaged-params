@@ -867,6 +867,17 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   marks the figure as unsettled. §457 mutual-exclusivity breaches are handled the
   same way.
 
+  The doubt is pool-wide. The §414(v) limit is the participant's rather than the
+  plan's, so an unreconciled amount has already been charged against a limit the
+  participant's other plans draw on, and a sibling account is not offered the
+  residue — a $3,000 amount in doubt does not leave a real $5,000 for the next
+  account. Those accounts return `indeterminate` with
+  `CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP`, naming
+  the account to fix. It does not reach across pools: §415(a) does not reach an
+  eligible deferred compensation plan and §457(b)(2) sets its ceiling from
+  §457(e)(15), so a §457 account is unaffected by a qualified plan's unreconciled
+  amount, and the reverse.
+
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
 
