@@ -15270,6 +15270,16 @@ final class Engine
         if ((float) $wages <= (float) $threshold) {
             return $defaultTreatment;
         }
+
+        // The wages are known and above the threshold, so an existing pre-tax catch-up
+        // is a contribution IRC 414(v)(7)(A) did not permit.
+        // appendHighWageExistingPreTaxCatchUpDiagnostic carries the reasoning and the
+        // wording; returning 'unknown' here is what stops a further catch-up being
+        // allocated on top of an unreconciled one.
+        if (self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics)) {
+            return 'unknown';
+        }
+
         if (!self::accountPermitsRothCatchUp($account, $traits)) {
             $diagnostics[] = self::diagnostic(
                 'HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT',
@@ -15292,6 +15302,109 @@ final class Engine
             );
         }
         return 'roth';
+    }
+
+    /**
+     * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+     * prior-year wages say was not permitted, and says whether it found one.
+     *
+     * Where those wages from the employer sponsoring the plan exceed the
+     * IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the additional
+     * elective deferrals are designated Roth contributions. A pre-tax amount already
+     * recorded on the account is therefore not an additional elective deferral the
+     * paragraph permits -- and unlike the classification question the wage figure
+     * usually answers, nothing here is missing. The supplied facts say directly that
+     * the contribution was not one IRC 414(v) allows.
+     *
+     * Retaining it and reporting a determinate result put an exclusion from gross
+     * income into federalTaxEffects that the statute does not allow, which is a wrong
+     * number rather than an absent warning. The component is still carried for audit,
+     * and no further catch-up is allocated until the caller reconciles the
+     * classification: whether the amount counts against the IRC 414(v)(2)(B) limit at
+     * all is exactly what is in doubt, so the room left above it is not something to
+     * state. That is the treatment 26 CFR 1.457-5 already receives here for its own
+     * mutually exclusive methods.
+     *
+     * The amount is not reclassified as Roth. The caller stated a statutory
+     * provenance through the component key, and inventing a different one would
+     * answer a question about a completed contribution that only the caller and the
+     * plan can answer.
+     *
+     * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3) special
+     * catch-ups are each their own provision rather than an IRC 414(v)(1) additional
+     * elective deferral, so IRC 414(v)(7)(A) does not reach them.
+     *
+     * The guards mirror catchUpTaxTreatment's, because the provision reaches the same
+     * accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP plan,
+     * a self-employed owner with no IRC 3121 wages from a sponsoring employer, and a
+     * plan offering no catch-up at all are all outside it.
+     *
+     * It is called from two places and pushes at most once. catchUpTaxTreatment
+     * reaches it on every account whose catch-up it classifies, which is where the
+     * blocking behaviour comes from; allocateSection457 reaches it directly because it
+     * consults catchUpTaxTreatment only when catch-up room survives, and an existing
+     * amount that fills the pool leaves none. The same shape is why #56 made the
+     * IRC 457 classification checks independent of remaining room.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendHighWageExistingPreTaxCatchUpDiagnostic(
+        array $context,
+        array $account,
+        array $traits,
+        array &$diagnostics,
+    ): bool {
+        $existing = (float) ($account['existingContributions']['employeePreTaxCatchUp'] ?? 0.0);
+        if ($existing <= 0.0) {
+            return false;
+        }
+        $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
+        if ($threshold === null || $traits['family'] === 'simple' || !empty($traits['isSarsep'])) {
+            return false;
+        }
+        if (!empty($account['planRules']['isSelfEmployedOwner'])) {
+            return false;
+        }
+        if (self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0) {
+            return false;
+        }
+        if (empty($account['employerId'])) {
+            return false;
+        }
+        $employerId = (string) $account['employerId'];
+        $person = $context['persons'][$account['ownerId']];
+        $wages = $person['priorYearFicaWagesByEmployer'][$employerId] ?? null;
+        if ($wages === null || (float) $wages <= (float) $threshold) {
+            return false;
+        }
+
+        $code = 'EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD';
+        $alreadyReported = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === $code) {
+                $alreadyReported = true;
+                break;
+            }
+        }
+        if (!$alreadyReported) {
+            $diagnostics[] = self::diagnostic(
+                $code,
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $' . self::localeNumber($existing)
+                    . " of pre-tax age-based catch-up, but prior-year FICA wages from employer {$employerId} of \$"
+                    . self::localeNumber((float) $wages) . ' exceed the $' . self::localeNumber((float) $threshold)
+                    . ' IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals'
+                    . ' are designated Roth contributions, so a pre-tax amount is not one this participant was'
+                    . ' permitted to make. The amount is reported as supplied and is not reclassified; no further'
+                    . ' catch-up is allocated until the classification is reconciled.',
+                "accounts.{$account['id']}.existingContributions.employeePreTaxCatchUp",
+                'IRC 414(v)(7)(A)',
+            );
+        }
+        return true;
     }
 
     /**
@@ -16387,6 +16500,7 @@ final class Engine
                 "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
                 'IRC 402A(e)(3)(A)',
             );
+            self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
             $existingCatchUpClassificationInvalid = self::appendSection457ExistingCatchUpDiagnostics(
                 $context,
                 $account,
@@ -16567,6 +16681,11 @@ final class Engine
         // nothing. Where one fails the components are kept for audit, the account is
         // reported indeterminate and no further catch-up is allocated — reclassifying a
         // supplied component would answer a question only the caller can answer.
+        // Reached directly rather than through catchUpTaxTreatment: allocateSection457
+        // consults that only where catch-up room survives, and an existing amount
+        // filling the IRC 414(v) pool leaves none. It is pushed before the count below
+        // so it is not misread as an IRC 457 classification error.
+        self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
         $classificationDiagnosticCount = count($diagnostics);
         $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
         $accountExistingSpecialCatchUp = self::roundMoney(

@@ -14027,6 +14027,14 @@ function catchUpTaxTreatment(
   }
   if (wages <= threshold) return defaultTreatment;
 
+  // The wages are known and above the threshold, so an existing pre-tax catch-up
+  // is a contribution IRC 414(v)(7)(A) did not permit. appendHighWageExistingPreTaxCatchUpDiagnostic
+  // carries the reasoning and the wording; returning "unknown" here is what stops
+  // a further catch-up being allocated on top of an unreconciled one.
+  if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
+    return "unknown";
+  }
+
   if (!accountPermitsRothCatchUp(account, traits)) {
     diagnostics.push(
       diagnostic(
@@ -14051,6 +14059,80 @@ function catchUpTaxTreatment(
     );
   }
   return "roth";
+}
+
+/**
+ * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+ * prior-year wages say was not permitted, and says whether it found one.
+ *
+ * Where those wages from the employer sponsoring the plan exceed the
+ * IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the additional
+ * elective deferrals are designated Roth contributions. A pre-tax amount already
+ * recorded on the account is therefore not an additional elective deferral the
+ * paragraph permits -- and unlike the classification question the wage figure
+ * usually answers, nothing here is missing. The supplied facts say directly that
+ * the contribution was not one IRC 414(v) allows.
+ *
+ * Retaining it and reporting a determinate result put an exclusion from gross
+ * income into federalTaxEffects that the statute does not allow, which is a wrong
+ * number rather than an absent warning. The component is still carried for audit,
+ * and no further catch-up is allocated until the caller reconciles the
+ * classification: whether the amount counts against the IRC 414(v)(2)(B) limit at
+ * all is exactly what is in doubt, so the room left above it is not something to
+ * state. That is the treatment 26 CFR 1.457-5 already receives here for its own
+ * mutually exclusive methods.
+ *
+ * The amount is not reclassified as Roth. The caller stated a statutory
+ * provenance through the component key, and inventing a different one would
+ * answer a question about a completed contribution that only the caller and the
+ * plan can answer.
+ *
+ * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3) special
+ * catch-ups are each their own provision rather than an IRC 414(v)(1) additional
+ * elective deferral, so IRC 414(v)(7)(A) does not reach them.
+ *
+ * The guards mirror catchUpTaxTreatment's, because the provision reaches the same
+ * accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP plan,
+ * a self-employed owner with no IRC 3121 wages from a sponsoring employer, and a
+ * plan offering no catch-up at all are all outside it.
+ *
+ * It is called from two places and pushes at most once. catchUpTaxTreatment
+ * reaches it on every account whose catch-up it classifies, which is where the
+ * blocking behaviour comes from; allocateSection457 reaches it directly because
+ * it consults catchUpTaxTreatment only when catch-up room survives, and an
+ * existing amount that fills the pool leaves none. The same shape is why #56 made
+ * the IRC 457 classification checks independent of remaining room.
+ */
+function appendHighWageExistingPreTaxCatchUpDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  diagnostics: Diagnostic[],
+): boolean {
+  const existing = account.existingContributions.employeePreTaxCatchUp;
+  if (existing <= 0) return false;
+  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
+  if (threshold === null || traits.family === "simple" || traits.isSarsep) return false;
+  if (account.planRules.isSelfEmployedOwner) return false;
+  if (accountPlanCatchUpLimit(context, account, traits) === 0) return false;
+  if (!account.employerId) return false;
+  const person = context.persons.get(account.ownerId)!;
+  const wages = person.priorYearFicaWagesByEmployer[account.employerId];
+  if (wages === undefined || wages <= threshold) return false;
+
+  const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
+  if (!diagnostics.some((entry) => entry.code === code)) {
+    diagnostics.push(
+      diagnostic(
+        code,
+        DiagnosticSeverity.ERROR,
+        `Existing contributions record $${existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${account.employerId} of $${wages.toLocaleString()} exceed the $${threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
+        `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
+        "IRC 414(v)(7)(A)",
+      ),
+    );
+  }
+  return true;
 }
 
 /**
@@ -15289,6 +15371,7 @@ function allocateSection457(
         "IRC 402A(e)(3)(A)",
       ),
     );
+    appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
     const existingCatchUpClassificationInvalid = appendSection457ExistingCatchUpDiagnostics(
       context,
       account,
@@ -15449,6 +15532,10 @@ function allocateSection457(
   // nothing. Where one fails the components are kept for audit, the account is
   // reported indeterminate and no further catch-up is allocated — reclassifying a
   // supplied component would answer a question only the caller can answer.
+  // Reached directly rather than through catchUpTaxTreatment: allocateSection457
+  // consults that only where catch-up room survives, and an existing amount
+  // filling the IRC 414(v) pool leaves none.
+  appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
   const existingCatchUpClassificationInvalid = appendSection457ExistingCatchUpDiagnostics(
     context,
     account,

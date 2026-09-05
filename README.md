@@ -853,6 +853,20 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   special catch-ups are separate provisions that §414(v)(7)(A) does not reach, so
   neither is read here.
 
+  Where those wages *are* supplied and exceed the threshold, an existing pre-tax
+  catch-up is not merely unclassified — the supplied facts say it was not a
+  contribution §414(v)(1) permitted, since that paragraph applies "only if" the
+  additional elective deferrals are designated Roth contributions. The account
+  returns `indeterminate` with
+  `EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD`, and no further
+  catch-up is allocated: whether the supplied amount counts against the
+  §414(v)(2)(B) limit at all is what is in doubt, so the room above it is not a
+  figure to state. The component and its tax effect are retained as supplied
+  rather than discarded or recharacterised — the caller stated a statutory
+  provenance through the component key, and the `indeterminate` status is what
+  marks the figure as unsettled. §457 mutual-exclusivity breaches are handled the
+  same way.
+
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
 
