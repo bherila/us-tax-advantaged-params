@@ -636,6 +636,30 @@ stays determinate. The engine will not read silence as "no competing family plan
 that would answer the comparison from a fact you never supplied, and in the direction that
 costs a taxpayer the §4973 excise.
 
+### A deductible below the statutory minimum is inconsistent input
+
+`hdhpAnnualDeductible` is taken as stated, but it is checked for internal consistency. A figure
+below the §223(c)(2)(A)(i) minimum for a tier you also state the person held returns
+`indeterminate` with `HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM`, in **every** year — not
+only the 2004–2006 years where §223(b)(2) read the deductible into the arithmetic.
+
+This is not the engine testing whether your plan is a high deductible health plan; it still
+does not do that, and clearing the minimum proves nothing. The test is one-way: falling below
+the minimum disproves your own claim that the field holds a qualifying plan's deductible.
+
+What the engine deliberately does **not** do is as important:
+
+| It does not | Because |
+|---|---|
+| raise the figure to the minimum | Notice 2004-50 Q&A-31 Example (4) does not treat a subminimum plan as if it met the floor |
+| publish it as a lower ceiling | the same example makes the consequence an *eligibility* one, not a smaller limitation |
+| return `ineligible` | Rev. Rul. 2005-25 makes that turn on whom the plan covers, and no input here carries that fact |
+
+The tier decides reach. A spouse's subminimum **family** plan reaches the HSA owner, because
+§223(b)(5)(A) draws competing family plans into the lowest-deductible comparison. A spouse's
+subminimum **self-only** plan does not — Notice 2004-50 Q&A-31 Example (1) leaves the owner
+contributing the full family amount in exactly that case.
+
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
 

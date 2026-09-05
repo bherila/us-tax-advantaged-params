@@ -11066,6 +11066,9 @@ final class Engine
 
     private const HSA_MONTHS_IN_YEAR = 12;
 
+    /** @var list<string> The IRC 223(c)(2) coverage tiers, in the order the TypeScript engine iterates. */
+    private const HSA_COVERAGE_TIERS = ['self_only', 'family'];
+
     /** IRC 223 parameters for the year, or null when no revenue procedure is encoded.
      *  @param array<string,mixed> $hsaData
      *  @return array<string,mixed>|null
@@ -11091,6 +11094,12 @@ final class Engine
      * so a sub-cent amount such as 0.003 must survive; rounding to two here
      * printed it as 0 while the TypeScript engine printed 0.003.
      */
+    /** The tier as it reads in a diagnostic sentence. */
+    private static function hsaTierLabel(string $tier): string
+    {
+        return $tier === 'family' ? 'family' : 'self-only';
+    }
+
     private static function localeNumber(float $value): string
     {
         $rounded = round($value, 3);
@@ -12620,6 +12629,74 @@ final class Engine
         }
 
         /*
+         * IRC 223(c)(2)(A)(i) sets a minimum annual deductible for each coverage
+         * tier. This engine does not decide whether any plan is a high deductible
+         * health plan; that is the eligibility test the scope boundary excludes
+         * and HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER disclaims. What it can do
+         * without crossing that line is detect that the caller's own assertions
+         * cannot all be true at once. A figure supplied as hdhpAnnualDeductible,
+         * for months the same caller states were covered at a given tier, must
+         * meet that tier's statutory minimum or it is not the thing the field is
+         * declared to hold. The test is one-way: clearing the minimum proves
+         * nothing about the plan, while falling below it disproves the caller's
+         * own claim about the field.
+         *
+         * The consequence is not a lower ceiling. Notice 2004-50 Q&A-31 Example
+         * (4) works a family plan with a $500 deductible against the 2004 family
+         * minimum of $2,000 and concludes that *neither* spouse is an eligible
+         * individual: the subminimum plan is neither ignored for failing the
+         * minimum nor read as a $500 limitation. So the figure must not be
+         * clamped up to the minimum and must not be published as a ceiling.
+         *
+         * Nor may the answer be ineligible. Rev. Rul. 2005-25 holds that a
+         * spouse's non-HDHP family coverage which excludes the HSA owner does not
+         * invoke IRC 223(b)(5) against that owner at all, and HsaCoverageInput
+         * carries no fact about whom a plan covers, so Example (4) and that
+         * ruling are indistinguishable from this input. Inconsistent input,
+         * indeterminate output, which is the boundary a limits-only contract can
+         * defend.
+         *
+         * Stated months are read rather than the IRC 223(b)(5)(A)
+         * recharacterized ones: the question is what plan the caller described,
+         * and a spouse merely *treated as* having family coverage never asserted
+         * a family plan.
+         */
+        $subminimumDeductibleByPerson = [];
+        foreach ($coverageVariantsByPerson as $personId => $variants) {
+            foreach ($variants as $variant) {
+                $stated = $variant['coverage']['hdhpAnnualDeductible'] ?? null;
+                if ($stated === null || $variant['months'] === null) {
+                    continue;
+                }
+                foreach (self::HSA_COVERAGE_TIERS as $tier) {
+                    if (!in_array($tier, $variant['months'], true)) {
+                        continue;
+                    }
+                    $minimum = (float) $parameters['hdhp']['minimumAnnualDeductible'][$tier === 'family' ? 'family' : 'selfOnly'];
+                    if ((float) $stated >= $minimum - 0.009) {
+                        continue;
+                    }
+                    // Deterministic in both engines and independent of input
+                    // order: the binding requirement is the highest minimum the
+                    // stated figure falls below, and family precedes self-only
+                    // where two minimums tie.
+                    $recorded = $subminimumDeductibleByPerson[$personId] ?? null;
+                    if (
+                        $recorded === null
+                        || $minimum > $recorded['minimum']
+                        || ($minimum === $recorded['minimum'] && $tier === 'family' && $recorded['tier'] !== 'family')
+                    ) {
+                        $subminimumDeductibleByPerson[$personId] = [
+                            'stated' => (float) $stated,
+                            'tier' => $tier,
+                            'minimum' => $minimum,
+                        ];
+                    }
+                }
+            }
+        }
+
+        /*
          * Stated coverage, projected onto the one question its two readers ask:
          * does this spouse have family coverage in this month. A month the
          * person's statements answer unanimously survives even when another month
@@ -13103,6 +13180,72 @@ final class Engine
                         . 'after 2006.' . $spouseNote,
                     "persons.{$ownerId}",
                     'IRC 223(b)(2)',
+                );
+            }
+
+            /*
+             * The IRC 223(c)(2)(A)(i) consistency check, reported on this
+             * account.
+             *
+             * The owner's own contradiction always reaches them. A spouse's
+             * reaches them only through a *family* plan, because that is the
+             * only kind IRC 223(b)(5)(A) draws into the comparison: Notice
+             * 2004-50 Q&A-31 Example (1) leaves the HSA owner eligible at the
+             * full family amount where the competing plan is self-only, and
+             * Example (4) makes neither spouse eligible once that competing plan
+             * is family coverage.
+             *
+             * This fires in every year, not only the 2004-2006 years where IRC
+             * 223(b)(2) read the deductible into the arithmetic. The fail-open
+             * is not confined to those years: reporting the full statutory
+             * amount for a taxpayer whose stated plan cannot be a high
+             * deductible health plan is the same wrong answer, arrived at by
+             * ignoring the field instead of by dividing by it.
+             */
+            $ownSubminimumDeductible = $subminimumDeductibleByPerson[$ownerId] ?? null;
+            $spouseSubminimumDeductibles = [];
+            if ($familySharingApplies) {
+                foreach ($couple ?? [] as $personId) {
+                    if ($personId === $ownerId) {
+                        continue;
+                    }
+                    $entry = $subminimumDeductibleByPerson[$personId] ?? null;
+                    if ($entry !== null && $entry['tier'] === 'family') {
+                        $spouseSubminimumDeductibles[] = [$personId, $entry];
+                    }
+                }
+            }
+            if ($ownSubminimumDeductible !== null || count($spouseSubminimumDeductibles) > 0) {
+                $indeterminate = true;
+                $familyPoolAmountIndeterminate = true;
+                $clauses = [];
+                if ($ownSubminimumDeductible !== null) {
+                    $clauses[] = 'This person stated ' . self::hsaTierLabel($ownSubminimumDeductible['tier'])
+                        . ' coverage with an annual deductible of $'
+                        . self::localeNumber($ownSubminimumDeductible['stated'])
+                        . ', below the $' . self::localeNumber($ownSubminimumDeductible['minimum'])
+                        . " IRC 223(c)(2)(A)(i) minimum for that tier in {$context['taxYear']}.";
+                }
+                foreach ($spouseSubminimumDeductibles as [$personId, $entry]) {
+                    $clauses[] = "Spouse {$personId} stated family coverage with an annual deductible of $"
+                        . self::localeNumber($entry['stated'])
+                        . ', below the $' . self::localeNumber($entry['minimum'])
+                        . " IRC 223(c)(2)(A)(i) family minimum for {$context['taxYear']}, and IRC 223(b)(5)(A) "
+                        . "draws that plan into the couple's lowest-deductible comparison.";
+                }
+                $diagnostics[] = self::diagnostic(
+                    'HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM',
+                    DiagnosticSeverity::ERROR,
+                    implode(' ', $clauses)
+                        . ' A plan whose annual deductible is below the statutory minimum is not a high deductible '
+                        . 'health plan, so the supplied facts cannot all be true. This engine does not test high '
+                        . 'deductible health plan status and does not decide eligibility here: the figure is neither '
+                        . 'raised to the minimum nor published as a ceiling, because Notice 2004-50 Q&A-31 Example (4) '
+                        . 'makes a subminimum family plan an eligibility consequence rather than a lower limitation, '
+                        . 'while Rev. Rul. 2005-25 leaves that consequence turning on whom the plan covers, which this '
+                        . 'input does not carry. Correct the deductible or the coverage tier.',
+                    "persons.{$ownerId}",
+                    'IRC 223(c)(2)(A)(i); Notice 2004-50 Q&A-31 Example (4)',
                 );
             }
 

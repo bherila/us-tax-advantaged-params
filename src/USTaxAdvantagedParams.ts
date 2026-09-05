@@ -11432,6 +11432,24 @@ interface HsaPersonCoverage {
   hdhpAnnualDeductible: Money | undefined;
 }
 
+/** The tier as it reads in a diagnostic sentence. */
+function hsaTierLabel(tier: HsaCoverageTier): string {
+  return tier === "family" ? "family" : "self-only";
+}
+
+/**
+ * One person's stated annual deductible that falls below the IRC
+ * 223(c)(2)(A)(i) minimum for a tier that person is stated to hold, with the
+ * minimum it failed. The tier is carried because it decides reach: IRC
+ * 223(b)(5)(A) draws only a *family* plan into the couple's lowest-deductible
+ * comparison, so a subminimum self-only plan is that person's problem alone.
+ */
+interface HsaSubminimumDeductible {
+  stated: Money;
+  tier: HsaCoverageTier;
+  minimum: Money;
+}
+
 function hsaParametersForYear(year: number): HsaYearParameters | null {
   const row = RAW_HSA_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
@@ -11788,6 +11806,60 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       const slots = resolvedCoverageSlotsFor(variants);
       coverageSlotsByPerson.set(personId, slots);
       familyStatusByPerson.set(personId, familyPresenceFor(slots, variants));
+    }
+  }
+
+  /**
+   * IRC 223(c)(2)(A)(i) sets a minimum annual deductible for each coverage
+   * tier. This engine does not decide whether any plan is a high deductible
+   * health plan; that is the eligibility test the scope boundary excludes and
+   * HSA_ELIGIBILITY_FACTS_SUPPLIED_BY_CALLER disclaims. What it can do without
+   * crossing that line is detect that the caller's own assertions cannot all be
+   * true at once. A figure supplied as `hdhpAnnualDeductible`, for months the
+   * same caller states were covered at a given tier, must meet that tier's
+   * statutory minimum or it is not the thing the field is declared to hold.
+   * The test is one-way: clearing the minimum proves nothing about the plan,
+   * while falling below it disproves the caller's own claim about the field.
+   *
+   * The consequence is not a lower ceiling. Notice 2004-50 Q&A-31 Example (4)
+   * works a family plan with a $500 deductible against the 2004 family minimum
+   * of $2,000 and concludes that *neither* spouse is an eligible individual:
+   * the subminimum plan is neither ignored for failing the minimum nor read as
+   * a $500 limitation. So the figure must not be clamped up to the minimum and
+   * must not be published as a ceiling.
+   *
+   * Nor may the answer be `ineligible`. Rev. Rul. 2005-25 holds that a spouse's
+   * non-HDHP family coverage which excludes the HSA owner does not invoke IRC
+   * 223(b)(5) against that owner at all, and `HsaCoverageInput` carries no fact
+   * about whom a plan covers, so Example (4) and that ruling are
+   * indistinguishable from this input. Inconsistent input, indeterminate
+   * output, which is the boundary a limits-only contract can defend.
+   *
+   * Stated months are read rather than the IRC 223(b)(5)(A) recharacterized
+   * ones: the question is what plan the caller described, and a spouse merely
+   * *treated as* having family coverage never asserted a family plan.
+   */
+  const subminimumDeductibleByPerson = new Map<string, HsaSubminimumDeductible>();
+  for (const [personId, variants] of coverageVariantsByPerson) {
+    for (const variant of variants) {
+      const stated = variant.coverage.hdhpAnnualDeductible;
+      if (stated === undefined || stated === null || variant.months === null) continue;
+      for (const tier of HSA_COVERAGE_TIERS) {
+        if (!variant.months.some((slot) => slot === tier)) continue;
+        const minimum = parameters.hdhp.minimumAnnualDeductible[tier === "family" ? "family" : "selfOnly"];
+        if (stated >= minimum - 0.009) continue;
+        // Deterministic in both engines and independent of input order: the
+        // binding requirement is the highest minimum the stated figure falls
+        // below, and family precedes self-only where two minimums tie.
+        const recorded = subminimumDeductibleByPerson.get(personId);
+        if (
+          recorded === undefined ||
+          minimum > recorded.minimum ||
+          (minimum === recorded.minimum && tier === "family" && recorded.tier !== "family")
+        ) {
+          subminimumDeductibleByPerson.set(personId, { stated, tier, minimum });
+        }
+      }
     }
   }
 
@@ -12204,6 +12276,57 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           `For tax year ${context.taxYear} IRC 223(b)(2) limited each month to one twelfth of the lesser of the plan's annual deductible and the statutory amount, so planRules.hsa.hdhpAnnualDeductible is required. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for years after 2006.${spouseNote}`,
           `persons.${ownerId}`,
           "IRC 223(b)(2)",
+        ),
+      );
+    }
+
+    /**
+     * The IRC 223(c)(2)(A)(i) consistency check, reported on this account.
+     *
+     * The owner's own contradiction always reaches them. A spouse's reaches
+     * them only through a *family* plan, because that is the only kind IRC
+     * 223(b)(5)(A) draws into the comparison: Notice 2004-50 Q&A-31 Example (1)
+     * leaves the HSA owner eligible at the full family amount where the
+     * competing plan is self-only, and Example (4) makes neither spouse
+     * eligible once that competing plan is family coverage.
+     *
+     * This fires in every year, not only the 2004-2006 years where IRC
+     * 223(b)(2) read the deductible into the arithmetic. The fail-open is not
+     * confined to those years: reporting the full statutory amount for a
+     * taxpayer whose stated plan cannot be a high deductible health plan is the
+     * same wrong answer, arrived at by ignoring the field instead of by
+     * dividing by it.
+     */
+    const ownSubminimumDeductible = subminimumDeductibleByPerson.get(ownerId);
+    const spouseSubminimumDeductibles: Array<[string, HsaSubminimumDeductible]> = [];
+    if (familySharingApplies) {
+      for (const personId of couple ?? []) {
+        if (personId === ownerId) continue;
+        const entry = subminimumDeductibleByPerson.get(personId);
+        if (entry !== undefined && entry.tier === "family") spouseSubminimumDeductibles.push([personId, entry]);
+      }
+    }
+    if (ownSubminimumDeductible !== undefined || spouseSubminimumDeductibles.length > 0) {
+      indeterminate = true;
+      familyPoolAmountIndeterminate = true;
+      const clauses: string[] = [];
+      if (ownSubminimumDeductible !== undefined) {
+        clauses.push(
+          `This person stated ${hsaTierLabel(ownSubminimumDeductible.tier)} coverage with an annual deductible of $${ownSubminimumDeductible.stated.toLocaleString()}, below the $${ownSubminimumDeductible.minimum.toLocaleString()} IRC 223(c)(2)(A)(i) minimum for that tier in ${context.taxYear}.`,
+        );
+      }
+      for (const [personId, entry] of spouseSubminimumDeductibles) {
+        clauses.push(
+          `Spouse ${personId} stated family coverage with an annual deductible of $${entry.stated.toLocaleString()}, below the $${entry.minimum.toLocaleString()} IRC 223(c)(2)(A)(i) family minimum for ${context.taxYear}, and IRC 223(b)(5)(A) draws that plan into the couple's lowest-deductible comparison.`,
+        );
+      }
+      diagnostics.push(
+        diagnostic(
+          "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM",
+          DiagnosticSeverity.ERROR,
+          `${clauses.join(" ")} A plan whose annual deductible is below the statutory minimum is not a high deductible health plan, so the supplied facts cannot all be true. This engine does not test high deductible health plan status and does not decide eligibility here: the figure is neither raised to the minimum nor published as a ceiling, because Notice 2004-50 Q&A-31 Example (4) makes a subminimum family plan an eligibility consequence rather than a lower limitation, while Rev. Rul. 2005-25 leaves that consequence turning on whom the plan covers, which this input does not carry. Correct the deductible or the coverage tier.`,
+          `persons.${ownerId}`,
+          "IRC 223(c)(2)(A)(i); Notice 2004-50 Q&A-31 Example (4)",
         ),
       );
     }

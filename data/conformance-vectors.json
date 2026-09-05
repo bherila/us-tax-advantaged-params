@@ -2510,7 +2510,7 @@
     },
     {
       "name": "2005 a spouse's family plan sets the deductible only for the months that plan was in force",
-      "description": "IRC 223(b)(2) builds the year out of twelve monthly limitations, each one twelfth of the lesser of the annual deductible and the dollar amount for the coverage in force that month, so the IRC 223(b)(5)(A) lowest-deductible comparison is answered per month and not once for the year. The taxpayer holds family coverage all year with a 5000 deductible; the spouse takes family coverage in December only, with a 1000 deductible. For January through November the taxpayer is the only spouse with a family plan, so each month uses the lesser of 5000 and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), which is 5000. December has two family plans, so it uses the lesser of 1000 and 5250, which is 1000. The year is therefore (11 x 5000 + 1 x 1000) / 12 = 56000 / 12 = 4666.67. Applying the December plan's deductible to months in which the spouse held no family plan at all would understate the limitation by more than 3600, and is what a single whole-year comparison does.",
+      "description": "IRC 223(b)(2) builds the year out of twelve monthly limitations, each one twelfth of the lesser of the annual deductible and the dollar amount for the coverage in force that month, so the IRC 223(b)(5)(A) lowest-deductible comparison is answered per month and not once for the year. The taxpayer holds family coverage all year with a 5000 deductible; the spouse takes family coverage in December only, with a 2400 deductible, which is at or above the 2005 IRC 223(c)(2)(A)(i) family minimum of 2000 (Rev. Proc. 2004-71) and so can be a family high deductible health plan. For January through November the taxpayer is the only spouse with a family plan, so each month uses the lesser of 5000 and the 2005 family dollar amount of 5250, which is 5000. December has two family plans, so it uses the lesser of 2400 and 5250, which is 2400. The year is therefore (11 x 5000 + 1 x 2400) / 12 = 57400 / 12 = 4783.33. Applying the December plan's deductible to months in which the spouse held no family plan at all would understate the limitation by more than 2300, and is what a single whole-year comparison does.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -2529,7 +2529,7 @@
                   "coverage": "family"
                 }
               ],
-              "hdhpAnnualDeductible": 1000
+              "hdhpAnnualDeductible": 2400
             }
           }
         ],
@@ -2550,16 +2550,19 @@
       "expect": {
         "hsaParameters.contributionLimitCappedByHdhpAnnualDeductible": true,
         "accounts.0.status": "determinate_with_assumptions",
-        "accounts.0.statutoryMaximumAnnualContribution": 4666.67,
-        "accounts.0.hsa.proratedContributionLimit": 4666.67,
+        "accounts.0.statutoryMaximumAnnualContribution": 4783.33,
+        "accounts.0.hsa.proratedContributionLimit": 4783.33,
         "accounts.0.hsa.appliedAnnualLimitByMonth.0": 5000,
         "accounts.0.hsa.appliedAnnualLimitByMonth.10": 5000,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 1000,
-        "accounts.0.hsa.sharedFamilyContributionLimit": 4666.67,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 2400,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 4783.33,
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
-        "accounts.0.sharedLimits.1.limit": 4666.67,
-        "totals.hsaContribution": 4666.67
-      }
+        "accounts.0.sharedLimits.1.limit": 4783.33,
+        "totals.hsaContribution": 4783.33
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
     },
     {
       "name": "2005 an omitted annual deductible and an explicit null are the same fact",
@@ -13422,6 +13425,211 @@
       ],
       "expectAbsentDiagnosticCodes": [
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2005 a spouse's family deductible below the IRC 223(c)(2) minimum is inconsistent input, not a lower ceiling",
+      "description": "IRC 223(c)(2)(A)(i) requires a family high deductible health plan to carry an annual deductible of at least 2000 for 2005 (Rev. Proc. 2004-71). The spouse is stated to hold family coverage with a deductible of 1500, so the two assertions cannot both be true: a plan at 1500 is not a family high deductible health plan, and the field supplied is declared to hold one. Notice 2004-50 Q&A-31 Example (4) fixes the consequence: family coverage with a 500 deductible alongside a 5000 family HDHP leaves neither spouse an eligible individual, so a subminimum family plan is neither ignored for failing the minimum nor read as a positive limitation of its own deductible. The engine therefore must not report 1500 as the IRC 223(b)(5)(A) lowest deductible and must not raise it to 2000. It also must not answer ineligible, because Rev. Rul. 2005-25 holds that a spouse's non-HDHP family coverage which excludes the HSA owner does not invoke IRC 223(b)(5) against that owner at all, and no input here states whom the spouse's plan covers. Inconsistent input, indeterminate output, with the shared family limitation unstated for the same reason.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "hdhpAnnualDeductible": 1500
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 a spouse's subminimum self-only plan leaves the HSA owner's family limitation determinate",
+      "description": "Notice 2004-50 Q&A-31 Example (1) worked exactly this shape: H holds family HDHP coverage with a 5000 deductible and W holds self-only coverage with a 200 deductible, and the notice concludes that H may contribute 5000 while W may not contribute at all. The reason is that IRC 223(b)(5)(A) reaches the lowest annual deductible only where the spouses each have *family* coverage under different plans; a self-only plan is never a candidate, so its deductible cannot lower the couple's limitation however far below the IRC 223(c)(2)(A)(i) self-only minimum of 1000 for 2005 it falls. The spouse's own inconsistency is theirs alone and does not reach this account, which is why the consistency diagnostic is absent here and present in the family-tier vector. IRC 223(b)(2)(B) then takes the lesser of the 5000 family deductible and the 2005 family dollar amount of 5250 (Rev. Proc. 2004-71), giving 5000, exactly as the notice states.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 200
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.hsa.proratedContributionLimit": 5000,
+        "accounts.0.sharedLimits.1.limit": 5000,
+        "totals.hsaContribution": 5000
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 a family deductible exactly at the IRC 223(c)(2) minimum stays determinate",
+      "description": "The boundary of the preceding check. IRC 223(c)(2)(A)(i) requires an annual deductible of at least 2000 for family coverage in 2005 (Rev. Proc. 2004-71), and 'at least' includes the figure itself, so a stated family deductible of exactly 2000 is consistent and the engine must not diagnose it. IRC 223(b)(2)(B) takes the lesser of that 2000 deductible and the 2005 family dollar amount of 5250, giving 2000 for both spouses' single shared limitation. A check written with a strict comparison at the wrong side of the boundary would report this lawful plan as contradictory.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "birthYear": 1972,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "hdhpAnnualDeductible": 2000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 2000,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 2000,
+        "accounts.0.sharedLimits.1.limit": 2000
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2026 a subminimum family deductible is inconsistent input even though IRC 223(b)(2) no longer reads it",
+      "description": "Section 303 of the Tax Relief and Health Care Act of 2006 removed the IRC 223(b)(2) cap by the plan's annual deductible for years after 2006, so in 2026 the deductible is not an operand of the limitation at all. That does not make a subminimum figure harmless. IRC 223(c)(2)(A)(i) still requires a family high deductible health plan to carry an annual deductible of at least 3400 for 2026 (Rev. Proc. 2025-19), so a stated 1000 family deductible still contradicts the caller's own assertion that the field holds such a plan's deductible, and the fail-open is the same one in the other direction: reporting the full statutory family amount for a taxpayer whose stated plan cannot be a high deductible health plan is wrong by ignoring the field rather than by dividing by it. The engine reports indeterminate with the consistency diagnostic rather than the uncontested statutory maximum.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 an owner's own subminimum self-only deductible is diagnosed on their own account",
+      "description": "The check is not confined to the spouse route. IRC 223(c)(2)(A)(i) requires an annual deductible of at least 1000 for self-only coverage in 2005 (Rev. Proc. 2004-71); the owner states self-only coverage with a deductible of 800, so the assertion that this is a high deductible health plan's deductible is contradicted by the figure itself. Without the check IRC 223(b)(2)(A) would take the lesser of 800 and the 2005 self-only dollar amount of 2650 and report a confident ceiling of 800 derived from a plan that cannot qualify. The tier matters to the message but not to the outcome: each tier is tested against its own minimum.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 800
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
       ]
     }
   ]
