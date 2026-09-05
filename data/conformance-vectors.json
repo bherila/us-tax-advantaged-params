@@ -13291,8 +13291,8 @@
       ]
     },
     {
-      "name": "2026 an unknown birth year leaves catch-up headroom open rather than denying it",
-      "description": "An absent birth year makes the IRC 223(b)(3) additional contribution amount untestable, not nil. The engine cannot say whether this owner attains age 55, which is why it reports indeterminate with BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT and why additionalContributionAmount reads 0 -- an amount it declines to grant, not one it has ruled out. The couple's IRC 223(b)(5)(A) limitation is unaffected, since it turns on coverage rather than age: both are family-covered for all of 2026, so it is the 8750 published by Rev. Proc. 2025-19, and the pool reports it. The owner has paid in 9000. That is lawful for anyone aged 55 or older, whose ceiling is 8750 plus the 1000 IRC 223(b)(3)(B) amount, and this record does not exclude that reading. So no excess may be asserted: SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT must be absent. The pool charges 9000 less the 1000 of headroom the facts leave open, reporting usedBeforeAccount 8000 and remainingAfterAccount 750. Reading the reported 0 as a denial instead would charge all 9000 to an 8750 pool and accuse a possibly-compliant taxpayer of an excess contribution on the strength of a fact nobody supplied, which is the failure this vector exists to catch. The companion vector above, where the birth year is known and the owner is 41, is what pins that a known ineligibility still charges the whole contribution: there the headroom is genuinely nil rather than merely unstated.",
+      "name": "2026 an unknown birth year leaves the IRC 223(b)(5) draw unstated rather than guessed",
+      "description": "The couple's IRC 223(b)(5)(A) limitation turns on coverage, not on age, so it survives an absent birth year: both are family-covered for all of 2026 and the pool reports the 8750 published by Rev. Proc. 2025-19. How much of it this owner has already drawn does not survive. A contribution splits between the paragraph (1) limitation the pool measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B) keeps out of the division, and splitting it needs the age that fixes the paragraph (3) amount. With no birth year or birth date the engine reports indeterminate with BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT, and additionalContributionAmount reads 0 as an amount it declines to grant rather than one it has ruled out. Of the 9000 paid in, anywhere between 8000 and 9000 has come out of the family limitation depending on an age nobody stated. So the pool reports its limit and withholds the draw: remainingAfterAccount is null and no excess may be asserted, since an excess is a statement about the draw. Both bounds were tried here and both misreported -- the upper one accused a possibly-compliant taxpayer of exceeding 8750, and the lower one is what the companion funding-distribution vector below shows understating a draw. A bound is not a usage.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13330,11 +13330,88 @@
         "accounts.0.hsa.additionalContributionAmount": 0,
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
-        "accounts.0.sharedLimits.1.usedBeforeAccount": 8000,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": 750
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null
       },
       "expectDiagnosticCodes": [
         "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 a qualified HSA funding distribution leaves the IRC 223(b)(5) draw unstated",
+      "description": "The second reason a draw on the pool can be uncomputable, with the first one excluded so it is tested alone. This owner's birth year is stated and they attain age 56, so the IRC 223(b)(3)(B) amount of 1000 is known exactly; what is unknown is the IRC 223(b)(5)(B)(ii) division, because their two accounts state shares of 0.5 and 0.25. The couple's limitation is unaffected by that and the pool reports the 2026 family amount of 8750 from Rev. Proc. 2025-19. But IRC 223(b)(4)(C) reduces the subsection (b) limitation by the 9500 qualified HSA funding distribution, and that reduction comes off the paragraph (1) share first, spilling into the paragraph (3) amount only once the share is exhausted -- so how much of it reaches each turns on the very limitation the unresolved division leaves undeterminable. The 500 already contributed therefore cannot be apportioned between the pool and the individual's own amount, and the pool withholds the draw: remainingAfterAccount is null. Reporting a draw of nil instead would have said the couple's whole 8750 was still available when at most 250 of room exists on the most favourable reading, 8750 plus 1000 less 9500. The IRC 223(b)(1) and 223(b)(3) pools report null limits throughout, which is the separate and older statement that this owner's own limitation is undeterminable.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970,
+            "qualifiedHsaFundingDistributions": 9500
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "existingContributions": {
+              "hsaDeductible": 500
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          },
+          {
+            "id": "t-hsa-b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.25
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "familyLimitShare": 0.5
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa-a",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa.additionalContributionAmount": 1000,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ],
       "expectAbsentDiagnosticCodes": [
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"

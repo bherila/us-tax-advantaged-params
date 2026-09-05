@@ -8268,7 +8268,15 @@ final class Engine
                 );
             }
             foreach ($outcome['sharedLimits'] as $shared) {
-                if ($shared['limit'] !== null && $shared['usedBeforeAccount'] > $shared['limit'] + 0.009) {
+                // A pool whose draw is undeterminable reports no remainder, and an
+                // excess is a statement about the draw. Asserting one from a used
+                // the engine never computed is how a compliant taxpayer came to be
+                // accused.
+                if (
+                    $shared['limit'] !== null
+                    && $shared['remainingAfterAccount'] !== null
+                    && $shared['usedBeforeAccount'] > $shared['limit'] + 0.009
+                ) {
                     $diagnostics[] = self::diagnostic(
                         'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT',
                         DiagnosticSeverity::ERROR,
@@ -12413,9 +12421,9 @@ final class Engine
                     'statutoryMaximum' => 0.0,
                     'detail' => null,
                     'familyPoolKey' => null,
-                    // No IRC 223 year is encoded, so there is no additional amount to
-                    // have headroom against and no family pool for the seeding to reach.
-                    'catchUpHeadroomCeiling' => 0.0,
+                    // No IRC 223 year is encoded, so there is no family pool for the
+                    // seeding to reach and nothing to determine a draw against.
+                    'familyPoolUsageDeterminable' => false,
                 ];
             }
             return;
@@ -13163,26 +13171,6 @@ final class Engine
                 }
             }
 
-            /*
-             * The same figure computed as if this owner were age 55, used only where
-             * their age is not known at all. An unknown birth year makes the IRC
-             * 223(b)(3) amount untestable rather than nil, and the two readings differ
-             * by exactly this much. It follows the IRC 223(b)(8) branch above for the
-             * same reason $catchUpApplied does: the last-month rule annualises the
-             * additional amount along with everything else.
-             */
-            if ($age !== null) {
-                $catchUpHeadroomCeiling = $catchUpApplied;
-            } elseif ($lastMonthRuleApplied) {
-                $catchUpHeadroomCeiling = self::roundMoney(
-                    (float) $parameters['additionalContributionAmountAge55'],
-                );
-            } else {
-                $catchUpHeadroomCeiling = self::roundMoney(
-                    ((float) $parameters['additionalContributionAmountAge55'] * $eligibleMonthCount)
-                        / self::HSA_MONTHS_IN_YEAR,
-                );
-            }
 
             // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
             // the IRC 223 answer unknown rather than merely unusual:
@@ -13226,7 +13214,9 @@ final class Engine
                 'familyPortionWithoutLastMonthRule' => $familyPortionWithoutLastMonthRule,
                 'selfPortionWithoutLastMonthRule' => $selfPortionWithoutLastMonthRule,
                 'catchUpApplied' => $catchUpApplied,
-                'catchUpHeadroomCeiling' => $catchUpHeadroomCeiling,
+                // IRC 223(b)(3) turns on age, so an absent birth year leaves its
+                // amount untestable rather than nil.
+                'ageKnown' => $age !== null,
                 'catchUpWithoutLastMonthRule' => $catchUpWithoutLastMonthRule,
                 'appliedAnnualLimitByMonth' => $appliedAnnualLimitByMonth,
                 'eligibleMonthCount' => $eligibleMonthCount,
@@ -13941,7 +13931,9 @@ final class Engine
                     : self::roundMoney($baseLimit + $catchUpApplied),
                 'detail' => $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
-                'catchUpHeadroomCeiling' => $amounts['catchUpHeadroomCeiling'],
+                'familyPoolUsageDeterminable' => $amounts['ageKnown']
+                    && $archerAmount === 0.0
+                    && $fundingAmount === 0.0,
             ];
         }
 
@@ -13949,9 +13941,9 @@ final class Engine
         // 223(b)(3) increase, which is the only ordering that never reports capacity
         // the statute does not allow.
         //
-        // IRC 223(b)(3) headroom still unspent by this owner's earlier accounts, used
-        // only where their own limitation is undeterminable and the branch below has
-        // to reason about the family pool without it.
+        // IRC 223(b)(3) amount still unspent by this owner's earlier accounts. The
+        // amount is the owner's, not the account's, so two accounts of one owner draw
+        // on one allowance rather than on one each.
         $catchUpHeadroom = [];
         foreach ($hsaAccounts as $account) {
             $existing = self::roundMoney(
@@ -13970,62 +13962,46 @@ final class Engine
             }
             $poolKeyEarly = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
             /*
-             * An owner whose own IRC 223(b)(1) limitation is undeterminable has no
-             * split to compute, but the couple's IRC 223(b)(5) ceiling can still be
-             * a number: where only the IRC 223(b)(5)(B)(ii) division is unknown, the
-             * pool reports the limitation. Leaving it unseeded published a ceiling
-             * with none of it used, so a couple who had already contributed were
-             * shown their whole limitation as though still available.
+             * An owner whose own IRC 223(b)(1) limitation is undeterminable still has
+             * a couple-wide IRC 223(b)(5) ceiling where only the (B)(ii) division is
+             * unknown, and the pool reports it. What it may not do is publish a draw
+             * against that ceiling it cannot compute.
              *
-             * What consumes the family pool is everything paid in *except* what the
-             * IRC 223(b)(3) additional contribution amount can absorb. IRC
-             * 223(b)(5)(B) excludes that amount from both the reduction and the
-             * division, so it belongs to the individual whatever the spouses agreed,
-             * and it turns on age and months rather than on anything the division
-             * decides.
+             * The contribution splits between the paragraph (1) limitation the pool
+             * measures and the paragraph (3) additional amount, which IRC 223(b)(5)(B)
+             * keeps out of the division. familyPoolUsageDeterminable says whether that
+             * split is arithmetic here: it needs the age that fixes the paragraph (3)
+             * amount, and needs no IRC 223(b)(4) reduction in play, since those come
+             * off the paragraph (1) share first and so turn on the very limitation
+             * that is undeterminable.
              *
-             * The headroom subtracted is the largest amount the owner could lawfully
-             * have -- catchUpHeadroomCeiling, not the amount reported. The two are the
-             * same whenever the birth year is known, nil included. They differ only
-             * when it is absent, where the reported amount is nil because eligibility
-             * is untestable; subtracting that nil would read an unknown as a denial
-             * and charge the whole contribution to the pool, which is how an owner
-             * with no birth data and 9000 paid in was reported as exceeding an 8750
-             * limitation that someone aged 55 could lawfully have contributed 9750
-             * against.
-             *
-             * Charging the whole contribution instead -- as an upper bound on family
-             * consumption -- fabricated violations. A 56-year-old who paid in 9750
-             * for 2026 has done nothing wrong: 8750 of family limitation under a 1/0
-             * division plus their own 1000. Billing all 9750 to an 8750 pool reported
-             * negative headroom and raised
-             * SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT against a lawful
-             * contribution, which is worse than an imprecise remainder.
-             *
-             * Subtracting the age-55 headroom is not merely safer, it is exact in the
-             * sense that matters: the reported remainder equals the lawful headroom.
-             * With E paid in, a pool limit L and an age-55 amount C, this reports
-             * used = max(0, E - C), so L - used is L + C - E once E exceeds C and L
-             * otherwise -- in both cases precisely what may still be contributed
-             * before L + C, the individual's true ceiling, is reached. It therefore
-             * never permits an unlawful total nor forbids a lawful one, and a genuine
-             * excess beyond L + C still trips the diagnostic.
-             *
-             * The headroom is the owner's, not the account's, so it is consumed across
-             * that owner's accounts rather than allowed once per account.
+             * Both bounds were tried and both misreported. Charging everything paid in
+             * accused a 56-year-old who contributed 9750 for 2026 -- 8750 under the
+             * 1/0 division IRC 223(b)(5)(B)(ii) permits, plus their own 1000 -- of
+             * exceeding an 8750 pool. Charging everything less the largest possible
+             * paragraph (3) amount then reported a pool as wholly untouched when a
+             * 9500 qualified HSA funding distribution had left at most 250 of room. A
+             * bound is not a usage, and publishing one as though it were is what
+             * produced both.
              */
             if ($context['hsaBasePools'][$ownerId]['limit'] === null) {
                 if ($poolKeyEarly !== null && isset($context['hsaFamilyPools'][$poolKeyEarly])) {
-                    if (!array_key_exists($ownerId, $catchUpHeadroom)) {
-                        $catchUpHeadroom[$ownerId] = (float) (
-                            $context['hsaPlans'][$ownerId]['catchUpHeadroomCeiling'] ?? 0
+                    if (($context['hsaPlans'][$ownerId]['familyPoolUsageDeterminable'] ?? false) === true) {
+                        // The paragraph (3) amount is exact here, so the draw is too:
+                        // what is paid in beyond it is what the pool loses.
+                        if (!array_key_exists($ownerId, $catchUpHeadroom)) {
+                            $catchUpHeadroom[$ownerId] = (float) (
+                                $context['hsaPlans'][$ownerId]['detail']['additionalContributionAmount'] ?? 0
+                            );
+                        }
+                        $absorbed = self::minMoney($existing, $catchUpHeadroom[$ownerId]);
+                        $catchUpHeadroom[$ownerId] = self::roundMoney($catchUpHeadroom[$ownerId] - $absorbed);
+                        $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
+                            (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing - $absorbed,
                         );
+                    } else {
+                        $context['hsaFamilyPools'][$poolKeyEarly]['usageIndeterminate'] = true;
                     }
-                    $absorbed = self::minMoney($existing, $catchUpHeadroom[$ownerId]);
-                    $catchUpHeadroom[$ownerId] = self::roundMoney($catchUpHeadroom[$ownerId] - $absorbed);
-                    $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
-                        (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing - $absorbed,
-                    );
                 }
                 continue;
             }
@@ -14162,7 +14138,10 @@ final class Engine
     /** @param array<string,mixed> $pool */
     private static function poolRemaining(array $pool): ?float
     {
-        return $pool['limit'] === null ? null : self::nonnegative((float) $pool['limit'] - (float) $pool['used']);
+        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
+            return null;
+        }
+        return self::nonnegative((float) $pool['limit'] - (float) $pool['used']);
     }
 
     /** @param array<string,mixed> $pool
@@ -14171,11 +14150,14 @@ final class Engine
     private static function takeFromPool(array &$pool, float $requested, array &$sharedLimits): float
     {
         $usedBefore = (float) $pool['used'];
-        if ($pool['limit'] === null) {
+        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
             $sharedLimits[] = [
                 'id' => $pool['id'],
                 'legalLimit' => $pool['legalLimit'],
-                'limit' => null,
+                // The ceiling is still reported where it is known. Only the draw
+                // against it is withheld, which is the whole distinction the flag
+                // exists to draw.
+                'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
                 'usedBeforeAccount' => $usedBefore,
                 'usedByAccount' => 0.0,
                 'remainingAfterAccount' => null,
@@ -14238,7 +14220,10 @@ final class Engine
         array &$sharedLimits,
     ): float {
         foreach ($refs as [$category, $key]) {
-            if ($context[$category][$key]['limit'] === null) {
+            if (
+                $context[$category][$key]['limit'] === null
+                || ($context[$category][$key]['usageIndeterminate'] ?? false) === true
+            ) {
                 foreach ($refs as [$reportCategory, $reportKey]) {
                     self::reportPoolWithoutConsuming($context[$reportCategory][$reportKey], $sharedLimits);
                 }
