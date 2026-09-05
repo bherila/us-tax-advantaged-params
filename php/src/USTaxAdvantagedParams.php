@@ -15180,6 +15180,28 @@ final class Engine
      *  @param list<array<string,mixed>> $diagnostics
      *  @return 'pretax'|'roth'|'unavailable'|'unknown'
      */
+    /**
+     * How a catch-up on this account is taxed, and whether one may be allocated at
+     * all, with the two IRC 414(v)(7)(A) questions asked in the order that keeps each
+     * from swallowing the other.
+     *
+     * An amount already recorded on *this* account is settled first: it is not a
+     * catch-up the engine is classifying but a completed contribution the supplied
+     * wages condemn, so nothing later can change the answer.
+     *
+     * A *sibling* account's unreconciled amount is asked last, and only where it
+     * could change something. It is a claim about capacity rather than about tax
+     * character, so it cannot displace this account's own classification: an account
+     * that still needs its own employer's wages is told so in the same pass. And it
+     * is irrelevant to an account that could not take a catch-up anyway, where
+     * reporting it would turn a knowable determinate answer into an unknown for a
+     * reason that does not reach it.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
     private static function catchUpTaxTreatment(
         array $context,
         array $account,
@@ -15187,18 +15209,47 @@ final class Engine
         array &$diagnostics,
         bool $reportSuccessfulRothAllocation = true,
     ): string {
-        // Ahead of every guard below, because this asks a different question from the
-        // rest of the function. Those guards establish that IRC 414(v)(7)(A) cannot
-        // change how a catch-up this engine allocates would be taxed -- which is true
-        // of an account that is already designated Roth and holds no pre-tax catch-up
-        // of its own. It is not true of that account's capacity, because the
-        // IRC 414(v) limit is the participant's: a sibling account's unreconciled
-        // pre-tax amount has already been charged against the same pool, so the
-        // residue is only real if that amount was valid. Consulting this after the
-        // guards let the sibling collect it.
         if (self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics)) {
             return 'unknown';
         }
+        $treatment = self::classifyCatchUpTaxTreatment(
+            $context,
+            $account,
+            $traits,
+            $diagnostics,
+            $reportSuccessfulRothAllocation,
+        );
+        // 'unavailable' means the plan offers no Roth catch-up above the threshold, so
+        // this account has no capacity for the pool doubt to reach; a zero catch-up
+        // amount for the year is the same. Everything else -- including a treatment
+        // still unknown for want of this account's own wages -- keeps the block, so a
+        // caller is told about both in one pass rather than finding the second after
+        // fixing the first.
+        if ($treatment === 'unavailable') {
+            return $treatment;
+        }
+        if (self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0) {
+            return $treatment;
+        }
+        if (self::appendSiblingCatchUpPoolBlockDiagnostic($context, $account, $traits, $diagnostics)) {
+            return 'unknown';
+        }
+        return $treatment;
+    }
+
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function classifyCatchUpTaxTreatment(
+        array $context,
+        array $account,
+        array $traits,
+        array &$diagnostics,
+        bool $reportSuccessfulRothAllocation,
+    ): string {
         $person = $context['persons'][$account['ownerId']];
         $defaultTreatment = self::accountUsesRothEmployeeContributions($account, $traits) ? 'roth' : 'pretax';
         $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
@@ -15366,6 +15417,14 @@ final class Engine
             return null;
         }
         $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
+        // IRC 414(v)(7)(C) disapplies subparagraph (A) for an applicable employer plan
+        // described in IRC 414(v)(6)(A)(iv), which is "an arrangement meeting the
+        // requirements of section 408(k) or (p)" -- a SEP or SARSEP, and a SIMPLE IRA.
+        // It is not IRC 401(k)(11): a SIMPLE 401(k) is an employees' trust described in
+        // IRC 401(a) and so falls under IRC 414(v)(6)(A)(i), which subparagraph (C)
+        // does not reach. That is why the test is the account's family rather than its
+        // isSimple trait, which simple401kTraits keeps while deliberately setting the
+        // family to qualified_elective.
         if ($threshold === null || $traits['family'] === 'simple' || !empty($traits['isSarsep'])) {
             return null;
         }
@@ -15437,6 +15496,12 @@ final class Engine
      * @param array<string,mixed> $traits
      * @param list<array<string,mixed>> $diagnostics
      */
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
     private static function appendHighWageExistingPreTaxCatchUpDiagnostic(
         array $context,
         array $account,
@@ -15444,33 +15509,56 @@ final class Engine
         array &$diagnostics,
     ): bool {
         $own = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
-        if ($own !== null) {
-            $code = 'EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD';
-            $alreadyReported = false;
-            foreach ($diagnostics as $entry) {
-                if (($entry['code'] ?? null) === $code) {
-                    $alreadyReported = true;
-                    break;
-                }
-            }
-            if (!$alreadyReported) {
-                $diagnostics[] = self::diagnostic(
-                    $code,
-                    DiagnosticSeverity::ERROR,
-                    'Existing contributions record $' . self::localeNumber($own['existing'])
-                        . " of pre-tax age-based catch-up, but prior-year FICA wages from employer {$own['employerId']} of \$"
-                        . self::localeNumber($own['wages']) . ' exceed the $' . self::localeNumber($own['threshold'])
-                        . ' IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals'
-                        . ' are designated Roth contributions, so a pre-tax amount is not one this participant was'
-                        . ' permitted to make. The amount is reported as supplied and is not reclassified; no further'
-                        . ' catch-up is allocated until the classification is reconciled.',
-                    "accounts.{$account['id']}.existingContributions.employeePreTaxCatchUp",
-                    'IRC 414(v)(7)(A)',
-                );
-            }
-            return true;
+        if ($own === null) {
+            return false;
         }
+        $code = 'EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD';
+        $alreadyReported = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === $code) {
+                $alreadyReported = true;
+                break;
+            }
+        }
+        if (!$alreadyReported) {
+            $diagnostics[] = self::diagnostic(
+                $code,
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $' . self::localeNumber($own['existing'])
+                    . " of pre-tax age-based catch-up, but prior-year FICA wages from employer {$own['employerId']} of \$"
+                    . self::localeNumber($own['wages']) . ' exceed the $' . self::localeNumber($own['threshold'])
+                    . ' IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals'
+                    . ' are designated Roth contributions, so a pre-tax amount is not one this participant was'
+                    . ' permitted to make. The amount is reported as supplied and is not reclassified; no further'
+                    . ' catch-up is allocated until the classification is reconciled.',
+                "accounts.{$account['id']}.existingContributions.employeePreTaxCatchUp",
+                'IRC 414(v)(7)(A)',
+            );
+        }
+        return true;
+    }
 
+    /**
+     * Reports that another of the participant's plans holds an unreconciled pre-tax
+     * catch-up which puts this account's remaining catch-up capacity in doubt.
+     *
+     * The IRC 414(v)(2)(B) limit is the participant's rather than the plan's, and an
+     * unreconciled amount has already been charged against it as though it were a
+     * valid catch-up. The residue a sibling account appears to have is therefore only
+     * real if the contribution in doubt was valid. The doubt reaches the pool the
+     * amount was drawn from and no further; see catchUpPoolFamily.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendSiblingCatchUpPoolBlockDiagnostic(
+        array $context,
+        array $account,
+        array $traits,
+        array &$diagnostics,
+    ): bool {
         $family = self::catchUpPoolFamily($traits);
         $blockedBy = null;
         foreach ($context['accountsById'] as $other) {
@@ -15489,7 +15577,6 @@ final class Engine
         if ($blockedBy === null) {
             return false;
         }
-
         $code = 'CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP';
         $alreadyReported = false;
         foreach ($diagnostics as $entry) {

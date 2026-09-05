@@ -13939,6 +13939,25 @@ function special403bCatchUpLimit(parameters: YearParameters, account: Normalized
 
 type CatchUpTaxTreatment = "pretax" | "roth" | "unavailable" | "unknown";
 
+/**
+ * How a catch-up on this account is taxed, and whether one may be allocated at
+ * all, with the two IRC 414(v)(7)(A) questions asked in the order that keeps each
+ * from swallowing the other.
+ *
+ * An amount already recorded on *this* account is settled first: it is not a
+ * catch-up the engine is classifying but a completed contribution the supplied
+ * wages condemn, so nothing later in the function can change the answer.
+ *
+ * A *sibling* account's unreconciled amount is asked last, and only where it
+ * could change something. It is a claim about capacity rather than about tax
+ * character, so it cannot displace this account's own classification: an account
+ * that still needs its own employer's wages must be told so in the same pass,
+ * rather than discovering it on a second round trip after the sibling is fixed.
+ * And it is irrelevant to an account that could not take a catch-up anyway --
+ * one whose plan offers no Roth catch-up above the threshold, or which the year
+ * gives no catch-up amount at all -- where reporting it would turn a knowable
+ * determinate answer into an unknown for a reason that does not reach it.
+ */
 function catchUpTaxTreatment(
   context: CalculationContext,
   account: NormalizedAccount,
@@ -13946,18 +13965,37 @@ function catchUpTaxTreatment(
   diagnostics: Diagnostic[],
   reportSuccessfulRothAllocation = true,
 ): CatchUpTaxTreatment {
-  // Ahead of every guard below, because this asks a different question from the
-  // rest of the function. Those guards establish that IRC 414(v)(7)(A) cannot
-  // change how a catch-up this engine allocates would be taxed -- which is true
-  // of an account that is already designated Roth and holds no pre-tax catch-up
-  // of its own. It is not true of that account's capacity, because the
-  // IRC 414(v) limit is the participant's: a sibling account's unreconciled
-  // pre-tax amount has already been charged against the same pool, so the
-  // residue is only real if that amount was valid. Consulting this after the
-  // guards let the sibling collect it.
   if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
     return "unknown";
   }
+  const treatment = classifyCatchUpTaxTreatment(
+    context,
+    account,
+    traits,
+    diagnostics,
+    reportSuccessfulRothAllocation,
+  );
+  // "unavailable" means the plan offers no Roth catch-up above the threshold, so
+  // this account has no capacity for the pool doubt to reach; a zero catch-up
+  // amount for the year is the same. Everything else -- including a treatment
+  // still unknown for want of this account's own wages -- keeps the block, so a
+  // caller is told about both in one pass rather than finding the second after
+  // fixing the first.
+  if (treatment === "unavailable") return treatment;
+  if (accountPlanCatchUpLimit(context, account, traits) === 0) return treatment;
+  if (appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, diagnostics)) {
+    return "unknown";
+  }
+  return treatment;
+}
+
+function classifyCatchUpTaxTreatment(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  diagnostics: Diagnostic[],
+  reportSuccessfulRothAllocation: boolean,
+): CatchUpTaxTreatment {
   const person = context.persons.get(account.ownerId)!;
   const defaultTreatment = accountUsesRothEmployeeContributions(account, traits) ? "roth" : "pretax";
   const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
@@ -14151,6 +14189,14 @@ function highWageInvalidExistingPreTaxCatchUp(
   const existing = account.existingContributions.employeePreTaxCatchUp;
   if (existing <= 0) return null;
   const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
+  // IRC 414(v)(7)(C) disapplies subparagraph (A) for an applicable employer plan
+  // described in IRC 414(v)(6)(A)(iv), which is "an arrangement meeting the
+  // requirements of section 408(k) or (p)" -- a SEP or SARSEP, and a SIMPLE IRA.
+  // It is not IRC 401(k)(11): a SIMPLE 401(k) is an employees' trust described in
+  // IRC 401(a) and so falls under IRC 414(v)(6)(A)(i), which subparagraph (C)
+  // does not reach. That is why the test is the account's family rather than its
+  // isSimple trait, which simple401kTraits keeps while deliberately setting the
+  // family to qualified_elective.
   if (threshold === null || traits.family === "simple" || traits.isSarsep) return null;
   if (account.planRules.isSelfEmployedOwner) return null;
   if (accountPlanCatchUpLimit(context, account, traits) === 0) return null;
@@ -14209,22 +14255,44 @@ function appendHighWageExistingPreTaxCatchUpDiagnostic(
   diagnostics: Diagnostic[],
 ): boolean {
   const own = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
-  if (own !== null) {
-    const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
-    if (!diagnostics.some((entry) => entry.code === code)) {
-      diagnostics.push(
-        diagnostic(
-          code,
-          DiagnosticSeverity.ERROR,
-          `Existing contributions record $${own.existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${own.employerId} of $${own.wages.toLocaleString()} exceed the $${own.threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
-          `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
-          "IRC 414(v)(7)(A)",
-        ),
-      );
-    }
-    return true;
+  if (own === null) return false;
+  const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
+  if (!diagnostics.some((entry) => entry.code === code)) {
+    diagnostics.push(
+      diagnostic(
+        code,
+        DiagnosticSeverity.ERROR,
+        `Existing contributions record $${own.existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${own.employerId} of $${own.wages.toLocaleString()} exceed the $${own.threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
+        `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
+        "IRC 414(v)(7)(A)",
+      ),
+    );
   }
+  return true;
+}
 
+/**
+ * Reports that another of the participant's plans holds an unreconciled pre-tax
+ * catch-up which puts this account's remaining catch-up capacity in doubt.
+ *
+ * The IRC 414(v)(2)(B) limit is the participant's rather than the plan's, and an
+ * unreconciled amount has already been charged against it as though it were a
+ * valid catch-up. The residue a sibling account appears to have is therefore only
+ * real if the contribution in doubt was valid -- a $3,000 amount in doubt leaving
+ * an apparent $5,000, where the true figure is $5,000 or $8,000 according to an
+ * answer nobody has yet given.
+ *
+ * The doubt reaches the pool the amount was drawn from and no further; see
+ * catchUpPoolFamily. Its caller applies it only where this account could
+ * otherwise have taken a catch-up, because an account with no capacity to lose
+ * is not made more accurate by being made indeterminate.
+ */
+function appendSiblingCatchUpPoolBlockDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  diagnostics: Diagnostic[],
+): boolean {
   const family = catchUpPoolFamily(traits);
   const blockedBy = [...context.accountsById.values()].find(
     (other) =>
