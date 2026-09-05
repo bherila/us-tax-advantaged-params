@@ -12716,6 +12716,128 @@
       "expectAbsentDiagnosticCodes": [
         "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION"
       ]
+    },
+    {
+      "name": "2026 an existing pre-tax catch-up on a designated Roth 401(k) still requires the prior-year FICA wages",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026, so the ordinary catch-up applies. The account is a designated Roth 401(k) whose rules permit a Roth catch-up, so a catch-up this engine allocated would be a designated Roth contribution on either side of the threshold. What the caller reports instead is a completed contribution: $8,000 of existing employeePreTaxCatchUp. IRC 414(v)(7)(A) speaks directly to whether that was a valid IRC 414(v) catch-up, and answers differently on each side. Below $150,000 the pre-tax component stands. Above it, IRC 414(v)(1) applies \"only if\" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not an additional elective deferral the paragraph permits. The prior-year wages therefore remain load-bearing, and reporting a determinate result would put an exclusion from gross income behind a component the statute may not allow. The short-circuit that spares an account the wage figure is a claim about the catch-up the engine would classify; it does not extend to one the caller has already made.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000
+      },
+      "expectDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION"
+      ]
+    },
+    {
+      "name": "2026 an existing Roth catch-up on a designated Roth 401(k) needs no prior-year FICA wages",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026, so the ordinary catch-up applies. The facts are those of the companion vector with the existing $8,000 recorded as employeeRothCatchUp rather than employeePreTaxCatchUp. A designated Roth catch-up is what IRC 414(v)(7)(A) requires of a participant above the threshold and is equally permitted below it, so unlike a pre-tax component it raises no question the wage figure answers. The account is determinate without it, and the existing component is carried at $8,000 while the remaining catch-up room is nil, the $8,000 IRC 414(v)(2)(B)(i) amount being wholly used. This is the control that keeps the pre-tax condition from being read as \"any existing catch-up blocks the answer\".",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0
+            },
+            "existingContributions": {
+              "employeeRothCatchUp": 8000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeeRothCatchUp": 8000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0
+      },
+      "expectAbsentDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION"
+      ]
+    },
+    {
+      "name": "2026 an existing pre-tax catch-up below the IRC 414(v)(7)(A) threshold is determinate and stands",
+      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026, so the ordinary catch-up applies. The same existing $8,000 pre-tax catch-up, with prior-year FICA wages of $10,000 from the sponsoring employer supplied. Those are below the $150,000 threshold, so IRC 414(v)(7)(A) does not apply and IRC 414(v)(1) permits the additional elective deferral without regard to whether it was a designated Roth contribution. The component stands as supplied and the account is determinate. Paired with the vector above, this is what makes the wage figure load-bearing rather than merely absent: the same facts resolve one way with the wages and cannot be resolved at all without them.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0
+      },
+      "expectAbsentDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION"
+      ]
     }
   ]
 }

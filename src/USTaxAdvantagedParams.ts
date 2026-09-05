@@ -13504,7 +13504,27 @@ function catchUpTaxTreatment(
     // purposes of this title as a designated Roth account", which is what
     // accountUsesRothEmployeeContributions and accountPermitsRothCatchUp each
     // read off it, so this clause reaches it without naming it.
-    (defaultTreatment === "roth" && accountPermitsRothCatchUp(account, traits)) ||
+    //
+    // A third condition guards the same claim from the other direction. The two
+    // effects above are both about the catch-up this engine would allocate, so
+    // reasoning only about them holds only where the catch-up is the engine's to
+    // classify. An existing pre-tax IRC 414(v) catch-up is not: it is a
+    // completed contribution the caller reports, and IRC 414(v)(7)(A) speaks to
+    // whether it was a valid one, which is a question the threshold answers
+    // differently on each side. Below it the component stands; above it the
+    // additional elective deferrals had to be designated Roth contributions for
+    // IRC 414(v)(1) to apply at all. So the wages remain load-bearing whenever
+    // one is supplied, and the account keeps saying so rather than reporting a
+    // determinate result whose pre-tax component carries an exclusion from gross
+    // income the statute may not allow.
+    //
+    // The IRC 402(g)(7) and IRC 457(b)(3) special catch-ups are deliberately not
+    // read here. Each is its own provision rather than an IRC 414(v)(1)
+    // additional elective deferral, and IRC 414(v)(7)(A) reaches only the
+    // latter.
+    (defaultTreatment === "roth" &&
+      accountPermitsRothCatchUp(account, traits) &&
+      account.existingContributions.employeePreTaxCatchUp === 0) ||
     accountPlanCatchUpLimit(context, account, traits) === 0
   ) {
     return defaultTreatment;

@@ -749,6 +749,15 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   disappears above it). §402A(e)(1)(A)(i) settles both halves for a pension-linked
   emergency savings account, so one never needs the figure.
 
+  The exemption covers only the catch-up the engine would itself classify. An
+  `existingContributions.employeePreTaxCatchUp` the caller reports is a completed
+  contribution whose validity §414(v)(7)(A) decides — it stands below the threshold
+  and was not a permitted additional elective deferral above it — so an account
+  carrying one asks for the wages whatever its Roth character. An existing *Roth*
+  catch-up raises no such question and does not. The §402(g)(7) and §457(b)(3)
+  special catch-ups are separate provisions that §414(v)(7)(A) does not reach, so
+  neither is read here.
+
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
 
