@@ -636,6 +636,43 @@ stays determinate. The engine will not read silence as "no competing family plan
 that would answer the comparison from a fact you never supplied, and in the direction that
 costs a taxpayer the §4973 excise.
 
+### A deductible below the statutory minimum is inconsistent input
+
+`hdhpAnnualDeductible` is taken as stated, but it is checked for internal consistency. A figure
+below the §223(c)(2)(A)(i) minimum for a tier you also state the person held returns
+`indeterminate` with `HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM`, in **every** year — not
+only the 2004–2006 years where §223(b)(2) read the deductible into the arithmetic.
+
+This is not the engine testing whether your plan is a high deductible health plan; it still
+does not do that, and clearing the minimum proves nothing. The test is one-way: falling below
+the minimum disproves your own claim that the field holds a qualifying plan's deductible.
+
+What the engine deliberately does **not** do is as important:
+
+| It does not | Because |
+|---|---|
+| raise the figure to the minimum | Notice 2004-50 Q&A-31 Example (4) does not treat a subminimum plan as if it met the floor |
+| publish it as a lower ceiling | the same example makes the consequence an *eligibility* one, not a smaller limitation |
+| return `ineligible` | Rev. Rul. 2005-25 makes that turn on whom the plan covers, and no input here carries that fact |
+
+The tier decides reach, and it decides it for the **amount** only. A spouse's subminimum
+**family** plan reaches the HSA owner's limitation, because §223(b)(5)(A) draws competing family
+plans into the lowest-deductible comparison; it reaches only the months that plan was in force,
+since that comparison is answered per month. A spouse's subminimum **self-only** plan never
+enters it — Notice 2004-50 Q&A-31 Example (1) leaves the owner contributing the full family
+amount in exactly that case.
+
+The **division** is a separate question with a different answer, and any tier reaches it. Q&A-31
+divides the limitation only between spouses who are each an eligible individual: "if only one
+spouse is an eligible individual, only that spouse may contribute to an HSA". This engine reads
+your month list as the assertion of eligibility, so a deductible contradicting that list
+impeaches it. Where the contradicting spouse **owns an HSA**, the engine therefore cannot tell
+whether the limitation is wholly the other spouse's — as in Example (1) — or divided, so
+`familyLimitShare` and both maximums go null while the §223(b)(5) pool keeps reporting the
+amount. Do not expect the full family maximum in that case; expect nothing, and a diagnostic
+saying why. Where that spouse owns no HSA there is no division to doubt and the owner takes the
+whole limitation.
+
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
 

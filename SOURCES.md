@@ -113,6 +113,45 @@ cost-of-living notice, so they are cited and verified separately.
   survives. The engine therefore gates the lowest-deductible requirement on the §223(b)(2)
   cap rather than on a year range.
 
+- **IRC §223(c)(2)(A)(i) and Notice 2004-50, Q&A-31** — the minimum annual deductible, and what
+  follows from a stated deductible that falls below it. The minimums themselves are ordinary
+  adjusted amounts taken from the annual Rev. Procs above and verified by the evidence corpus;
+  what needed an authority is the *consequence*, because three different answers are plausible
+  and two of them are wrong. Notice 2004-50 Q&A-31 Example (4) settles it:
+
+  > The same facts as Example 1, except that, in addition to family coverage under the HDHP with
+  > a $5,000 deductible, W has family coverage with a $500 deductible rather than self-only
+  > coverage with a $200 deductible. H and W are treated as having family coverage with the
+  > lowest annual deductible under section 223(b)(5)(A). **Neither H nor W is an eligible
+  > individual and neither may contribute to an HSA.**
+
+  So a subminimum family plan is neither ignored for failing the minimum nor read as a positive
+  limitation of its own deductible; §223(b)(5)(A) reaches it and the consequence is an
+  eligibility consequence. Q&A-31's own statement of the rule carries the floor — "the lowest
+  HDHP family deductible applicable to the family (minimum $2,000)" — and Example (1) in the
+  same series confirms the tier matters: a spouse's *self-only* $200 plan leaves the HSA owner
+  contributing the full $5,000, because the parenthetical reaches only competing **family**
+  plans.
+
+  **Rev. Rul. 2005-25** is the counterweight and is why the engine reports inconsistent input
+  rather than ineligibility: "The special rules for married individuals under section 223(b)(5)
+  do not apply because W's non-HDHP family coverage does not cover H." Whether a subminimum plan
+  reaches the other spouse turns on whom it covers, and `HsaCoverageInput` carries no such fact.
+  Deciding eligibility from a scalar the engine cannot qualify would answer a question the
+  caller never answered.
+
+  Q&A-31 also settles the *division* where one spouse's facts are contradictory: "if only one
+  spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding
+  the treatment under §223(b)(5)(A) of both spouses as having only family coverage)". Example (1)
+  gives H the whole $5,000. The engine takes the caller's month list as the assertion of
+  eligibility, so a deductible contradicting that list leaves the §223(b)(5)(B)(ii) division
+  unknowable while the amount stays fixed — the pool reports its number and the share goes null.
+
+  Both documents are committed: `evidence/hsa-limits/sources/n-04-50.pdf` and
+  `evidence/hsa-limits/sources/rr-05-25.pdf`, hashed in that corpus's `SHA256SUMS.txt`. Neither
+  publishes an annual amount the corpus does not already take from Notice 2004-2; they are held
+  for the provenance of these rules.
+
 - **Tax Relief and Health Care Act of 2006** — §303 removed the §223(b)(2) cap that limited
   the monthly contribution to 1/12 of the *lesser* of the plan's annual deductible and the
   dollar amount, and §305 added the §223(b)(8) last-month rule, both effective for taxable
