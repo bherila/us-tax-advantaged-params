@@ -736,6 +736,18 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
   of a controlled or affiliated service group under §414(b)/(c)/(m)/(o) and §415(h).
 - **§414(v)(7)(A)** Roth catch-up classification tests prior-year FICA wages from the
   **sponsoring employer**, supplied through `priorYearFicaWages(employerId, amount)`.
+  The figure is required only where the test can change the answer. §414(v)(7)(A) does
+  two things and no more: it makes a catch-up that would have been pre-tax into a
+  designated Roth contribution, and — because it allows the catch-up "only if" the
+  contribution is a designated Roth one — it withdraws the catch-up from a plan whose
+  terms do not offer one. On an account whose employee contributions are designated Roth
+  already and whose rules permit a Roth catch-up, neither is possible and the wages are
+  not asked for. They **are** asked for on a pre-tax account, on a designated Roth
+  account carrying `contributionPreference: "pretax_first"` (which makes the default
+  pre-tax, so there is Roth treatment left to force), and on one carrying
+  `permitsRothCatchUp: false` (where the catch-up survives below the threshold and
+  disappears above it). §402A(e)(1)(A)(i) settles both halves for a pension-linked
+  emergency savings account, so one never needs the figure.
 
 Whether two employers are a single employer for §415 is a legal determination about
 ownership, so it is a caller-supplied fact rather than something inferred from the inputs.
