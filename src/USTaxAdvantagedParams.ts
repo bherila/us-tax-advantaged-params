@@ -11355,6 +11355,23 @@ interface HsaOwnerPlan {
   statutoryMaximum: Money | null;
   detail: HsaAccountDetail | null;
   familyPoolKey: string | null;
+  /**
+   * The largest IRC 223(b)(3) amount this owner could lawfully have on the facts
+   * supplied, which is not always the amount they are reported as having.
+   *
+   * Where the birth year is known the two coincide, nil included: someone aged
+   * 41 could not have the additional amount however the year is read. Where it
+   * is absent they diverge, and the difference is the whole point of the field.
+   * `detail.additionalContributionAmount` reports nil there because eligibility
+   * is untestable, and reading that nil as "no catch-up" turns an unknown into a
+   * denial -- which is how a lawful contribution came to be charged wholly
+   * against the family pool and reported as an excess.
+   *
+   * Only the pool seeding reads it, and only where the owner's own limitation is
+   * undeterminable. It is deliberately not reported: it is what the caller has
+   * not ruled out, not a figure the statute grants anyone.
+   */
+  catchUpHeadroomCeiling: Money;
 }
 
 interface HsaOwnerFacts {
@@ -11589,6 +11606,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         statutoryMaximum: 0,
         detail: null,
         familyPoolKey: null,
+        // No IRC 223 year is encoded, so there is no additional amount to have
+        // headroom against and no family pool for the seeding to reach.
+        catchUpHeadroomCeiling: 0,
       });
     }
     return;
@@ -11846,6 +11866,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     familyPortionWithoutLastMonthRule: number;
     selfPortionWithoutLastMonthRule: number;
     catchUpApplied: Money;
+    /** @see HsaOwnerPlan.catchUpHeadroomCeiling */
+    catchUpHeadroomCeiling: Money;
     catchUpWithoutLastMonthRule: Money;
     appliedAnnualLimitByMonth: Array<Money | null>;
     eligibleMonthCount: number;
@@ -12221,6 +12243,21 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       }
     }
 
+    /**
+     * The same figure computed as if this owner were age 55, used only where
+     * their age is not known at all. An unknown birth year makes the IRC
+     * 223(b)(3) amount untestable rather than nil, and the two readings differ
+     * by exactly this much. It follows the IRC 223(b)(8) branch above for the
+     * same reason `catchUpApplied` does: the last-month rule annualises the
+     * additional amount along with everything else.
+     */
+    const catchUpHeadroomCeiling =
+      age !== null
+        ? catchUpApplied
+        : lastMonthRuleApplied
+          ? roundMoney(parameters.additionalContributionAmountAge55)
+          : roundMoney((parameters.additionalContributionAmountAge55 * eligibleMonthCount) / HSA_MONTHS_IN_YEAR);
+
     // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
     // 223 answer unknown rather than merely unusual: general-purpose coverage
     // is disqualifying and limited-purpose or post-deductible coverage is not,
@@ -12260,6 +12297,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       familyPortionWithoutLastMonthRule,
       selfPortionWithoutLastMonthRule,
       catchUpApplied,
+      catchUpHeadroomCeiling,
       catchUpWithoutLastMonthRule,
       appliedAnnualLimitByMonth,
       eligibleMonthCount,
@@ -12842,6 +12880,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
       detail,
       familyPoolKey: isSharingMember ? familyPoolKey : null,
+      catchUpHeadroomCeiling: amounts.catchUpHeadroomCeiling,
     });
   }
 
@@ -12872,10 +12911,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * limitation as though still available.
      *
      * What consumes the family pool is everything paid in *except* what the IRC
-     * 223(b)(3) additional contribution amount can absorb. That amount is
-     * knowable here even though the division is not: it turns on age and months
-     * alone, and IRC 223(b)(5)(B) excludes it from both the reduction and the
-     * division, so it belongs to the individual whatever the spouses agreed.
+     * 223(b)(3) additional contribution amount can absorb. IRC 223(b)(5)(B)
+     * excludes that amount from both the reduction and the division, so it
+     * belongs to the individual whatever the spouses agreed, and it turns on age
+     * and months rather than on anything the division decides.
+     *
+     * The headroom subtracted is the largest amount the owner could lawfully
+     * have -- `catchUpHeadroomCeiling`, not the amount reported. The two are the
+     * same whenever the birth year is known, nil included. They differ only when
+     * it is absent, where the reported amount is nil because eligibility is
+     * untestable; subtracting that nil would read an unknown as a denial and
+     * charge the whole contribution to the pool, which is how an owner with no
+     * birth data and 9000 paid in was reported as exceeding an 8750 limitation
+     * that someone aged 55 could lawfully have contributed 9750 against.
      *
      * Charging the whole contribution instead -- as an upper bound on family
      * consumption -- fabricated violations. A 56-year-old who paid in 9750 for
@@ -12902,7 +12950,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         if (!catchUpHeadroom.has(ownerId)) {
           catchUpHeadroom.set(
             ownerId,
-            context.hsaPlans.get(ownerId)?.detail?.additionalContributionAmount ?? 0,
+            context.hsaPlans.get(ownerId)?.catchUpHeadroomCeiling ?? 0,
           );
         }
         const headroom = catchUpHeadroom.get(ownerId) ?? 0;

@@ -12413,6 +12413,9 @@ final class Engine
                     'statutoryMaximum' => 0.0,
                     'detail' => null,
                     'familyPoolKey' => null,
+                    // No IRC 223 year is encoded, so there is no additional amount to
+                    // have headroom against and no family pool for the seeding to reach.
+                    'catchUpHeadroomCeiling' => 0.0,
                 ];
             }
             return;
@@ -13160,6 +13163,27 @@ final class Engine
                 }
             }
 
+            /*
+             * The same figure computed as if this owner were age 55, used only where
+             * their age is not known at all. An unknown birth year makes the IRC
+             * 223(b)(3) amount untestable rather than nil, and the two readings differ
+             * by exactly this much. It follows the IRC 223(b)(8) branch above for the
+             * same reason $catchUpApplied does: the last-month rule annualises the
+             * additional amount along with everything else.
+             */
+            if ($age !== null) {
+                $catchUpHeadroomCeiling = $catchUpApplied;
+            } elseif ($lastMonthRuleApplied) {
+                $catchUpHeadroomCeiling = self::roundMoney(
+                    (float) $parameters['additionalContributionAmountAge55'],
+                );
+            } else {
+                $catchUpHeadroomCeiling = self::roundMoney(
+                    ((float) $parameters['additionalContributionAmountAge55'] * $eligibleMonthCount)
+                        / self::HSA_MONTHS_IN_YEAR,
+                );
+            }
+
             // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
             // the IRC 223 answer unknown rather than merely unusual:
             // general-purpose coverage is disqualifying and limited-purpose or
@@ -13202,6 +13226,7 @@ final class Engine
                 'familyPortionWithoutLastMonthRule' => $familyPortionWithoutLastMonthRule,
                 'selfPortionWithoutLastMonthRule' => $selfPortionWithoutLastMonthRule,
                 'catchUpApplied' => $catchUpApplied,
+                'catchUpHeadroomCeiling' => $catchUpHeadroomCeiling,
                 'catchUpWithoutLastMonthRule' => $catchUpWithoutLastMonthRule,
                 'appliedAnnualLimitByMonth' => $appliedAnnualLimitByMonth,
                 'eligibleMonthCount' => $eligibleMonthCount,
@@ -13916,6 +13941,7 @@ final class Engine
                     : self::roundMoney($baseLimit + $catchUpApplied),
                 'detail' => $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
+                'catchUpHeadroomCeiling' => $amounts['catchUpHeadroomCeiling'],
             ];
         }
 
@@ -13952,11 +13978,21 @@ final class Engine
              * shown their whole limitation as though still available.
              *
              * What consumes the family pool is everything paid in *except* what the
-             * IRC 223(b)(3) additional contribution amount can absorb. That amount is
-             * knowable here even though the division is not: it turns on age and
-             * months alone, and IRC 223(b)(5)(B) excludes it from both the reduction
-             * and the division, so it belongs to the individual whatever the spouses
-             * agreed.
+             * IRC 223(b)(3) additional contribution amount can absorb. IRC
+             * 223(b)(5)(B) excludes that amount from both the reduction and the
+             * division, so it belongs to the individual whatever the spouses agreed,
+             * and it turns on age and months rather than on anything the division
+             * decides.
+             *
+             * The headroom subtracted is the largest amount the owner could lawfully
+             * have -- catchUpHeadroomCeiling, not the amount reported. The two are the
+             * same whenever the birth year is known, nil included. They differ only
+             * when it is absent, where the reported amount is nil because eligibility
+             * is untestable; subtracting that nil would read an unknown as a denial
+             * and charge the whole contribution to the pool, which is how an owner
+             * with no birth data and 9000 paid in was reported as exceeding an 8750
+             * limitation that someone aged 55 could lawfully have contributed 9750
+             * against.
              *
              * Charging the whole contribution instead -- as an upper bound on family
              * consumption -- fabricated violations. A 56-year-old who paid in 9750
@@ -13982,7 +14018,7 @@ final class Engine
                 if ($poolKeyEarly !== null && isset($context['hsaFamilyPools'][$poolKeyEarly])) {
                     if (!array_key_exists($ownerId, $catchUpHeadroom)) {
                         $catchUpHeadroom[$ownerId] = (float) (
-                            $context['hsaPlans'][$ownerId]['detail']['additionalContributionAmount'] ?? 0
+                            $context['hsaPlans'][$ownerId]['catchUpHeadroomCeiling'] ?? 0
                         );
                     }
                     $absorbed = self::minMoney($existing, $catchUpHeadroom[$ownerId]);

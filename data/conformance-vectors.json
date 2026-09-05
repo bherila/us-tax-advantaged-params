@@ -13289,6 +13289,56 @@
       "expectAbsentDiagnosticCodes": [
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
       ]
+    },
+    {
+      "name": "2026 an unknown birth year leaves catch-up headroom open rather than denying it",
+      "description": "An absent birth year makes the IRC 223(b)(3) additional contribution amount untestable, not nil. The engine cannot say whether this owner attains age 55, which is why it reports indeterminate with BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT and why additionalContributionAmount reads 0 -- an amount it declines to grant, not one it has ruled out. The couple's IRC 223(b)(5)(A) limitation is unaffected, since it turns on coverage rather than age: both are family-covered for all of 2026, so it is the 8750 published by Rev. Proc. 2025-19, and the pool reports it. The owner has paid in 9000. That is lawful for anyone aged 55 or older, whose ceiling is 8750 plus the 1000 IRC 223(b)(3)(B) amount, and this record does not exclude that reading. So no excess may be asserted: SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT must be absent. The pool charges 9000 less the 1000 of headroom the facts leave open, reporting usedBeforeAccount 8000 and remainingAfterAccount 750. Reading the reported 0 as a denial instead would charge all 9000 to an 8750 pool and accuse a possibly-compliant taxpayer of an excess contribution on the strength of a fact nobody supplied, which is the failure this vector exists to catch. The companion vector above, where the birth year is known and the owner is 41, is what pins that a known ineligibility still charges the whole contribution: there the headroom is genuinely nil rather than merely unstated.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer"
+          },
+          {
+            "id": "s",
+            "role": "spouse"
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "existingContributions": {
+              "hsaDeductible": 9000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.additionalContributionAmount": 0,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 8000,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": 750
+      },
+      "expectDiagnosticCodes": [
+        "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
     }
   ]
 }
