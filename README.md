@@ -543,33 +543,61 @@ account's `hsa` detail reports `qualifiedHsaFundingDistributionsApplied` and
 `HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT` diagnostic states which ordering
 applied.
 
-### Agreed divisions must exhaust the family limitation
+### The division is one fact about the couple
 
-`planRules.hsa.familyLimitShare` records a §223(b)(5)(B)(ii) agreement to divide the single
-family limitation other than equally. Supply it on **every** spouse who owns an HSA, and
-make the shares total exactly 1 — the statute divides the limitation "unless they agree on a
-different division", and an allocation that leaves part of it belonging to neither spouse is
-not a division.
+**Breaking change in 0.5.0.** Four fields moved off `planRules.hsa`. An account that still
+carries one is rejected rather than read, so a stale call fails loudly instead of quietly
+using half of what it stated:
 
-Both failures are `ERROR` diagnostics and both return `indeterminate`:
+| Removed from `planRules.hsa` | Now | Error code if still supplied |
+|---|---|---|
+| `familyLimitShare` | `hsaFamilyLimitDivision` on the **scenario** | `HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED` |
+| `useLastMonthRule` | `persons[].hsaLastMonthRule.useLastMonthRule` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodSatisfied` | `persons[].hsaLastMonthRule.testingPeriodSatisfied` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRule.testingPeriodFailureByDeathOrDisability` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
 
-| Shares | Diagnostic |
-|---|---|
-| Total above 1 | `HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE` — the couple would claim more than one family limitation |
-| Total below 1 | `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE` — capacity the couple is entitled to would be silently forfeited |
-| Supplied on one spouse but not the other | `HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES` |
+None of the four was ever a fact about an account. §223(b)(5)(B)(ii) divides the limitation
+between "them" — the married individuals — and §223(b)(8)(A) makes the last-month election for
+"an individual". An owner's two HSAs cannot disagree about either, and Pub. 969 is explicit
+that multiple HSAs do not subdivide their owner's maximum: "If you have more than one HSA in
+2005, your total contributions to all the HSAs cannot be more than the limits discussed
+earlier."
 
-They are diagnosed rather than rejected, because a share is a caller-supplied fact and this
-package reports on facts rather than overriding them — but at `ERROR` severity, because
-unlike an unusual eligibility fact this one is arithmetically impossible, and a determinate
-number computed from it would assert a ceiling the statute does not produce. Two spouses at
-0.3 each for 2026 would otherwise return a confident 2625 apiece against an 8750 limitation,
-forfeiting 3500 with no signal at all.
+`hsaFamilyLimitDivision` is one statement, on the scenario:
 
-The constraint is on the **sum**, not on either share: 1 and 0 is a valid division that gives
-one spouse the whole limitation. And where only one spouse owns an HSA, the shares that can
-be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
-the other spouse has no account to use, and no error applies.
+```ts
+{ status: "statutory_equal" }                  // the default; omit it for the same effect
+{ status: "agreed", taxpayerShare: 0.25 }      // the spouse takes the remaining 0.75
+{ status: "unknown" }                          // whether they agreed anything is not known
+{ status: "disputed" }                         // the spouses report different divisions
+{ status: "inconsistent" }                     // two records of one division conflict
+```
+
+`taxpayerShare` is the share belonging to the person whose `role` is `taxpayer`; the spouse
+takes `1 - taxpayerShare`. Because there is one number rather than one per account, shares
+can no longer fail to total 1, and the three diagnostics that policed that
+(`HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE`, `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE`,
+`HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES`) are gone with the states they described.
+
+0 and 1 are both valid. Notice 2004-50 Q&A-32: spouses "can divide the annual HSA contribution
+in any way they want, **including allocating nothing to one spouse**". The spouse allocated
+nothing still keeps their own §223(b)(3) age-55 amount — Notice 2008-59 Q&A-22 holds that an
+individual eligible for the catch-up "may only make such contributions to his or her own HSA",
+and §223(b)(5)(B) divides the limitation "without regard to any additional contribution amount
+under paragraph (3)", so a division cannot reach it either way.
+
+**Omitting the field means `statutory_equal`, not unknown.** The statute divides equally
+"unless they agree on a different division", so silence is the default rule rather than a
+missing fact, and the Instructions for Form 8889 say the same. The three non-numeric statuses
+exist because failing to establish the agreement is not the same input state as establishing
+its absence: contradictory records are equally consistent with "they agreed equally and one is
+wrong" and "they agreed 25/75 and the other is wrong", and defaulting those to 50/50 would
+overstate one spouse's limitation in the second case.
+
+Two shapes are rejected outright, because each states an agreement and denies it in the same
+object: `{ status: "agreed" }` with no share raises
+`HSA_FAMILY_LIMIT_DIVISION_SHARE_REQUIRED`, and a `taxpayerShare` beside any other status
+raises `HSA_FAMILY_LIMIT_DIVISION_SHARE_NOT_PERMITTED`.
 
 ### A known ceiling with an unknown draw
 
@@ -586,29 +614,30 @@ draw. The engine does not publish a bound in place of a usage: bounding upwards 
 taxpayers of excess contributions, and bounding downwards reported a pool as untouched when a
 qualified HSA funding distribution had consumed nearly all of it.
 
-`familyLimitShare` is `null` under the same condition, rather than reporting the share of whichever of
-a spouse's contradictory accounts happened to be listed first.
+The `familyLimitShare` reported in each account's `hsa` detail is `null` under the same
+condition. It is an output — the share this account actually got — and it stays `null` rather
+than reporting a share nobody has established.
 
 ### An unknown division does not make the limitation unknown
 
 §223(b)(5) settles two things, and they fail separately. Subparagraph (A) fixes **one family
 limitation** for the couple; (B)(ii) **divides** it between them. A disagreement about the
-shares — one spouse's HSAs stating different `familyLimitShare` values — reaches only the
-second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
+division — an `hsaFamilyLimitDivision` status of `unknown`, `disputed` or `inconsistent` —
+reaches only the second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
 is reached, so the couple's ceiling is still a number even though nobody can say whose it is.
 
 The engine reports the two separately:
 
 | Unknown | Diagnostic | `hsa223b5` shared limit | Account maximum |
 |---|---|---|---|
-| The amount — coverage, a 2004–2006 annual deductible, the §223(b)(8) election | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
-| The division — conflicting `familyLimitShare` only | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
+| The amount — coverage or a 2004–2006 annual deductible | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
+| The division — an unsettled `hsaFamilyLimitDivision`, or an impeached eligibility assertion | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
 
 Both are `ERROR` and both leave every account's `statutoryMaximumAnnualContribution` null: a
 share of a known amount is still unknown when the share is. What differs is the couple-wide
 figure. `sharedFamilyContributionLimit` follows the **amount**, because that is its contract —
-the limitation this owner divides, reported before the share is applied — so a caller
-reconciling contradictory shares can still see the 8750 they are dividing.
+the limitation this owner divides, reported before the share is applied — so a caller settling
+an unsettled division can still see the 8750 they are dividing.
 
 ### When the other spouse's coverage is required
 
