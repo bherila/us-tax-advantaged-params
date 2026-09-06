@@ -10405,6 +10405,10 @@ function createCalculationContext(
   initializeElectiveDeferralPools(context, accounts);
   initializeAnnualAdditionsPools(context, accounts);
   initializeSection457Pools(context, accounts);
+  // After both catch-up families have their pools, because the IRC 414(v)(6)(C)
+  // exception this reads is settled by resolveSection457CatchUpModes inside
+  // initializeSection457Pools.
+  seedUnresolvedCatchUpAttribution(context, accounts);
   // Health FSA facts are read by the IRC 223 interaction, so the arrangements
   // must be resolved before the health savings accounts that consult them.
   initializeHealthFsaPools(context, accounts);
@@ -10950,6 +10954,59 @@ function resolveSection457CatchUpModes(
       existingCatchUpClassificationUnreconciled,
       eligibleAccountIds: new Set(eligible.map((account) => account.id)),
     });
+  }
+}
+
+/**
+ * Widen the pools an IRC 414(v)(7)(A)-condemned existing catch-up may have
+ * consumed, from the figure the seeding assumed to the range the facts leave.
+ *
+ * The seeding charged the amount to the catch-up pool, which is where it belongs
+ * if it was a valid IRC 414(v)(1) additional elective deferral. IRC 414(v)(7)(A)
+ * says it was not: above the wage threshold paragraph (1) applies "only if" the
+ * additional elective deferrals are designated Roth contributions, and this one
+ * is pre-tax. So the seeding's assumption is exactly the thing in doubt.
+ *
+ * The alternative is not "nothing". IRC 414(v)(3)(A)(i) disregards a catch-up
+ * for the IRC 402(g) limit, but only a contribution "made under paragraph (1)";
+ * once paragraph (7)(A) prevents that treatment the amount is an ordinary
+ * elective deferral and IRC 401(a)(30) and IRC 402(g) reach it again. Notice
+ * 2023-62 confirms the relief survives SECURE 2.0 section 603(b)(1)'s striking
+ * of IRC 402(g)(1)(C) -- "the elimination of section 402(g)(1)(C) ... does not
+ * change this result for taxable years beginning after December 31, 2023" -- so
+ * validity is what decides which limitation the amount draws on, and an amount
+ * of unresolved validity cannot be charged to either as settled.
+ *
+ * Hence a range in each, not a withdrawal from one. The catch-up pool has
+ * certainly spent the amount only if the contribution was valid, so its minimum
+ * gives it up; the base pool has spent it only if the contribution was not, so
+ * its maximum takes it on. Both carry the same uncertainty key, because the
+ * reading that charges one is the reading that spares the other and their maxima
+ * never both hold.
+ *
+ * Correcting or recharacterizing the amount is a third completion, and it is
+ * inside these bounds rather than beside them: a corrected amount consumes
+ * neither limitation, which is each pool's minimum.
+ */
+function seedUnresolvedCatchUpAttribution(
+  context: CalculationContext,
+  accounts: NormalizedAccount[],
+): void {
+  for (const account of accounts) {
+    const traits = ACCOUNT_TRAITS[account.type];
+    const invalid = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+    if (invalid === null) continue;
+    const section457 = catchUpPoolFamily(traits) === "section457";
+    attributeToEitherPool(
+      section457
+        ? context.section457CatchUpPools.get(account.ownerId)
+        : context.catchUpPools.get(account.ownerId),
+      section457
+        ? context.section457BasePools.get(account.ownerId)
+        : context.elective402gPools.get(account.ownerId),
+      invalid.existing,
+      `existing-pre-tax-catch-up:${account.id}`,
+    );
   }
 }
 
@@ -16056,9 +16113,13 @@ function catchUpTaxTreatment(
   // where catch-up room survives.
   if (availableCatchUp !== null && availableCatchUp <= 0) return classification;
 
-  if (appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, diagnostics)) {
-    return blocked;
-  }
+  // Appends where the doubt can still change this account's answer, and does not
+  // take the allocation away when it does. The guaranteed room is drawn either
+  // way -- `takeFromPool` will not exceed it -- so returning `blocked` here would
+  // withhold capacity that exists under every reading of the facts on the ground
+  // that some further capacity does not. The ERROR is what makes the account
+  // indeterminate; the amount it can be sure of is still allocated.
+  appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, availableCatchUp, diagnostics);
   return classification;
 }
 
@@ -16400,7 +16461,7 @@ function appendHighWageExistingPreTaxCatchUpDiagnostic(
 
 /**
  * Reports that another of the participant's plans holds an unreconciled pre-tax
- * catch-up which puts this account's remaining catch-up capacity in doubt.
+ * catch-up whose resolution would change how much this account may still take.
  *
  * The IRC 414(v)(2)(B) limit is the participant's rather than the plan's, and an
  * unreconciled amount has already been charged against it as though it were a
@@ -16409,18 +16470,50 @@ function appendHighWageExistingPreTaxCatchUpDiagnostic(
  * an apparent $5,000, where the true figure is $5,000 or $8,000 according to an
  * answer nobody has yet given.
  *
+ * But that is a reason to withhold the *disputed* part of the capacity, not all
+ * of it, and the interval says which part is which. Where this account's demand
+ * fits inside the room the pool has under every reading -- 4,000 against a
+ * residue of 5,000 or 8,000 -- the answer is the same whichever way the doubt
+ * resolves, and reporting it as indeterminate withholds a figure the record
+ * fully supports. The test is therefore whether the doubt can move *this*
+ * account's draw:
+ *
+ *     guaranteed = min(demand, remaining.minimum)
+ *     possible   = min(demand, remaining.maximum)
+ *
+ * and only `possible > guaranteed` is a doubt worth reporting. A settled pool
+ * never passes it, which is what separates a limit a valid contribution has
+ * definitively exhausted -- remaining [0, 0], nothing more to be had by anyone,
+ * so no wage fact can change the answer -- from one whose apparent exhaustion
+ * rests on the amount in question, remaining [0, 8000], where it still can.
+ *
+ * A null demand means the caller established there was some without saying how
+ * much, which the two IRC 457 sites do; an unbounded demand takes the whole
+ * residue, so the test reduces to whether the pool is unsettled at all.
+ *
  * The doubt reaches the pool the amount was drawn from and no further; see
- * catchUpPoolFamily. Its caller applies it only where this account could
- * otherwise have taken a catch-up, because an account with no capacity to lose
- * is not made more accurate by being made indeterminate.
+ * catchUpPoolFamily.
  */
 function appendSiblingCatchUpPoolBlockDiagnostic(
   context: CalculationContext,
   account: NormalizedAccount,
   traits: AccountTraits,
+  availableCatchUp: Money | null,
   diagnostics: Diagnostic[],
 ): boolean {
   const family = catchUpPoolFamily(traits);
+  const pool =
+    family === "section457"
+      ? context.section457CatchUpPools.get(account.ownerId)
+      : context.catchUpPools.get(account.ownerId);
+  if (pool === undefined || poolUsageSettled(pool)) return false;
+  const remaining = poolRemainingInterval(pool);
+  if (remaining === null) return false;
+  const guaranteedDraw =
+    availableCatchUp === null ? remaining.minimum : minMoney(availableCatchUp, remaining.minimum);
+  const possibleDraw =
+    availableCatchUp === null ? remaining.maximum : minMoney(availableCatchUp, remaining.maximum);
+  if (possibleDraw <= guaranteedDraw) return false;
   const blockedBy = [...context.accountsById.values()].find(
     (other) =>
       other.id !== account.id &&
@@ -16436,7 +16529,7 @@ function appendSiblingCatchUpPoolBlockDiagnostic(
       diagnostic(
         code,
         DiagnosticSeverity.ERROR,
-        `No further catch-up is allocated because account ${blockedBy.id} records a pre-tax age-based catch-up that IRC 414(v)(7)(A) did not permit for this participant. The amount a participant may exclude as a catch-up is theirs for the taxable year rather than each plan's: IRC 402(g)(1)(C) capped what an eligible participant's gross income could exclude "without regard to the treatment of the elective deferrals by an applicable employer plan under section 414(v)", and Notice 2023-62 preserves that result after SECURE 2.0 section 603(b)(1) struck the subparagraph. So the block follows the participant and crosses employers, and the amount in doubt has already been charged against that one limit -- the capacity apparently left for this account is only correct if the contribution in doubt was valid. Reconcile the catch-up components on account ${blockedBy.id} before relying on this account's remaining catch-up capacity.`,
+        `$${roundMoney(possibleDraw - guaranteedDraw).toLocaleString()} of further catch-up capacity is unresolved because account ${blockedBy.id} records a pre-tax age-based catch-up that IRC 414(v)(7)(A) did not permit for this participant. The $${guaranteedDraw.toLocaleString()} this account can take under either reading has been allocated; the remainder turns on whether that contribution was valid. The amount a participant may exclude as a catch-up is theirs for the taxable year rather than each plan's: IRC 402(g)(1)(C) capped what an eligible participant's gross income could exclude "without regard to the treatment of the elective deferrals by an applicable employer plan under section 414(v)", and Notice 2023-62 preserves that result after SECURE 2.0 section 603(b)(1) struck the subparagraph. So the doubt follows the participant and crosses employers, and the amount in question has already been charged against that one limit as though it were valid. Reconcile the catch-up components on account ${blockedBy.id} to establish the rest.`,
         `accounts.${account.id}`,
         "IRC 414(v)(7)(A); IRC 402(g)(1)(C) as preserved by Notice 2023-62",
       ),
@@ -17897,24 +17990,38 @@ function allocateSection457(
     resolution.mode === "special"
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
-  // The account's own room, before the shared IRC 414(v) pool is consulted. It
-  // is what decides whether the classification is worth asking for, because the
-  // pool residue is the very thing an unreconciled sibling puts in doubt: an
-  // invalid existing catch-up on another of the participant's IRC 457 plans
-  // fills the pool, which would read here as "no capacity" and skip the
-  // classification -- and with it the sibling block -- leaving this account
-  // reported as a determinate zero when reconciling the sibling could restore
-  // the whole amount. The qualified-plan site is bounded by `desiredCatchUp`,
-  // which is already pool-independent for the same reason.
+  // What decides whether the classification is worth asking for: the most this
+  // account could take if every open question resolved in its favour.
+  //
+  // This deliberately reads the pool's *maximum* remaining rather than its
+  // settled remainder, and the difference is the whole point. An unreconciled
+  // catch-up on another of the participant's IRC 457 plans no longer fills the
+  // pool -- it widens it -- so consulting the pool here no longer mistakes
+  // "someone may have spent this" for "this is spent", which is what previously
+  // forced the test to ignore the pool altogether and ask for a wage
+  // classification the answer could not depend on.
+  //
+  // So the two exhaustions separate. A valid contribution that consumed the
+  // limit leaves remaining [0, 0]: no reconciliation can restore anything, no
+  // wage fact can change this account's zero, and asking for one would make an
+  // account indeterminate for want of a fact that cannot matter. An
+  // unreconciled one leaves remaining [0, 8000]: the maximum is positive, the
+  // classification is still load-bearing, and the sibling block below is
+  // reachable.
+  const poolCatchUpPossible = poolRemainingInterval(catchUpPool)?.maximum ?? Infinity;
   const ownCatchUpRoomWithoutPool = mayDrawCatchUp
     ? minMoney(
         compensationRemaining,
         accountSpecialRemaining,
         plesaPool ? poolRemaining(plesaPool) : Infinity,
+        poolCatchUpPossible,
       )
     : 0;
+  // The capacity actually reported, which is the room guaranteed under every
+  // reading rather than the room that might exist. `takeFromPool` will not
+  // exceed it either.
   const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
-    ? minMoney(poolRemaining(catchUpPool), ownCatchUpRoomWithoutPool)
+    ? minMoney(poolRemainingInterval(catchUpPool)?.minimum ?? null, ownCatchUpRoomWithoutPool)
     : 0;
   const ageCatchUpTreatmentBeforeClassificationBlock =
     resolution.mode === "age" &&

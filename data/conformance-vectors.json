@@ -19077,7 +19077,7 @@
     },
     {
       "name": "2026 the rejected account still reports the supplied pre-tax component and its tax effect for audit",
-      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026. Prior-year FICA wages from the sponsoring employer are $500,000, which exceeds the threshold, so IRC 414(v)(7)(A) applies on its own terms. The same rejected $8,000 pre-tax catch-up as the first vector, asserted on the reported figures rather than only on the status. The component is deliberately retained at $8,000 and the Form W-2 box 1 and AGI reductions still show $32,500 -- the $24,500 base deferral plus the $8,000 -- because the engine reports what the caller supplied rather than silently discarding or recharacterising a completed contribution. What changed is that the result is no longer determinate, so the retained figure is not offered as a settled answer. Nulling the tax effect instead would lose the audit trail the caller needs to reconcile the classification, and 26 CFR 1.457-5 is handled the same way here.",
+      "description": "The companion to the partial case above, with the whole 8000 IRC 414(v)(2)(B)(i) catch-up (Notice 2025-67) recorded pre-tax and rejected on the same 500000 of prior-year FICA wages. The component is still reported as supplied and is not reclassified: the caller stated a statutory provenance through the component key, and inventing a different one would answer a question about a completed contribution that only the caller and the plan can answer.\n\nIRC 414(v)(3)(A)(i) disregards a catch-up for the IRC 402(g) limit, but only a contribution \"made under paragraph (1)\". Once IRC 414(v)(7)(A) prevents that treatment -- above the wage threshold paragraph (1) applies \"only if\" the additional elective deferrals are designated Roth contributions, and this one is pre-tax -- the amount is an ordinary elective deferral again and IRC 401(a)(30) and IRC 402(g) reach it. Notice 2023-62 confirms the relief survives SECURE 2.0 section 603(b)(1)'s striking of IRC 402(g)(1)(C): \"the elimination of section 402(g)(1)(C) ... does not change this result for taxable years beginning after December 31, 2023.\" So validity decides which limitation the amount draws on, and an amount of unresolved validity cannot be charged to either as settled.\n\nIRC 402(g) usage is therefore [0, 8000] against the 2026 limit of 24500, leaving [16500, 24500]. The guaranteed 16500 is allocated, so formW2Box1WageReduction and federalAgiReduction are 16500 + 8000 = 24500. The previously asserted 32500 was 24500 of base plus the 8000 carried amount, which is an exclusion from gross income 8000 above the IRC 402(g) ceiling -- a wrong number rather than a missing warning, and exactly what withholding the disputed room prevents. The account stays indeterminate: whether the last 8000 of base room exists turns on the unreconciled classification.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -19115,8 +19115,11 @@
       "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000,
-        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 32500,
-        "accounts.0.federalTaxEffects.federalAgiReduction": 32500
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 16500,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 24500,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 24500,
+        "accounts.0.sharedLimits.0.possibleRemainingAfterAccount.minimum": 0,
+        "accounts.0.sharedLimits.0.possibleRemainingAfterAccount.maximum": 8000
       },
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
@@ -19165,53 +19168,6 @@
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 0
       },
       "expectAbsentDiagnosticCodes": [
-        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
-      ]
-    },
-    {
-      "name": "2026 a partial existing pre-tax catch-up above the threshold blocks the rest of the catch-up",
-      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026. Prior-year FICA wages from the sponsoring employer are $500,000, which exceeds the threshold, so IRC 414(v)(7)(A) applies on its own terms. Existing contributions record $3,000 of pre-tax age-based catch-up, leaving $5,000 of the $8,000 IRC 414(v)(2)(B)(i) amount nominally unused. IRC 414(v)(1) applies \"only if\" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not an additional elective deferral this participant was permitted to make. Nothing here is missing: the supplied facts say directly that the contribution was not one IRC 414(v) allows. The component is retained as supplied rather than reclassified, because the caller stated a statutory provenance through the component key, and the result is indeterminate so a consumer does not read the retained figure as a settled one. That is the treatment 26 CFR 1.457-5 already receives in this engine for its own mutually exclusive methods. No part of the remaining $5,000 is allocated. Whether the $3,000 counts against the IRC 414(v)(2)(B) limit at all is precisely what is in doubt, so the room left above it is not a figure to state: if the pre-tax amount was not a permitted additional elective deferral, the room is $8,000 rather than $5,000, and reporting either would be guessing which. The base IRC 402(g)(1) deferral is independently determinable and is still offered, so maximumAdditionalContributionBasedOnInputs is the $24,500 base alone. Allocating the $5,000 as a Roth catch-up on top of an unreconciled pre-tax one, which is what happened before, stated a total the statute may not permit.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "S",
-        "persons": [
-          {
-            "id": "t",
-            "birthYear": 1970,
-            "compensation": {
-              "w2Compensation": 250000
-            },
-            "priorYearFicaWagesByEmployer": {
-              "e": 500000
-            }
-          }
-        ],
-        "accounts": [
-          {
-            "id": "a",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e",
-            "planRules": {
-              "planCompensation": 250000,
-              "expectedEmployerContribution": 0,
-              "includibleCompensation457": 250000,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {
-              "employeePreTaxCatchUp": 3000
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.status": "indeterminate",
-        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
-        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
-        "accounts.0.maximumAdditionalContributionBasedOnInputs": 24500
-      },
-      "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
     },
@@ -19443,66 +19399,6 @@
       ],
       "expectAbsentDiagnosticCodes": [
         "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
-      ]
-    },
-    {
-      "name": "2026 an unreconciled pre-tax catch-up blocks the same participant's other IRC 414(v) plan",
-      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The participant attains age 56 in 2026 and prior-year FICA wages from the sponsoring employer are $500,000, above the threshold. Account a1 records $3,000 of pre-tax age-based catch-up, which IRC 414(v)(7)(A) did not permit, and account a2 is a second plan of the same participant holding nothing. The IRC 414(v)(2)(B)(i) amount is the participant's rather than each plan's, and the $3,000 has already been charged against it, so a2 appears to have $5,000 left. That residue is real only if the contribution in doubt was valid, which is precisely what is unresolved: if the pre-tax amount was not an additional elective deferral IRC 414(v)(1) permits, the room is the whole $8,000 rather than $5,000. Allocating the apparent $5,000 to a2 therefore stated a figure that depends on the answer to the open question. Both accounts are indeterminate and neither receives a catch-up; a2 names a1 rather than repeating a1's own diagnostic, because the defect is on a1 and the caller has to fix it there.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "S",
-        "persons": [
-          {
-            "id": "t",
-            "birthYear": 1970,
-            "compensation": {
-              "w2Compensation": 400000
-            },
-            "priorYearFicaWagesByEmployer": {
-              "e": 500000
-            }
-          }
-        ],
-        "accounts": [
-          {
-            "id": "a1",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e",
-            "priority": 0,
-            "planRules": {
-              "planCompensation": 200000,
-              "expectedEmployerContribution": 0,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {
-              "employeePreTaxCatchUp": 3000
-            }
-          },
-          {
-            "id": "a2",
-            "ownerId": "t",
-            "type": "roth_401k",
-            "employerId": "e",
-            "priority": 1,
-            "planRules": {
-              "planCompensation": 200000,
-              "expectedEmployerContribution": 0
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.status": "indeterminate",
-        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
-        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
-        "accounts.1.status": "indeterminate",
-        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
-        "accounts.1.diagnostics.0.code": "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
-      },
-      "expectDiagnosticCodes": [
-        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
     },
     {
@@ -19992,134 +19888,6 @@
       }
     },
     {
-      "name": "2026 an account whose base deferral consumed its compensation is not blocked by a sibling",
-      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. Account b is taken first by priority and recognizes exactly $24,500 of plan compensation, so its base deferral consumes all of it and no compensation remains for a catch-up: IRC 414(v)(2)(A) additional elective deferrals are still elective deferrals, which cannot exceed compensation. Its sibling records $3,000 of pre-tax age-based catch-up against wages of $500,000, which IRC 414(v)(7)(A) did not permit, so the sibling is indeterminate on its own facts. The participant-wide IRC 414(v) pool doubt that follows is doubt about capacity, and capacity is not what stops account b -- reconciling the sibling cannot create compensation here, so the answer for b is the same either way. b is therefore determinate, and CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP is absent. Blocking on the nominal plan catch-up limit instead of the room actually available reported b as indeterminate without changing one of its numbers.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "S",
-        "persons": [
-          {
-            "id": "t",
-            "birthYear": 1970,
-            "compensation": {
-              "w2Compensation": 600000
-            },
-            "priorYearFicaWagesByEmployer": {
-              "e1": 500000,
-              "e2": 500000
-            }
-          }
-        ],
-        "accounts": [
-          {
-            "id": "b",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e2",
-            "priority": 1,
-            "planRules": {
-              "planCompensation": 24500,
-              "expectedEmployerContribution": 0,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {}
-          },
-          {
-            "id": "sib",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e1",
-            "priority": 2,
-            "planRules": {
-              "planCompensation": 300000,
-              "expectedEmployerContribution": 0,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {
-              "employeePreTaxCatchUp": 3000
-            }
-          }
-        ]
-      },
-      "expect": {
-        "accounts.0.accountId": "b",
-        "accounts.0.status": "determinate",
-        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
-        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
-        "accounts.1.status": "indeterminate"
-      },
-      "expectAbsentDiagnosticCodes": [
-        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP",
-        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
-      ]
-    },
-    {
-      "name": "2026 a blocked account does not also report that its catch-up was allocated as Roth",
-      "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) limit at $24,500, the IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) threshold at $150,000. Account b has $300,000 of plan compensation and room for a catch-up, prior-year wages of $500,000 from its own employer, and a plan permitting Roth catch-up, so IRC 414(v)(7)(A) classifies its catch-up as Roth. Its sibling holds $3,000 of pre-tax age-based catch-up the same provision did not permit, which leaves the participant-wide IRC 414(v)(2)(B) pool unreconciled and stops any further catch-up being allocated. Both statements cannot stand: HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH says the age-based catch-up is allocated as Roth, and the block says none is allocated, and employeeRothCatchUp is 0. The classification is therefore taken with its success diagnostic withheld and the announcement made only once nothing further can withdraw the allocation. The block itself still stands, because here the sibling's reconciliation genuinely could change b's number.",
-      "input": {
-        "taxYear": 2026,
-        "filingStatus": "S",
-        "persons": [
-          {
-            "id": "t",
-            "birthYear": 1970,
-            "compensation": {
-              "w2Compensation": 900000
-            },
-            "priorYearFicaWagesByEmployer": {
-              "e1": 500000,
-              "e2": 500000
-            }
-          }
-        ],
-        "accounts": [
-          {
-            "id": "sib",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e1",
-            "priority": 1,
-            "planRules": {
-              "planCompensation": 300000,
-              "expectedEmployerContribution": 0,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {
-              "employeePreTaxCatchUp": 3000
-            }
-          },
-          {
-            "id": "b",
-            "ownerId": "t",
-            "type": "401k",
-            "employerId": "e2",
-            "priority": 2,
-            "planRules": {
-              "planCompensation": 300000,
-              "expectedEmployerContribution": 0,
-              "permitsRothCatchUp": true,
-              "permitsRothContributions": true
-            },
-            "existingContributions": {}
-          }
-        ]
-      },
-      "expect": {
-        "accounts.1.accountId": "b",
-        "accounts.1.status": "indeterminate",
-        "accounts.1.contributionComponents.employeeRothCatchUp": 0
-      },
-      "expectDiagnosticCodes": [
-        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
-      ],
-      "expectAbsentDiagnosticCodes": [
-        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
-      ]
-    },
-    {
       "name": "2026 an account the shared IRC 414(v) pool left nothing for reports no Roth allocation",
       "description": "Notice 2025-67 sets the 2026 IRC 402(g)(1) elective deferral limit at $24,500, the ordinary IRC 414(v)(2)(B)(i) catch-up at $8,000, and the IRC 414(v)(7)(A) prior-year wage threshold at $150,000. The IRC 414(v)(2)(B) catch-up limit is the participant's rather than the plan's, so the two 401(k) plans here share one $8,000 amount. Account first is taken first by priority and takes all of it; its prior-year wages of $100,000 are below the threshold, so IRC 414(v)(7)(A) does not reach it and its catch-up is pre-tax. Account second has $300,000 of plan compensation, prior-year wages of $500,000 from its own employer, and a plan permitting a Roth catch-up, so IRC 414(v)(7)(A) does reach it and would force Roth treatment -- but the shared pool it draws from is empty, so it allocates nothing and its employeeRothCatchUp is 0. HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH states that the age-based catch-up is allocated as Roth, which is false of an account that allocated none, so it must be absent from this scenario entirely: first is below the threshold and second allocated nothing. This is ordinary valid exhaustion of the shared limit -- no unreconciled amount is involved and both accounts are determinate -- which is why the diagnostic is emitted after the pool draw returns rather than when the classification is taken. The classification is bounded by the plan limit and by compensation, but not by the pool.",
       "input": {
@@ -20291,6 +20059,507 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD",
         "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ]
+    },
+    {
+      "name": "2026 a valid contribution that exhausts the IRC 457 catch-up pool leaves the next plan determinate",
+      "description": "Prior-year FICA wages from employer e1 of 100000 are below the IRC 414(v)(7)(A) threshold, so p1's 8000 of existing pre-tax age-based catch-up is a valid IRC 414(v)(1) additional elective deferral and nothing about it is in doubt. It is the whole 2026 IRC 414(v)(2)(B)(i) catch-up limit of 8000 (Notice 2025-67), so the participant's catch-up pool is spent: remaining is [0, 0], a settled zero.\n\np2 supplies no prior-year FICA wages for its own employer e2, which would ordinarily leave its catch-up classification unstatable and the account indeterminate under PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION. It must not here. There is no catch-up left for any plan of this participant to take, under any reading of any fact: the maximum the pool could still yield is 0, so no wage figure and no reconciliation can change p2's answer from zero. Asking for a fact that cannot matter makes an account indeterminate for nothing, and p2 is determinate at 0 instead. p2 also has no existing catch-up component of its own for the classification to adjudicate.\n\nThis is the half of the distinction that a pool-independent test could not see. Exhaustion by a valid contribution and apparent exhaustion by an unreconciled one are the same number under a scalar and different intervals under a range -- [0, 0] against [0, 8000] -- and only the second leaves the classification load-bearing. The companion vector below pins that second case.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p1",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "includibleCompensation457": 200000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          },
+          {
+            "id": "p2",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "includibleCompensation457": 200000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "p2",
+        "accounts.1.status": "determinate",
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000
+      },
+      "expectAbsentDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION",
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ]
+    },
+    {
+      "name": "2026 an ordinary scenario reports settled pool usage as figures, not as ranges",
+      "description": "The compatibility control for the interval representation. Nothing here is unresolved: one 401(k), no existing contributions, prior-year FICA wages of 500000 from the sponsoring employer, and a plan permitting a designated Roth catch-up. IRC 414(v)(7)(A) makes the catch-up available \"only if\" it is a designated Roth contribution, and this plan offers one, so 8000 is allocated as Roth against the 2026 IRC 414(v)(2)(B)(i) limit and 24500 of pre-tax elective deferral against the 2026 IRC 402(g)(1)(B) limit (Notice 2025-67).\n\nEvery pool usage is therefore settled, which is to say each interval is a point, and the report must read exactly as it did before usage became a range: usedBeforeAccount, usedByAccount and remainingAfterAccount are all figures, and the possible* ranges are absent rather than degenerate ones repeating them. The IRC 402(g) pool goes from 0 to 24500 leaving 0; the IRC 414(v) pool goes from 0 to 8000 leaving 0. A representation change that quietly nulled a scalar, or offered a range beside it where none was needed, would fail here rather than only in the vectors that exercise unresolved attribution.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 900000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 8000,
+        "accounts.0.sharedLimits.0.id": "402g:t",
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.0.usedByAccount": 24500,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.id": "414v:t",
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedByAccount": 8000,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 the two pools one unresolved amount widened are never spent at both maxima at once",
+      "description": "The control on correlation. One rejected contribution of 3000 widens two pools: IRC 402(g) usage becomes [0, 3000] against the 2026 limit of 24500 and IRC 414(v) usage becomes [0, 3000] against the 2026 limit of 8000 (Notice 2025-67). Their remainders are [21500, 24500] and [5000, 8000].\n\nThose maxima do not both occur. IRC 414(v)(3)(A)(i) disregards a catch-up for the IRC 402(g) limit only for a contribution \"made under paragraph (1)\", so the reading in which the 3000 was a valid catch-up is the reading in which IRC 402(g) never bore it, and the reading in which IRC 414(v)(7)(A) condemned it is the one in which IRC 402(g) did. Adding 24500 of base room to 8000 of catch-up room would report 32500 of capacity that no completion of the facts provides.\n\nThe engine allocates 21500 of base to a1 and 5000 of Roth catch-up to a2, and a1 carries its 3000 for audit, totalling 29500 of elective deferrals and catch-ups across the participant's plans. That figure is feasible under both readings and is what this vector pins: if the 3000 was valid, IRC 402(g) bore 21500 and IRC 414(v) bore the full 8000; if it was not, IRC 402(g) bore the full 24500 and IRC 414(v) bore 5000. Either way nothing exceeds a limit, and 32500 would exceed both.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 900000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a1",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "a2",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "a1",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 21500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.1.accountId": "a2",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 5000,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.1.sharedLimits.0.id": "402g:t",
+        "accounts.1.sharedLimits.0.usedByAccount": 0,
+        "accounts.1.sharedLimits.0.possibleRemainingAfterAccount.maximum": 3000,
+        "accounts.1.sharedLimits.2.id": "414v:t",
+        "accounts.1.sharedLimits.2.usedByAccount": 5000,
+        "accounts.1.sharedLimits.2.possibleRemainingAfterAccount.maximum": 3000
+      }
+    },
+    {
+      "name": "2026 a rejected pre-tax catch-up leaves only the IRC 402(g) room guaranteed under either reading",
+      "description": "The 2026 IRC 402(g)(1)(B) elective deferral limit is 24500 and the IRC 414(v)(2)(B)(i) catch-up limit is 8000 (Notice 2025-67). Prior-year FICA wages from employer e of 500000 exceed the IRC 414(v)(7)(A) threshold, so the 3000 of existing pre-tax age-based catch-up is rejected and EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD is reported.\n\nIRC 414(v)(3)(A)(i) disregards a catch-up for the IRC 402(g) limit, but only a contribution \"made under paragraph (1)\". Once IRC 414(v)(7)(A) prevents that treatment -- above the wage threshold paragraph (1) applies \"only if\" the additional elective deferrals are designated Roth contributions, and this one is pre-tax -- the amount is an ordinary elective deferral again and IRC 401(a)(30) and IRC 402(g) reach it. Notice 2023-62 confirms the relief survives SECURE 2.0 section 603(b)(1)'s striking of IRC 402(g)(1)(C): \"the elimination of section 402(g)(1)(C) ... does not change this result for taxable years beginning after December 31, 2023.\" So validity decides which limitation the amount draws on, and an amount of unresolved validity cannot be charged to either as settled.\n\nSo the 3000 sits in a range rather than in one pool. IRC 402(g) usage is [0, 3000] and its remaining is [21500, 24500]; IRC 414(v) usage is [0, 3000] and its remaining is [5000, 8000]. The two ranges come from the one contribution and reach their maxima under opposite readings: the reading that charges it to IRC 402(g) is the reading that spares IRC 414(v). Correcting or recharacterizing it is a third completion and sits inside these bounds, not beside them, because a corrected amount consumes neither limitation -- each pool's minimum.\n\nmaximumAdditionalContributionBasedOnInputs is therefore 21500, not 24500: that is the base room the participant has under every reading, and it is allocated. Reporting 24500 asserted the room that exists only if the amount is corrected, in the same result that declines to say whether it was. The account stays indeterminate because a further 3000 turns on the unanswered question, and formW2Box1WageReduction is 24500 -- the allocated 21500 plus the 3000 carried for audit -- which is the IRC 402(g) ceiling exactly rather than 3000 above it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "expectedEmployerContribution": 0,
+              "includibleCompensation457": 250000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 21500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 21500,
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 24500,
+        "accounts.0.sharedLimits.0.id": "402g:t",
+        "accounts.0.sharedLimits.0.limit": 24500,
+        "accounts.0.sharedLimits.0.usedByAccount": 21500,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.0.possibleRemainingAfterAccount.minimum": 0,
+        "accounts.0.sharedLimits.0.possibleRemainingAfterAccount.maximum": 3000,
+        "accounts.0.sharedLimits.2.id": "414v:t",
+        "accounts.0.sharedLimits.2.possibleRemainingAfterAccount.minimum": 5000,
+        "accounts.0.sharedLimits.2.possibleRemainingAfterAccount.maximum": 8000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 a demand inside the guaranteed residue is allocated whole and not blocked",
+      "description": "Account b has 24500 of plan compensation and no existing contributions; sib holds the rejected 3000. IRC 402(g) usage is [0, 3000] against the 2026 limit of 24500 (Notice 2025-67), so b takes the guaranteed 21500 of base room and 3000 of its compensation is left over. The 2026 IRC 414(v)(2)(B)(i) catch-up limit is 8000 and the same unresolved 3000 leaves a residue of [5000, 8000].\n\nb's whole remaining demand is 3000, which fits inside the 5000 guaranteed under every reading. The doubt therefore cannot move b's answer: it takes 3000 whether sib's contribution was valid or not. So it is allocated in full, b is determinate, and CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP is absent -- the test is whether min(demand, residue.maximum) exceeds min(demand, residue.minimum), and 3000 does not exceed 3000. Prior-year FICA wages from e2 of 500000 exceed the IRC 414(v)(7)(A) threshold and b's plan permits a Roth catch-up, so the 3000 is a designated Roth catch-up and b's total is 21500 + 3000 = 24500, its whole plan compensation.\n\nThis is the case an all-or-nothing block got wrong in the direction of caution: it reported b indeterminate and allocated nothing, withholding an answer every completion of the facts agrees on. sib stays indeterminate on its own rejected component.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 600000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 24500,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "sib",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "b",
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 21500,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 3000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectAbsentDiagnosticCodes": [
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ]
+    },
+    {
+      "name": "2026 an account with unresolved further capacity still announces the catch-up it did take",
+      "description": "The pairing HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH exists to keep honest. It must not be reported beside a claim that nothing was allocated, which is why it moved to the allocation sites and fires only on a positive draw. Under the interval model there is a positive draw here, so both are reported and they do not contradict: b takes the 5000 of IRC 414(v)(2)(B)(i) residue guaranteed whichever way sib's rejected 3000 resolves -- usage [0, 3000] against the 2026 limit of 8000 (Notice 2025-67) leaves [5000, 8000] -- and 3000 of further capacity remains unresolved.\n\nPrior-year FICA wages from employer e2 of 500000 exceed the IRC 414(v)(7)(A) threshold and b's plan permits a Roth catch-up, so IRC 414(v)(1) applies \"only if\" the additional elective deferrals are designated Roth contributions and the 5000 is allocated as Roth. b stays indeterminate on the unresolved remainder, which is a statement about the 3000 it did not get rather than about the 5000 it did. The earlier assertion of zero alongside an absent announcement pinned the opposite reading: that an unsettled pool is an empty one.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 900000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sib",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "b",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 5000,
+        "accounts.1.sharedLimits.2.usedByAccount": 5000
+      },
+      "expectDiagnosticCodes": [
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP",
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
+    },
+    {
+      "name": "2026 an unreconciled contribution that appears to exhaust the IRC 457 pool leaves the next plan indeterminate",
+      "description": "The companion to the vector above, differing in one figure: prior-year FICA wages from employer e1 are 500000 rather than 100000, above the IRC 414(v)(7)(A) threshold. p1's 8000 of pre-tax age-based catch-up is therefore rejected -- IRC 414(v)(1) applies \"only if\" the additional elective deferrals are designated Roth contributions -- and its attribution is unresolved rather than settled.\n\nThe IRC 457 catch-up pool's remaining is [0, 8000], not [0, 0]. Guaranteed capacity is nil, so p2 is allocated nothing; possible capacity is the whole 8000, because reconciling p1's component could restore it. p2's own prior-year FICA wages for employer e2 are therefore still load-bearing -- they decide what p2 could take if the pool is restored -- and PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION is reported alongside CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP. p2 is indeterminate, and reporting it as a determinate zero would state a settled answer resting on an unsettled one.\n\np1 keeps its rejected 8000 for audit and takes the IRC 457(b) base room guaranteed under either reading. The 2026 IRC 402(g)(1)(B) figure the IRC 457(b) limit tracks is 24500 (Notice 2025-67), and the unresolved 8000 puts base usage at [0, 8000], so 16500 is allocated and the remaining 8000 turns on the same unanswered question.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "p1",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "includibleCompensation457": 200000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          },
+          {
+            "id": "p2",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "includibleCompensation457": 200000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "p2",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 16500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8000
+      },
+      "expectDiagnosticCodes": [
+        "PRIOR_YEAR_FICA_WAGES_REQUIRED_FOR_ROTH_CATCH_UP_CLASSIFICATION",
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP",
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 an unreconciled pre-tax catch-up leaves the sibling its guaranteed catch-up and no more",
+      "description": "The participant's IRC 414(v)(2)(B) limit is theirs for the taxable year rather than each plan's, so a1's rejected 3000 reaches a2. IRC 402(g)(1)(C) capped what an eligible participant's gross income could exclude \"without regard to the treatment of the elective deferrals by an applicable employer plan under section 414(v)\", and Notice 2023-62 preserves that result after SECURE 2.0 section 603(b)(1) struck the subparagraph, so the doubt follows the participant and crosses employers.\n\nWhat it does not do is take everything. The 2026 IRC 414(v)(2)(B)(i) limit is 8000 (Notice 2025-67) and the unresolved 3000 puts pool usage at [0, 3000], so the residue is [5000, 8000]. a2 may take 5000 whichever way the doubt resolves -- that room exists under every reading of the facts -- and it is allocated as a designated Roth catch-up, a2 being a roth_401k. The remaining 3000 exists only if a1's contribution was valid, so it is withheld and CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP reports that 3000 of further capacity is unresolved. a2 is indeterminate for that reason, not for want of the 5000.\n\nReporting zero here was the error this vector previously pinned: it withheld capacity that exists under every completion of the facts because some further capacity does not. a1 keeps its rejected 3000 for audit and takes the 21500 of IRC 402(g) base room guaranteed under either reading.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a1",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "priority": 0,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "a2",
+            "ownerId": "t",
+            "type": "roth_401k",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "planCompensation": 200000,
+              "expectedEmployerContribution": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 0,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 21500,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 5000,
+        "accounts.1.diagnostics.0.code": "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP",
+        "accounts.1.sharedLimits.2.id": "414v:t",
+        "accounts.1.sharedLimits.2.usedByAccount": 5000,
+        "accounts.1.sharedLimits.2.possibleRemainingAfterAccount.minimum": 0,
+        "accounts.1.sharedLimits.2.possibleRemainingAfterAccount.maximum": 3000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
     }
   ]
