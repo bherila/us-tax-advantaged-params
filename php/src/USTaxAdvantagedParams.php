@@ -16303,6 +16303,40 @@ final class Engine
     }
 
     /**
+     * One report of a pool as this account left it. Scalars where the usage is
+     * settled, ranges where it is not, and never both -- a consumer reading
+     * 'remainingAfterAccount' must not be handed an endpoint dressed as a figure.
+     *
+     * @param array<string,mixed> $pool
+     * @param array{minimum: float, maximum: float} $usageBefore
+     * @return array<string,mixed>
+     */
+    private static function sharedLimitUse(array $pool, array $usageBefore, ?float $taken): array
+    {
+        $settledUsage = self::poolUsageSettled($pool);
+        $remaining = self::poolRemainingInterval($pool);
+        $settledBefore = self::intervalIsSettled($usageBefore);
+        $use = [
+            'id' => $pool['id'],
+            'legalLimit' => $pool['legalLimit'],
+            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
+            'usedBeforeAccount' => $settledBefore ? (float) $usageBefore['minimum'] : null,
+            'usedByAccount' => $taken,
+            'remainingAfterAccount' => $settledUsage && $remaining !== null
+                ? (float) $remaining['minimum']
+                : null,
+        ];
+        if (!$settledBefore) {
+            $use['possibleUsedBeforeAccount'] = $usageBefore;
+        }
+        if (!$settledUsage && $remaining !== null) {
+            $use['possibleRemainingAfterAccount'] = $remaining;
+        }
+
+        return $use;
+    }
+
+    /**
      * Whether the pool's usage is settled, which is to say its interval is a point.
      *
      * @param array<string,mixed> $pool
@@ -16352,40 +16386,48 @@ final class Engine
     /** @param array<string,mixed> $pool
      *  @param list<array<string,mixed>> $sharedLimits
      */
+    /**
+     * Take what the pool certainly has room for.
+     *
+     * An unsettled pool is not an empty one. Where the usage is a range, the
+     * room that exists under *every* reading of the facts is the remainder
+     * measured from the largest possible usage, and an allocation of that much
+     * is correct however the doubt resolves -- so it is allocated, and the
+     * account keeps a determinate answer it is entitled to. Refusing it because
+     * some *other* capacity is uncertain withholds a number the record
+     * supports; taking more than it because the ceiling might allow more
+     * asserts one the record does not.
+     *
+     * @param array<string,mixed> $pool
+     * @param list<array<string,mixed>> $sharedLimits
+     */
     private static function takeFromPool(array &$pool, float $requested, array &$sharedLimits): float
     {
-        $usedBefore = (float) $pool['usage']['minimum'];
-        if ($pool['limit'] === null || !self::poolUsageSettled($pool)) {
-            $sharedLimits[] = [
+        $usageBefore = $pool['usage'];
+        $settledBefore = self::poolUsageSettled($pool);
+        if ($pool['limit'] === null) {
+            // A null limit leaves nothing to bound: there is no ceiling to
+            // measure a range against, so no interval is offered beside the
+            // nulls either.
+            $use = [
                 'id' => $pool['id'],
                 'legalLimit' => $pool['legalLimit'],
-                // The ceiling is still reported where it is known. Only the draw
-                // against it is withheld, which is the whole distinction the flag
-                // exists to draw.
-                'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-                // A null limit leaves the draw perfectly knowable; only the third
-                // state withholds it.
-                'usedBeforeAccount' => self::poolUsageSettled($pool) ? $usedBefore : null,
-                'usedByAccount' => self::poolUsageSettled($pool) ? 0.0 : null,
+                'limit' => null,
+                'usedBeforeAccount' => $settledBefore ? (float) $usageBefore['minimum'] : null,
+                'usedByAccount' => $settledBefore ? 0.0 : null,
                 'remainingAfterAccount' => null,
             ];
+            if (!$settledBefore) {
+                $use['possibleUsedBeforeAccount'] = $usageBefore;
+            }
+            $sharedLimits[] = $use;
             return 0.0;
         }
-        $taken = self::minMoney(
-            $requested,
-            self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']),
-        );
-        self::chargePool($pool, (float) ($taken));
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => (float) $pool['limit'],
-            'usedBeforeAccount' => $usedBefore,
-            'usedByAccount' => $taken,
-            'remainingAfterAccount' => self::nonnegative(
-                (float) $pool['limit'] - (float) $pool['usage']['maximum'],
-            ),
-        ];
+        $guaranteed = self::poolRemainingInterval($pool)['minimum'];
+        $taken = self::minMoney($requested, $guaranteed);
+        self::chargePool($pool, $taken);
+        $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $taken);
+
         return $taken;
     }
 
@@ -16394,16 +16436,16 @@ final class Engine
      */
     private static function reportPoolWithoutConsuming(array $pool, array &$sharedLimits): void
     {
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => self::poolUsageSettled($pool)
-                ? (float) $pool['usage']['minimum']
-                : null,
-            'usedByAccount' => self::poolUsageSettled($pool) ? 0.0 : null,
-            'remainingAfterAccount' => self::poolRemaining($pool),
-        ];
+        // No draw was computed here, which is not the same as a computed draw
+        // of zero. Where the usage is unsettled all three usage fields go
+        // together and say nothing: a numeric zero in one of them would read as
+        // a draw the engine declined to make. takeFromPool reports a real zero,
+        // because there the guaranteed room was measured and found to be nil.
+        $sharedLimits[] = self::sharedLimitUse(
+            $pool,
+            $pool['usage'],
+            self::poolUsageSettled($pool) ? 0.0 : null,
+        );
     }
 
     /** @param list<array<string,mixed>> $diagnostics */
@@ -16433,11 +16475,11 @@ final class Engine
         float $requested,
         array &$sharedLimits,
     ): float {
+        // A null ceiling still stops everything: there is no room to be sure of
+        // when the limit itself could not be determined. An unsettled *usage*
+        // does not, because its guaranteed remainder is a number.
         foreach ($refs as [$category, $key]) {
-            if (
-                $context[$category][$key]['limit'] === null
-                || !self::poolUsageSettled($context[$category][$key])
-            ) {
+            if ($context[$category][$key]['limit'] === null) {
                 foreach ($refs as [$reportCategory, $reportKey]) {
                     self::reportPoolWithoutConsuming($context[$reportCategory][$reportKey], $sharedLimits);
                 }
@@ -16446,21 +16488,14 @@ final class Engine
         }
         $limits = [$requested];
         foreach ($refs as [$category, $key]) {
-            $limits[] = self::poolRemaining($context[$category][$key]);
+            $limits[] = self::poolRemainingInterval($context[$category][$key])['minimum'];
         }
         $taken = self::minMoney(...$limits);
         foreach ($refs as [$category, $key]) {
             $pool =& $context[$category][$key];
-            $usedBefore = (float) $pool['usage']['minimum'];
-            self::chargePool($pool, (float) ($taken));
-            $sharedLimits[] = [
-                'id' => $pool['id'],
-                'legalLimit' => $pool['legalLimit'],
-                'limit' => (float) $pool['limit'],
-                'usedBeforeAccount' => $usedBefore,
-                'usedByAccount' => $taken,
-                'remainingAfterAccount' => self::poolRemaining($pool),
-            ];
+            $usageBefore = $pool['usage'];
+            self::chargePool($pool, $taken);
+            $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $taken);
             unset($pool);
         }
         return $taken;
@@ -16471,16 +16506,9 @@ final class Engine
      */
     private static function consumeExactFromPool(array &$pool, float $amount, array &$sharedLimits): void
     {
-        $usedBefore = (float) $pool['usage']['minimum'];
-        self::chargePool($pool, (float) ($amount));
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => $usedBefore,
-            'usedByAccount' => $amount,
-            'remainingAfterAccount' => self::poolRemaining($pool),
-        ];
+        $usageBefore = $pool['usage'];
+        self::chargePool($pool, $amount);
+        $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $amount);
     }
 
     /** @param array<string,mixed> $account

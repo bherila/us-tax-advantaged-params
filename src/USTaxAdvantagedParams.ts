@@ -957,10 +957,26 @@ export interface SharedLimitUse {
    * fields are the named usage, so a consumer that reads them must not be handed
    * a zero the engine never computed; the null is the third state, not a
    * sentinel to be reverse-engineered from a missing remainder.
+   *
+   * `usedByAccount` is the exception and is null far less often, because it is
+   * this account's own settled draw rather than the pool's history: an account
+   * may take a determinate amount out of a pool whose total usage stays a range.
    */
   usedBeforeAccount: Money | null;
   usedByAccount: Money | null;
   remainingAfterAccount: Money | null;
+  /**
+   * Present exactly where the scalar beside it is null for want of a settled
+   * usage -- not where the ceiling itself is unknown, which leaves nothing to
+   * bound. The range is closed and inclusive, and its endpoints are reachable:
+   * some completion of the supplied facts produces each.
+   *
+   * Endpoints from different pools may be summed only at the minimum. Two pools
+   * widened by the same unresolved amount reach their maxima under opposite
+   * readings, so adding those reports headroom no set of facts provides.
+   */
+  possibleUsedBeforeAccount?: MoneyInterval;
+  possibleRemainingAfterAccount?: MoneyInterval;
 }
 
 export interface AccountCalculationResult {
@@ -9463,7 +9479,7 @@ interface NormalizedAccount extends Omit<AccountInput, "type" | "planRules" | "e
  * interval whose endpoints are equal, so one type covers both states and no
  * caller has to ask which one it is holding.
  */
-interface MoneyInterval {
+export interface MoneyInterval {
   minimum: Money;
   maximum: Money;
 }
@@ -15258,6 +15274,40 @@ function chargePool(pool: LimitPool, amount: Money): void {
   };
 }
 
+/**
+ * Record that a known amount's home is unresolved between two pools.
+ *
+ * `chargedTo` is where the amount currently sits and `alternative` is where it
+ * belongs under the other reading. The amount is not moved and not withdrawn:
+ * its lower bound leaves the pool that holds it and its upper bound arrives at
+ * the pool that may have to. Afterwards `chargedTo` may have spent it and
+ * `alternative` may have spent it, and exactly one of those is true in any
+ * completion of the facts -- which is what `groupId` records, so that the two
+ * maxima are never later added together as though both could hold at once.
+ */
+function attributeToEitherPool(
+  chargedTo: LimitPool | undefined,
+  alternative: LimitPool | undefined,
+  amount: Money,
+  groupId: string,
+): void {
+  if (amount <= 0) return;
+  if (chargedTo) {
+    chargedTo.usage = {
+      minimum: nonnegative(roundMoney(chargedTo.usage.minimum - amount)),
+      maximum: chargedTo.usage.maximum,
+    };
+    chargedTo.uncertaintyGroupIds = [...(chargedTo.uncertaintyGroupIds ?? []), groupId];
+  }
+  if (alternative) {
+    alternative.usage = {
+      minimum: alternative.usage.minimum,
+      maximum: roundMoney(alternative.usage.maximum + amount),
+    };
+    alternative.uncertaintyGroupIds = [...(alternative.uncertaintyGroupIds ?? []), groupId];
+  }
+}
+
 /** Whether the pool's usage is settled, which is to say its interval is a point. */
 function poolUsageSettled(pool: LimitPool): boolean {
   return intervalIsSettled(pool.usage);
@@ -15288,45 +15338,74 @@ function poolRemaining(pool: LimitPool): Money | null {
   return nonnegative(pool.limit - pool.usage.maximum);
 }
 
+/**
+ * Take what the pool certainly has room for.
+ *
+ * An unsettled pool is not an empty one. Where the usage is a range, the room
+ * that exists under *every* reading of the facts is the remainder measured from
+ * the largest possible usage, and an allocation of that much is correct however
+ * the doubt resolves -- so it is allocated, and the account keeps a determinate
+ * answer it is entitled to. Refusing it because some *other* capacity is
+ * uncertain withholds a number the record supports; taking more than it because
+ * the ceiling might allow more asserts one the record does not.
+ *
+ * The pool's own usage stays a range afterwards, widened by nothing: a settled
+ * draw moves both endpoints. Only its history is unresolved, and this account's
+ * contribution to that history is not.
+ */
 function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLimitUse[]): Money {
-  const usedBefore = pool.usage.minimum;
-  if (pool.limit === null || !poolUsageSettled(pool)) {
+  const usageBefore = pool.usage;
+  const settledBefore = poolUsageSettled(pool);
+  if (pool.limit === null) {
     sharedLimits.push({
       id: pool.id,
       legalLimit: pool.legalLimit,
-      // The ceiling is still reported where it is known. Only the draw against
-      // it is withheld, which is the whole distinction the flag exists to draw.
-      limit: pool.limit,
-      // A null limit leaves the draw perfectly knowable; only the third state
-      // withholds it.
-      usedBeforeAccount: poolUsageSettled(pool) ? usedBefore : null,
-      usedByAccount: poolUsageSettled(pool) ? 0 : null,
+      // A null limit leaves nothing to bound: there is no ceiling to measure a
+      // range against, so no interval is offered beside the nulls either.
+      limit: null,
+      usedBeforeAccount: settledBefore ? usageBefore.minimum : null,
+      usedByAccount: settledBefore ? 0 : null,
       remainingAfterAccount: null,
+      ...(settledBefore ? {} : { possibleUsedBeforeAccount: usageBefore }),
     });
     return 0;
   }
-  const taken = minMoney(requested, nonnegative(pool.limit - pool.usage.maximum));
+  const guaranteed = poolRemainingInterval(pool)!.minimum;
+  const taken = minMoney(requested, guaranteed);
   chargePool(pool, taken);
-  sharedLimits.push({
-    id: pool.id,
-    legalLimit: pool.legalLimit,
-    limit: pool.limit,
-    usedBeforeAccount: usedBefore,
-    usedByAccount: taken,
-    remainingAfterAccount: nonnegative(pool.limit - pool.usage.maximum),
-  });
+  sharedLimits.push(
+    sharedLimitUse(pool, usageBefore, taken),
+  );
   return taken;
 }
 
-function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUse[]): void {
-  sharedLimits.push({
+/**
+ * One report of a pool as this account left it. Scalars where the usage is
+ * settled, ranges where it is not, and never both -- a consumer reading
+ * `remainingAfterAccount` must not be handed an endpoint dressed as a figure.
+ */
+function sharedLimitUse(pool: LimitPool, usageBefore: MoneyInterval, taken: Money | null): SharedLimitUse {
+  const settledUsage = poolUsageSettled(pool);
+  const remaining = poolRemainingInterval(pool);
+  return {
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
-    usedBeforeAccount: poolUsageSettled(pool) ? pool.usage.minimum : null,
-    usedByAccount: poolUsageSettled(pool) ? 0 : null,
-    remainingAfterAccount: poolRemaining(pool),
-  });
+    usedBeforeAccount: intervalIsSettled(usageBefore) ? usageBefore.minimum : null,
+    usedByAccount: taken,
+    remainingAfterAccount: settledUsage && remaining !== null ? remaining.minimum : null,
+    ...(intervalIsSettled(usageBefore) ? {} : { possibleUsedBeforeAccount: usageBefore }),
+    ...(settledUsage || remaining === null ? {} : { possibleRemainingAfterAccount: remaining }),
+  };
+}
+
+function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUse[]): void {
+  // No draw was computed here, which is not the same as a computed draw of
+  // zero. Where the usage is unsettled all three usage fields go together and
+  // say nothing: a numeric zero in one of them would read as a draw the engine
+  // declined to make. `takeFromPool` reports a real zero, because there the
+  // guaranteed room was measured and found to be nil.
+  sharedLimits.push(sharedLimitUse(pool, pool.usage, poolUsageSettled(pool) ? 0 : null));
 }
 
 function accountStatusFromDiagnostics(
@@ -15350,37 +15429,29 @@ function takeAcrossPools(
   requested: Money,
   sharedLimits: SharedLimitUse[],
 ): Money {
-  if (pools.some((pool) => pool.limit === null || !poolUsageSettled(pool))) {
+  // A null ceiling still stops everything: there is no room to be sure of when
+  // the limit itself could not be determined. An unsettled *usage* does not,
+  // because its guaranteed remainder is a number.
+  if (pools.some((pool) => pool.limit === null)) {
     for (const pool of pools) reportPoolWithoutConsuming(pool, sharedLimits);
     return 0;
   }
-  const taken = minMoney(requested, ...pools.map((pool) => poolRemaining(pool)));
+  const taken = minMoney(
+    requested,
+    ...pools.map((pool) => poolRemainingInterval(pool)!.minimum),
+  );
   for (const pool of pools) {
-    const usedBefore = pool.usage.minimum;
+    const usageBefore = pool.usage;
     chargePool(pool, taken);
-    sharedLimits.push({
-      id: pool.id,
-      legalLimit: pool.legalLimit,
-      limit: pool.limit,
-      usedBeforeAccount: usedBefore,
-      usedByAccount: taken,
-      remainingAfterAccount: poolRemaining(pool),
-    });
+    sharedLimits.push(sharedLimitUse(pool, usageBefore, taken));
   }
   return taken;
 }
 
 function consumeExactFromPool(pool: LimitPool, amount: Money, sharedLimits: SharedLimitUse[]): void {
-  const usedBefore = pool.usage.minimum;
+  const usageBefore = pool.usage;
   chargePool(pool, amount);
-  sharedLimits.push({
-    id: pool.id,
-    legalLimit: pool.legalLimit,
-    limit: pool.limit,
-    usedBeforeAccount: usedBefore,
-    usedByAccount: amount,
-    remainingAfterAccount: poolRemaining(pool),
-  });
+  sharedLimits.push(sharedLimitUse(pool, usageBefore, amount));
 }
 
 function emptyOutcome(
