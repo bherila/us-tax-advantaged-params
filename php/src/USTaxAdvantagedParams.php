@@ -18934,11 +18934,35 @@ final class Engine
         // an annual deferral limit would charge this year's contributions against it
         // once through the pool's balance and again through the limit, which is what
         // the qualified-plan host does not do either.
+        /*
+         * The account's own condemned catch-up, which its employer-provided limit
+         * may already have borne on the reading that it was never a catch-up.
+         * 26 CFR 1.414(v)-1(b)(2) makes an employer-provided limit contained in the
+         * plan an applicable limit, so an amount that *is* a catch-up sits outside
+         * the plan's own deferral ceiling and one that is not does not.
+         *
+         * The participant-wide IRC 457 pool cannot substitute for this: its interval
+         * stops a draw at the room guaranteed across the participant's plans, which
+         * is far above a plan document's own ceiling, so the pool never binds.
+         *
+         * Subtracted from the applied ceiling rather than from $regularDesired, so
+         * the employer draw below is bounded by the same figure -- employer amounts
+         * are allocated first, and a subtraction applied only to the later employee
+         * draw would let the earlier one spend the disputed room.
+         */
+        $unresolvedInvalid457 = !empty($traits['isPlesa'])
+            ? null
+            : self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+        $unresolvedOrdinaryExposure = $unresolvedInvalid457 === null
+            ? 0.0
+            : (float) $unresolvedInvalid457['existing'];
         $appliedHostBaseLimit = !empty($traits['isPlesa'])
             ? $statutoryHostBaseLimit
-            : self::minMoney(
-                $statutoryHostBaseLimit,
-                $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
+            : self::nonnegative(
+                self::minMoney(
+                    $statutoryHostBaseLimit,
+                    $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
+                ) - $unresolvedOrdinaryExposure,
             );
         // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
         // the room is an account-local pool that this account's base deferral and its

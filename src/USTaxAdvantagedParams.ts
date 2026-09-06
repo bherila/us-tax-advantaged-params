@@ -17916,11 +17916,36 @@ function allocateSection457(
   // an annual deferral limit would charge this year's contributions against it
   // once through the pool's balance and again through the limit, which is what
   // the qualified-plan host does not do either.
+  /**
+   * The account's own condemned catch-up, which its employer-provided limit may
+   * already have borne on the reading that it was never a catch-up.
+   *
+   * 26 CFR 1.414(v)-1(b)(1) identifies catch-up contributions against the
+   * applicable limits, and 1.414(v)-1(b)(2) makes an employer-provided limit
+   * contained in the plan one of them, so an amount that *is* a catch-up sits
+   * outside the plan's own deferral ceiling and one that is not does not.
+   *
+   * The participant-wide IRC 457 pool cannot substitute for this. Its interval
+   * stops a draw at the room guaranteed across the participant's plans, which
+   * on these facts is 21500 -- far above a plan document's 10000 -- so the pool
+   * never binds and the account-local ceiling is the only thing standing
+   * between the condemned amount and a 13000 total against a 10000 limit.
+   *
+   * Subtracted from the applied ceiling rather than from `regularDesired`, so
+   * the employer draw above is bounded by the same figure. The allocator takes
+   * employer amounts before employee deferrals, and a subtraction applied only
+   * to the later one would let the earlier one spend the disputed room.
+   */
+  const unresolvedOrdinaryExposure = traits.isPlesa
+    ? 0
+    : (highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
   const appliedHostBaseLimit = traits.isPlesa
     ? statutoryHostBaseLimit
-    : minMoney(
-        statutoryHostBaseLimit,
-        account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryHostBaseLimit,
+    : nonnegative(
+        minMoney(
+          statutoryHostBaseLimit,
+          account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryHostBaseLimit,
+        ) - unresolvedOrdinaryExposure,
       );
   // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
   // the room is an account-local pool that this account's base deferral and its

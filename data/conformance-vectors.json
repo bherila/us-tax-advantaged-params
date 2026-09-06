@@ -20707,6 +20707,54 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
+    },
+    {
+      "name": "2026 a condemned catch-up consumes a governmental IRC 457(b) plan's own deferral ceiling",
+      "description": "The IRC 457 allocator has its own account-local ceiling and needed the same treatment the qualified-plan host got. The plan document caps elective deferrals at 10000, well below the 2026 IRC 457(b)(2) figure of 24500 (Notice 2025-67), and prior-year FICA wages from employer e of 500000 exceed the IRC 414(v)(7)(A) threshold, so the recorded 3000 of pre-tax age-based catch-up is condemned.\n\n26 CFR 1.414(v)-1(b)(1) identifies catch-up contributions against the applicable limits and 1.414(v)-1(b)(2) makes an employer-provided limit contained in the plan one of them, so an amount that is a valid catch-up sits outside that 10000 and one that is not consumes it. IRC 414(v)(3)(A)(i) relieves a paragraph (1) contribution from IRC 457(b)(2) among others, and IRC 414(v)(7)(A) withdraws that relief. The guaranteed ordinary-deferral room is therefore 10000 - 3000 = 7000, which is what is allocated; 10000 would put 13000 through a 10000 ceiling on the reading the same result declines to adopt.\n\nThe participant-wide IRC 457 pool cannot catch this. Its interval leaves at least 21500 of guaranteed room across the participant's plans, far above the plan document's own ceiling, so it never binds and the account-local figure is the only thing in the way. The subtraction is applied to the applied ceiling rather than to the employee draw alone, because the allocator takes employer amounts first and would otherwise let them spend the disputed room.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "includibleCompensation457": 300000,
+              "expectedEmployerContribution": 0,
+              "planDocumentEmployeeDeferralLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 7000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
     }
   ]
 }
