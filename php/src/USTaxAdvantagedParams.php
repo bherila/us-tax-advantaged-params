@@ -11347,14 +11347,28 @@ final class Engine
             $chargedKey = $section457 ? 'section457CatchUpPools' : 'catchUpPools';
             $alternativeKey = $section457 ? 'section457BasePools' : 'elective402gPools';
             $charged =& $context[$chargedKey][$ownerId];
-            $alternative =& $context[$alternativeKey][$ownerId];
+            // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1)
+            // contribution from, so far as this account reaches one: the relief
+            // is a single sentence covering "sections 401(a)(30), 402(h),
+            // 403(b), 408, 415(c), and 457(b)(2)", and IRC 414(v)(7)(A)
+            // withdraws the whole of it at once. Clause (ii) is why IRC 415(c)
+            // belongs here and not only clause (i): a valid catch-up is also not
+            // "taken into account in applying such limitations to other
+            // contributions", so its condemnation changes the room left for the
+            // employer's, not merely for its own.
+            $relieved = [];
+            $relieved[] =& $context[$alternativeKey][$ownerId];
+            $annualGroupId = self::groupIdForAccount($account);
+            if (($traits['uses415c'] ?? false) && isset($context['annualAdditionsPools'][$annualGroupId])) {
+                $relieved[] =& $context['annualAdditionsPools'][$annualGroupId];
+            }
             self::attributeToEitherPool(
                 $charged,
-                $alternative,
+                $relieved,
                 (float) $invalid['existing'],
                 'existing-pre-tax-catch-up:' . $account['id'],
             );
-            unset($charged, $alternative);
+            unset($charged, $relieved);
         }
     }
 
@@ -16401,13 +16415,16 @@ final class Engine
      */
     private static function attributeToEitherPool(
         ?array &$chargedTo,
-        ?array &$alternative,
+        array &$relieved,
         float $amount,
         string $groupId,
     ): void {
         if ($amount <= 0.0) {
             return;
         }
+        // Once, however many limits the other reading engages. The amount left
+        // one pool because it might not have been a catch-up; it does not leave
+        // twice because IRC 414(v)(3)(A)(i) names several limits in one breath.
         if ($chargedTo !== null) {
             $chargedTo['usage'] = [
                 'minimum' => self::nonnegative(
@@ -16415,21 +16432,25 @@ final class Engine
                 ),
                 'maximum' => (float) $chargedTo['usage']['maximum'],
             ];
-            $chargedTo['uncertaintyGroupIds'] = [
-                ...($chargedTo['uncertaintyGroupIds'] ?? []),
-                $groupId,
+            $chargedTo['uncertainties'] = [
+                ...($chargedTo['uncertainties'] ?? []),
+                ['id' => $groupId, 'branch' => 'catch_up'],
             ];
         }
-        if ($alternative !== null) {
-            $alternative['usage'] = [
-                'minimum' => (float) $alternative['usage']['minimum'],
-                'maximum' => self::roundMoney((float) $alternative['usage']['maximum'] + $amount),
+        foreach ($relieved as &$pool) {
+            if ($pool === null) {
+                continue;
+            }
+            $pool['usage'] = [
+                'minimum' => (float) $pool['usage']['minimum'],
+                'maximum' => self::roundMoney((float) $pool['usage']['maximum'] + $amount),
             ];
-            $alternative['uncertaintyGroupIds'] = [
-                ...($alternative['uncertaintyGroupIds'] ?? []),
-                $groupId,
+            $pool['uncertainties'] = [
+                ...($pool['uncertainties'] ?? []),
+                ['id' => $groupId, 'branch' => 'ordinary'],
             ];
         }
+        unset($pool);
     }
 
     /**
@@ -17834,6 +17855,23 @@ final class Engine
             return null;
         }
         $existingBaseForAccount = self::baseDeferrals($account['existingContributions']);
+        /*
+         * The account's own condemned catch-up, which its plan-imposed limits may
+         * already have borne. 26 CFR 1.414(v)-1(d)(1) determines catch-up
+         * contributions by reference to the applicable limits, plan-imposed ones
+         * included, so an amount that *is* a catch-up sits outside the plan's own
+         * deferral ceiling and outside any annual-additions ceiling the plan sets.
+         * IRC 414(v)(7)(A) leaves this amount's status unresolved, so both readings
+         * have to be survivable, and only the guaranteed room is offered.
+         *
+         * The shared IRC 415(c) group needs no equivalent -- it is a pool, and its
+         * interval already stops takeAcrossPools at the guaranteed remainder -- but
+         * a plan-document ceiling is an account-local scalar with no pool behind it.
+         */
+        $unresolvedInvalid = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+        $unresolvedOrdinaryExposure = $unresolvedInvalid === null
+            ? 0.0
+            : (float) $unresolvedInvalid['existing'];
         $employeePlanLimit = self::minMoney(
             $basePlanLimit,
             // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than
@@ -17856,10 +17894,11 @@ final class Engine
                 self::money(
                     $account['planRules']['planDocumentAnnualAdditionsLimit'],
                     "{$account['id']}.planDocumentAnnualAdditionsLimit",
-                ) - self::annualAdditions($account['existingContributions']),
+                ) - self::annualAdditions($account['existingContributions'])
+                    - $unresolvedOrdinaryExposure,
             );
         $desiredBase = self::minMoney(
-            self::nonnegative($employeePlanLimit - $existingBaseForAccount),
+            self::nonnegative($employeePlanLimit - $existingBaseForAccount - $unresolvedOrdinaryExposure),
             $accountAnnualRemainingBefore,
         );
         // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so

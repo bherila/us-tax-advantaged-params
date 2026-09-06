@@ -20561,6 +20561,152 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
+    },
+    {
+      "name": "2026 a condemned catch-up consumes the plan's own annual-additions ceiling too",
+      "description": "The companion to the plan-deferral vector, on the other plan-imposed ceiling. The plan document caps annual additions at 10000, far below the 2026 IRC 415(c)(1)(A) limit of 72000 (Notice 2025-67), so it and not the statutory group is what binds. IRC 414(v)(3)(A) relieves a contribution \"under paragraph (1)\" in one sentence covering several limits at once: it \"shall not, with respect to the year in which the contribution is made -- (i) be subject to any otherwise applicable limitation contained in sections 401(a)(30), 402(h), 403(b), 408, 415(c), and 457(b)(2) ..., or (ii) be taken into account in applying such limitations to other contributions or benefits under such plan or any other such plan\". IRC 414(v)(7)(A) withdraws paragraph (1) from a high-wage participant's pre-tax catch-up, so it withdraws the whole of that relief at once. Clause (ii) is why IRC 415(c) matters here and not only clause (i): a valid catch-up is also not counted when applying IRC 415(c) to *other* contributions, so whether this amount was valid changes the room left for the employer's contribution and not merely for its own.\n\nFixing only the shared IRC 415(c) group would leave this lower cap exposed to the identical error, because the group's interval never becomes the binding constraint: 10000 - 3000 = 7000 is the room guaranteed under either reading and 7000 is allocated, where subtracting only the settled annual additions gave 10000. The two plan-document ceilings are pinned separately because they are read from different fields at different points and a fix to one does not reach the other.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "planDocumentAnnualAdditionsLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 7000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 a condemned catch-up widens the IRC 415(c) group, not only the elective-deferral limit",
+      "description": "IRC 414(v)(3)(A) relieves a contribution \"under paragraph (1)\" in one sentence covering several limits at once: it \"shall not, with respect to the year in which the contribution is made -- (i) be subject to any otherwise applicable limitation contained in sections 401(a)(30), 402(h), 403(b), 408, 415(c), and 457(b)(2) ..., or (ii) be taken into account in applying such limitations to other contributions or benefits under such plan or any other such plan\". IRC 414(v)(7)(A) withdraws paragraph (1) from a high-wage participant's pre-tax catch-up, so it withdraws the whole of that relief at once. Clause (ii) is why IRC 415(c) matters here and not only clause (i): a valid catch-up is also not counted when applying IRC 415(c) to *other* contributions, so whether this amount was valid changes the room left for the employer's contribution and not merely for its own.\n\nThe 2026 figures are 24500 for IRC 402(g)(1)(B), 8000 for IRC 414(v)(2)(B)(i) and 72000 for IRC 415(c)(1)(A) (Notice 2025-67). Prior-year FICA wages from employer e of 500000 exceed the IRC 414(v)(7)(A) threshold, so the 3000 of existing pre-tax age-based catch-up is condemned and its attribution is unresolved.\n\nThe taxpayer takes the 21500 of elective-deferral room guaranteed under either reading. The annual-additions group then stands at usage [21500, 24500] -- 21500 certainly, and the condemned 3000 as well on the reading that it was an ordinary elective deferral -- leaving [47500, 50500]. The plan's expected employer contribution of 50500 exceeds the guaranteed 47500, so 47500 is allocated and the remaining 3000 is withheld: on the ordinary-deferral completion 21500 + 3000 + 50500 = 75000 would exceed the 72000 limit by exactly the amount in doubt.\n\nWidening only IRC 402(g) left this group a settled scalar of 50500 and allocated the whole employer contribution, which is the error this vector exists to exclude. The elective-deferral limit alone cannot catch it: the base draw was already bounded correctly, and the room the condemned amount may occupy was given away to a different component.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 50500,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 21500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.contributionComponents.employerPreTax": 47500,
+        "accounts.0.sharedLimits.1.id": "415c:t:e",
+        "accounts.0.sharedLimits.1.limit": 72000,
+        "accounts.0.sharedLimits.1.usedByAccount": 21500,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.minimum": 47500,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.maximum": 50500
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
+    },
+    {
+      "name": "2026 a condemned catch-up consumes the plan's own deferral ceiling on one reading",
+      "description": "The plan document caps elective deferrals at 10000, well below the 2026 IRC 402(g)(1)(B) limit of 24500 (Notice 2025-67). 26 CFR 1.414(v)-1(d)(1) determines catch-up contributions by reference to the applicable limits, plan-imposed ones included, so an amount that is a valid catch-up sits outside that 10000 ceiling; IRC 414(v)(3)(A) relieves a contribution \"under paragraph (1)\" in one sentence covering several limits at once: it \"shall not, with respect to the year in which the contribution is made -- (i) be subject to any otherwise applicable limitation contained in sections 401(a)(30), 402(h), 403(b), 408, 415(c), and 457(b)(2) ..., or (ii) be taken into account in applying such limitations to other contributions or benefits under such plan or any other such plan\". IRC 414(v)(7)(A) withdraws paragraph (1) from a high-wage participant's pre-tax catch-up, so it withdraws the whole of that relief at once. Clause (ii) is why IRC 415(c) matters here and not only clause (i): a valid catch-up is also not counted when applying IRC 415(c) to *other* contributions, so whether this amount was valid changes the room left for the employer's contribution and not merely for its own.\n\nPrior-year FICA wages of 500000 exceed the IRC 414(v)(7)(A) threshold, so the recorded 3000 may be an ordinary elective deferral instead, in which case it has already consumed 3000 of the plan's 10000. The guaranteed room is therefore 10000 - 3000 = 7000, and 7000 is what is allocated. Reporting 10000 asserted the room that exists only on the reading the same result declines to adopt.\n\nA plan-document ceiling has no shared pool behind it, which is why this needs its own subtraction rather than falling out of the interval arithmetic: the IRC 415(c) group and the IRC 402(g) pool stop an allocation at their guaranteed remainder because they are pools, and an account-local scalar cannot.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "planDocumentEmployeeDeferralLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 3000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 7000
+      },
+      "expectDiagnosticCodes": [
+        "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
+      ]
     }
   ]
 }

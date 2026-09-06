@@ -9493,6 +9493,17 @@ function intervalIsSettled(interval: MoneyInterval): boolean {
   return interval.minimum === interval.maximum;
 }
 
+/**
+ * One side of one unresolved classification. `ordinary` is the completion in
+ * which the amount is an ordinary elective deferral consuming the limits IRC
+ * 414(v)(3)(A)(i) would otherwise relieve; `catch_up` is the completion in which
+ * it was the valid IRC 414(v)(1) contribution it was recorded as.
+ */
+interface UncertaintyBranch {
+  id: string;
+  branch: "ordinary" | "catch_up";
+}
+
 interface LimitPool {
   id: string;
   legalLimit: string;
@@ -9518,16 +9529,22 @@ interface LimitPool {
    */
   usage: MoneyInterval;
   /**
-   * Which unresolved facts widened `usage`, by a key naming each one.
+   * Which unresolved facts widened `usage`, and on which side of each.
    *
-   * Two pools widened by the *same* contribution are correlated: the reading
-   * that charges it to one is the reading that does not charge it to the other,
-   * so their maxima do not both occur in any single completion of the facts.
-   * Adding such maxima together would report headroom no set of facts provides.
-   * Minima may always be summed; maxima may be summed only across pools sharing
-   * no key.
+   * A key alone is not enough once more than two pools are involved. One
+   * condemned catch-up widens the IRC 414(v) pool on the reading that it *was*
+   * a valid catch-up, and widens the IRC 402(g) and IRC 415(c) pools on the
+   * reading that it was not -- IRC 414(v)(3)(A)(i) relieves a paragraph (1)
+   * contribution from "sections 401(a)(30), 402(h), 403(b), 408, 415(c), and
+   * 457(b)(2)" together, so those relieved limits all lose the relief at once.
+   * Their maxima therefore co-occur with each other and not with the catch-up
+   * pool's, which a bare shared key could not express.
+   *
+   * So: maxima may be summed across pools that share no `id`, and across pools
+   * sharing an `id` only where they also share a `branch`. Minima may always be
+   * summed.
    */
-  uncertaintyGroupIds?: string[];
+  uncertainties?: UncertaintyBranch[];
 }
 
 interface IraOwnerPool extends LimitPool {
@@ -10997,13 +11014,28 @@ function seedUnresolvedCatchUpAttribution(
     const invalid = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
     if (invalid === null) continue;
     const section457 = catchUpPoolFamily(traits) === "section457";
+    // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1) contribution
+    // from, so far as this account reaches one. The relief is a single sentence
+    // covering "sections 401(a)(30), 402(h), 403(b), 408, 415(c), and
+    // 457(b)(2)", and IRC 414(v)(7)(A) withdraws the whole of it at once, so a
+    // condemned amount comes back under all of them together. Widening only the
+    // elective-deferral limit left the IRC 415(c) group settled and let an
+    // employer contribution take room the amount may already occupy.
+    //
+    // Clause (ii) is why IRC 415(c) is here and not only clause (i): a valid
+    // catch-up is also not "taken into account in applying such limitations to
+    // other contributions", so its condemnation changes the room left for the
+    // employer's, not merely for its own.
     attributeToEitherPool(
       section457
         ? context.section457CatchUpPools.get(account.ownerId)
         : context.catchUpPools.get(account.ownerId),
-      section457
-        ? context.section457BasePools.get(account.ownerId)
-        : context.elective402gPools.get(account.ownerId),
+      [
+        section457
+          ? context.section457BasePools.get(account.ownerId)
+          : context.elective402gPools.get(account.ownerId),
+        traits.uses415c ? context.annualAdditionsPools.get(groupIdForAccount(account)) : undefined,
+      ],
       invalid.existing,
       `existing-pre-tax-catch-up:${account.id}`,
     );
@@ -15344,24 +15376,31 @@ function chargePool(pool: LimitPool, amount: Money): void {
  */
 function attributeToEitherPool(
   chargedTo: LimitPool | undefined,
-  alternative: LimitPool | undefined,
+  relieved: Array<LimitPool | undefined>,
   amount: Money,
   groupId: string,
 ): void {
   if (amount <= 0) return;
+  // Once, however many limits the other reading engages. The amount left one
+  // pool because it might not have been a catch-up; it does not leave twice
+  // because IRC 414(v)(3)(A)(i) names several limits in the same breath.
   if (chargedTo) {
     chargedTo.usage = {
       minimum: nonnegative(roundMoney(chargedTo.usage.minimum - amount)),
       maximum: chargedTo.usage.maximum,
     };
-    chargedTo.uncertaintyGroupIds = [...(chargedTo.uncertaintyGroupIds ?? []), groupId];
+    chargedTo.uncertainties = [
+      ...(chargedTo.uncertainties ?? []),
+      { id: groupId, branch: "catch_up" },
+    ];
   }
-  if (alternative) {
-    alternative.usage = {
-      minimum: alternative.usage.minimum,
-      maximum: roundMoney(alternative.usage.maximum + amount),
+  for (const pool of relieved) {
+    if (pool === undefined) continue;
+    pool.usage = {
+      minimum: pool.usage.minimum,
+      maximum: roundMoney(pool.usage.maximum + amount),
     };
-    alternative.uncertaintyGroupIds = [...(alternative.uncertaintyGroupIds ?? []), groupId];
+    pool.uncertainties = [...(pool.uncertainties ?? []), { id: groupId, branch: "ordinary" }];
   }
 }
 
@@ -16890,6 +16929,26 @@ function allocateBaseAndCatchUp(
   }
 
   const existingBaseForAccount = baseElectiveDeferrals(account.existingContributions);
+  /**
+   * The account's own condemned catch-up, which its plan-imposed limits may
+   * already have borne.
+   *
+   * 26 CFR 1.414(v)-1(d)(1) determines catch-up contributions by reference to
+   * the applicable limits, plan-imposed ones included, so an amount that *is* a
+   * catch-up sits outside the plan's own deferral ceiling and outside the
+   * annual-additions ceiling the plan may set. IRC 414(v)(7)(A) leaves this
+   * amount's status unresolved, so both readings have to be survivable: on the
+   * reading that it was never a valid catch-up it is an ordinary elective
+   * deferral occupying that plan room like any other.
+   *
+   * Only the guaranteed room is offered, which is the room left on the reading
+   * that consumes more. The shared IRC 415(c) group needs no equivalent here --
+   * it is a pool, and its interval already stops `takeAcrossPools` at the
+   * guaranteed remainder -- but a plan-document ceiling is an account-local
+   * scalar with no pool behind it, so the subtraction has to be explicit.
+   */
+  const unresolvedOrdinaryExposure =
+    highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0;
   // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than clause
   // (i), and it is supplied through this same field. But clause (ii) caps the
   // account *balance*, exactly as clause (i) does, and the account-local pool
@@ -16910,10 +16969,11 @@ function allocateBaseAndCatchUp(
     ? employeePlanLimit
     : nonnegative(
         money(account.planRules.planDocumentAnnualAdditionsLimit, `${account.id}.planDocumentAnnualAdditionsLimit`) -
-          annualAdditionsAmount(account.existingContributions),
+          annualAdditionsAmount(account.existingContributions) -
+          unresolvedOrdinaryExposure,
       );
   const desiredBase = minMoney(
-    nonnegative(employeePlanLimit - existingBaseForAccount),
+    nonnegative(employeePlanLimit - existingBaseForAccount - unresolvedOrdinaryExposure),
     accountAnnualRemainingBefore,
   );
   // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
