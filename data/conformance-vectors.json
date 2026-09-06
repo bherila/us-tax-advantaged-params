@@ -12893,8 +12893,8 @@
       ]
     },
     {
-      "name": "2007 an unstated spouse does not matter once the IRC 223(b)(2) deductible cap is repealed",
-      "description": "The boundary that bounds the widened requirement. Section 303 of the Tax Relief and Health Care Act of 2006 struck the IRC 223(b)(2) comparison with the plan's annual deductible for taxable years beginning after 2006, so from 2007 the monthly limitation is one twelfth of the statutory amount alone. The lowest-deductible sentence of IRC 223(b)(5)(A) still exists, but with no deductible in the arithmetic there is no amount for a lower one to change: an unstated spouse's plan cannot move this figure. The input is the 2005 indeterminate vector's, moved to 2007 and keeping the now-inert annual deductible of 5000 to prove it is inert. The owner states family coverage for all twelve months, so recharacterization -- the other reason the spouse's coverage can matter -- has nothing to raise either. Neither reason applies, so HSA_SPOUSE_COVERAGE_FACTS_REQUIRED must be absent and the limitation is the 2007 statutory family amount of 5650 (Rev. Proc. 2006-53) in full. A widening that reached beyond the capped years 2004 through 2006 would make previously-working inputs error for no statutory reason, and this vector is what catches it. No different division was agreed, so IRC 223(b)(5)(B)(ii) divides that one limitation \"equally between them\" -- \"them\" being the married individuals of the opening clause of paragraph (5), not the spouses who happen to own an account. This account therefore takes half, and the other half belongs to a spouse who has no HSA to put it in and simply does not use it. HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE reports that, and the status is determinate rather than determinate_with_assumptions because applying the statutory default is not an assumption. Reaching the whole limitation from this one account needs an agreement the spouses may make under Notice 2004-50 Q&A-32 and must then state as hsaFamilyLimitDivision { status: \"agreed\", taxpayerShare: 1 }.",
+      "name": "2007 an unstated spouse stops mattering to the amount but still bears on the division",
+      "description": "The boundary that bounds the widened deductible requirement, and the boundary of what that widening settles. Section 303 of the Tax Relief and Health Care Act of 2006 struck the IRC 223(b)(2) comparison with the plan's annual deductible for taxable years beginning after 2006, so from 2007 the monthly limitation is one twelfth of the statutory amount alone. The lowest-deductible sentence of IRC 223(b)(5)(A) still exists, but with no deductible in the arithmetic there is no amount for a lower one to change: an unstated spouse's plan cannot move this figure. The input is the 2005 indeterminate vector's, moved to 2007 and keeping the now-inert annual deductible of 5000 to prove it is inert.\n\nSo the *amount* is determinate and is still published. The couple's one limitation is the 2007 statutory family amount of 5650 in full (Rev. Proc. 2006-53), the IRC 223(b)(5) shared limit reports it, and HSA_SPOUSE_COVERAGE_FACTS_REQUIRED is absent -- a widening that reached beyond the capped years 2004 through 2006 would make previously-working inputs error for no statutory reason, and this vector is what catches that.\n\nThe *division* is a different question and this input does not answer it. The spouse supplies no persons[].hsaCoverage at all, so whether they are an eligible individual is unstated rather than known, and the two readings differ by the whole share: IRC 223(b)(5)(B)(ii) divides equally if they are one, and Notice 2004-50 Q&A-31 gives the taxpayer the whole 5650 if they are not -- \"if only one spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding the treatment under section 223(b)(5)(A) of both spouses as having only family coverage)\" -- with Notice 2008-59 Q&A-16 forbidding any allocation to a spouse who is not otherwise eligible. 2825 and 5650 are both supported by these facts, so neither is reported: familyLimitShare is null, the account's maximum is null, and HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE names the missing fact.\n\nSilence is not an assertion of ineligibility, which is why this is unresolved rather than resolved the other way. persons[].hsaCoverage of {} would state that the spouse held no high deductible health plan coverage in any month and give the taxpayer the whole 5650; a month list stating any coverage would give them half. Subparagraph (A)'s deeming does not fill the gap either -- Q&A-31's \"notwithstanding\" exists precisely to say that being treated as having family coverage does not make a spouse an eligible individual.",
       "input": {
         "taxYear": 2007,
         "filingStatus": "MFJ",
@@ -12927,14 +12927,19 @@
       },
       "expect": {
         "accounts.0.accountId": "t-hsa",
-        "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 2825,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.familyLimitShare": null,
         "accounts.0.hsa.sharedFamilyContributionLimit": 5650,
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 5650
       },
       "expectAbsentDiagnosticCodes": [
-        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE"
+      ],
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
     },
     {
@@ -14255,6 +14260,526 @@
         "totals.hsaContribution": 0
       },
       "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 the last-month rule does not reduce a limit the ordinary months already earned",
+      "description": "IRC 223(b)(8)(A) treats a December-eligible individual \"(i) as having been an eligible individual during each of the months in such taxable year, and (ii) as having been enrolled, during each of the months such individual is treated as an eligible individual *solely by reason of clause (i)*, in the same high deductible health plan in which the individual was enrolled for the last month\". December's plan is imputed only to the months the individual was not actually an eligible individual; a month of actual eligibility keeps its own coverage. That is why the paragraph is headed an increase in limit and why it can never reduce one.\n\nThe taxpayer holds family coverage from January through November and self-only coverage in December, and elects IRC 223(b)(8). Every month is a month of actual eligibility, so clause (ii) reaches none of them and the schedule is unchanged: eleven months at the 2026 IRC 223(b)(2)(B) family amount of 8750 and one at the self-only amount of 4400 (Rev. Proc. 2025-19), which is 11/12 x 8750 + 1/12 x 4400 = 8387.50.\n\nOverwriting the year with December's coverage gave 4400, a reduction of 3987.50 for making an election the statute offers as an increase. Because the deemed schedule equals the ordinary one, the amount attributable to the rule under IRC 223(b)(8)(B)(i) -- \"the aggregate amount of the contributions ... which could not have been made but for subparagraph (A)\" -- is 0, so no part of this limit is exposed to the testing-period inclusion even though the election was made.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985,
+            "hsaLastMonthRule": {
+              "useLastMonthRule": true
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
+        "accounts.0.hsa.proratedContributionLimit": 8387.5,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
+      }
+    },
+    {
+      "name": "2026 last-month rule deemed months take each month's own spouse eligibility",
+      "description": "IRC 223(b)(8)(A) treats a December-eligible individual \"(i) as having been an eligible individual during each of the months in such taxable year, and (ii) as having been enrolled, during each of the months such individual is treated as an eligible individual *solely by reason of clause (i)*, in the same high deductible health plan in which the individual was enrolled for the last month\". December's plan is imputed only to the months the individual was not actually an eligible individual; a month of actual eligibility keeps its own coverage. That is why the paragraph is headed an increase in limit and why it can never reduce one.\n\nThe taxpayer holds family coverage in December only and elects the rule, so January through November are deemed months carrying December's family coverage and the year refigures to the full 2026 family amount of 8750 (Rev. Proc. 2025-19). The spouse is an eligible individual from January through June and not afterwards, and owns no health savings account.\n\nThe division then follows each month's own facts, not December's. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse:\n\n  January-June   both eligible, divided equally  -> 1/2 x 6/12 x 8750 = 2187.50\n  July-December  taxpayer alone, undivided       ->       6/12 x 8750 = 4375.00\n  total                                          ->                     6562.50\n\nReading only the spouse's December status labelled all twelve deemed months sole-eligible and returned the whole 8750, allocating six months the spouse had a claim on. The deeming in clause (i) is about the electing individual's own eligibility; it says nothing about the other spouse's.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "hsaLastMonthRule": {
+              "useLastMonthRule": true,
+              "testingPeriodSatisfied": true
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 2,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 3,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 4,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 5,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 6,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 6562.5,
+        "accounts.0.hsa.familyLimitShare": 0.5
+      }
+    },
+    {
+      "name": "2026 the last-month counterfactual is divided the same way the applied limit is",
+      "description": "No last-month rule is elected here, so the amount attributable to it must be nil. IRC 223(b)(8)(B)(i) includes in income only \"the aggregate amount of the contributions ... which could not have been made but for subparagraph (A)\", which is the difference between the limit with the rule and the limit without it -- so the two have to be computed the same way.\n\nThe taxpayer holds family coverage all year; the spouse is an eligible individual from July. Under Notice 2004-50 Q&A-31 the first six months are the taxpayer's alone and the last six are divided, giving 4375 + 2187.50 = 6562.50 against the 2026 family amount of 8750 (Rev. Proc. 2025-19). The counterfactual is the same 6562.50, because nothing about the last-month rule entered either figure, and the attributable amount is 0.\n\nComputing the counterfactual without its monthly split treated all 8750 as shared, returned 4375, and reported 2187.50 as attributable to a rule that was never applied -- a figure that would have flowed on into the testing-period gross-income inclusion and its 10 percent additional tax.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 7,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 8,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 9,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 10,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 11,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 12,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 6562.5,
+        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
+      }
+    },
+    {
+      "name": "2026 spouses eligible in disjoint halves of the year each take their own months whole",
+      "description": "Each spouse holds family coverage and is an eligible individual for six months, and the two sets do not overlap. No month has two eligible spouses, so Q&A-31 gives every month wholly to whichever spouse was eligible in it and IRC 223(b)(5)(B)(ii) has nothing to divide: the taxpayer takes 6/12 x 8750 = 4375 and the spouse takes 6/12 x 8750 = 4375 against the 2026 family amount of 8750 (Rev. Proc. 2025-19), and the couple takes 8750 in total.\n\nThe couple's family-month capacity is the union of their family months, not the largest single spouse's year. A maximum was right only while their family months were the same set or one contained the other; once Notice 2004-50 Q&A-31 is applied month by month that no longer holds. Here the maximum of the two annual portions is 4375, so the household pool capped the couple at 4375 and the first account by priority exhausted it -- reversing the two accounts moved the whole capacity from one spouse to the other. Building the ceiling from the monthly union gives 8750 and makes the result independent of input order, which is what this vector pins.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "a",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.accountId": "b",
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 spouses with partially overlapping family months neither contains the other",
+      "description": "The taxpayer is an eligible individual with family coverage from January through August and the spouse from May through December, so four months are shared and each spouse has four of their own. Against the 2026 family amount of 8750 (Rev. Proc. 2025-19) each spouse's own year refigures to 8/12 x 8750 = 5833.33, and each takes 4/12 x 8750 = 2916.67 undivided plus half of the shared 4/12 x 8750, which is 1458.33: 4375 apiece.\n\nThe couple's family-month capacity is the union of their family months, not the largest single spouse's year. A maximum was right only while their family months were the same set or one contained the other; once Notice 2004-50 Q&A-31 is applied month by month that no longer holds. Neither spouse's family months are a superset of the other's here, which is the case a maximum cannot express at all: it returned 5833.33 for a couple whose twelve months are all covered by one or the other and whose union is the whole 8750. The two accounts together take 8750, and again the answer does not depend on which is listed first.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 5833.33,
+        "accounts.0.sharedLimits.1.limit": 8750,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 an unstated spouse leaves the division unresolved rather than assumed equal",
+      "description": "The spouse supplies no persons[].hsaCoverage at all. Silence is not a statement: persons[].hsaCoverage of {} would say affirmatively that they held no high deductible health plan coverage in any month, and a month list would say when they did, but an omitted field says neither.\n\nThe two completions differ by the whole share. If the spouse is an eligible individual, IRC 223(b)(5)(B)(ii) divides the 2026 family amount of 8750 (Rev. Proc. 2025-19) equally and the taxpayer takes 4375. If they are not, Notice 2004-50 Q&A-31 gives the taxpayer the whole 8750 -- \"if only one spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding the treatment under section 223(b)(5)(A) of both spouses as having only family coverage)\" -- and Notice 2008-59 Q&A-16 forbids allocating any part of it to a spouse who is not otherwise eligible. Both are supported by these facts, so neither is reported: familyLimitShare is null and the maximum is null.\n\nSubparagraph (A) does not close the gap by deeming both spouses to have family coverage. Q&A-31's \"notwithstanding\" is there precisely to say that the deeming does not make an ineligible spouse eligible, so the deeming cannot be read as supplying the eligibility the input omits. The couple's limitation is untouched and the shared limit still reports 8750.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 an unsettled division of months no spouse shares withholds the share but not the amount",
+      "description": "The spouses are eligible individuals in disjoint halves of the year, and hsaFamilyLimitDivision is stated as { status: \"unknown\" }. The division is genuinely unestablished, so familyLimitShare is null on both accounts.\n\nIt withholds nothing else. Notice 2004-50 Q&A-31 gives each month wholly to the one spouse eligible in it, so no part of the 2026 family amount of 8750 (Rev. Proc. 2025-19) is subject to any share: each spouse takes 6/12 x 8750 = 4375 whatever the couple did or did not agree. An unknown that no amount depends on is not a reason to withhold every amount, which is the same separation the zero-limitation vector already draws between the division and the figure -- there because every division of nothing is the same division, here because no month is divided at all.\n\nNulling both maxima because two spouses were each eligible at some point in the year asked the wrong question. The question is whether any month is shared, and none is.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.hsa.familyLimitShare": null,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2005 an agreed zero share makes an accountless spouse's contradiction immaterial",
+      "description": "The spouses agree that the taxpayer takes the whole limitation, which Notice 2004-50 Q&A-32 expressly permits -- they \"can divide the annual HSA contribution in any way they want, including allocating nothing to one spouse\". The spouse's stated self-only plan carries a 200 deductible, below the 2005 IRC 223(c)(2)(A)(i) self-only minimum of 1000 (Rev. Proc. 2004-71), so their asserted eligibility is contradicted.\n\nThat contradiction cannot move this result. If the spouse is an eligible individual the agreed 100/0 division gives the taxpayer the whole 5000; if they are not, Q&A-31 gives the taxpayer the whole 5000. Both readings agree on both shares, so there is nothing left for the doubt to make unknowable and the account is determinate at 5000 with a share of 1.\n\nThis is what the share map has to cover the whole couple for. The spouse owns no health savings account, so an owner-only map left their share `undefined` rather than the 0 the agreement gives them, and the doubt test read `undefined` as a non-zero share and withheld an answer the record fully supports. Results are still emitted only for account owners; the share map is about who the statute divides between, which is the spouses.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985,
+            "hsaCoverage": {
+              "coverageTier": "self_only",
+              "hdhpAnnualDeductible": 200
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.hsa.familyLimitShare": 1
+      },
+      "expectAbsentDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
     }
