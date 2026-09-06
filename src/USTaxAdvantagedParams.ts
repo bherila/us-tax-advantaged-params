@@ -12763,7 +12763,60 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     context.hsaFamilyLimitDivision.status === "unknown" ||
     context.hsaFamilyLimitDivision.status === "disputed" ||
     context.hsaFamilyLimitDivision.status === "inconsistent";
-  const householdDivisionIndeterminate = divisionUnsettled;
+  /**
+   * Between spouses who are *eligible individuals*, which is neither the whole
+   * couple nor the account owners. IRC 223(b)(5) conditions the entire special
+   * rule on the couple in its opening words -- it applies "if both spouses are
+   * eligible individuals and either spouse has family coverage" -- and Notice
+   * 2004-50 Q&A-31 says what follows when they are not: "if only one spouse is
+   * an eligible individual, only that spouse may contribute to an HSA
+   * (notwithstanding the treatment under section 223(b)(5)(A) of both spouses
+   * as having only family coverage)". Example (1) of that Q&A gives H the whole
+   * 5000 because W's plan is not a high deductible health plan. The
+   * "notwithstanding" is the load-bearing word: subparagraph (A) deems both
+   * spouses to have family coverage, and that deeming does not make an
+   * ineligible spouse eligible for this purpose.
+   *
+   * Computed before the stated division is consulted, and the ordering is the
+   * whole point. Subparagraph (B)(ii) -- the equal default *and* the agreement
+   * that displaces it -- sits inside that "if both spouses are eligible
+   * individuals" condition, so where only one spouse is eligible there is no
+   * limitation to divide, no default to apply and no agreement to honour.
+   * Deciding eligibility inside the statutory-equal branch instead made an
+   * agreed 0.5 halve the sole eligible spouse's limitation, and made an
+   * unsettled division null a share that no division could have moved.
+   *
+   * Only a spouse the caller has positively placed outside eligibility is
+   * excluded: `hsaCoverage: {}` records that this person held no high deductible
+   * health plan coverage in any month, so every resolved slot is "none" and
+   * there is no month in which they could be an eligible individual. A spouse
+   * who stated nothing at all has no slots and is not excluded -- absence of a
+   * statement is not a statement of absence, and subparagraph (A) deems them
+   * covered -- and neither is a spouse eligible in even one month, who holds a
+   * share of their own.
+   *
+   * A spouse whose stated eligibility is *contradicted* rather than denied is a
+   * third case and is not decided here: that is the impeached-assertion path
+   * below, which leaves the division indeterminate rather than resolving it
+   * either way.
+   */
+  const eligibleSpouses = familySharingApplies
+    ? (couple ?? coupleMembersWithAccounts).filter((personId) => {
+        const slots = coverageSlotsByPerson.get(personId);
+        return slots === undefined || slots.some((slot) => slot !== "none");
+      })
+    : [];
+  const soleEligibleSpouse = familySharingApplies && eligibleSpouses.length < 2;
+  /**
+   * An unsettled division is an unknown only while there is a division to be
+   * unsettled about. Where one spouse is the sole eligible individual the whole
+   * limitation is theirs under Q&A-31 whatever the couple did or did not agree,
+   * so `unknown`, `disputed` and `inconsistent` all describe a question the
+   * statute never reaches. This is the same principle as `nothingLeftToDivide`
+   * below, one condition earlier: doubt that cannot move an answer is not a
+   * reason to withhold one.
+   */
+  const householdDivisionIndeterminate = divisionUnsettled && !soleEligibleSpouse;
   /**
    * A second reason the division can be unknown, and it is not a disagreement
    * about shares. IRC 223(b)(5)(B)(ii) divides the limitation between the
@@ -12825,6 +12878,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * shares, so the branch is recorded here and reported afterwards.
    */
   let defaultedDivision: "equally" | "equally_sole_account" | "sole_eligible_spouse" | null = null;
+  /**
+   * Whether the caller stated a division that the statute never reached. Held
+   * separately from `defaultedDivision` because it is a fact about the *input*,
+   * not about which branch computed the shares: the sole-eligible branch runs
+   * identically whether or not a division was supplied, and only a caller who
+   * supplied one needs to be told it did nothing.
+   */
+  let statedDivisionInoperative = false;
   if (familySharingApplies) {
     /**
      * One number, not one per account: a share is a share of the couple's
@@ -12841,7 +12902,29 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const taxpayerId = coupleMembersWithAccounts.find(
       (personId) => context.persons.get(personId)?.role === "taxpayer",
     );
-    if (division.status === "agreed") {
+    if (soleEligibleSpouse) {
+      /**
+       * IRC 223(b)(5) never engages, so nothing here is a division. The special
+       * rule applies only "if both spouses are eligible individuals"; where one
+       * is not, the eligible spouse's limitation is the ordinary paragraph (1)
+       * family limitation, whole. Notice 2004-50 Q&A-31 states the consequence
+       * and its Example (1) works it -- H contributes the entire 5000 while W,
+       * whose plan is not a high deductible health plan, contributes nothing.
+       *
+       * Whatever the caller said about the division is therefore beside the
+       * point rather than wrong, and is neither honoured nor treated as a
+       * contradiction: an agreed 0.5 does not halve this limitation, and an
+       * `unknown`, `disputed` or `inconsistent` status does not make a share
+       * unstatable that the statute fixes at the whole. A caller who supplied
+       * one is told so by HSA_FAMILY_LIMIT_DIVISION_INOPERATIVE below rather
+       * than left to infer it from an unchanged number.
+       */
+      for (const personId of coupleMembersWithAccounts) {
+        shareByOwner.set(personId, eligibleSpouses.includes(personId) ? 1 : 0);
+      }
+      defaultedDivision = "sole_eligible_spouse";
+      statedDivisionInoperative = division.status !== "statutory_equal";
+    } else if (division.status === "agreed") {
       // Notice 2004-50 Q&A-32 lets the spouses divide "in any way they want,
       // including allocating nothing to one spouse", so an agreed share binds
       // whether or not the other spouse owns an HSA. A sole owner who agreed to
@@ -12872,48 +12955,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
        * would make the agreement mechanism unnecessary in the one case it is
        * most often needed, and would contradict a caller who has just said in
        * so many words that no different division was agreed.
-       */
-      /**
-       * Between spouses who are *eligible individuals*, which is neither the
-       * whole couple nor the account owners. Notice 2004-50 Q&A-31 puts the
-       * qualification in so many words -- "if only one spouse is an eligible
-       * individual, only that spouse may contribute to an HSA (notwithstanding
-       * the treatment under section 223(b)(5)(A) of both spouses as having only
-       * family coverage)" -- and its Example (1) gives H the whole 5000 because
-       * W's plan is not a high deductible health plan. The "notwithstanding" is
-       * the load-bearing word: subparagraph (A) deems both spouses to have
-       * family coverage, and that deeming does not make an ineligible spouse
-       * eligible for this purpose.
        *
-       * Only a spouse the caller has positively placed outside eligibility is
-       * excluded: `hsaCoverage: {}` records that this person held no high
-       * deductible health plan coverage in any month, so every resolved slot is
-       * "none" and there is no month in which they could be an eligible
-       * individual. A spouse who stated nothing at all has no slots and is not
-       * excluded -- absence of a statement is not a statement of absence, and
-       * subparagraph (A) deems them covered -- and neither is a spouse eligible
-       * in even one month, who holds a share of their own.
-       *
-       * A spouse whose stated eligibility is *contradicted* rather than denied
-       * is a third case and is not decided here: that is the impeached-assertion
-       * path, which leaves the division indeterminate rather than resolving it
-       * either way.
+       * Both spouses are eligible individuals here -- the sole-eligible case
+       * was decided above, before the division was consulted -- so the divisor
+       * is `eligibleSpouses.length` with no guard needed against zero.
        */
-      const eligibleSpouses = (couple ?? coupleMembersWithAccounts).filter((personId) => {
-        const slots = coverageSlotsByPerson.get(personId);
-        return slots === undefined || slots.some((slot) => slot !== "none");
-      });
-      const spouses = Math.max(eligibleSpouses.length, 1);
+      const spouses = eligibleSpouses.length;
       for (const personId of coupleMembersWithAccounts) {
         // An ineligible spouse who nonetheless owns an HSA takes no share of the
         // couple's limitation; Q&A-31 lets only the eligible spouse contribute.
         shareByOwner.set(personId, eligibleSpouses.includes(personId) ? 1 / spouses : 0);
       }
-      defaultedDivision = eligibleSpouses.length < 2
-        ? "sole_eligible_spouse"
-        : spouses > coupleMembersWithAccounts.length
-          ? "equally_sole_account"
-          : "equally";
+      defaultedDivision =
+        spouses > coupleMembersWithAccounts.length ? "equally_sole_account" : "equally";
     }
   }
 
@@ -12984,9 +13038,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * exactly the case where the engine cannot say the division is harmless.
    */
   const nothingLeftToDivide = sharedFamilyLimit !== null && sharedFamilyLimit <= 0;
-  const householdDivisionUnknown =
-    !nothingLeftToDivide &&
-    (householdDivisionIndeterminate || divisionEligibilityDoubtPersons.length > 0);
+  /**
+   * Whether the division was ever established, asked without reference to
+   * whether it mattered. `nothingLeftToDivide` says the unknown cannot move the
+   * *amount*; it does not turn an unestablished share into an established one.
+   * Conflating the two published `familyLimitShare: 1` for both spouses of a
+   * couple whose division was `unknown` and whose limitation the Archer MSA
+   * reduction had already exhausted -- two shares of a single limitation
+   * totalling 2, contradicting the input that said the division was unknown and
+   * the field's own semantics at once. The maximum may stay determinate on the
+   * strength of every share yielding the same zero; the share may not, because
+   * no share was ever established.
+   */
+  const householdDivisionUnestablished =
+    householdDivisionIndeterminate || divisionEligibilityDoubtPersons.length > 0;
+  /**
+   * Whether that unestablished division withholds the *amount*. Only here does
+   * immateriality count, and it is the narrower question of the two.
+   */
+  const householdDivisionUnknown = !nothingLeftToDivide && householdDivisionUnestablished;
   /**
    * Whether a settled division is worth announcing. Same test: where nothing is
    * left to divide, saying how it was divided is noise about nought, and where
@@ -13071,7 +13141,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           "IRC 223(b)(5)(B)(ii); Notice 2004-50 Q&A-31",
         ),
       );
-    } else if (defaultedDivision === "equally_sole_account" && divisionIsReportable) {
+    }
+    if (statedDivisionInoperative && divisionIsReportable) {
+      sharingDiagnostics.push(
+        diagnostic(
+          "HSA_FAMILY_LIMIT_DIVISION_INOPERATIVE",
+          DiagnosticSeverity.INFO,
+          'A division of the family limit was supplied, but it has no effect on this result. IRC 223(b)(5) applies its special rule for married individuals only "if both spouses are eligible individuals", and only one spouse is: the other is stated to have held no high deductible health plan coverage in any month. There is therefore no single limitation being divided, and the eligible spouse takes the whole paragraph (1) family limitation under Notice 2004-50 Q&A-31, whose Example (1) gives the entire amount to that spouse. The supplied division is not being overridden or rejected -- had both spouses been eligible individuals it would have governed.',
+          "accounts",
+          "IRC 223(b)(5); Notice 2004-50 Q&A-31",
+        ),
+      );
+    }
+    if (defaultedDivision === "equally_sole_account" && divisionIsReportable) {
       sharingDiagnostics.push(
         diagnostic(
           "HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE",
@@ -13461,7 +13543,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // number a caller could multiply by the limitation the pool now preserves.
       // The placeholder stays internal, where the division arithmetic needs a
       // value it never gets to publish.
-      familyLimitShare: householdDivisionUnknown ? null : share,
+      // `householdDivisionUnestablished`, not `householdDivisionUnknown`: this
+      // field reports the division itself, so it is null whenever the division
+      // was never established -- including where every possible division yields
+      // the same amount and the maximum beside it therefore stays determinate.
+      familyLimitShare: householdDivisionUnestablished ? null : share,
       // Null where the family limitation could not be determined, for the same
       // reason the IRC 223(b)(5) pool is: this field *is* that limitation, seen
       // per owner, and reporting the uncompared statutory amount here would
