@@ -1746,7 +1746,7 @@
         "accounts.0.hsa.proratedContributionLimit": 4400,
         "accounts.0.hsa.additionalContributionAmount": 0,
         "accounts.0.hsa.familyLimitShare": null,
-        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
         "accounts.0.hsa.testingPeriod": null,
         "totals.hsaContribution": 4400
       },
@@ -1790,8 +1790,103 @@
       }
     },
     {
-      "name": "2026 mid-year HSA coverage change prorated by month",
-      "description": "IRC 223(b)(2) sets a separate monthly limitation for each month, determined by the coverage held on that month's first day. Ineligible January and February contribute nothing; March through June are self-only at 4400/12; July through December are family at 8750/12. (4 x 4400 + 6 x 8750) / 12 = 70100 / 12 = 5841.67.",
+      "name": "2026 mid-year HSA coverage change prorated by month, with no December eligible month",
+      "description": "IRC 223(b)(2) sets a separate monthly limitation for each month, determined by the coverage held on that month's first day. Ineligible January and February contribute nothing; March through June are self-only at 4400/12; July through November are family at 8750/12. (4 x 4400 + 5 x 8750) / 12 = 61350 / 12 = 5112.50.\n\nDecember is deliberately not an eligible month. IRC 223(b)(8)(A) reaches only \"an individual who is an eligible individual during the last month of such taxable year\", so the greater-of does not arise here and the month-by-month sum is the whole of the answer. Nothing is diagnosed about its absence: the caller stated no election that went unhonoured, because IRC 223(b)(8) is not an election. The sibling vector below runs the same schedule with December eligible.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 3,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5112.5,
+        "accounts.0.contributionComponents.hsaDeductible": 5112.5,
+        "accounts.0.hsa.eligibleMonthCount": 9,
+        "accounts.0.hsa.proratedContributionLimit": 5112.5,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 5112.5,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.coverageTierByMonth": [
+          null,
+          null,
+          "self_only",
+          "self_only",
+          "self_only",
+          "self_only",
+          "family",
+          "family",
+          "family",
+          "family",
+          "family",
+          null
+        ],
+        "totals.hsaContribution": 5112.5,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.1": null,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.2": 4400,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.5": 4400,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.6": 8750,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.10": 8750,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.11": null
+      }
+    },
+    {
+      "name": "2026 the same mid-year change takes the IRC 223(b)(8) greater-of without being asked",
+      "description": "The vector above with December added back, and nothing else changed. No input states the last-month rule, because there is nothing to state: IRC 223(b)(8)(A) provides that an individual who is an eligible individual during the last month of the taxable year \"shall be treated\" as an eligible individual for each month of that year, and Notice 2008-52 states the resulting maximum as \"the greater of\" the month-by-month sum and \"the maximum annual HSA contribution under section 223(b)(2)(A) or section 223(b)(2)(B) based on the individual's HDHP coverage ... on the first day of the last month\". Neither is conditioned on an election, and Form 8889's instructions tell a December-eligible taxpayer whose coverage changed to enter the greater amount on line 3 with no election statement and no checkbox.\n\nCandidate (1) is (4 x 4400 + 6 x 8750) / 12 = 70100 / 12 = 5841.67, reported as contributionLimitWithoutLastMonthRule. Candidate (2) is December's family tier for the whole year, the 2026 family amount of 8750 (Rev. Proc. 2025-19). The greater is 8750.\n\nThe amount that \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i) is 8750 - 5841.67 = 2908.33, and because no testing-period fact was supplied the period ending 2027-12 is reported unresolved rather than assumed satisfied. Gating the greater-of on an election flag would return 5841.67 here.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -1856,34 +1951,23 @@
         ]
       },
       "expect": {
-        "accounts.0.statutoryMaximumAnnualContribution": 5841.67,
-        "accounts.0.contributionComponents.hsaDeductible": 5841.67,
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
         "accounts.0.hsa.eligibleMonthCount": 10,
-        "accounts.0.hsa.proratedContributionLimit": 5841.67,
+        "accounts.0.hsa.proratedContributionLimit": 8750,
         "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 5841.67,
-        "accounts.0.hsa.lastMonthRuleApplied": false,
-        "accounts.0.hsa.coverageTierByMonth": [
-          null,
-          null,
-          "self_only",
-          "self_only",
-          "self_only",
-          "self_only",
-          "family",
-          "family",
-          "family",
-          "family",
-          "family",
-          "family"
-        ],
-        "totals.hsaContribution": 5841.67,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.0": null,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.1": null,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.2": 4400,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.5": 4400,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.6": 8750,
-        "accounts.0.hsa.appliedAnnualLimitByMonth.11": 8750
-      }
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 2908.33,
+        "accounts.0.hsa.testingPeriod.status": "unresolved",
+        "accounts.0.hsa.testingPeriod.grossIncomeInclusionIfFailed": 2908.33,
+        "accounts.0.hsa.testingPeriod.additionalTaxIfFailed": 290.83,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.0": 8750,
+        "accounts.0.hsa.appliedAnnualLimitByMonth.2": 8750,
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED"
+      ]
     },
     {
       "name": "2026 both spouses age 55 receive separate HSA catch-ups",
@@ -2005,9 +2089,8 @@
           {
             "id": "t",
             "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": true
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": true
             }
           }
         ],
@@ -2034,7 +2117,7 @@
         "accounts.0.hsa.eligibleMonthCount": 1,
         "accounts.0.hsa.proratedContributionLimit": 4400,
         "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 4033.33,
         "accounts.0.hsa.testingPeriod.months": 13,
         "accounts.0.hsa.testingPeriod.startMonth": "2026-12",
@@ -2056,9 +2139,8 @@
           {
             "id": "t",
             "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": false
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": false
             }
           }
         ],
@@ -2132,17 +2214,14 @@
     },
     {
       "name": "2006 HSA monthly limit capped by the statutory dollar amount",
-      "description": "The same pre-2007 lesser-of test with the other branch binding: a 6000 family deductible exceeds the 2006 family dollar amount of 5450 (Rev. Proc. 2005-70), so the limit is 5450. IRC 223(b)(8) did not exist until taxable years beginning after 2006, so electing the last-month rule produces a diagnostic and the ordinary month-by-month limitation.",
+      "description": "The same pre-2007 lesser-of test with the other branch binding: a 6000 family deductible exceeds the 2006 family dollar amount of 5450 (Rev. Proc. 2005-70), so the limit is 5450. IRC 223(b)(8) did not exist until taxable years beginning after 2006, so there is no greater-of to take and the month-by-month limitation stands alone. Nothing is diagnosed about that: with the rule automatic there is no election for the year to refuse.",
       "input": {
         "taxYear": 2006,
         "filingStatus": "S",
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1985
           }
         ],
         "accounts": [
@@ -2163,13 +2242,51 @@
         "hsaParameters.annualContributionLimit.family": 5450,
         "accounts.0.statutoryMaximumAnnualContribution": 5450,
         "accounts.0.hsa.proratedContributionLimit": 5450,
-        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
         "accounts.0.hsa.testingPeriod": null,
         "totals.hsaContribution": 5450
+      }
+    },
+    {
+      "name": "2006 the IRC 223(b)(8) greater-of does not reach a year before the rule existed",
+      "description": "The Tax Relief and Health Care Act of 2006 section 305 added IRC 223(b)(8) for taxable years beginning after December 31, 2006, so 2006 has the ordinary IRC 223(b)(2) limitation and nothing else. This individual holds family HDHP coverage in December 2006 alone, which in 2007 or later would be the whole of Notice 2008-52's candidate (2).\n\nFor 2006 IRC 223(b)(2)(B) capped each month at one twelfth of the lesser of the plan's annual deductible and the family dollar amount, which is 5450 for 2006 (Rev. Proc. 2005-70); the 6000 deductible is the larger, so the month's limitation is 5450/12 = 454.1666..., which is 454.17 to the cent. One eligible month gives 454.17 and no testing period, where the same facts in a year the rule reaches would give 5450 and a thirteen-month testing period.",
+      "input": {
+        "taxYear": 2006,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ],
+                "hdhpAnnualDeductible": 6000
+              }
+            }
+          }
+        ]
       },
-      "expectDiagnosticCodes": [
-        "HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR"
-      ]
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 454.17,
+        "accounts.0.hsa.eligibleMonthCount": 1,
+        "accounts.0.hsa.proratedContributionLimit": 454.17,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 454.17,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "totals.hsaContribution": 454.17
+      }
     },
     {
       "name": "2005 married couple with family coverage and no stated annual deductible leaves the IRC 223(b)(5) household limit indeterminate",
@@ -2781,10 +2898,7 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1985
           }
         ],
         "accounts": [
@@ -3045,7 +3159,7 @@
     },
     {
       "name": "2026 married last-month rule measures the attributable amount against the divided limit",
-      "description": "Both spouses are eligible with family coverage only in December and elect IRC 223(b)(8). Each spouse's ceiling is an equal share of the family limit, 8750 / 2 = 4375. Without the last-month rule the same division would have applied to the one-month limitation, giving 1/2 x 8750/12 = 364.58, so the amount attributable to the rule under IRC 223(b)(8)(B)(i) is 4375 - 364.58 = 4010.42 per spouse, with a 10 percent additional tax of 401.04 on failure.",
+      "description": "Both spouses are eligible with family coverage only in December, so IRC 223(b)(8)(A) reaches both of them without either electing anything. Each spouse's ceiling is an equal share of the family limit, 8750 / 2 = 4375. Without the last-month rule the same division would have applied to the one-month limitation, giving 1/2 x 8750/12 = 364.58, so the amount attributable to the rule under IRC 223(b)(8)(B)(i) is 4375 - 364.58 = 4010.42 per spouse, with a 10 percent additional tax of 401.04 on failure.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -3053,17 +3167,15 @@
           {
             "id": "t",
             "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": false
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": false
             }
           },
           {
             "id": "s",
             "birthYear": 1986,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": false
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": false
             }
           }
         ],
@@ -3438,7 +3550,7 @@
     },
     {
       "name": "2026 Archer MSA reduction follows the IRC 223(b)(8) last-month rule",
-      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\", and IRC 223(b)(4) then reduces \"the limitation which would (but for this paragraph) apply under this subsection\" — so the reduction is taken after the last-month rule, not before. December-only self-only coverage with the election gives the full 4400 for 2026; 4400 - 1000 paid to Archer MSAs is 3400. The counterfactual month-by-month limitation is 4400/12 = 366.67, which the same $1,000 reduces to 0, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is the whole 3400 rather than 3400 - 366.67. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67 counterfactual.",
+      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\", and IRC 223(b)(4) then reduces \"the limitation which would (but for this paragraph) apply under this subsection\" — so the reduction is taken after the last-month rule, not before. December-only self-only coverage is what IRC 223(b)(8)(A) reaches, and gives the full 4400 for 2026; 4400 - 1000 paid to Archer MSAs is 3400. The counterfactual month-by-month limitation is 4400/12 = 366.67, which the same $1,000 reduces to 0, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is the whole 3400 rather than 3400 - 366.67. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67 counterfactual.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -3447,9 +3559,8 @@
             "id": "t",
             "birthYear": 1986,
             "archerMsaContributions": 1000,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": true
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": true
             }
           }
         ],
@@ -3472,7 +3583,7 @@
       "expect": {
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 3400,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
         "accounts.0.hsa.proratedContributionLimit": 4400,
         "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 3400,
@@ -4223,7 +4334,7 @@
     },
     {
       "name": "2026 qualified HSA funding distribution follows the IRC 223(b)(8) last-month rule on both sides",
-      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\" and IRC 223(b)(4) reduces \"the limitation which would (but for this paragraph) apply under this subsection\", so the reduction follows the last-month rule. December-only self-only coverage with the election gives 4400, less the $200 contributed under IRC 408(d)(9) is 4200. The counterfactual month-by-month limitation is 4400/12 = 366.67, and the same 200 reduces it to 166.67, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is 4200 - 166.67 = 4033.33. Measuring it against the unreduced 366.67 counterfactual would understate it by the 200 that never applied. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67.",
+      "description": "IRC 223(b)(8)(A) applies \"for purposes of computing the limitation under paragraph (1)\" and IRC 223(b)(4) reduces \"the limitation which would (but for this paragraph) apply under this subsection\", so the reduction follows the last-month rule. December-only self-only coverage is what IRC 223(b)(8)(A) reaches, and gives 4400, less the $200 contributed under IRC 408(d)(9) is 4200. The counterfactual month-by-month limitation is 4400/12 = 366.67, and the same 200 reduces it to 166.67, so the amount that \"could not have been made but for\" IRC 223(b)(8)(A) under IRC 223(b)(8)(B)(i)(I) is 4200 - 166.67 = 4033.33. Measuring it against the unreduced 366.67 counterfactual would understate it by the 200 that never applied. hsa.contributionLimitWithoutLastMonthRule reports the unreduced 366.67.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -4232,9 +4343,8 @@
             "id": "t",
             "birthYear": 1986,
             "qualifiedHsaFundingDistributions": 200,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": true
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": true
             }
           }
         ],
@@ -4257,7 +4367,7 @@
       "expect": {
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 4200,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
         "accounts.0.hsa.proratedContributionLimit": 4400,
         "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 366.67,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 4033.33,
@@ -7353,8 +7463,8 @@
       ]
     },
     {
-      "name": "2026 a spouse's coverage conflict outside the owner's eligible months leaves the owner determinate",
-      "description": "IRC 223(b)(1) sums twelve separate monthly limitations, and IRC 223(b)(5)(A) treats a spouse as having family coverage only for a month in which the other spouse has it, so the applicability of that subsection is a monthly question and not an annual one. The taxpayer here is an eligible individual in December alone, with self-only coverage, so IRC 223(b)(2)(A) gives one twelfth of the 2026 self-only annual amount of 4400, which is 366.67 to the cent. The spouse owns two health savings accounts whose statements contradict each other about January and say nothing about any other month; both therefore agree that the spouse has no family coverage in December, which is the only month that can affect the taxpayer. The spouse's own accounts stay indeterminate because coverage is one fact about a person, but the taxpayer's limitation is fully determined. Answering indeterminate here would suppress a December amount because of a January disagreement.",
+      "name": "2026 a spouse's coverage conflict reaches a December-only owner through the IRC 223(b)(8) year",
+      "description": "IRC 223(b)(1) sums twelve separate monthly limitations, and IRC 223(b)(5)(A) treats a spouse as having family coverage only for a month in which the other spouse has it, so the applicability of that subsection is a monthly question. Which months are asked about is what IRC 223(b)(8)(A) changes: it treats an individual who is an eligible individual in December as an eligible individual \"for each month during such taxable year\", holding December's coverage. The taxpayer here is an eligible individual in December alone, with self-only coverage, so Notice 2008-52's candidate (2) is a self-only January through December -- twelve months for IRC 223(b)(5)(A) to read, where the stated facts offered one.\n\nThe spouse owns two health savings accounts whose statements contradict each other about January: one says family coverage, the other self-only. That contradiction now decides the taxpayer's figure. If the spouse held family coverage in January, IRC 223(b)(5)(A) makes the taxpayer's deemed January a family month and candidate (2) is (1 x 8750 + 11 x 4400) / 12 = 4762.50; if the spouse did not, it stays self-only throughout and candidate (2) is 4400. Both exceed the 366.67 the stated months alone would give, so the answer turns on the contradicted month and no ceiling is reported for either spouse. HSA_SPOUSE_COVERAGE_FACTS_CONFLICT names it on the taxpayer's account and asks for the reconciliation, and HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER refuses the spouse's own accounts.\n\nAnswering 4400 here would publish a figure built on one of two statements the caller made and the other denies -- picking whichever of the spouse's accounts happened to be merged first. That is the failure this vector exists to prevent; before the greater-of became automatic it could only be reached by an election, which is why the pre-2007 sibling vector still reports a December figure over the same January contradiction.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -7421,14 +7531,102 @@
       },
       "expect": {
         "accounts.0.accountId": "t-hsa",
-        "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 366.67,
-        "accounts.0.maximumAdditionalContributionBasedOnInputs": 366.67,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
         "accounts.1.status": "indeterminate",
-        "totals.hsaContribution": 366.67
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ]
+    },
+    {
+      "name": "2026 the same conflict leaves an owner the IRC 223(b)(8) year does not reach determinate",
+      "description": "The vector above with the taxpayer's December eligibility removed, which is what decides it. IRC 223(b)(8)(A) reaches only an individual who is an eligible individual during the last month of the taxable year, so this taxpayer has no deemed year and IRC 223(b)(5)(A) is asked about their stated months alone: March through June, self-only. The spouse's two accounts contradict each other about January and about nothing else, and January is not one of those months, so the contradiction cannot change the taxpayer's figure. 4 x 4400 / 12 = 1466.666..., which is 1466.67 to the cent.\n\nThe spouse's own accounts stay indeterminate, because coverage is one fact about a person and theirs disagree. Refusing the taxpayer as well would suppress four months of computable limitation over a January disagreement that reaches none of them.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 1466.67,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 1466.67
       },
       "expectDiagnosticCodes": [
         "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT"
       ]
     },
     {
@@ -13845,8 +14043,8 @@
       }
     },
     {
-      "name": "an account-level IRC 223(b)(8) election is rejected rather than read",
-      "description": "IRC 223(b)(8)(A) applies to \"an individual who is an eligible individual during the last month of such taxable year\", and IRC 223(b)(8)(B)(i) includes any resulting amount \"in the gross income of the individual\". Both operate on the person; neither speaks to an account. An owner with two HSAs therefore makes one election, and before 0.5.0 the engine carried a conflict detector -- computed identically, on the line adjacent to the one for the family-limit share -- whose only job was to notice two accounts of one owner disagreeing about it. The election now lives on persons[].hsaLastMonthRule and an account-level useLastMonthRule is rejected with HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED, which is what makes the contradiction unrepresentable instead of merely detected.",
+      "name": "an account-level useLastMonthRule is rejected, because IRC 223(b)(8) is not an election",
+      "description": "IRC 223(b)(8)(A) provides that an individual who is an eligible individual during the last month of the taxable year \"shall be treated\" as an eligible individual for each month of that year, and Notice 2008-52 states the resulting maximum as the greater of the month-by-month figure and the whole annual figure for December's coverage. Neither is conditioned on a taxpayer's choice: there is no election statement, no Form 8889 checkbox and no revocation, so useLastMonthRule stated a thing the Code does not have. It was removed in 0.5.0 rather than moved to the person, and an account that still supplies it is rejected with HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED rather than read, so a stale call fails loudly instead of quietly asking for a ceiling it was going to get anyway.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -13876,7 +14074,7 @@
     },
     {
       "name": "an account-level testing-period fact is rejected under the same rule",
-      "description": "The other IRC 223(b)(8) fields move for the same reason as the election itself. IRC 223(b)(8)(B)(iii) defines the testing period for \"the individual\", and IRC 223(b)(8)(B)(ii) excepts a failure \"by reason of the death of the individual or the individual becoming disabled\" -- the individual throughout, never the account. testingPeriodSatisfied on planRules.hsa is therefore rejected with HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED and belongs on persons[].hsaLastMonthRule.",
+      "description": "The testing-period facts did move, for the reason the rule itself did not. IRC 223(b)(8)(B)(iii) defines the testing period for \"the individual\", IRC 223(b)(8)(B)(i) puts the inclusion in that individual's gross income, and IRC 223(b)(8)(B)(ii) excepts a failure \"by reason of the death of the individual or the individual becoming disabled\" -- the individual throughout, never the account. testingPeriodSatisfied on planRules.hsa is therefore rejected with HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED and belongs on persons[].hsaLastMonthRuleTestingPeriod.satisfied.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -14265,17 +14463,14 @@
     },
     {
       "name": "2026 the last-month rule does not reduce a limit the ordinary months already earned",
-      "description": "Notice 2008-52 makes IRC 223(b)(8) a comparison: a December-eligible individual's annual limit is \"the greater of\" (1) the sum of the monthly limits \"based on eligibility and HDHP coverage on the first day of each month\", or (2) \"the maximum annual HSA contribution ... based on the individual's HDHP coverage (self-only or family) on the first day of the last month\". The notice adds that the rule \"may increase, but not decrease, the contribution limit\", which is what taking the greater of the two guarantees.\n\nThe taxpayer holds family coverage from January through November 2026 and self-only coverage in December, is an eligible individual throughout, and elects IRC 223(b)(8). The 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only.\n\n  candidate (1)  11/12 x 8750 + 1/12 x 4400  =  8387.50\n  candidate (2)  December's tier for the year =  4400.00\n  greater                                     =  8387.50\n\nThis is Notice 2008-52 Example 8 in a later year and with the tiers of that example reversed in time: there, family coverage through August and self-only from September gave \"$4,833.33, the greater of $2,900 or $4,833.33\", the monthly candidate winning over a self-only December.\n\nTaking candidate (2) alone would give 4400, a reduction of 3987.50 for making an election the statute offers as an increase. Because candidate (1) is the one that won, nothing in this limit \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i), so the amount attributable to the rule is 0 and no part of the limit is exposed to the testing-period inclusion even though the election was made -- which is the conclusion Example 8 reaches on its own facts.",
+      "description": "Notice 2008-52 makes IRC 223(b)(8) a comparison: a December-eligible individual's annual limit is \"the greater of\" (1) the sum of the monthly limits \"based on eligibility and HDHP coverage on the first day of each month\", or (2) \"the maximum annual HSA contribution ... based on the individual's HDHP coverage (self-only or family) on the first day of the last month\". The notice adds that the rule \"may increase, but not decrease, the contribution limit\", which is what taking the greater of the two guarantees.\n\nThe taxpayer holds family coverage from January through November 2026 and self-only coverage in December, and is an eligible individual throughout. December is an eligible month, so IRC 223(b)(8)(A) reaches this individual with no election and Notice 2008-52's greater-of is taken. The 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only.\n\n  candidate (1)  11/12 x 8750 + 1/12 x 4400  =  8387.50\n  candidate (2)  December's tier for the year =  4400.00\n  greater                                     =  8387.50\n\nThis is Notice 2008-52 Example 8 in a later year and with the tiers of that example reversed in time: there, family coverage through August and self-only from September gave \"$4,833.33, the greater of $2,900 or $4,833.33\", the monthly candidate winning over a self-only December.\n\nTaking candidate (2) alone would give 4400, a reduction of 3987.50 from a rule the statute offers only as an increase -- which is why it is a greater-of and not a substitution. Because candidate (1) is the one that won, nothing in this limit \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i), so the amount attributable to the rule is 0, no part of the limit is exposed to the testing-period inclusion, and no testing-period obligation is reported at all -- which is the conclusion Example 8 reaches on its own facts.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "single",
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1985
           }
         ],
         "accounts": [
@@ -14344,12 +14539,18 @@
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
         "accounts.0.hsa.proratedContributionLimit": 8387.5,
-        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
-      }
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 8387.5,
+        "accounts.0.hsa.testingPeriod": null
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED"
+      ]
     },
     {
       "name": "2026 last-month rule deemed months take each month's own spouse eligibility",
-      "description": "The IRC 223(b)(8) candidate is twelve months at December's coverage tier -- Notice 2008-52 states it as \"the maximum annual HSA contribution under section 223(b)(2)(A) or section 223(b)(2)(B) based on the individual's HDHP coverage (self-only or family) on the first day of the last month\" -- but that fixes the *amount*, not how the amount is divided.\n\nThe taxpayer holds family coverage in December 2026 only and elects the rule, so candidate (2) is the full 2026 family amount of 8750 (Rev. Proc. 2025-19) against a candidate (1) of 1/12 x 8750 = 729.17, and 8750 is the greater. The spouse is an eligible individual from January through June and not afterwards, and owns no health savings account.\n\nThe division then follows each month's own facts, not December's. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse:\n\n  January-June   both eligible, divided equally  -> 1/2 x 6/12 x 8750 = 2187.50\n  July-December  taxpayer alone, undivided       ->       6/12 x 8750 = 4375.00\n  total                                          ->                     6562.50\n\nReading December's shared status across the whole deemed year would divide all twelve months and give 4375; reading the taxpayer's raw month list instead would treat January through June as the taxpayer's alone and give 8750. Both answer a question about one month with a fact from another.",
+      "description": "The IRC 223(b)(8) candidate is twelve months at December's coverage tier -- Notice 2008-52 states it as \"the maximum annual HSA contribution under section 223(b)(2)(A) or section 223(b)(2)(B) based on the individual's HDHP coverage (self-only or family) on the first day of the last month\" -- but that fixes the *amount*, not how the amount is divided.\n\nThe taxpayer holds family coverage in December 2026 only, which is what IRC 223(b)(8)(A) reaches, so candidate (2) is the full 2026 family amount of 8750 (Rev. Proc. 2025-19) against a candidate (1) of 1/12 x 8750 = 729.17, and 8750 is the greater. The spouse is an eligible individual from January through June and not afterwards, and owns no health savings account.\n\nThe division then follows each month's own facts, not December's. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse:\n\n  January-June   both eligible, divided equally  -> 1/2 x 6/12 x 8750 = 2187.50\n  July-December  taxpayer alone, undivided       ->       6/12 x 8750 = 4375.00\n  total                                          ->                     6562.50\n\nReading December's shared status across the whole deemed year would divide all twelve months and give 4375; reading the taxpayer's raw month list instead would treat January through June as the taxpayer's alone and give 8750. Both answer a question about one month with a fact from another.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -14358,9 +14559,8 @@
             "id": "t",
             "role": "taxpayer",
             "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true,
-              "testingPeriodSatisfied": true
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": true
             }
           },
           {
@@ -14421,7 +14621,7 @@
     },
     {
       "name": "2026 the last-month counterfactual is divided the same way the applied limit is",
-      "description": "No last-month rule is elected here, so the amount attributable to it must be nil. IRC 223(b)(8)(B)(i) includes in income only \"the aggregate amount of the contributions ... which could not have been made but for subparagraph (A)\", which is the difference between the limit with the rule and the limit without it -- so the two have to be computed the same way.\n\nThe taxpayer holds family coverage all year; the spouse is an eligible individual from July. Under Notice 2004-50 Q&A-31 the first six months are the taxpayer's alone and the last six are divided, giving 4375 + 2187.50 = 6562.50 against the 2026 family amount of 8750 (Rev. Proc. 2025-19). The counterfactual is the same 6562.50, because nothing about the last-month rule entered either figure, and the attributable amount is 0.\n\nComputing the counterfactual without its monthly split treated all 8750 as shared, returned 4375, and reported 2187.50 as attributable to a rule that was never applied -- a figure that would have flowed on into the testing-period gross-income inclusion and its 10 percent additional tax.",
+      "description": "IRC 223(b)(8) reaches the spouse here -- they are an eligible individual in December -- but changes nothing, so the amount attributable to it must be nil. IRC 223(b)(8)(B)(i) includes in income only \"the aggregate amount of the contributions ... which could not have been made but for subparagraph (A)\", which is the difference between the limit with the rule and the limit without it -- so the two have to be computed the same way.\n\nThe taxpayer holds family coverage all year; the spouse is an eligible individual from July. Under Notice 2004-50 Q&A-31 the first six months are the taxpayer's alone and the last six are divided, giving 4375 + 2187.50 = 6562.50 against the 2026 family amount of 8750 (Rev. Proc. 2025-19). The counterfactual is the same 6562.50, because nothing about the last-month rule entered either figure, and the attributable amount is 0.\n\nComputing the counterfactual without its monthly split treated all 8750 as shared, returned 4375, and reported 2187.50 as attributable to a rule that was never applied -- a figure that would have flowed on into the testing-period gross-income inclusion and its 10 percent additional tax.\n\nThe greater-of is still taken, because nothing has to elect it. Candidate (2) treats the spouse as enrolled in December's coverage for all twelve months, IRC 223(b)(5)(A) makes those months family months against the taxpayer's family year, and every month is then shared: 8750 divided equally. The couple's combined candidate (1) is the same 8750, one family limitation either way, so the comparison picks up nothing and candidate (1) stands with its own Notice 2004-50 Q&A-31 division intact.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -14481,7 +14681,7 @@
       "expect": {
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 6562.5,
-        "accounts.0.hsa.lastMonthRuleApplied": false,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 0
       }
     },
@@ -14792,10 +14992,7 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1969,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1969
           }
         ],
         "accounts": [
@@ -14864,23 +15061,20 @@
         "accounts.0.accountId": "a",
         "accounts.0.status": "determinate_with_assumptions",
         "accounts.0.statutoryMaximumAnnualContribution": 5800,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 2416.67
       }
     },
     {
       "name": "2008 Notice 2008-52 Example 8 lets the monthly candidate win, so the rule lowers nothing",
-      "description": "The other half of the Notice 2008-52 greater-of, and the reason the rule \"may increase, but not decrease, the contribution limit\". Example 8, transcribed: Individual G, age 38, holds family HDHP coverage from January 1 2008 and self-only coverage from September 1, and is an eligible individual for all twelve months. \"G's full contribution limit under section 223(b)(8) for 2008 is $2,900. G's sum of the monthly contribution limits is $4,833.33 ((8/12 x $5,800) + (4/12 x $2,900)). G's annual contribution limit is $4,833.33, the greater of $2,900 or $4,833.33.\" The 2008 amounts are Rev. Proc. 2007-36 section 3.02.\n\n8/12 x 5800 + 4/12 x 2900 = 3866.666... + 966.666... = 4833.333..., which is 4833.33 rounded to cents, the figure the notice states.\n\nBecause candidate (1) is the one that won, nothing in the limit \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i), so the attributable amount is 0 and the testing period exposes nothing. The notice draws the same conclusion on the same facts: \"Because G's contribution of $4,833.33 is not greater than the sum of the monthly contribution limits, there is no inclusion or additional tax when G ceases to be an eligible individual during the testing period.\"",
+      "description": "The other half of the Notice 2008-52 greater-of, and the reason the rule \"may increase, but not decrease, the contribution limit\". Example 8, transcribed: Individual G, age 38, holds family HDHP coverage from January 1 2008 and self-only coverage from September 1, and is an eligible individual for all twelve months. \"G's full contribution limit under section 223(b)(8) for 2008 is $2,900. G's sum of the monthly contribution limits is $4,833.33 ((8/12 x $5,800) + (4/12 x $2,900)). G's annual contribution limit is $4,833.33, the greater of $2,900 or $4,833.33.\" The 2008 amounts are Rev. Proc. 2007-36 section 3.02.\n\n8/12 x 5800 + 4/12 x 2900 = 3866.666... + 966.666... = 4833.333..., which is 4833.33 rounded to cents, the figure the notice states.\n\nBecause candidate (1) is the one that won, nothing in the limit \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i), so the attributable amount is 0 and the testing period exposes nothing. The notice draws the same conclusion on the same facts: \"Because G's contribution of $4,833.33 is not greater than the sum of the monthly contribution limits, there is no inclusion or additional tax when G ceases to be an eligible individual during the testing period.\"\n\nfullContributionCandidateSelected is therefore false: the field reports which of the two candidates the ceiling was built from, and here it was candidate (1). No testing-period obligation is reported for the same reason the attributable amount is 0 -- IRC 223(b)(8)(B)(i) reaches only contributions that could not have been made but for subparagraph (A), and there are none.",
       "input": {
         "taxYear": 2008,
         "filingStatus": "single",
         "persons": [
           {
             "id": "t",
-            "birthYear": 1970,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1970
           }
         ],
         "accounts": [
@@ -14949,9 +15143,13 @@
         "accounts.0.accountId": "a",
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 4833.33,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
-        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
-      }
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED"
+      ]
     },
     {
       "name": "2008 Notice 2008-52 Example 5 compares the whole age 55 amount against the monthly one",
@@ -14962,10 +15160,7 @@
         "persons": [
           {
             "id": "t",
-            "birthYear": 1951,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1951
           }
         ],
         "accounts": [
@@ -14989,23 +15184,20 @@
       "expect": {
         "accounts.0.accountId": "a",
         "accounts.0.status": "determinate_with_assumptions",
-        "accounts.0.hsa.lastMonthRuleApplied": true,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
         "accounts.0.hsa.amountAttributableToLastMonthRule": 6141.67
       }
     },
     {
       "name": "2026 the full-contribution candidate is not December's tier poured into the ineligible months",
-      "description": "The failure mode Notice 2008-52 Example 3 rules out, shown where it overstates rather than understates. The taxpayer holds family HDHP coverage and is an eligible individual from January through August 2026, is not an eligible individual from September through November, holds self-only coverage in December, is under 55, and elects IRC 223(b)(8).\n\nThe 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only. Notice 2008-52 gives two candidates and no third. Candidate (1), the sum of the monthly limits on the facts as they stand, is 8/12 x 8750 + 1/12 x 4400 = 5833.333... + 366.666... = 6200. Candidate (2), \"the maximum annual HSA contribution ... based on the individual's HDHP coverage (self-only or family) on the first day of the last month\", is 4400. The limit is the greater of them, 6200.\n\nImputing December's self-only tier to the three ineligible months instead would give 8/12 x 8750 + 4/12 x 4400 = 7300, which is neither candidate and exceeds both. Notice 2008-52 offers no reading on which three months of actual ineligibility become self-only capacity while eight earlier family months are also kept; an amount above the greater of the two candidates is an excess contribution under IRC 4973, not a testing-period amount.\n\nCandidate (1) wins, so nothing \"could not have been made but for subparagraph (A)\" and the attributable amount is 0.",
+      "description": "The failure mode Notice 2008-52 Example 3 rules out, shown where it overstates rather than understates. The taxpayer holds family HDHP coverage and is an eligible individual from January through August 2026, is not an eligible individual from September through November, holds self-only coverage in December, and is under 55. Nothing elects the rule, because IRC 223(b)(8)(A) reaches a December-eligible individual by its own force.\n\nThe 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only. Notice 2008-52 gives two candidates and no third. Candidate (1), the sum of the monthly limits on the facts as they stand, is 8/12 x 8750 + 1/12 x 4400 = 5833.333... + 366.666... = 6200. Candidate (2), \"the maximum annual HSA contribution ... based on the individual's HDHP coverage (self-only or family) on the first day of the last month\", is 4400. The limit is the greater of them, 6200.\n\nImputing December's self-only tier to the three ineligible months instead would give 8/12 x 8750 + 4/12 x 4400 = 7300, which is neither candidate and exceeds both. Notice 2008-52 offers no reading on which three months of actual ineligibility become self-only capacity while eight earlier family months are also kept; an amount above the greater of the two candidates is an excess contribution under IRC 4973, not a testing-period amount.\n\nCandidate (1) wins, so nothing \"could not have been made but for subparagraph (A)\", the attributable amount is 0, and fullContributionCandidateSelected is false -- that field reports which candidate the ceiling was built from, not whether the rule was available.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "single",
         "persons": [
           {
             "id": "t",
-            "birthYear": 1985,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1985
           }
         ],
         "accounts": [
@@ -15062,8 +15254,9 @@
         "accounts.0.accountId": "a",
         "accounts.0.status": "determinate",
         "accounts.0.statutoryMaximumAnnualContribution": 6200,
-        "accounts.0.hsa.lastMonthRuleApplied": true,
-        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null
       }
     },
     {
@@ -15076,18 +15269,12 @@
           {
             "id": "t",
             "role": "taxpayer",
-            "birthYear": 1968,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1968
           },
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1968,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1968
           }
         ],
         "hsaFamilyLimitDivision": {
@@ -15133,8 +15320,8 @@
       }
     },
     {
-      "name": "2026 a spouse's last-month election cannot stack a family year on the other's self-only months",
-      "description": "One spouse's IRC 223(b)(8) election cannot be built privately inside their own limitation, because IRC 223(b)(5)(A) reads the spouses' coverage together. The taxpayer holds self-only HDHP coverage and is an eligible individual for all twelve months of 2026 and elects nothing; the spouse holds family coverage in December alone and elects IRC 223(b)(8). The 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only. The division is the IRC 223(b)(5)(B)(ii) default.\n\nCandidate (1), on the facts as stated: December is a family month for both spouses, because IRC 223(b)(5)(A) treats both as having family coverage in any month either has it, and both are eligible individuals in it, so under Notice 2004-50 Q&A-31 it is shared and divided. The taxpayer takes 11/12 x 4400 = 4033.33 undivided plus half of 1/12 x 8750 = 364.58, and the spouse takes 364.58: combined 4762.50.\n\nCandidate (2): the spouse is treated as enrolled in December's family plan for all twelve months, so IRC 223(b)(5)(A) makes each of the taxpayer's twelve eligible months a family month too. The couple's one limitation is 8750, every month is shared, and the equal division gives 4375 each: combined 8750.\n\n8750 is the greater, so each spouse's ceiling is 4375 and the two together are exactly the single family limitation IRC 223(b)(5) allows. Comparing the two candidates per spouse instead would let the taxpayer keep candidate (1)'s 4397.92 while the spouse took candidate (2)'s 4375, totalling 8772.92 -- more than one family limitation, from a couple with one family plan held for one month.",
+      "name": "2026 one spouse's IRC 223(b)(8) year cannot stack a family limitation on the other's self-only months",
+      "description": "One spouse's IRC 223(b)(8) year cannot be built privately inside their own limitation, because IRC 223(b)(5)(A) reads the spouses' coverage together. The taxpayer holds self-only HDHP coverage and is an eligible individual for all twelve months of 2026; the spouse holds family coverage in December alone, which is what IRC 223(b)(8)(A) reaches. Neither elects anything -- there is nothing to elect. The 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only. The division is the IRC 223(b)(5)(B)(ii) default.\n\nCandidate (1), on the facts as stated: December is a family month for both spouses, because IRC 223(b)(5)(A) treats both as having family coverage in any month either has it, and both are eligible individuals in it, so under Notice 2004-50 Q&A-31 it is shared and divided. The taxpayer takes 11/12 x 4400 = 4033.33 undivided plus half of 1/12 x 8750 = 364.58, and the spouse takes 364.58: combined 4762.50.\n\nCandidate (2): the spouse is treated as enrolled in December's family plan for all twelve months, so IRC 223(b)(5)(A) makes each of the taxpayer's twelve eligible months a family month too. The couple's one limitation is 8750, every month is shared, and the equal division gives 4375 each: combined 8750.\n\n8750 is the greater, so each spouse's ceiling is 4375 and the two together are exactly the single family limitation IRC 223(b)(5) allows. Comparing the two candidates per spouse instead would let the taxpayer keep candidate (1)'s 4397.92 while the spouse took candidate (2)'s 4375, totalling 8772.92 -- more than one family limitation, from a couple with one family plan held for one month.\n\nThe taxpayer's own share falls from candidate (1)'s 4397.92 (11/12 x 4400 undivided, plus half of 1/12 x 8750) to 4375, and that is not IRC 223(b)(8) reducing anything. The rule raises the couple's limitation by 3987.50; what moves the taxpayer's own figure is IRC 223(b)(5)(A), which turns eleven months of capacity that was theirs alone into family capacity, and IRC 223(b)(5)(B)(ii), which divides it equally in the absence of an agreed division. Notice 2008-52 Example 14 fixes that order -- it compares the couple's combined limits and then states each spouse's amount -- and Form 8889 follows it, settling line 3 and line 5 before the spousal division on line 6. Spouses who would rather keep the taxpayer's 4397.92 may agree a different division under IRC 223(b)(5)(B)(ii); no diagnostic is emitted for the equal one beyond the standing HSA_FAMILY_LIMIT_DIVIDED_EQUALLY note, because nothing here is unknown, inconsistent, or assumed.\n\nThe owner-level attributable amounts follow the same division. The taxpayer's applied 4375 is below their own counterfactual 4397.92, so nothing of theirs \"could not have been made but for subparagraph (A)\": the attributable amount is 0 and no testing period is reported against their account. The spouse's is 4375 - 364.58 = 4010.42, which exceeds the couple's 3987.50 net increase by exactly the 22.92 of formerly undivided taxpayer capacity the division moved across. That is a reallocation, not double counting: the two accounts still total one family limitation.\n\ncontributionLimitWithoutLastMonthRule reports 4762.50 for the taxpayer rather than 4397.92, and that is its contract: it is the IRC 223(b)(1) limitation this owner's own months produce before the IRC 223(b)(5)(B)(ii) division -- 11/12 x 4400 plus 1/12 x 8750 -- the same footing on which proratedContributionLimit is reported. The divided counterfactual is what the attributable amount is measured against, and it is 4397.92 for the taxpayer and 364.58 for the spouse.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -15147,10 +15334,7 @@
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1986
           }
         ],
         "hsaFamilyLimitDivision": {
@@ -15202,7 +15386,15 @@
         "accounts.1.accountId": "b",
         "accounts.1.statutoryMaximumAnnualContribution": 4375,
         "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
-        "totals.hsaContribution": 8750
+        "totals.hsaContribution": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 4762.5,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.hsa.fullContributionCandidateSelected": true,
+        "accounts.1.hsa.amountAttributableToLastMonthRule": 4010.42,
+        "accounts.1.hsa.testingPeriod.status": "unresolved",
+        "accounts.1.hsa.testingPeriod.grossIncomeInclusionIfFailed": 4010.42
       }
     },
     {
@@ -15220,10 +15412,7 @@
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1986
           }
         ],
         "hsaFamilyLimitDivision": {
@@ -15356,7 +15545,7 @@
     },
     {
       "name": "2026 a candidate that does not exceed the monthly one increases nothing, and does not redivide it",
-      "description": "Notice 2008-52 makes IRC 223(b)(8) a greater-of and says the rule \"may increase, but not decrease, the contribution limit\". Where the full-contribution candidate does not exceed the monthly one it therefore does nothing at all -- including nothing to how the monthly one is divided.\n\nThe taxpayer holds family HDHP coverage and is an eligible individual for all twelve months of 2026 and elects nothing. The spouse holds family coverage in December alone, elects IRC 223(b)(8), and owns an HSA of their own. The 2026 family amount is 8750 (Rev. Proc. 2025-19) and the division is the IRC 223(b)(5)(B)(ii) default.\n\nCandidate (1) is built on eligibility \"on the first day of each month\", which the last-month rule does not reach, so the spouse is an eligible individual in December and in no other month. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse:\n\n  January-November  taxpayer alone, undivided  ->       11/12 x 8750 = 8020.83\n  December          both eligible, divided     -> 1/2 x  1/12 x 8750 =  364.58\n  taxpayer                                     ->                      8385.42\n  spouse                                       ->                       364.58\n  combined                                     ->                      8750.00\n\nCandidate (2) treats the spouse as enrolled in December's family plan for all twelve months and, under clause (i), as an eligible individual throughout, so every month is shared and the equal division gives 4375 each -- combined 8750 again. It does not exceed candidate (1), so IRC 223(b)(8) increases nothing and candidate (1) stands with its own division intact.\n\nReading the spouse's *deemed* eligibility into candidate (1) would halve the taxpayer's eleven sole months and move 4010.83 of the couple's limitation to the spouse without changing the total, on the strength of a rule that the comparison had just found made no difference. The amount attributable to the rule under IRC 223(b)(8)(B)(i) is 0 for both spouses for the same reason, so the spouse's election puts nothing at risk in the testing period.",
+      "description": "Notice 2008-52 makes IRC 223(b)(8) a greater-of and says the rule \"may increase, but not decrease, the contribution limit\". Where the full-contribution candidate does not exceed the monthly one it therefore does nothing at all -- including nothing to how the monthly one is divided.\n\nThe taxpayer holds family HDHP coverage and is an eligible individual for all twelve months of 2026. The spouse holds family coverage in December alone and owns an HSA of their own, so IRC 223(b)(8)(A) reaches the spouse and no one elects anything. The 2026 family amount is 8750 (Rev. Proc. 2025-19) and the division is the IRC 223(b)(5)(B)(ii) default.\n\nCandidate (1) is built on eligibility \"on the first day of each month\", which the last-month rule does not reach, so the spouse is an eligible individual in December and in no other month. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse:\n\n  January-November  taxpayer alone, undivided  ->       11/12 x 8750 = 8020.83\n  December          both eligible, divided     -> 1/2 x  1/12 x 8750 =  364.58\n  taxpayer                                     ->                      8385.42\n  spouse                                       ->                       364.58\n  combined                                     ->                      8750.00\n\nCandidate (2) treats the spouse as enrolled in December's family plan for all twelve months and, under clause (i), as an eligible individual throughout, so every month is shared and the equal division gives 4375 each -- combined 8750 again. It does not exceed candidate (1), so IRC 223(b)(8) increases nothing and candidate (1) stands with its own division intact.\n\nReading the spouse's *deemed* eligibility into candidate (1) would halve the taxpayer's eleven sole months and move 4010.83 of the couple's limitation to the spouse without changing the total, on the strength of a rule that the comparison had just found made no difference. The amount attributable to the rule under IRC 223(b)(8)(B)(i) is 0 for both spouses for the same reason, so nothing is at risk in the testing period and no obligation is reported for either of them.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -15369,10 +15558,7 @@
           {
             "id": "s",
             "role": "spouse",
-            "birthYear": 1986,
-            "hsaLastMonthRule": {
-              "useLastMonthRule": true
-            }
+            "birthYear": 1986
           }
         ],
         "hsaFamilyLimitDivision": {
@@ -15424,10 +15610,13 @@
         "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
         "accounts.1.accountId": "b",
         "accounts.1.statutoryMaximumAnnualContribution": 364.58,
-        "accounts.1.hsa.lastMonthRuleApplied": true,
+        "accounts.1.hsa.fullContributionCandidateSelected": false,
         "accounts.1.hsa.amountAttributableToLastMonthRule": 0,
         "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
-        "totals.hsaContribution": 8750
+        "totals.hsaContribution": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.hsa.testingPeriod": null
       }
     }
   ]

@@ -200,12 +200,16 @@ export interface PersonInput {
    */
   hsaCoverage?: HsaCoverageInput;
   /**
-   * IRC 223(b)(8) last-month-rule election and testing-period facts for this
-   * person. One election per person rather than one per account: IRC 223(b)(8)
-   * operates on "an individual", and an owner's two HSAs cannot make different
-   * elections.
+   * IRC 223(b)(8)(B) testing-period facts for this person. The last-month rule
+   * itself is not stated here: IRC 223(b)(8)(A) says a December-eligible
+   * individual "shall be treated" as an eligible individual for the whole year,
+   * so this engine reads it off the coverage facts rather than asking. What is
+   * left to state is the consequence — whether the testing period was, or will
+   * be, satisfied — and that is one fact per person rather than one per
+   * account, because IRC 223(b)(8)(B)(i) puts any inclusion in that
+   * individual's gross income.
    */
-  hsaLastMonthRule?: HsaLastMonthRuleInput;
+  hsaLastMonthRuleTestingPeriod?: HsaLastMonthRuleTestingPeriodInput;
   /**
    * The aggregate amount paid for the taxable year to Archer MSAs of this
    * person. IRC 223(b)(4)(A) reduces that person's IRC 223(b) limitation by it;
@@ -337,12 +341,15 @@ export interface HsaCoverageInput {
  *   one family limitation "equally between them unless they agree on a
  *   different division", and "them" is the married individuals of the opening
  *   clause. It now lives on `ScenarioInput.hsaFamilyLimitDivision`.
- * - `useLastMonthRule`, `testingPeriodSatisfied` and
- *   `testingPeriodFailureByDeathOrDisability` are about the *person*.
- *   IRC 223(b)(8)(A) treats "an individual who is an eligible individual during
- *   the last month of such taxable year" and (b)(8)(B) puts the income
- *   inclusion on that individual; neither speaks to an account. They now live
- *   on `PersonInput.hsaLastMonthRule`.
+ * - `testingPeriodSatisfied` and `testingPeriodFailureByDeathOrDisability` are
+ *   about the *person*: IRC 223(b)(8)(B)(iii) defines the testing period for
+ *   "the individual" and (b)(8)(B)(i) puts the income inclusion on them.
+ *   Neither speaks to an account. They now live on
+ *   `PersonInput.hsaLastMonthRuleTestingPeriod`.
+ * - `useLastMonthRule` states nothing at all, and so moved nowhere. IRC
+ *   223(b)(8)(A) treats a December-eligible individual as an eligible
+ *   individual for the whole year without asking them, so the greater-of is
+ *   computed from the coverage facts.
  *
  * The evidence that these were misplaced was in the engine itself: it carried
  * two conflict detectors, computed identically on adjacent lines, whose only
@@ -357,20 +364,37 @@ export interface HsaCoverageInput {
 export type HsaRulesInput = HsaCoverageInput;
 
 /**
- * IRC 223(b)(8) last-month-rule facts about one *person*.
+ * IRC 223(b)(8)(B) testing-period facts about one *person*.
  *
- * IRC 223(b)(8)(A) makes the election for "an individual who is an eligible
- * individual during the last month of such taxable year", and (b)(8)(B)(i)
- * puts any resulting income inclusion in that individual's gross income. Both
- * operate on the person, so an owner with two HSAs makes one election, not two.
+ * There is no field here for applying IRC 223(b)(8) itself, because applying it
+ * is not the taxpayer's to state. IRC 223(b)(8)(A) says an individual who is an
+ * eligible individual during the last month of the taxable year "shall be
+ * treated" as an eligible individual for each month of that year, and Notice
+ * 2008-52 states the resulting maximum as "the greater of" the month-by-month
+ * figure and the whole annual figure for December's coverage tier. Neither is
+ * conditioned on an election: there is no election statement, no Form 8889
+ * checkbox and no revocation, and Form 8889's instructions simply tell a
+ * December-eligible taxpayer whose coverage changed to enter the greater amount
+ * on line 3. Their "you may consider yourself an eligible individual for the
+ * entire year" is the practical choice to fund the extra capacity, which a
+ * taxpayer makes by contributing; a taxpayer may always contribute less than a
+ * statutory maximum, and that does not lower the maximum.
+ *
+ * The consequence is where the taxpayer's own conduct does matter, and it is
+ * measured on conduct rather than on an election: IRC 223(b)(8)(B)(i) reaches
+ * only contributions "which could not have been made but for" the rule, and
+ * Notice 2008-52's examples cap the inclusion at the contribution actually
+ * made. So `amountAttributableToLastMonthRule` and these two facts, not a flag,
+ * decide the testing-period obligation.
+ *
+ * IRC 223(b)(8)(B)(iii) defines that period for "the individual", so an owner
+ * with two HSAs has one testing period, not two.
  */
-export interface HsaLastMonthRuleInput {
-  /** Elect the IRC 223(b)(8) last-month rule. Requires eligibility in December. */
-  useLastMonthRule?: boolean;
+export interface HsaLastMonthRuleTestingPeriodInput {
   /** Whether the IRC 223(b)(8)(B)(iii) testing period was, or will be, satisfied. Omitted means unresolved. */
-  testingPeriodSatisfied?: boolean;
+  satisfied?: boolean;
   /** IRC 223(b)(8)(B)(ii): a testing-period failure caused by death or disability is excepted. */
-  testingPeriodFailureByDeathOrDisability?: boolean;
+  failureByDeathOrDisability?: boolean;
 }
 
 /**
@@ -653,7 +677,20 @@ export interface HsaAccountDetail {
    * only what was left for (C) to reach.
    */
   qualifiedHsaFundingLimitReduction: Money;
-  lastMonthRuleApplied: boolean;
+  /**
+   * True where this ceiling was built from Notice 2008-52's second candidate —
+   * December's coverage tier taken for the whole year — because it came out
+   * larger than the month-by-month one.
+   *
+   * It does not say the rule was worth anything to *this* owner. Notice
+   * 2008-52 Example 14 compares the married couple's *combined* candidates and
+   * divides the winner, so a spouse can be on the winning candidate and still
+   * take a smaller share of it than their own eligible months would have given
+   * them undivided. What the rule was worth to this owner is
+   * `amountAttributableToLastMonthRule`, and that figure alone decides the
+   * testing-period obligation.
+   */
+  fullContributionCandidateSelected: boolean;
   /**
    * The part of this owner's ceiling that exists only because of IRC
    * 223(b)(8)(A) — the amount that "could not have been made but for"
@@ -6887,7 +6924,7 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
   "historicalCoveragePolicy": {
     "description": "Health savings accounts were created by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. The table therefore starts at 2004 and is never extrapolated forward: a tax year with no published revenue procedure returns an unavailable status and a diagnostic rather than an inflation-projected amount.",
     "preTaxRelief2006DeductibleCap": "For 2004 through 2006, IRC 223(b)(2) capped each month's limitation at 1/12 of the lesser of the plan's annual deductible and the statutory dollar amount. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for taxable years beginning after 2006. In the capped years the engine requires the plan's annual deductible and returns an indeterminate result without it.",
-    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. Electing it for an earlier year produces a diagnostic and the ordinary month-by-month limitation."
+    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. It is not an election: IRC 223(b)(8)(A) treats a December-eligible individual as an eligible individual for the whole year, so the engine takes Notice 2008-52's greater-of from the coverage facts wherever lastMonthRuleAvailable is true. An earlier year simply has the ordinary month-by-month limitation, with no diagnostic, because nothing the caller stated went unhonoured."
   },
   "sources": [
     {
@@ -9387,9 +9424,15 @@ function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPe
     if (input.hsaCoverage !== undefined) {
       validateHsaCoverage(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     }
-    requireInputObject(input.hsaLastMonthRule, `persons[${index}].hsaLastMonthRule`);
-    if (input.hsaLastMonthRule !== undefined) {
-      validateHsaLastMonthRule(input.hsaLastMonthRule, `persons[${index}].hsaLastMonthRule`);
+    requireInputObject(
+      input.hsaLastMonthRuleTestingPeriod,
+      `persons[${index}].hsaLastMonthRuleTestingPeriod`,
+    );
+    if (input.hsaLastMonthRuleTestingPeriod !== undefined) {
+      validateHsaLastMonthRuleTestingPeriod(
+        input.hsaLastMonthRuleTestingPeriod,
+        `persons[${index}].hsaLastMonthRuleTestingPeriod`,
+      );
     }
     booleanFlag(input.coveredByEmployerRetirementPlan, `persons[${index}].coveredByEmployerRetirementPlan`);
     booleanFlag(input.livedWithSpouseDuringYear, `persons[${index}].livedWithSpouseDuringYear`);
@@ -9663,17 +9706,17 @@ const RELOCATED_HSA_ACCOUNT_FIELDS: ReadonlyArray<[string, string, string]> = [
   [
     "useLastMonthRule",
     "HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED",
-    "IRC 223(b)(8) applies to an individual, not to an account. Supply `persons[].hsaLastMonthRule.useLastMonthRule` instead.",
+    "IRC 223(b)(8) is not an election, so this field moved nowhere. IRC 223(b)(8)(A) treats an individual who is an eligible individual in December as one for the whole year, and Notice 2008-52 states the maximum as the greater of the month-by-month figure and December's tier taken for the year; the engine computes that from the coverage facts. Remove the field, and supply `persons[].hsaLastMonthRuleTestingPeriod` for the testing-period facts that follow from it.",
   ],
   [
     "testingPeriodSatisfied",
     "HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED",
-    "IRC 223(b)(8)(B)(iii) applies to an individual, not to an account. Supply `persons[].hsaLastMonthRule.testingPeriodSatisfied` instead.",
+    "IRC 223(b)(8)(B)(iii) applies to an individual, not to an account. Supply `persons[].hsaLastMonthRuleTestingPeriod.satisfied` instead.",
   ],
   [
     "testingPeriodFailureByDeathOrDisability",
     "HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED",
-    "IRC 223(b)(8)(B)(ii) applies to an individual, not to an account. Supply `persons[].hsaLastMonthRule.testingPeriodFailureByDeathOrDisability` instead.",
+    "IRC 223(b)(8)(B)(ii) applies to an individual, not to an account. Supply `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` instead.",
   ],
 ];
 
@@ -9686,13 +9729,12 @@ function validateHsaRules(rules: HsaRulesInput, path: string): void {
   }
 }
 
-function validateHsaLastMonthRule(rules: HsaLastMonthRuleInput, path: string): void {
-  booleanFlag(rules.useLastMonthRule, `${path}.useLastMonthRule`);
-  booleanFlag(rules.testingPeriodSatisfied, `${path}.testingPeriodSatisfied`);
-  booleanFlag(
-    rules.testingPeriodFailureByDeathOrDisability,
-    `${path}.testingPeriodFailureByDeathOrDisability`,
-  );
+function validateHsaLastMonthRuleTestingPeriod(
+  rules: HsaLastMonthRuleTestingPeriodInput,
+  path: string,
+): void {
+  booleanFlag(rules.satisfied, `${path}.satisfied`);
+  booleanFlag(rules.failureByDeathOrDisability, `${path}.failureByDeathOrDisability`);
 }
 
 const HSA_FAMILY_LIMIT_DIVISION_STATUSES = [
@@ -11595,11 +11637,13 @@ interface HsaOwnerFacts {
    * structural absence as a disagreement with an account that supplies one.
    */
   /**
-   * IRC 223(b)(8) facts for this person. One election per person, so there is
-   * nothing here for the person's accounts to disagree about -- which is why
-   * the two conflict detectors that used to sit beside this field are gone.
+   * IRC 223(b)(8)(B) testing-period facts for this person. One testing period
+   * per person, so there is nothing here for the person's accounts to disagree
+   * about -- which is why the two conflict detectors that used to sit beside
+   * this field are gone. Whether the rule applies at all is not here either: it
+   * is read off the coverage months rather than stated.
    */
-  lastMonthRule: HsaLastMonthRuleInput;
+  testingPeriodFacts: HsaLastMonthRuleTestingPeriodInput;
   months: Array<HsaCoverageTier | null> | null;
 }
 
@@ -11890,7 +11934,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       conflict,
       personConflict,
       coverageVariants,
-      lastMonthRule: context.persons.get(ownerId)?.hsaLastMonthRule ?? {},
+      testingPeriodFacts: context.persons.get(ownerId)?.hsaLastMonthRuleTestingPeriod ?? {},
       months: rules === null ? null : resolveHsaMonths(rules),
     });
   }
@@ -12082,9 +12126,17 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const familySharingApplies = familyMonth.some(Boolean);
   /**
    * Whether IRC 223(b)(8) deems this person an eligible individual for the whole
-   * year, which it does for anyone who elects it and is eligible in December.
+   * year, which it does for anyone eligible in December of a year the rule
+   * reaches.
    *
-   * The deeming is not private to the electing person's own limitation. IRC
+   * Nothing is elected here. IRC 223(b)(8)(A) says such an individual "shall be
+   * treated" as an eligible individual for each month, and Notice 2008-52 turns
+   * that into a greater-of, which by construction cannot lower a limitation --
+   * so there is nothing for a taxpayer to accept or decline. The choice a
+   * taxpayer really has is whether to fund the extra capacity, and that is a
+   * contribution rather than a fact about the ceiling.
+   *
+   * The deeming is not private to the deemed person's own limitation. IRC
    * 223(b)(8)(A) opens "For purposes of computing the limitation under paragraph
    * (1) for any taxable year" without confining itself to that individual's
    * paragraph (1) figure, and IRC 223(b)(5) builds the couple's one limitation
@@ -12092,16 +12144,17 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * eligible is an eligible individual for Q&A-31's purposes too, and the months
    * of the *other* spouse's family coverage that they share are decided on the
    * deemed status rather than the raw month list. Reading the raw list gave two
-   * spouses who both elected the rule for a December-only family plan a sole
+   * spouses whom the rule reaches on a December-only family plan a sole
    * eligible month each and eleven undivided ones, when each is deemed eligible
    * throughout and every month is shared.
    */
   const lastMonthRuleDeemsEligible = (personId: string): boolean => {
     if (!parameters.lastMonthRuleAvailable) return false;
-    if (context.persons.get(personId)?.hsaLastMonthRule?.useLastMonthRule !== true) return false;
     const slots = coverageSlotsByPerson.get(personId);
-    // No slots at all is not an election the engine can honour: the rule needs
-    // December eligibility, and nothing here states it.
+    // Nobody stated this person's coverage, so nothing states the December
+    // eligibility the rule turns on. Nothing is lost by declining to deem: with
+    // no stated months the ordinary candidate already runs the whole year,
+    // which is the schedule the deeming would have built.
     return slots !== undefined && slots[HSA_MONTHS_IN_YEAR - 1] !== "none";
   };
   /**
@@ -12171,12 +12224,34 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const deemedMonthsByPerson = new Map<string, Array<HsaCoverageTier | null>>();
   {
     const decemberIndex = HSA_MONTHS_IN_YEAR - 1;
-    const deemedFamilyMonth = HSA_ALL_MONTHS.map(() => false);
+    /**
+     * Which months IRC 223(b)(5)(A) reads as family months across the deemed
+     * schedules, decided the same way `familyMonth` above decides it for the
+     * stated ones: from `familyStatusByPerson`, which reads every statement made
+     * about a person and answers "unknown" where they disagree.
+     *
+     * Reading it back off the schedules recorded below would take one of two
+     * contradictory statements as the answer -- `facts.months` holds whichever
+     * of an owner's accounts was merged, not a reconciliation of them -- and
+     * promote the *other* spouse's month on a fact the input denies. That owner
+     * is already refused for the contradiction; the spouse must not be given a
+     * confident figure built on it.
+     *
+     * The second term is the deeming itself: a person the rule reaches whose
+     * December tier is a family one holds family coverage in every month of
+     * candidate (2), so their spouse's months are shared throughout. It is
+     * month-independent, which is why it is not read per month.
+     */
+    const decemberFamilyDeemsWholeYear = (couple ?? []).some(
+      (personId) =>
+        lastMonthRuleDeemsEligible(personId) &&
+        familyStatusByPerson.get(personId)?.[decemberIndex] === "family",
+    );
+    const deemedFamilyMonth = HSA_ALL_MONTHS.map(
+      (month) => familyMonth[month - 1] || decemberFamilyDeemsWholeYear,
+    );
     const record = (personId: string, monthTiers: Array<HsaCoverageTier | null>): void => {
       deemedMonthsByPerson.set(personId, monthTiers);
-      for (const month of HSA_ALL_MONTHS) {
-        if (monthTiers[month - 1] === "family") deemedFamilyMonth[month - 1] = true;
-      }
     };
     for (const personId of new Set<string>([...ownerIds, ...(couple ?? [])])) {
       const ownMonths = facts.get(personId)?.months ?? null;
@@ -12406,7 +12481,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     catchUpWithoutLastMonthRule: Money;
     appliedAnnualLimitByMonth: Array<Money | null>;
     eligibleMonthCount: number;
-    lastMonthRuleApplied: boolean;
+    /** Whether IRC 223(b)(8) reaches this owner at all, which is what earns the whole IRC 223(b)(3) amount in candidate (2). */
+    fullContributionRuleAvailable: boolean;
+    /** Whether the greater-of below chose candidate (2) for this owner. Set there, not here. */
+    fullContributionCandidateSelected: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
     familyPoolAmountIndeterminate: boolean;
@@ -12467,11 +12545,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      *
      * A fifth field must be classified here rather than defaulting to inert.
      *
-     * The IRC 223(b)(8) election is no longer among them, and its absence is not
-     * an oversight: it does reach the ceiling, but it is one election per person
-     * under IRC 223(b)(8)(A), so an owner's accounts have nothing left to
-     * disagree about. Same for the testing-period facts, which never reached
-     * either portion in the first place.
+     * IRC 223(b)(8) is no longer among them, and its absence is not an
+     * oversight: it does reach the ceiling, but it is now read off the coverage
+     * months listed above rather than stated separately, so an owner's accounts
+     * have nothing left to disagree about beyond those months. Same for the
+     * testing-period facts, which never reached either portion in the first
+     * place.
      */
     const ownerSlots = coverageSlotsByPerson.get(ownerId);
     const deductibleUnanimous = unanimousField(
@@ -12623,9 +12702,32 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * so a spouse whose statements contradict each other in January leaves a
      * December self-only limitation exactly as computable as it ever was.
      */
+    /**
+     * Both schedules are read, because IRC 223(b)(8)(A) makes the deemed one a
+     * schedule of months like any other: an individual treated as an eligible
+     * individual in January with December's self-only coverage has a self-only
+     * January for IRC 223(b)(5)(A) to recharacterize, whatever their actual
+     * January was. Reading only the stated months reported a confident ceiling
+     * for a taxpayer eligible in December alone while the spouse's own accounts
+     * contradicted each other about January -- the one month of the deemed year
+     * that decided whether the answer was 4400 or 4762.50.
+     *
+     * It refuses in one case it need not: where the month-by-month candidate
+     * wins by more than the recharacterization could ever add, the contradiction
+     * cannot change the reported figure. Establishing that would mean computing
+     * candidate (2) under both readings and re-running the couple's combined
+     * comparison under each, for an input whose other spouse is already refused
+     * for the same contradiction. A refusal that names the contradiction is the
+     * better trade.
+     */
+    const deemedMonthsForOwner = deemedMonthsByPerson.get(ownerId) ?? months;
     const spouseCoverageAmbiguousOnFamily =
       otherSpouseFamilyStatus !== undefined &&
-      months.some((tier, index) => tier === "self_only" && otherSpouseFamilyStatus[index] === "unknown");
+      HSA_ALL_MONTHS.some(
+        (_month, index) =>
+          otherSpouseFamilyStatus[index] === "unknown" &&
+          (months[index] === "self_only" || deemedMonthsForOwner[index] === "self_only"),
+      );
     if (
       marriedFiler &&
       (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
@@ -12850,47 +12952,33 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
 
     const ordinaryCandidate = portionsFor(months, false, false);
 
-    let lastMonthRuleApplied = false;
-    if (owner.lastMonthRule.useLastMonthRule) {
-      const decemberTier = months[HSA_MONTHS_IN_YEAR - 1];
-      if (!parameters.lastMonthRuleAvailable) {
-        diagnostics.push(
-          diagnostic(
-            "HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR",
-            DiagnosticSeverity.WARNING,
-            `IRC 223(b)(8) was added by the Tax Relief and Health Care Act of 2006 section 305 for taxable years beginning after December 31, 2006, so it does not apply to tax year ${context.taxYear}. The ordinary month-by-month limitation is used instead.`,
-            `persons.${ownerId}`,
-            "IRC 223(b)(8)",
-          ),
-        );
-      } else if (decemberTier === null) {
-        diagnostics.push(
-          diagnostic(
-            "HSA_LAST_MONTH_RULE_REQUIRES_DECEMBER_ELIGIBILITY",
-            DiagnosticSeverity.WARNING,
-            "IRC 223(b)(8)(A) applies only to an individual who is an eligible individual during the last month of the taxable year. December is not an eligible month here, so the ordinary month-by-month limitation is used instead.",
-            `persons.${ownerId}`,
-            "IRC 223(b)(8)(A)",
-          ),
-        );
-      } else {
-        lastMonthRuleApplied = true;
-      }
-    }
+    /**
+     * Whether IRC 223(b)(8) reaches this owner in their own right: the rule
+     * exists for the year, and December is a month of actual eligibility. That
+     * is the whole test -- IRC 223(b)(8)(A) asks for nothing else.
+     *
+     * Neither leg carries a diagnostic, because neither is a statement of the
+     * caller's that went unhonoured. A pre-2007 year and a December-ineligible
+     * individual are simply cases the greater-of does not reach, and for them
+     * the ordinary month-by-month limitation is not a fallback but the whole of
+     * the answer.
+     */
+    const fullContributionRuleAvailable =
+      parameters.lastMonthRuleAvailable && months[HSA_MONTHS_IN_YEAR - 1] !== null;
 
     /**
      * Candidate (2). The schedule comes from `deemedMonthsByPerson`, so this
-     * owner's own election is not the only thing that can build one: a spouse
-     * who elects the rule is treated as holding family coverage all year, and
-     * IRC 223(b)(5)(A) then makes this owner's eligible self-only months family
-     * months in the same candidate. Only the owner's own election earns the
-     * whole IRC 223(b)(3) amount, which is why `lastMonthRuleApplied` and not
-     * the schedule decides that.
+     * owner's own December eligibility is not the only thing that can build
+     * one: a spouse whom the rule reaches is treated as holding family coverage
+     * all year, and IRC 223(b)(5)(A) then makes this owner's eligible self-only
+     * months family months in the same candidate. Only an owner the rule
+     * reaches in their own right earns the whole IRC 223(b)(3) amount, which is
+     * why `fullContributionRuleAvailable` and not the schedule decides that.
      */
     const fullContributionCandidate = portionsFor(
       deemedMonthsByPerson.get(ownerId) ?? months,
       true,
-      lastMonthRuleApplied,
+      fullContributionRuleAvailable,
     );
 
     // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
@@ -12947,7 +13035,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       catchUpWithoutLastMonthRule: ordinaryCandidate.catchUp,
       appliedAnnualLimitByMonth: ordinaryCandidate.annualLimitByMonth,
       eligibleMonthCount,
-      lastMonthRuleApplied,
+      fullContributionRuleAvailable,
+      fullContributionCandidateSelected: false,
       diagnostics,
       indeterminate,
       familyPoolAmountIndeterminate,
@@ -13048,6 +13137,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       const amounts = amountsByOwner.get(ownerId);
       if (amounts === undefined) continue;
       const chosen = amounts.fullContributionCandidate;
+      amounts.fullContributionCandidateSelected = true;
       amounts.proratedApplied = chosen.prorated;
       amounts.familyPortionApplied = chosen.familyPortion;
       amounts.familySharedPortionApplied = chosen.familySharedPortion;
@@ -13990,14 +14080,31 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
             roundMoney(baseLimit + catchUpApplied - baseLimitWithoutLastMonthRule - catchUpWithoutLastMonthRule),
           );
 
-    if (amounts.lastMonthRuleApplied && !indeterminate) {
-      const lastMonthRule = facts.get(ownerId)!.lastMonthRule;
+    /**
+     * The obligation exists only where the rule actually produced something to
+     * recapture. IRC 223(b)(8)(B)(i) includes "the aggregate amount of the
+     * contributions ... which could not have been made but for subparagraph
+     * (A)", so an attributable amount of nil leaves nothing for a failed
+     * testing period to include, nothing for the 10 percent tax to reach, and
+     * nothing to report a period about.
+     *
+     * That is why the test is the attributable amount and not the selected
+     * candidate. Once the greater-of applies of its own force, a married owner
+     * can be on the winning candidate and still take no more than their own
+     * months already gave them -- Notice 2008-52 Example 14 compares the
+     * couple's combined figures, and the IRC 223(b)(5)(B)(ii) division of the
+     * winner is what reaches each spouse. Putting such an owner on notice about
+     * a period whose outcome cannot change a figure would report an exposure
+     * that IRC 223(b)(8)(B)(i) does not create.
+     */
+    if (amounts.fullContributionCandidateSelected && attributable > 0 && !indeterminate) {
+      const testingPeriodFacts = facts.get(ownerId)!.testingPeriodFacts;
       const months = parameters.testingPeriodMonths ?? 13;
       let testingStatus: HsaTestingPeriodStatus;
-      if (lastMonthRule.testingPeriodSatisfied === true) {
+      if (testingPeriodFacts.satisfied === true) {
         testingStatus = "satisfied";
-      } else if (lastMonthRule.testingPeriodSatisfied === false) {
-        testingStatus = lastMonthRule.testingPeriodFailureByDeathOrDisability === true
+      } else if (testingPeriodFacts.satisfied === false) {
+        testingStatus = testingPeriodFacts.failureByDeathOrDisability === true
           ? "failed_exception_applies"
           : "failed";
       } else {
@@ -14013,21 +14120,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         additionalTaxIfFailed: roundMoney(exposed * 0.1),
         inclusionTaxYear: context.taxYear + 1,
       };
-      // Only where the rule actually produced something to recapture. IRC
-      // 223(b)(8)(B)(i) includes "the aggregate amount of the contributions ...
-      // which could not have been made but for subparagraph (A)", so an
-      // attributable amount of nil leaves nothing for a failed testing period to
-      // include and nothing for the 10 percent tax to reach. An election that
-      // raised no limit -- because every month was already a month of actual
-      // eligibility -- need not put the account on notice about a period whose
-      // outcome cannot change a figure.
-      if (testingStatus === "unresolved" && attributable > 0) {
+      if (testingStatus === "unresolved") {
         status = CalculationStatus.DETERMINATE_WITH_ASSUMPTIONS;
         diagnostics.push(
           diagnostic(
             "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED",
             DiagnosticSeverity.WARNING,
-            `The IRC 223(b)(8) last-month rule was elected, so $${attributable.toLocaleString()} of the calculated ceiling exists only because of IRC 223(b)(8)(A). Whether the ${months}-month testing period ending ${context.taxYear + 1}-12 is satisfied was not supplied, so compliance is not assumed. Failing it includes that amount in gross income for ${context.taxYear + 1} and adds a 10 percent tax under IRC 223(b)(8)(B)(i).`,
+            `IRC 223(b)(8)(A) treats this individual as an eligible individual for the whole year, so $${attributable.toLocaleString()} of the calculated ceiling exists only because of it. Whether the ${months}-month testing period ending ${context.taxYear + 1}-12 is satisfied was not supplied, so compliance is not assumed. Failing it includes that amount in gross income for ${context.taxYear + 1} and adds a 10 percent tax under IRC 223(b)(8)(B)(i).`,
             `persons.${ownerId}`,
             "IRC 223(b)(8)(B)",
           ),
@@ -14229,7 +14328,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       archerMsaLimitReduction,
       qualifiedHsaFundingDistributionsApplied: fundingAmount,
       qualifiedHsaFundingLimitReduction,
-      lastMonthRuleApplied: amounts.lastMonthRuleApplied,
+      fullContributionCandidateSelected: amounts.fullContributionCandidateSelected,
       amountAttributableToLastMonthRule: attributable,
       testingPeriod,
     };
@@ -17569,20 +17668,20 @@ export class PersonBuilder {
   }
 
   /**
-   * Elect the IRC 223(b)(8) last-month rule for this person. Omit the argument
-   * to leave the testing period unresolved. One election per person:
-   * IRC 223(b)(8)(A) treats "an individual", not an account.
+   * IRC 223(b)(8)(B)(iii): whether this person's testing period was, or will
+   * be, satisfied. There is nothing to elect beside it — IRC 223(b)(8)(A)
+   * reaches a December-eligible individual by its own force — so this states
+   * the consequence and never the rule. Omitting it leaves the period
+   * unresolved, which is reported rather than assumed away.
    */
-  public hsaLastMonthRule(testingPeriodSatisfied?: boolean): this {
-    const rule = (this.value.hsaLastMonthRule ??= {});
-    rule.useLastMonthRule = true;
-    if (testingPeriodSatisfied !== undefined) rule.testingPeriodSatisfied = testingPeriodSatisfied;
+  public hsaTestingPeriodSatisfied(satisfied = true): this {
+    (this.value.hsaLastMonthRuleTestingPeriod ??= {}).satisfied = satisfied;
     return this;
   }
 
   /** IRC 223(b)(8)(B)(ii): the testing period was failed because of death or disability. */
   public hsaTestingPeriodFailureByDeathOrDisability(failed = true): this {
-    (this.value.hsaLastMonthRule ??= {}).testingPeriodFailureByDeathOrDisability = failed;
+    (this.value.hsaLastMonthRuleTestingPeriod ??= {}).failureByDeathOrDisability = failed;
     return this;
   }
 

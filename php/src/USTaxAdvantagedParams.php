@@ -323,23 +323,22 @@ final class PersonBuilder
     }
 
     /**
-     * Elect the IRC 223(b)(8) last-month rule for this person. Omit the argument
-     * to leave the testing period unresolved. One election per person:
-     * IRC 223(b)(8)(A) treats "an individual", not an account.
+     * IRC 223(b)(8)(B)(iii): whether this person's testing period was, or will
+     * be, satisfied. There is nothing to elect beside it -- IRC 223(b)(8)(A)
+     * reaches a December-eligible individual by its own force -- so this states
+     * the consequence and never the rule. Omitting it leaves the period
+     * unresolved, which is reported rather than assumed away.
      */
-    public function hsaLastMonthRule(?bool $testingPeriodSatisfied = null): self
+    public function hsaTestingPeriodSatisfied(bool $satisfied = true): self
     {
-        $this->value['hsaLastMonthRule']['useLastMonthRule'] = true;
-        if ($testingPeriodSatisfied !== null) {
-            $this->value['hsaLastMonthRule']['testingPeriodSatisfied'] = $testingPeriodSatisfied;
-        }
+        $this->value['hsaLastMonthRuleTestingPeriod']['satisfied'] = $satisfied;
         return $this;
     }
 
     /** IRC 223(b)(8)(B)(ii): the testing period was failed because of death or disability. */
     public function hsaTestingPeriodFailureByDeathOrDisability(bool $failed = true): self
     {
-        $this->value['hsaLastMonthRule']['testingPeriodFailureByDeathOrDisability'] = $failed;
+        $this->value['hsaLastMonthRuleTestingPeriod']['failureByDeathOrDisability'] = $failed;
         return $this;
     }
 
@@ -6623,7 +6622,7 @@ private const HSA_PARAMETER_JSON = <<<'JSON'
   "historicalCoveragePolicy": {
     "description": "Health savings accounts were created by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003 section 1201, effective for taxable years beginning after December 31, 2003. The table therefore starts at 2004 and is never extrapolated forward: a tax year with no published revenue procedure returns an unavailable status and a diagnostic rather than an inflation-projected amount.",
     "preTaxRelief2006DeductibleCap": "For 2004 through 2006, IRC 223(b)(2) capped each month\u0027s limitation at 1/12 of the lesser of the plan\u0027s annual deductible and the statutory dollar amount. The Tax Relief and Health Care Act of 2006 section 303 removed that cap for taxable years beginning after 2006. In the capped years the engine requires the plan\u0027s annual deductible and returns an indeterminate result without it.",
-    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. Electing it for an earlier year produces a diagnostic and the ordinary month-by-month limitation."
+    "lastMonthRuleEffectiveDate": "The IRC 223(b)(8) last-month rule was added by the Tax Relief and Health Care Act of 2006 section 305, effective for taxable years beginning after December 31, 2006. It is not an election: IRC 223(b)(8)(A) treats a December-eligible individual as an eligible individual for the whole year, so the engine takes Notice 2008-52\u0027s greater-of from the coverage facts wherever lastMonthRuleAvailable is true. An earlier year simply has the ordinary month-by-month limitation, with no diagnostic, because nothing the caller stated went unhonoured."
   },
   "sources": [
     {
@@ -9647,9 +9646,16 @@ final class Engine
             if (array_key_exists('hsaCoverage', $input)) {
                 self::validateHsaCoverage($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
             }
-            self::requireInputObject($input, 'hsaLastMonthRule', "persons[{$index}].hsaLastMonthRule");
-            if (array_key_exists('hsaLastMonthRule', $input)) {
-                self::validateHsaLastMonthRule($input['hsaLastMonthRule'], "persons[{$index}].hsaLastMonthRule");
+            self::requireInputObject(
+                $input,
+                'hsaLastMonthRuleTestingPeriod',
+                "persons[{$index}].hsaLastMonthRuleTestingPeriod",
+            );
+            if (array_key_exists('hsaLastMonthRuleTestingPeriod', $input)) {
+                self::validateHsaLastMonthRuleTestingPeriod(
+                    $input['hsaLastMonthRuleTestingPeriod'],
+                    "persons[{$index}].hsaLastMonthRuleTestingPeriod",
+                );
             }
             self::booleanFlag(
                 $input,
@@ -10007,20 +10013,23 @@ final class Engine
         [
             'useLastMonthRule',
             'HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED',
-            'IRC 223(b)(8) applies to an individual, not to an account. '
-                . 'Supply `persons[].hsaLastMonthRule.useLastMonthRule` instead.',
+            'IRC 223(b)(8) is not an election, so this field moved nowhere. IRC 223(b)(8)(A) treats an individual '
+                . 'who is an eligible individual in December as one for the whole year, and Notice 2008-52 states '
+                . "the maximum as the greater of the month-by-month figure and December's tier taken for the year; "
+                . 'the engine computes that from the coverage facts. Remove the field, and supply '
+                . '`persons[].hsaLastMonthRuleTestingPeriod` for the testing-period facts that follow from it.',
         ],
         [
             'testingPeriodSatisfied',
             'HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED',
             'IRC 223(b)(8)(B)(iii) applies to an individual, not to an account. '
-                . 'Supply `persons[].hsaLastMonthRule.testingPeriodSatisfied` instead.',
+                . 'Supply `persons[].hsaLastMonthRuleTestingPeriod.satisfied` instead.',
         ],
         [
             'testingPeriodFailureByDeathOrDisability',
             'HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED',
             'IRC 223(b)(8)(B)(ii) applies to an individual, not to an account. '
-                . 'Supply `persons[].hsaLastMonthRule.testingPeriodFailureByDeathOrDisability` instead.',
+                . 'Supply `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` instead.',
         ],
     ];
 
@@ -10045,15 +10054,10 @@ final class Engine
     }
 
     /** @param array<string,mixed> $rules */
-    private static function validateHsaLastMonthRule(array $rules, string $path): void
+    private static function validateHsaLastMonthRuleTestingPeriod(array $rules, string $path): void
     {
-        self::booleanFlag($rules, 'useLastMonthRule', "{$path}.useLastMonthRule");
-        self::booleanFlag($rules, 'testingPeriodSatisfied', "{$path}.testingPeriodSatisfied");
-        self::booleanFlag(
-            $rules,
-            'testingPeriodFailureByDeathOrDisability',
-            "{$path}.testingPeriodFailureByDeathOrDisability",
-        );
+        self::booleanFlag($rules, 'satisfied', "{$path}.satisfied");
+        self::booleanFlag($rules, 'failureByDeathOrDisability', "{$path}.failureByDeathOrDisability");
     }
 
     private static function validateHsaFamilyLimitDivision(mixed $division, string $path): void
@@ -12635,13 +12639,17 @@ final class Engine
                  */
                 'coverageVariants' => $coverageVariants,
                 /**
-                 * IRC 223(b)(8) facts for this person. One election per person, so
-                 * there is nothing here for the person's accounts to disagree
-                 * about -- which is why the two conflict detectors that used to sit
-                 * beside this field are gone.
+                 * IRC 223(b)(8)(B) testing-period facts for this person. One
+                 * testing period per person, so there is nothing here for the
+                 * person's accounts to disagree about -- which is why the two
+                 * conflict detectors that used to sit beside this field are gone.
+                 * Whether the rule applies at all is not here either: it is read
+                 * off the coverage months rather than stated.
                  */
-                'lastMonthRule' => is_array($context['persons'][$ownerId]['hsaLastMonthRule'] ?? null)
-                    ? $context['persons'][$ownerId]['hsaLastMonthRule']
+                'testingPeriodFacts' => is_array(
+                    $context['persons'][$ownerId]['hsaLastMonthRuleTestingPeriod'] ?? null
+                )
+                    ? $context['persons'][$ownerId]['hsaLastMonthRuleTestingPeriod']
                     : [],
                 'months' => $rules === null ? null : self::resolveHsaMonths($rules),
             ];
@@ -12871,25 +12879,28 @@ final class Engine
         $familySharingApplies = in_array(true, $familyMonth, true);
         /*
          * Whether IRC 223(b)(8) deems this person an eligible individual for the
-         * whole year, which it does for anyone who elects it and is eligible in
-         * December. The deeming is not private to the electing person's own
-         * limitation: IRC 223(b)(8)(A) opens "For purposes of computing the
-         * limitation under paragraph (1) for any taxable year" without confining
-         * itself to that individual's figure, and IRC 223(b)(5) builds the
-         * couple's one limitation out of both spouses' paragraph (1) limitations.
+         * whole year, which it does for anyone eligible in December of a year the
+         * rule reaches. Nothing is elected: IRC 223(b)(8)(A) says such an
+         * individual "shall be treated" as an eligible individual for each month,
+         * and Notice 2008-52 turns that into a greater-of, which cannot lower a
+         * limitation -- so there is nothing to accept or decline. The deeming is
+         * not private to the deemed person's own limitation: IRC 223(b)(8)(A)
+         * opens "For purposes of computing the limitation under paragraph (1) for
+         * any taxable year" without confining itself to that individual's figure,
+         * and IRC 223(b)(5) builds the couple's one limitation out of both
+         * spouses' paragraph (1) limitations.
          */
         $lastMonthRuleDeemsEligible = static function (string $personId) use (
-            $context,
             $parameters,
             &$coverageSlotsByPerson
         ): bool {
             if (!$parameters['lastMonthRuleAvailable']) {
                 return false;
             }
-            $elected = $context['persons'][$personId]['hsaLastMonthRule']['useLastMonthRule'] ?? null;
-            if ($elected !== true) {
-                return false;
-            }
+            // Nobody stated this person's coverage, so nothing states the December
+            // eligibility the rule turns on. Nothing is lost by declining to deem:
+            // with no stated months the ordinary candidate already runs the whole
+            // year, which is the schedule the deeming would have built.
             $slots = $coverageSlotsByPerson[$personId] ?? null;
             return $slots !== null && $slots[self::HSA_MONTHS_IN_YEAR - 1] !== 'none';
         };
@@ -12971,7 +12982,36 @@ final class Engine
          */
         $deemedMonthsByPerson = [];
         $decemberIndex = self::HSA_MONTHS_IN_YEAR - 1;
-        $deemedFamilyMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, false);
+        /*
+         * Which months IRC 223(b)(5)(A) reads as family months across the deemed
+         * schedules, decided the same way $familyMonth above decides it for the
+         * stated ones: from $familyStatusByPerson, which reads every statement
+         * made about a person and answers 'unknown' where they disagree.
+         *
+         * Reading it back off the schedules built below would take one of two
+         * contradictory statements as the answer -- $facts[..]['months'] holds
+         * whichever of an owner's accounts was merged, not a reconciliation of
+         * them -- and promote the *other* spouse's month on a fact the input
+         * denies. That owner is already refused for the contradiction; the
+         * spouse must not be given a confident figure built on it.
+         *
+         * The second term is the deeming itself: a person the rule reaches whose
+         * December tier is a family one holds family coverage in every month of
+         * candidate (2), so their spouse's months are shared throughout. It is
+         * month-independent, which is why it is not read per month.
+         */
+        $decemberFamilyDeemsWholeYear = false;
+        foreach (($couple ?? []) as $personId) {
+            if ($lastMonthRuleDeemsEligible($personId)
+                && ($familyStatusByPerson[$personId][$decemberIndex] ?? null) === 'family'
+            ) {
+                $decemberFamilyDeemsWholeYear = true;
+            }
+        }
+        $deemedFamilyMonth = [];
+        for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+            $deemedFamilyMonth[$month - 1] = $familyMonth[$month - 1] || $decemberFamilyDeemsWholeYear;
+        }
         $deemedCandidateIds = [];
         foreach ($ownerIds as $personId) {
             $deemedCandidateIds[$personId] = true;
@@ -13004,11 +13044,6 @@ final class Engine
                     ($lastMonthRuleDeemsEligible($personId) && ($stated[$decemberIndex] ?? null) === 'family')
                         ? array_fill(0, self::HSA_MONTHS_IN_YEAR, 'family')
                         : $stated;
-            }
-            for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
-                if (($deemedMonthsByPerson[$personId][$month - 1] ?? null) === 'family') {
-                    $deemedFamilyMonth[$month - 1] = true;
-                }
             }
         }
         // IRC 223(b)(5)(A) once more, over the deemed schedules. One pass
@@ -13446,14 +13481,35 @@ final class Engine
              * coverage in *that* month, so a spouse whose statements contradict
              * each other in January leaves a December self-only limitation exactly
              * as computable as it ever was.
+             *
+             * Both schedules are read, because IRC 223(b)(8)(A) makes the deemed
+             * one a schedule of months like any other: an individual treated as an
+             * eligible individual in January with December's self-only coverage
+             * has a self-only January for IRC 223(b)(5)(A) to recharacterize,
+             * whatever their actual January was. Reading only the stated months
+             * reported a confident ceiling for a taxpayer eligible in December
+             * alone while the spouse's own accounts contradicted each other about
+             * January -- the one month of the deemed year that decided whether the
+             * answer was 4400 or 4762.50.
+             *
+             * It refuses in one case it need not: where the month-by-month
+             * candidate wins by more than the recharacterization could ever add,
+             * the contradiction cannot change the reported figure. Establishing
+             * that would mean computing candidate (2) under both readings and
+             * re-running the couple's combined comparison under each, for an input
+             * whose other spouse is already refused for the same contradiction. A
+             * refusal that names the contradiction is the better trade.
              */
             $otherSpouseFamilyStatus = $otherSpouseId === null
                 ? null
                 : ($familyStatusByPerson[$otherSpouseId] ?? null);
             $spouseCoverageAmbiguousOnFamily = false;
             if ($otherSpouseFamilyStatus !== null) {
+                $deemedMonthsForOwner = $deemedMonthsByPerson[$ownerId] ?? $months;
                 foreach ($months as $index => $tier) {
-                    if ($tier === 'self_only' && ($otherSpouseFamilyStatus[$index] ?? null) === 'unknown') {
+                    if (($otherSpouseFamilyStatus[$index] ?? null) === 'unknown'
+                        && ($tier === 'self_only' || ($deemedMonthsForOwner[$index] ?? null) === 'self_only')
+                    ) {
                         $spouseCoverageAmbiguousOnFamily = true;
                         break;
                     }
@@ -13749,47 +13805,35 @@ final class Engine
 
             $ordinaryCandidate = $portionsFor($months, false, false);
 
-            $lastMonthRuleApplied = false;
-            if (!empty($owner['lastMonthRule']['useLastMonthRule'])) {
-                $decemberTier = $months[self::HSA_MONTHS_IN_YEAR - 1];
-                if ($parameters['lastMonthRuleAvailable'] !== true) {
-                    $diagnostics[] = self::diagnostic(
-                        'HSA_LAST_MONTH_RULE_NOT_AVAILABLE_FOR_TAX_YEAR',
-                        DiagnosticSeverity::WARNING,
-                        'IRC 223(b)(8) was added by the Tax Relief and Health Care Act of 2006 section 305 for taxable '
-                            . 'years beginning after December 31, 2006, so it does not apply to tax year '
-                            . "{$context['taxYear']}. The ordinary month-by-month limitation is used instead.",
-                        "persons.{$ownerId}",
-                        'IRC 223(b)(8)',
-                    );
-                } elseif ($decemberTier === null) {
-                    $diagnostics[] = self::diagnostic(
-                        'HSA_LAST_MONTH_RULE_REQUIRES_DECEMBER_ELIGIBILITY',
-                        DiagnosticSeverity::WARNING,
-                        'IRC 223(b)(8)(A) applies only to an individual who is an eligible individual during the last '
-                            . 'month of the taxable year. December is not an eligible month here, so the ordinary '
-                            . 'month-by-month limitation is used instead.',
-                        "persons.{$ownerId}",
-                        'IRC 223(b)(8)(A)',
-                    );
-                } else {
-                    $lastMonthRuleApplied = true;
-                }
-            }
+            /*
+             * Whether IRC 223(b)(8) reaches this owner in their own right: the
+             * rule exists for the year, and December is a month of actual
+             * eligibility. That is the whole test -- IRC 223(b)(8)(A) asks for
+             * nothing else.
+             *
+             * Neither leg carries a diagnostic, because neither is a statement of
+             * the caller's that went unhonoured. A pre-2007 year and a
+             * December-ineligible individual are simply cases the greater-of does
+             * not reach, and for them the ordinary month-by-month limitation is
+             * not a fallback but the whole of the answer.
+             */
+            $fullContributionRuleAvailable = $parameters['lastMonthRuleAvailable'] === true
+                && $months[self::HSA_MONTHS_IN_YEAR - 1] !== null;
 
             /*
              * Candidate (2). The schedule comes from $deemedMonthsByPerson, so
-             * this owner's own election is not the only thing that can build one:
-             * a spouse who elects the rule is treated as holding family coverage
-             * all year, and IRC 223(b)(5)(A) then makes this owner's eligible
-             * self-only months family months in the same candidate. Only the
-             * owner's own election earns the whole IRC 223(b)(3) amount, which is
-             * why $lastMonthRuleApplied and not the schedule decides that.
+             * this owner's own December eligibility is not the only thing that can
+             * build one: a spouse whom the rule reaches is treated as holding
+             * family coverage all year, and IRC 223(b)(5)(A) then makes this
+             * owner's eligible self-only months family months in the same
+             * candidate. Only an owner the rule reaches in their own right earns
+             * the whole IRC 223(b)(3) amount, which is why
+             * $fullContributionRuleAvailable and not the schedule decides that.
              */
             $fullContributionCandidate = $portionsFor(
                 $deemedMonthsByPerson[$ownerId] ?? $months,
                 true,
-                $lastMonthRuleApplied,
+                $fullContributionRuleAvailable,
             );
 
 
@@ -13853,7 +13897,11 @@ final class Engine
                 'catchUpWithoutLastMonthRule' => $ordinaryCandidate['catchUp'],
                 'appliedAnnualLimitByMonth' => $ordinaryCandidate['annualLimitByMonth'],
                 'eligibleMonthCount' => $eligibleMonthCount,
-                'lastMonthRuleApplied' => $lastMonthRuleApplied,
+                // Whether IRC 223(b)(8) reaches this owner at all, which is what
+                // earns the whole IRC 223(b)(3) amount in candidate (2).
+                'fullContributionRuleAvailable' => $fullContributionRuleAvailable,
+                // Whether the greater-of below chose candidate (2). Set there.
+                'fullContributionCandidateSelected' => false,
                 'diagnostics' => $diagnostics,
                 'indeterminate' => $indeterminate,
                 'familyPoolAmountIndeterminate' => $familyPoolAmountIndeterminate,
@@ -13971,6 +14019,7 @@ final class Engine
         }
         foreach (array_keys($chooseFull) as $ownerCandidate) {
             $chosen = $amountsByOwner[$ownerCandidate]['fullContributionCandidate'];
+            $amountsByOwner[$ownerCandidate]['fullContributionCandidateSelected'] = true;
             $amountsByOwner[$ownerCandidate]['proratedApplied'] = $chosen['prorated'];
             $amountsByOwner[$ownerCandidate]['familyPortionApplied'] = $chosen['familyPortion'];
             $amountsByOwner[$ownerCandidate]['familySharedPortionApplied'] = $chosen['familySharedPortion'];
@@ -14985,13 +15034,28 @@ final class Engine
                     - $catchUpWithoutLastMonthRule,
                 ));
 
-            if ($amounts['lastMonthRuleApplied'] && !$indeterminate) {
-                $lastMonthRule = $facts[$ownerId]['lastMonthRule'];
+            /*
+             * The obligation exists only where the rule actually produced
+             * something to recapture. IRC 223(b)(8)(B)(i) includes "the aggregate
+             * amount of the contributions ... which could not have been made but
+             * for subparagraph (A)", so an attributable amount of nil leaves
+             * nothing for a failed testing period to include, nothing for the 10
+             * percent tax to reach, and nothing to report a period about.
+             *
+             * That is why the test is the attributable amount and not the selected
+             * candidate. Once the greater-of applies of its own force, a married
+             * owner can be on the winning candidate and still take no more than
+             * their own months already gave them -- Notice 2008-52 Example 14
+             * compares the couple's combined figures, and the IRC 223(b)(5)(B)(ii)
+             * division of the winner is what reaches each spouse.
+             */
+            if ($amounts['fullContributionCandidateSelected'] && $attributable > 0.0 && !$indeterminate) {
+                $testingPeriodFacts = $facts[$ownerId]['testingPeriodFacts'];
                 $testingMonths = $parameters['testingPeriodMonths'] ?? 13;
-                if (($lastMonthRule['testingPeriodSatisfied'] ?? null) === true) {
+                if (($testingPeriodFacts['satisfied'] ?? null) === true) {
                     $testingStatus = 'satisfied';
-                } elseif (($lastMonthRule['testingPeriodSatisfied'] ?? null) === false) {
-                    $testingStatus = ($lastMonthRule['testingPeriodFailureByDeathOrDisability'] ?? null) === true
+                } elseif (($testingPeriodFacts['satisfied'] ?? null) === false) {
+                    $testingStatus = ($testingPeriodFacts['failureByDeathOrDisability'] ?? null) === true
                         ? 'failed_exception_applies'
                         : 'failed';
                 } else {
@@ -15008,19 +15072,14 @@ final class Engine
                     'additionalTaxIfFailed' => self::roundMoney($exposed * 0.1),
                     'inclusionTaxYear' => $nextYear,
                 ];
-                // Only where the rule actually produced something to recapture.
-                // IRC 223(b)(8)(B)(i) includes "the aggregate amount of the
-                // contributions ... which could not have been made but for
-                // subparagraph (A)", so an attributable amount of nil leaves
-                // nothing for a failed testing period to include.
-                if ($testingStatus === 'unresolved' && $attributable > 0.0) {
+                if ($testingStatus === 'unresolved') {
                     $status = CalculationStatus::DETERMINATE_WITH_ASSUMPTIONS->value;
                     $formatted = self::localeNumber($attributable);
                     $diagnostics[] = self::diagnostic(
                         'HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED',
                         DiagnosticSeverity::WARNING,
-                        "The IRC 223(b)(8) last-month rule was elected, so \${$formatted} of the calculated ceiling "
-                            . 'exists only because of IRC 223(b)(8)(A). Whether the '
+                        'IRC 223(b)(8)(A) treats this individual as an eligible individual for the whole year, so '
+                            . "\${$formatted} of the calculated ceiling exists only because of it. Whether the "
                             . "{$testingMonths}-month testing period ending {$nextYear}-12 is satisfied was not "
                             . 'supplied, so compliance is not assumed. Failing it includes that amount in gross income '
                             . "for {$nextYear} and adds a 10 percent tax under IRC 223(b)(8)(B)(i).",
@@ -15286,7 +15345,7 @@ final class Engine
                 'archerMsaLimitReduction' => $archerMsaLimitReduction,
                 'qualifiedHsaFundingDistributionsApplied' => $fundingAmount,
                 'qualifiedHsaFundingLimitReduction' => $qualifiedHsaFundingLimitReduction,
-                'lastMonthRuleApplied' => $amounts['lastMonthRuleApplied'],
+                'fullContributionCandidateSelected' => $amounts['fullContributionCandidateSelected'],
                 'amountAttributableToLastMonthRule' => $attributable,
                 'testingPeriod' => $testingPeriod,
             ];

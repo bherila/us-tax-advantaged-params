@@ -425,7 +425,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
 | §223(b)(5)(B)(ii) agreed division | An agreed division must exhaust the limitation. Shares that total more or less than 1 are both reported as errors and return `indeterminate` (see below) |
 | §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
-| §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
+| §223(b)(8) last-month rule | Applied automatically, never elected. An individual eligible on December 1 takes the **greater of** the month-by-month sum and December's tier for the whole year; where the greater one is the second, the difference carries a 13-month testing-period obligation (see below) |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
 | Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
 | §106(d) employer contributions | Excluded from income rather than deducted, reducing W-2 box 1 and FICA wages and reducing the §223(b)(4)(B) deduction |
@@ -543,6 +543,64 @@ account's `hsa` detail reports `qualifiedHsaFundingDistributionsApplied` and
 `HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT` diagnostic states which ordering
 applied.
 
+### The last-month rule is a greater-of, not an election
+
+**Breaking change in 0.5.0.** §223(b)(8) is applied automatically to anyone eligible in
+December. There is no input for switching it on, and `useLastMonthRule` is gone.
+
+§223(b)(8)(A) says an individual who is an eligible individual during the last month of the
+taxable year "shall be treated" as an eligible individual for each month of that year. Notice
+2008-52 states the resulting maximum as **the greater of**
+
+1. the sum of the monthly limitations on the facts as they stand, "based on eligibility and
+   HDHP coverage on the first day of each month", plus monthly catch-up amounts; and
+2. the whole annual amount for the coverage tier held on December 1, plus the whole §223(b)(3)
+   amount.
+
+Neither limb is conditioned on a taxpayer's choice: there is no election statement, no Form
+8889 checkbox and no revocation, and the Form 8889 instructions simply tell a
+December-eligible taxpayer whose coverage changed to enter the greater amount on line 3. The
+instructions' "you may consider yourself an eligible individual for the entire year" is the
+practical decision to *fund* the extra capacity — and a taxpayer may always contribute less
+than a statutory maximum without lowering it.
+
+What follows from actually funding it is the testing period, and that is measured on conduct
+rather than on any flag. §223(b)(8)(B)(i) reaches only contributions "which could not have
+been made but for" the rule, which is
+`hsa.amountAttributableToLastMonthRule`. Where that figure is zero — because the month-by-month
+candidate won, or because a spousal division left this owner no more room than their own months
+gave them — no testing-period obligation is reported at all, and `hsa.testingPeriod` is `null`.
+
+Two fields report the outcome, and they answer different questions:
+
+| Field | Question |
+|---|---|
+| `hsa.fullContributionCandidateSelected` | Which candidate was the ceiling built from? True means candidate (2) |
+| `hsa.amountAttributableToLastMonthRule` | What was the rule worth *to this owner*, and so what is exposed if the testing period fails? |
+
+Testing-period facts are stated per person, and only the consequence is stateable:
+
+```ts
+{ id: "t", hsaLastMonthRuleTestingPeriod: { satisfied: true } }
+{ id: "t", hsaLastMonthRuleTestingPeriod: { satisfied: false, failureByDeathOrDisability: true } }
+```
+
+Omitting them leaves the period unresolved, which is reported
+(`HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED`, status `determinate_with_assumptions`) rather
+than assumed satisfied — but only where the attributable amount is positive.
+
+**A married spouse's own share can fall while the couple's limitation rises.** Notice 2008-52
+Example 14 compares the *couple's combined* candidates and divides the winner, and Form 8889
+follows that order — line 3 and line 5 before the spousal division on line 6. So where one
+spouse holds family coverage in December alone and the other is eligible all year with
+self-only coverage, the couple's combined candidate (2) of 8750 beats their combined candidate
+(1) of 4762.50, and the equal division gives 4375 each — below the 4397.92 the all-year spouse's
+own months would have earned undivided. Nothing is wrong there and nothing is diagnosed: the
+rule raised the couple's limitation, and §223(b)(5)(A) plus the default equal division moved
+part of it across. Spouses who would rather not move it may agree a different division under
+§223(b)(5)(B)(ii). The spouse whose share fell has an attributable amount of zero and no
+testing-period exposure, because none of their ceiling depends on the rule.
+
 ### The division is one fact about the couple
 
 **Breaking change in 0.5.0.** Four fields moved off `planRules.hsa`. An account that still
@@ -552,16 +610,19 @@ using half of what it stated:
 | Removed from `planRules.hsa` | Now | Error code if still supplied |
 |---|---|---|
 | `familyLimitShare` | `hsaFamilyLimitDivision` on the **scenario** | `HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED` |
-| `useLastMonthRule` | `persons[].hsaLastMonthRule.useLastMonthRule` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
-| `testingPeriodSatisfied` | `persons[].hsaLastMonthRule.testingPeriodSatisfied` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
-| `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRule.testingPeriodFailureByDeathOrDisability` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `useLastMonthRule` | **nowhere — §223(b)(8) is not an election** | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodSatisfied` | `persons[].hsaLastMonthRuleTestingPeriod.satisfied` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
 
 None of the four was ever a fact about an account. §223(b)(5)(B)(ii) divides the limitation
-between "them" — the married individuals — and §223(b)(8)(A) makes the last-month election for
-"an individual". An owner's two HSAs cannot disagree about either, and Pub. 969 is explicit
-that multiple HSAs do not subdivide their owner's maximum: "If you have more than one HSA in
-2005, your total contributions to all the HSAs cannot be more than the limits discussed
-earlier."
+between "them" — the married individuals — and §223(b)(8) operates on "an individual". An
+owner's two HSAs cannot disagree about any of them, and Pub. 969 is explicit that multiple HSAs
+do not subdivide their owner's maximum: "If you have more than one HSA in 2005, your total
+contributions to all the HSAs cannot be more than the limits discussed earlier."
+
+`useLastMonthRule` did not move: it stated a thing the Code does not have. **Delete it** —
+the ceiling it used to unlock is now computed from the coverage facts, so removing it changes
+no answer except where it was wrongly withholding one.
 
 `hsaFamilyLimitDivision` is one statement, on the scenario:
 

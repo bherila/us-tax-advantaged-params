@@ -142,7 +142,9 @@ function randomHsaRules() {
   // rules object and stayed unreachable enough that the split survived until a
   // lucky seed found it.
   if (chance(0.3)) rules.hdhpAnnualDeductible = pick([0, 1000, 1500, 2650, 3000, 5000, 5150, 10500, null]);
-  // The four fields that moved off the account in 0.5.0. They are generated
+  // The four fields removed from the account in 0.5.0 -- three of them moved to
+  // the person or the scenario, and `useLastMonthRule` moved nowhere, because
+  // IRC 223(b)(8) turned out never to have been an election. They are generated
   // here on purpose and at a low rate: an account carrying one of them must be
   // *rejected* with the same code by both engines, and a rejection path is as
   // much a parity surface as a computed one. Removing them from the fuzzer
@@ -160,16 +162,17 @@ function randomHsaRules() {
 }
 
 /**
- * IRC 223(b)(8) facts, which live on the person. `useLastMonthRule` without a
- * December eligible month, and a testing-period fact without the election, are
- * both generated: each is an input the engine has to decline to act on rather
- * than a combination it can assume away.
+ * IRC 223(b)(8)(B) testing-period facts, which live on the person. There is no
+ * field for applying the rule: IRC 223(b)(8)(A) reaches a December-eligible
+ * individual by its own force. A testing-period fact stated for someone the
+ * rule never reaches, and a `failureByDeathOrDisability` without a
+ * `satisfied: false` beside it, are both generated: each is an input the engine
+ * has to decline to act on rather than a combination it can assume away.
  */
-function randomHsaLastMonthRule() {
+function randomHsaLastMonthRuleTestingPeriod() {
   const rule = {};
-  if (chance(0.7)) rule.useLastMonthRule = chance(0.05) ? junk() : chance(0.7);
-  if (chance(0.45)) rule.testingPeriodSatisfied = chance(0.05) ? junk() : chance(0.5);
-  if (chance(0.25)) rule.testingPeriodFailureByDeathOrDisability = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.45)) rule.satisfied = chance(0.05) ? junk() : chance(0.5);
+  if (chance(0.25)) rule.failureByDeathOrDisability = chance(0.05) ? junk() : chance(0.5);
   return rule;
 }
 
@@ -357,7 +360,9 @@ function randomPerson(id, role, taxYear) {
     person.qualifiedHsaFundingDistributions = chance(0.05) ? junk() : pick([0, 1, 900, 3400, 4400, 8750, 20000, money()]);
   }
   // IRC 223(b)(8) is one election per person, so this is where it is stated.
-  if (chance(0.3)) person.hsaLastMonthRule = chance(0.04) ? junk() : randomHsaLastMonthRule();
+  if (chance(0.3)) {
+    person.hsaLastMonthRuleTestingPeriod = chance(0.04) ? junk() : randomHsaLastMonthRuleTestingPeriod();
+  }
   // Person-level IRC 223(c)(2) coverage. randomHsaRules() also emits the
   // relocated keys, which persons[].hsaCoverage ignores rather than rejects --
   // a difference between the two paths that both engines must reproduce.
