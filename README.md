@@ -699,6 +699,34 @@ object: `{ status: "agreed" }` with no share raises
 `HSA_FAMILY_LIMIT_DIVISION_SHARE_REQUIRED`, and a `taxpayerShare` beside any other status
 raises `HSA_FAMILY_LIMIT_DIVISION_SHARE_NOT_PERMITTED`.
 
+### The `hsa` detail is withheld, never completed
+
+`account.hsa` is an audit trail of **one** chosen coverage schedule and **one** chosen winner of the
+§223(b)(8) comparison — the months, the monthly amounts applied to them, both limitation figures,
+the selected candidate and the amount attributable to the rule. Where the input leaves several
+completions open, there is no such trail, and the whole object is `null` rather than filled in from
+whichever statement happened to be read first:
+
+- an owner's two HSAs, or an HSA and `persons[].hsaCoverage`, stating different coverage months (or,
+  in a capped year, different annual deductibles);
+- no usable coverage statement at all;
+- a spouse's family coverage neither supplied nor reconcilable, where it could rewrite a month of
+  either schedule;
+- a birth year that would decide which candidate wins, because §223(b)(3) is prorated in one and
+  whole in the other;
+- an unapportionable §223(b)(5)(B)(i) Archer reduction, where which spouse's undivided months
+  absorbed it decides the pre-division amount.
+
+Where the couple's *combined* candidates are what the greater-of compares, one spouse's open
+candidate withholds the other's detail too. **An unsettled §223(b)(5)(B)(ii) division does not**: it
+leaves both candidates exactly as computable and nulls `familyLimitShare` alone.
+
+`null` here is not the same as the key being absent, which still means "not an HSA account". The
+account's status, its null maximum, its shared limits and its diagnostics are all reported as before
+— only the completion is withheld. The point is order-independence: reversing two contradictory
+account records must not change any fact the engine reports, and a field-by-field completion beside
+a diagnostic saying the fact was never established is exactly the shape that lets it.
+
 ### A known ceiling with an unknown draw
 
 A shared limit can be a number while how much of it is already spent is not. The §223(b)(5) pool is

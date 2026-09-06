@@ -8350,7 +8350,7 @@ final class Engine
             if (isset($account['employerId'])) {
                 $result['employerId'] = $account['employerId'];
             }
-            if (isset($outcome['hsaDetail'])) {
+            if (array_key_exists('hsaDetail', $outcome)) {
                 $result['hsa'] = $outcome['hsaDetail'];
             }
             if (isset($outcome['definedBenefitDetail'])) {
@@ -13267,6 +13267,30 @@ final class Engine
              * disagree about.
              */
             $familyPoolAmountIndeterminate = false;
+            /*
+             * Whether the candidate schedule this owner's figures were built from
+             * is the one their facts establish, or one completion of several the
+             * input leaves open.
+             *
+             * It is a third question beside the two above, and it decides whether
+             * the hsa detail is published at all rather than what any single
+             * field says. That object is an audit trail of a *chosen* candidate --
+             * the schedule, its monthly amounts, the winner of the Notice 2008-52
+             * comparison and the amount attributable to it -- and
+             * $facts[owner]['months'] holds whichever of an owner's contradictory
+             * accounts was merged rather than a reconciliation of them. So where
+             * the schedule or the comparison is not established, every one of
+             * those fields would report one arbitrary completion beside a
+             * diagnostic saying the fact was never established, and reversing two
+             * account records would change them. They are withheld together,
+             * because they are one answer and not several.
+             *
+             * An unsettled IRC 223(b)(5)(B)(ii) *division* is deliberately not
+             * among the causes: it leaves both candidates exactly as computable
+             * as they were and puts only the owner's eventual share in question,
+             * which familyLimitShare already reports as null.
+             */
+            $candidateSelectionUnestablished = false;
 
             /*
              * Does this owner's disagreement actually reach the couple's IRC
@@ -13290,11 +13314,12 @@ final class Engine
              * A fifth field must be classified here rather than defaulting to
              * inert.
              *
-             * The IRC 223(b)(8) election is no longer among them, and its absence
-             * is not an oversight: it does reach the ceiling, but it is one
-             * election per person under IRC 223(b)(8)(A), so an owner's accounts
-             * have nothing left to disagree about. Same for the testing-period
-             * facts, which never reached either portion in the first place.
+             * IRC 223(b)(8) is no longer among them, and its absence is not an
+             * oversight: it does reach the ceiling, but it is now read off the
+             * coverage months listed above rather than stated separately, so an
+             * owner's accounts have nothing left to disagree about beyond those
+             * months. Same for the testing-period facts, which never reached
+             * either portion in the first place.
              */
             $ownerSlots = $coverageSlotsByPerson[$ownerId] ?? null;
             $deductibleValues = [];
@@ -13316,6 +13341,10 @@ final class Engine
                     && $ownerHasCoveredMonth);
             if ($amountInputsIndeterminate) {
                 $familyPoolAmountIndeterminate = true;
+                // The months themselves, or the deductible that priced them in a
+                // capped year, are not established -- so neither is the schedule
+                // either candidate is built from.
+                $candidateSelectionUnestablished = true;
             }
 
             if ($owner['conflict']) {
@@ -13344,6 +13373,7 @@ final class Engine
             if ($owner['rules'] === null || $owner['months'] === null) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
+                $candidateSelectionUnestablished = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -13429,6 +13459,10 @@ final class Engine
             ) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
+                // Whether IRC 223(b)(5)(A) rewrites this owner's self-only months
+                // is what decides both candidates' tiers, so an unstated spouse
+                // leaves the schedule open rather than merely the share of it.
+                $candidateSelectionUnestablished = true;
                 $taxYear = $context['taxYear'];
                 // Name the reason that actually applies. Both can, and a caller
                 // told only about self-only months would go looking for one in a
@@ -13522,6 +13556,7 @@ final class Engine
             ) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
+                $candidateSelectionUnestablished = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_SPOUSE_COVERAGE_FACTS_CONFLICT',
                     DiagnosticSeverity::ERROR,
@@ -13836,6 +13871,38 @@ final class Engine
                 $fullContributionRuleAvailable,
             );
 
+            /*
+             * IRC 223(b)(3) turns on age, and the two candidates carry it
+             * differently: Notice 2008-52 computes it "on a monthly basis" in
+             * candidate (1) and gives Example 5's December-only individual the
+             * entire $900 in candidate (2). So an unknown birth year can decide
+             * the comparison as well as the amount -- six family months plus a
+             * self-only December is 4741.67 against 4400 under 55, and 5325
+             * against 5400 at 55 or over, which is a different winner.
+             *
+             * The test is not "the age is unknown". Where the rule changes no
+             * month of the schedule *and* the two catch-up treatments coincide,
+             * the candidates are identical figure for figure and no age reading
+             * can separate them -- the ordinary full-year case, which is why an
+             * absent birth year there still publishes the schedule and the 0 the
+             * engine declines to grant as an IRC 223(b)(3) amount rather than
+             * rules out.
+             */
+            if ($age === null && (float) $parameters['additionalContributionAmountAge55'] > 0.0) {
+                $deemedSchedule = $deemedMonthsByPerson[$ownerId] ?? $months;
+                $ruleChangesNoMonth = true;
+                for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                    if (($deemedSchedule[$month - 1] ?? null) !== ($months[$month - 1] ?? null)) {
+                        $ruleChangesNoMonth = false;
+                    }
+                }
+                $catchUpTreatmentsCoincide = !$fullContributionRuleAvailable
+                    || $eligibleMonthCount === self::HSA_MONTHS_IN_YEAR;
+                if (!($ruleChangesNoMonth && $catchUpTreatmentsCoincide)) {
+                    $candidateSelectionUnestablished = true;
+                }
+            }
+
 
             // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
             // the IRC 223 answer unknown rather than merely unusual:
@@ -13902,6 +13969,9 @@ final class Engine
                 'fullContributionRuleAvailable' => $fullContributionRuleAvailable,
                 // Whether the greater-of below chose candidate (2). Set there.
                 'fullContributionCandidateSelected' => false,
+                // Whether that selection, and the schedule behind it, rest on
+                // facts the input established.
+                'candidateSelectionUnestablished' => $candidateSelectionUnestablished,
                 'diagnostics' => $diagnostics,
                 'indeterminate' => $indeterminate,
                 'familyPoolAmountIndeterminate' => $familyPoolAmountIndeterminate,
@@ -13993,6 +14063,31 @@ final class Engine
             );
             return self::roundMoney($base + $catchUp);
         };
+        /*
+         * Where the comparison below is taken on the couple's *combined* figures,
+         * one spouse's open candidate leaves the other's winner open too: the
+         * total that decided it was built from both. The flag is therefore shared
+         * across the spouses who hold accounts before that comparison runs.
+         *
+         * It is shared only where that branch is the one that runs. Spouses who
+         * share no family month are compared each on their own figures -- Q&A-31
+         * gives a month only one of them is eligible in wholly to that one -- so a
+         * contradiction in one of their records leaves the other's winner decided
+         * by facts of their own that are not in doubt.
+         */
+        $anyCoupleCandidateUnestablished = false;
+        foreach ($coupleMembersWithAccounts as $personId) {
+            if ($amountsByOwner[$personId]['candidateSelectionUnestablished'] ?? false) {
+                $anyCoupleCandidateUnestablished = true;
+            }
+        }
+        if ($familySharingApplies && $anyCoupleCandidateUnestablished) {
+            foreach ($coupleMembersWithAccounts as $personId) {
+                if (isset($amountsByOwner[$personId])) {
+                    $amountsByOwner[$personId]['candidateSelectionUnestablished'] = true;
+                }
+            }
+        }
         $chooseFull = [];
         if ($familySharingApplies && count($coupleMembersWithAccounts) > 0) {
             if ($combinedCandidateTotal('fullContributionCandidate')
@@ -15272,6 +15367,23 @@ final class Engine
                 'IRC 223',
             );
 
+            /*
+             * Published only where the candidate it describes is the one the
+             * facts establish. Every field below is an audit trail of a chosen
+             * schedule and a chosen winner, so where the choice was one
+             * completion among several the whole object is withheld rather than
+             * filled in from whichever account happened to be merged first.
+             *
+             * The unapportionable Archer case joins the per-owner causes here
+             * because it is a couple-level fact: where two spouses' undivided
+             * months could each have absorbed the single IRC 223(b)(5)(B)(i)
+             * reduction, which of them did decides these figures rather than a
+             * share of them. The mixed-months case beside it does not, for the
+             * reason sharedFamilyContributionLimit gives below.
+             */
+            $candidateSelectionUnestablished = $amounts['candidateSelectionUnestablished']
+                || ($isSharingMember && $archerAcrossUndividedSpouses);
+
             $detail = [
                 'coverageTierByMonth' => $facts[$ownerId]['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
                 'eligibleMonthCount' => $amounts['eligibleMonthCount'],
@@ -15356,7 +15468,7 @@ final class Engine
                 'statutoryMaximum' => $baseLimit === null
                     ? null
                     : self::roundMoney($baseLimit + $catchUpApplied),
-                'detail' => $detail,
+                'detail' => $candidateSelectionUnestablished ? null : $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
                 'familyPoolUsageDeterminable' => $amounts['ageKnown']
                     && (float) $amounts['catchUpApplied'] === 0.0
@@ -15467,9 +15579,7 @@ final class Engine
                 'sharedLimits' => $sharedLimits,
                 'diagnostics' => $diagnostics,
             ];
-            if ($plan['detail'] !== null) {
-                $outcome['hsaDetail'] = $plan['detail'];
-            }
+            $outcome['hsaDetail'] = $plan['detail'];
             return $outcome;
         }
 
@@ -15488,9 +15598,7 @@ final class Engine
                 'sharedLimits' => $sharedLimits,
                 'diagnostics' => $diagnostics,
             ];
-            if ($plan['detail'] !== null) {
-                $outcome['hsaDetail'] = $plan['detail'];
-            }
+            $outcome['hsaDetail'] = $plan['detail'];
             return $outcome;
         }
 
@@ -15537,9 +15645,7 @@ final class Engine
             'sharedLimits' => $sharedLimits,
             'diagnostics' => $diagnostics,
         ];
-        if ($plan['detail'] !== null) {
-            $outcome['hsaDetail'] = $plan['detail'];
-        }
+        $outcome['hsaDetail'] = $plan['detail'];
         return $outcome;
     }
 

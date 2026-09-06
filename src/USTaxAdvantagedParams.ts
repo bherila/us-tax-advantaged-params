@@ -905,8 +905,24 @@ export interface AccountCalculationResult {
   planTermDependentCapacity: Money;
   federalTaxEffects: FederalTaxEffects;
   sharedLimits: SharedLimitUse[];
-  /** IRC 223 detail; present only for `hsa` accounts. */
-  hsa?: HsaAccountDetail;
+  /**
+   * IRC 223 detail; present only for `hsa` accounts, and **null** on one of them
+   * where the candidate it would describe is not established.
+   *
+   * The object is an audit trail of one chosen schedule and one chosen winner of
+   * the Notice 2008-52 comparison. Where the input leaves several completions
+   * open -- an owner's two accounts stating different coverage, a spouse's
+   * family coverage neither stated nor reconcilable, a birth year that would
+   * decide which candidate wins, an unapportionable IRC 223(b)(5)(B)(i)
+   * reduction -- there is no such trail to report, and filling one in from
+   * whichever account happened to be read first would make reversing two input
+   * records change the reported facts. So the whole object goes rather than
+   * being published field by field beside a diagnostic saying the answer was
+   * never established. An unsettled IRC 223(b)(5)(B)(ii) division is not one of
+   * those cases: it leaves both candidates computable and nulls
+   * `familyLimitShare` alone.
+   */
+  hsa?: HsaAccountDetail | null;
   /** IRC 415(b) detail; present only for `defined_benefit_plan` and `cash_balance_plan` accounts. */
   definedBenefit?: DefinedBenefitAccountDetail;
   /** IRC 125(i) detail; present only for `health_fsa` accounts. */
@@ -9360,7 +9376,7 @@ interface AllocationOutcome {
   planTermDependentCapacity: Money;
   sharedLimits: SharedLimitUse[];
   diagnostics: Diagnostic[];
-  hsaDetail?: HsaAccountDetail;
+  hsaDetail?: HsaAccountDetail | null;
   definedBenefitDetail?: DefinedBenefitAccountDetail;
   healthFsaDetail?: HealthFsaAccountDetail;
   dependentCareDetail?: DependentCareFsaAccountDetail;
@@ -12485,6 +12501,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     fullContributionRuleAvailable: boolean;
     /** Whether the greater-of below chose candidate (2) for this owner. Set there, not here. */
     fullContributionCandidateSelected: boolean;
+    /** Whether that selection, and the schedule behind it, rest on facts the input established. */
+    candidateSelectionUnestablished: boolean;
     diagnostics: Diagnostic[];
     indeterminate: boolean;
     familyPoolAmountIndeterminate: boolean;
@@ -12523,6 +12541,29 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * about.
      */
     let familyPoolAmountIndeterminate = false;
+    /**
+     * Whether the candidate schedule this owner's figures were built from is the
+     * one their facts establish, or one completion of several the input leaves
+     * open.
+     *
+     * It is a third question beside the two above, and it decides whether the
+     * `hsa` detail is published at all rather than what any single field says.
+     * The detail is an audit trail of a *chosen* candidate -- the schedule, its
+     * monthly amounts, the winner of the Notice 2008-52 comparison and the
+     * amount attributable to it -- and `facts[owner].months` holds whichever of
+     * an owner's contradictory accounts was merged rather than a reconciliation
+     * of them. So where the schedule or the comparison is not established, every
+     * one of those fields would report one arbitrary completion beside a
+     * diagnostic saying the fact was never established, and reversing two
+     * account records would change them. They are withheld together, because
+     * they are one answer and not several.
+     *
+     * An unsettled IRC 223(b)(5)(B)(ii) *division* is deliberately not among the
+     * causes: it leaves both candidates exactly as computable as they were and
+     * puts only the owner's eventual share in question, which
+     * `familyLimitShare` already reports as null.
+     */
+    let candidateSelectionUnestablished = false;
 
     /**
      * Does this owner's disagreement actually reach the couple's IRC 223(b)(5)
@@ -12562,7 +12603,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       (parameters.contributionLimitCappedByHdhpAnnualDeductible &&
         !deductibleUnanimous &&
         ownerSlots.some((slot) => slot !== "none"));
-    if (amountInputsIndeterminate) familyPoolAmountIndeterminate = true;
+    if (amountInputsIndeterminate) {
+      familyPoolAmountIndeterminate = true;
+      // The months themselves, or the deductible that priced them in a capped
+      // year, are not established -- so neither is the schedule either candidate
+      // is built from.
+      candidateSelectionUnestablished = true;
+    }
 
     if (owner.conflict) {
       indeterminate = true;
@@ -12591,6 +12638,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     if (owner.rules === null || owner.months === null) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
+      candidateSelectionUnestablished = true;
       diagnostics.push(
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
@@ -12663,6 +12711,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
+      // Whether IRC 223(b)(5)(A) rewrites this owner's self-only months is what
+      // decides both candidates' tiers, so an unstated spouse leaves the
+      // schedule open rather than merely the share of it.
+      candidateSelectionUnestablished = true;
       // Name the reason that actually applies. Both can, and a caller told only
       // about self-only months would go looking for one in a record whose months
       // are all family months.
@@ -12735,6 +12787,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
+      candidateSelectionUnestablished = true;
       diagnostics.push(
         diagnostic(
           "HSA_SPOUSE_COVERAGE_FACTS_CONFLICT",
@@ -12981,6 +13034,33 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       fullContributionRuleAvailable,
     );
 
+    /**
+     * IRC 223(b)(3) turns on age, and the two candidates carry it differently:
+     * Notice 2008-52 computes it "on a monthly basis" in candidate (1) and gives
+     * Example 5's December-only individual the entire $900 in candidate (2). So
+     * an unknown birth year can decide the comparison as well as the amount --
+     * six family months plus a self-only December is 4741.67 against 4400 under
+     * 55, and 5325 against 5400 at 55 or over, which is a different winner.
+     *
+     * The test is not "the age is unknown". Where the rule changes no month of
+     * the schedule *and* the two catch-up treatments coincide, the candidates
+     * are identical figure for figure and no age reading can separate them --
+     * which is the ordinary full-year case, and is why an absent birth year
+     * there still publishes the schedule and the 0 that the engine declines to
+     * grant as an IRC 223(b)(3) amount rather than rules out. Otherwise the
+     * winner is one of two readings, and the detail would report whichever the
+     * under-55 placeholder happened to pick.
+     */
+    if (age === null && parameters.additionalContributionAmountAge55 > 0) {
+      const deemedSchedule = deemedMonthsByPerson.get(ownerId) ?? months;
+      const ruleChangesNoMonth = HSA_ALL_MONTHS.every(
+        (_month, index) => deemedSchedule[index] === months[index],
+      );
+      const catchUpTreatmentsCoincide =
+        !fullContributionRuleAvailable || eligibleMonthCount === HSA_MONTHS_IN_YEAR;
+      if (!(ruleChangesNoMonth && catchUpTreatmentsCoincide)) candidateSelectionUnestablished = true;
+    }
+
     // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
     // 223 answer unknown rather than merely unusual: general-purpose coverage
     // is disqualifying and limited-purpose or post-deductible coverage is not,
@@ -13037,6 +13117,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       eligibleMonthCount,
       fullContributionRuleAvailable,
       fullContributionCandidateSelected: false,
+      candidateSelectionUnestablished,
       diagnostics,
       indeterminate,
       familyPoolAmountIndeterminate,
@@ -13116,6 +13197,26 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
     return roundMoney(base + catchUp);
   };
+  /**
+   * Where the comparison below is taken on the couple's *combined* figures, one
+   * spouse's open candidate leaves the other's winner open too: the total that
+   * decided it was built from both. The flag is therefore shared across the
+   * spouses who hold accounts before that comparison runs.
+   *
+   * It is shared only where that branch is the one that runs. Spouses who share
+   * no family month are compared each on their own figures -- Q&A-31 gives a
+   * month only one of them is eligible in wholly to that one -- so a
+   * contradiction in one of their records leaves the other's winner decided by
+   * facts of their own that are not in doubt.
+   */
+  if (familySharingApplies && coupleMembersWithAccounts.some(
+    (personId) => amountsByOwner.get(personId)?.candidateSelectionUnestablished === true,
+  )) {
+    for (const personId of coupleMembersWithAccounts) {
+      const owned = amountsByOwner.get(personId);
+      if (owned !== undefined) owned.candidateSelectionUnestablished = true;
+    }
+  }
   {
     const ordinary = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.ordinaryCandidate;
     const full = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.fullContributionCandidate;
@@ -14266,6 +14367,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       ),
     );
 
+    /**
+     * Published only where the candidate it describes is the one the facts
+     * establish. Every field below is an audit trail of a chosen schedule and a
+     * chosen winner, so where the choice was one completion among several the
+     * whole object is withheld rather than filled in from whichever account
+     * happened to be merged first -- and `AccountCalculationResult.hsa` is
+     * already optional for the accounts that never had one.
+     *
+     * The unapportionable Archer case joins the per-owner causes here because it
+     * is a couple-level fact: where two spouses' undivided months could each
+     * have absorbed the single IRC 223(b)(5)(B)(i) reduction, which of them did
+     * decides these figures rather than a share of them. The mixed-months case
+     * beside it does not, for the reason `sharedFamilyContributionLimit` gives
+     * below: there only one owner's months are in play, so the amount is settled
+     * and only its placement -- the share -- is not.
+     */
+    const candidateSelectionUnestablished =
+      amounts.candidateSelectionUnestablished || (isSharingMember && archerAcrossUndividedSpouses);
+
     const detail: HsaAccountDetail = {
       coverageTierByMonth: facts.get(ownerId)!.months ?? HSA_ALL_MONTHS.map(() => null),
       eligibleMonthCount: amounts.eligibleMonthCount,
@@ -14337,7 +14457,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       status: planStatus,
       diagnostics,
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
-      detail,
+      detail: candidateSelectionUnestablished ? null : detail,
       familyPoolKey: isSharingMember ? familyPoolKey : null,
       familyPoolUsageDeterminable:
         amounts.ageKnown && amounts.catchUpApplied === 0 && archerAmount === 0 && fundingAmount === 0,
@@ -14418,7 +14538,7 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
       planTermDependentCapacity: 0,
       sharedLimits,
       diagnostics,
-      ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+      hsaDetail: plan.detail,
     };
   }
 
@@ -14434,7 +14554,7 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
       planTermDependentCapacity: 0,
       sharedLimits,
       diagnostics,
-      ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+      hsaDetail: plan.detail,
     };
   }
 
@@ -14471,7 +14591,7 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
     planTermDependentCapacity: 0,
     sharedLimits,
     diagnostics,
-    ...(plan.detail ? { hsaDetail: plan.detail } : {}),
+    hsaDetail: plan.detail,
   };
 }
 
@@ -17385,7 +17505,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
       planTermDependentCapacity: outcome.planTermDependentCapacity,
       federalTaxEffects: accountTaxEffects(outcome, traits, account.planRules, diagnostics),
       sharedLimits: outcome.sharedLimits,
-      ...(outcome.hsaDetail ? { hsa: outcome.hsaDetail } : {}),
+      ...(outcome.hsaDetail !== undefined ? { hsa: outcome.hsaDetail } : {}),
       ...(outcome.definedBenefitDetail ? { definedBenefit: outcome.definedBenefitDetail } : {}),
       ...(outcome.healthFsaDetail ? { healthFsa: outcome.healthFsaDetail } : {}),
       ...(outcome.dependentCareDetail ? { dependentCareFsa: outcome.dependentCareDetail } : {}),
