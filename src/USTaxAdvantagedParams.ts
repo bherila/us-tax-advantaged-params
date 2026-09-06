@@ -12104,11 +12104,19 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     // December eligibility, and nothing here states it.
     return slots !== undefined && slots[HSA_MONTHS_IN_YEAR - 1] !== "none";
   };
-  const eligibleInMonth = (personId: string, monthIndex: number): boolean => {
+  /**
+   * Eligibility as the facts state it, with no IRC 223(b)(8) deeming. This is
+   * what the ordinary candidate reads: Notice 2008-52 builds that candidate
+   * from "eligibility and HDHP coverage on the first day of each month", which
+   * the last-month rule does not touch.
+   */
+  const actuallyEligibleInMonth = (personId: string, monthIndex: number): boolean => {
     const slots = coverageSlotsByPerson.get(personId);
     if (slots === undefined) return true;
-    return slots[monthIndex] !== "none" || lastMonthRuleDeemsEligible(personId);
+    return slots[monthIndex] !== "none";
   };
+  const eligibleInMonth = (personId: string, monthIndex: number): boolean =>
+    actuallyEligibleInMonth(personId, monthIndex) || lastMonthRuleDeemsEligible(personId);
   const recharacterized = new Set<string>();
   if (familySharingApplies) {
     // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
@@ -12121,6 +12129,91 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         if (familyMonth[month - 1] && owner.months[month - 1] === "self_only") {
           owner.months[month - 1] = "family";
           recharacterized.add(personId);
+        }
+      }
+    }
+  }
+
+  /**
+   * The coverage schedule of the IRC 223(b)(8) full-contribution candidate.
+   *
+   * Notice 2008-52 does not blend the two rules, it compares them. A
+   * December-eligible individual's annual limit is "the greater of" (1) "the
+   * sum of the limits determined separately for each month under section
+   * 223(b)(2), based on eligibility and HDHP coverage on the first day of each
+   * month, plus catch-up contributions for each month", or (2) "the maximum
+   * annual HSA contribution under section 223(b)(2)(A) or section 223(b)(2)(B)
+   * based on the individual's HDHP coverage (self-only or family) on the first
+   * day of the last month of the individual's taxable year, plus catch-up
+   * contributions under section 223(b)(3)". The rule "may increase, but not
+   * decrease, the contribution limit" and "applies without regard to whether
+   * the individual was an eligible individual for the entire year, had HDHP
+   * coverage for the entire year, or had disqualifying non-HDHP coverage for
+   * part of the year".
+   *
+   * Example 3 is what rules out reading clause (ii) of IRC 223(b)(8)(A) as a
+   * per-month filter. B is an eligible individual in every month of 2008,
+   * self-only through October and family from November, so no month of B's is
+   * eligible "solely by reason of clause (i)" and imputing December's plan only
+   * to such months changes nothing at all. The notice still gives B $5,800,
+   * "the greater of $5,800 or $3,383.34". Candidate (2) is therefore December's
+   * tier for the whole year, not December's tier poured into the gaps.
+   *
+   * The schedule is built for the couple rather than privately inside one
+   * owner's arithmetic, because IRC 223(b)(5)(A) reads the spouses' coverage
+   * together: a spouse deemed to hold family coverage for twelve months makes
+   * the other spouse's eligible self-only months family months too. Building it
+   * privately would let a full-year family candidate stack on top of the other
+   * spouse's eleven undivided self-only months and put more than one family
+   * limitation into the two accounts, where Notice 2008-52 Example 14 has the
+   * couple compare, and then divide, a single combined figure.
+   */
+  const deemedMonthsByPerson = new Map<string, Array<HsaCoverageTier | null>>();
+  {
+    const decemberIndex = HSA_MONTHS_IN_YEAR - 1;
+    const deemedFamilyMonth = HSA_ALL_MONTHS.map(() => false);
+    const record = (personId: string, monthTiers: Array<HsaCoverageTier | null>): void => {
+      deemedMonthsByPerson.set(personId, monthTiers);
+      for (const month of HSA_ALL_MONTHS) {
+        if (monthTiers[month - 1] === "family") deemedFamilyMonth[month - 1] = true;
+      }
+    };
+    for (const personId of new Set<string>([...ownerIds, ...(couple ?? [])])) {
+      const ownMonths = facts.get(personId)?.months ?? null;
+      if (ownMonths !== null) {
+        // December's tier is read after the recharacterization above, because
+        // the plan the individual is "treated as having been enrolled" in is
+        // the one IRC 223(b)(5)(A) already resolved for that month.
+        const decemberTier = ownMonths[decemberIndex];
+        record(
+          personId,
+          lastMonthRuleDeemsEligible(personId) && decemberTier !== null
+            ? HSA_ALL_MONTHS.map(() => decemberTier)
+            : [...ownMonths],
+        );
+        continue;
+      }
+      // A spouse who owns no HSA still states coverage that IRC 223(b)(5)(A)
+      // reads, and the same deeming reaches it. Only their family months are
+      // ever read back, which is all this projection carries.
+      const stated = statedCoverageByPerson.get(personId) ?? null;
+      if (stated === null) continue;
+      record(
+        personId,
+        lastMonthRuleDeemsEligible(personId) && stated[decemberIndex] === "family"
+          ? HSA_ALL_MONTHS.map(() => "family" as HsaCoverageTier)
+          : stated.map((tier) => tier),
+      );
+    }
+    // IRC 223(b)(5)(A) once more, over the deemed schedules. One pass suffices:
+    // a spouse's December tier is already the recharacterized one, so no month
+    // added here can promote a December tier and open a further round.
+    for (const personId of coupleMembersWithAccounts) {
+      const monthTiers = deemedMonthsByPerson.get(personId);
+      if (monthTiers === undefined) continue;
+      for (const month of HSA_ALL_MONTHS) {
+        if (deemedFamilyMonth[month - 1] && monthTiers[month - 1] === "self_only") {
+          monthTiers[month - 1] = "family";
         }
       }
     }
@@ -12245,7 +12338,28 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     };
   });
 
+  /**
+   * One of the two limitations Notice 2008-52 compares: candidate (1), the sum
+   * of the monthly limits on the facts as stated, or candidate (2), the whole
+   * annual amount for December's coverage tier. Every figure a downstream rule
+   * reads is carried for both, because the greater-of is decided on the totals
+   * and the winner must then be used consistently -- taking the larger of each
+   * component separately would assemble a limitation neither candidate is.
+   */
+  interface HsaCandidatePortions {
+    familyPortion: number;
+    familySharedPortion: number;
+    familySolePortion: number;
+    selfPortion: number;
+    prorated: Money;
+    familyMonthlyAmounts: Array<Money | null>;
+    annualLimitByMonth: Array<Money | null>;
+    catchUp: Money;
+  }
+
   interface HsaOwnerAmounts {
+    ordinaryCandidate: HsaCandidatePortions;
+    fullContributionCandidate: HsaCandidatePortions;
     proratedApplied: Money;
     proratedWithoutLastMonthRule: Money;
     /** Unrounded twelfth-summed portion of the limit from family-coverage months. Only this portion is divided between spouses under IRC 223(b)(5)(B)(ii). */
@@ -12657,59 +12771,86 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
-    const tierPortionFrom = (
-      limits: Array<Money | null>,
-      tiers: Array<HsaCoverageTier | null>,
-      tier: HsaCoverageTier,
-      shared?: boolean,
-    ): number =>
-      limits.reduce<number>(
-        (sum, value, index) =>
-          tiers[index] === tier &&
-          (shared === undefined || otherSpouseEligibleInMonth(index) === shared)
-            ? sum + (value ?? 0)
-            : sum,
-        0,
-      ) / HSA_MONTHS_IN_YEAR;
-    const tierPortion = (tier: HsaCoverageTier): number =>
-      tierPortionFrom(monthlyAnnualLimits, months, tier);
     /**
      * The other spouse's eligibility, month by month, because that is what
      * decides which rule governs each month of this owner's family portion.
      * A spouse who stated nothing has no slots and is eligible throughout --
      * absence of a statement is not a statement of absence.
+     *
+     * Read on the candidate being computed rather than once for the owner. The
+     * ordinary candidate is the sum of the monthly limits "based on eligibility
+     * and HDHP coverage on the first day of each month" (Notice 2008-52), which
+     * the last-month rule does not reach; only the full-contribution candidate
+     * reads the deemed months.
      */
     const spouseForMonthlySplit = couple?.find((personId) => personId !== ownerId);
-    const otherSpouseEligibleInMonth = (index: number): boolean =>
-      spouseForMonthlySplit === undefined ? false : eligibleInMonth(spouseForMonthlySplit, index);
-    const tierPortionWhere = (tier: HsaCoverageTier, shared: boolean): number =>
-      tierPortionFrom(monthlyAnnualLimits, months, tier, shared);
-    const familySharedWithoutLastMonthRule = tierPortionWhere("family", true);
-    const familySoleWithoutLastMonthRule = tierPortionWhere("family", false);
+    const otherSpouseEligibleInMonth = (index: number, deemed: boolean): boolean =>
+      spouseForMonthlySplit === undefined
+        ? false
+        : deemed
+          ? eligibleInMonth(spouseForMonthlySplit, index)
+          : actuallyEligibleInMonth(spouseForMonthlySplit, index);
+    const tierPortionFrom = (
+      limits: Array<Money | null>,
+      tiers: Array<HsaCoverageTier | null>,
+      tier: HsaCoverageTier,
+      deemed: boolean,
+      shared?: boolean,
+    ): number =>
+      limits.reduce<number>(
+        (sum, value, index) =>
+          tiers[index] === tier &&
+          (shared === undefined || otherSpouseEligibleInMonth(index, deemed) === shared)
+            ? sum + (value ?? 0)
+            : sum,
+        0,
+      ) / HSA_MONTHS_IN_YEAR;
     const familyMonthlyAmountsFrom = (
       limits: Array<Money | null>,
       tiers: Array<HsaCoverageTier | null>,
     ): Array<Money | null> => tiers.map((tier, index) => (tier === "family" ? limits[index] : null));
-    let familyMonthlyAmounts = familyMonthlyAmountsFrom(monthlyAnnualLimits, months);
-    const familyPortionWithoutLastMonthRule = tierPortion("family");
-    const selfPortionWithoutLastMonthRule = tierPortion("self_only");
-    const proratedWithoutLastMonthRule = roundMoney(
-      monthlyAnnualLimits.reduce<number>((sum, value) => sum + (value ?? 0), 0) / HSA_MONTHS_IN_YEAR,
-    );
     const catchUpEligible = age !== null && age >= 55;
-    const catchUpWithoutLastMonthRule = catchUpEligible
-      ? roundMoney((parameters.additionalContributionAmountAge55 * eligibleMonthCount) / HSA_MONTHS_IN_YEAR)
-      : 0;
+
+    /**
+     * One candidate's whole decomposition. Both are built by this one helper so
+     * that the comparison IRC 223(b)(8) calls for is between two figures that
+     * differ only in the schedule they were computed from.
+     */
+    const portionsFor = (
+      tiers: Array<HsaCoverageTier | null>,
+      deemed: boolean,
+      wholeYearCatchUp: boolean,
+    ): HsaCandidatePortions => {
+      const limits = tiers.map((tier, index) => (tier === null ? null : annualLimitFor(tier, index)));
+      const eligibleMonths = tiers.filter((tier) => tier !== null).length;
+      return {
+        familyPortion: tierPortionFrom(limits, tiers, "family", deemed),
+        familySharedPortion: tierPortionFrom(limits, tiers, "family", deemed, true),
+        familySolePortion: tierPortionFrom(limits, tiers, "family", deemed, false),
+        selfPortion: tierPortionFrom(limits, tiers, "self_only", deemed),
+        prorated: roundMoney(
+          limits.reduce<number>((sum, value) => sum + (value ?? 0), 0) / HSA_MONTHS_IN_YEAR,
+        ),
+        familyMonthlyAmounts: familyMonthlyAmountsFrom(limits, tiers),
+        annualLimitByMonth: limits,
+        // Notice 2008-52 computes the catch-up amount the same way as the
+        // limitation it accompanies: monthly in candidate (1) -- "The catch-up
+        // contribution is also computed on a monthly basis" -- and whole in
+        // candidate (2), where Example 5 gives a December-only eligible
+        // individual the entire $900.
+        catchUp: !catchUpEligible
+          ? 0
+          : wholeYearCatchUp
+            ? roundMoney(parameters.additionalContributionAmountAge55)
+            : roundMoney(
+                (parameters.additionalContributionAmountAge55 * eligibleMonths) / HSA_MONTHS_IN_YEAR,
+              ),
+      };
+    };
+
+    const ordinaryCandidate = portionsFor(months, false, false);
 
     let lastMonthRuleApplied = false;
-    let appliedAnnualLimitByMonth = monthlyAnnualLimits;
-    let proratedApplied = proratedWithoutLastMonthRule;
-    let familyPortionApplied = familyPortionWithoutLastMonthRule;
-    let familySharedApplied = familySharedWithoutLastMonthRule;
-    let familySoleApplied = familySoleWithoutLastMonthRule;
-    let selfPortionApplied = selfPortionWithoutLastMonthRule;
-    let catchUpApplied = catchUpWithoutLastMonthRule;
-
     if (owner.lastMonthRule.useLastMonthRule) {
       const decemberTier = months[HSA_MONTHS_IN_YEAR - 1];
       if (!parameters.lastMonthRuleAvailable) {
@@ -12734,46 +12875,23 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         );
       } else {
         lastMonthRuleApplied = true;
-        /**
-         * Clause (ii), not a replacement of the year.
-         *
-         * IRC 223(b)(8)(A) treats a December-eligible individual "(i) as having
-         * been an eligible individual during each of the months in such taxable
-         * year, and (ii) as having been enrolled, during each of the months such
-         * individual is treated as an eligible individual *solely by reason of
-         * clause (i)*, in the same high deductible health plan in which the
-         * individual was enrolled for the last month". December's plan is
-         * therefore imputed only to the months the individual was not actually
-         * an eligible individual. A month of actual eligibility keeps its own
-         * coverage, which is why the paragraph is headed an *increase in limit*
-         * and why it can never reduce one.
-         *
-         * Overwriting every month with December's figure did reduce one: eleven
-         * months of family coverage followed by a self-only December returned
-         * 4400 where the ordinary computation gives 11/12 x 8750 + 1/12 x 4400 =
-         * 8387.50. Building the deemed schedule month by month removes the need
-         * to compare two candidates afterwards -- the larger answer is the only
-         * one the statute describes.
-         *
-         * The shared and sole-eligible split then falls out of the same monthly
-         * helper as the ordinary case, so the other spouse's eligibility is read
-         * for each month rather than taken from December alone.
-         */
-        const deemedMonths = months.map((tier) => tier ?? decemberTier);
-        const deemedMonthlyLimits = deemedMonths.map((tier, index) => annualLimitFor(tier, index));
-        appliedAnnualLimitByMonth = deemedMonthlyLimits;
-        proratedApplied = roundMoney(
-          deemedMonthlyLimits.reduce<number>((sum, value) => sum + value, 0) / HSA_MONTHS_IN_YEAR,
-        );
-        familyPortionApplied = tierPortionFrom(deemedMonthlyLimits, deemedMonths, "family");
-        familySharedApplied = tierPortionFrom(deemedMonthlyLimits, deemedMonths, "family", true);
-        familySoleApplied = tierPortionFrom(deemedMonthlyLimits, deemedMonths, "family", false);
-        selfPortionApplied = tierPortionFrom(deemedMonthlyLimits, deemedMonths, "self_only");
-        familyMonthlyAmounts = familyMonthlyAmountsFrom(deemedMonthlyLimits, deemedMonths);
-        catchUpApplied = catchUpEligible ? roundMoney(parameters.additionalContributionAmountAge55) : 0;
       }
     }
 
+    /**
+     * Candidate (2). The schedule comes from `deemedMonthsByPerson`, so this
+     * owner's own election is not the only thing that can build one: a spouse
+     * who elects the rule is treated as holding family coverage all year, and
+     * IRC 223(b)(5)(A) then makes this owner's eligible self-only months family
+     * months in the same candidate. Only the owner's own election earns the
+     * whole IRC 223(b)(3) amount, which is why `lastMonthRuleApplied` and not
+     * the schedule decides that.
+     */
+    const fullContributionCandidate = portionsFor(
+      deemedMonthsByPerson.get(ownerId) ?? months,
+      true,
+      lastMonthRuleApplied,
+    );
 
     // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves the IRC
     // 223 answer unknown rather than merely unusual: general-purpose coverage
@@ -12806,22 +12924,28 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       }
     }
 
+    // The applied figures start as candidate (1) and are moved to candidate (2)
+    // only where the greater-of below chooses it, which cannot be decided here:
+    // Notice 2008-52 Example 14 compares the couple's *combined* limitations,
+    // so the comparison needs every owner's figures first.
     amountsByOwner.set(ownerId, {
-      proratedApplied,
-      proratedWithoutLastMonthRule,
-      familyPortionApplied,
-      familySharedPortionApplied: familySharedApplied,
-      familySolePortionApplied: familySoleApplied,
-      familySharedPortionWithoutLastMonthRule: familySharedWithoutLastMonthRule,
-      familySolePortionWithoutLastMonthRule: familySoleWithoutLastMonthRule,
-      familyMonthlyAmounts,
-      selfPortionApplied,
-      familyPortionWithoutLastMonthRule,
-      selfPortionWithoutLastMonthRule,
-      catchUpApplied,
+      ordinaryCandidate,
+      fullContributionCandidate,
+      proratedApplied: ordinaryCandidate.prorated,
+      proratedWithoutLastMonthRule: ordinaryCandidate.prorated,
+      familyPortionApplied: ordinaryCandidate.familyPortion,
+      familySharedPortionApplied: ordinaryCandidate.familySharedPortion,
+      familySolePortionApplied: ordinaryCandidate.familySolePortion,
+      familySharedPortionWithoutLastMonthRule: ordinaryCandidate.familySharedPortion,
+      familySolePortionWithoutLastMonthRule: ordinaryCandidate.familySolePortion,
+      familyMonthlyAmounts: ordinaryCandidate.familyMonthlyAmounts,
+      selfPortionApplied: ordinaryCandidate.selfPortion,
+      familyPortionWithoutLastMonthRule: ordinaryCandidate.familyPortion,
+      selfPortionWithoutLastMonthRule: ordinaryCandidate.selfPortion,
+      catchUpApplied: ordinaryCandidate.catchUp,
       ageKnown: age !== null,
-      catchUpWithoutLastMonthRule,
-      appliedAnnualLimitByMonth,
+      catchUpWithoutLastMonthRule: ordinaryCandidate.catchUp,
+      appliedAnnualLimitByMonth: ordinaryCandidate.annualLimitByMonth,
       eligibleMonthCount,
       lastMonthRuleApplied,
       diagnostics,
@@ -12850,6 +12974,91 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const coupleArcherAggregate = roundMoney(
     (couple ?? []).reduce<number>((sum, personId) => sum + archerForPerson(personId), 0),
   );
+  /**
+   * Notice 2008-52's greater-of, taken once for the couple and once for anyone
+   * outside it.
+   *
+   * "L and M's combined full contribution limit for 2008 is $5,800. L and M's
+   * combined sum of the monthly contribution limits is $483.33 ... L and M's
+   * combined annual contribution limit under section 223(b)(8) is $5,800, the
+   * greater of $5,800 or $483.33." Example 14 compares the couple's combined
+   * figures and divides the winner, and that order is not cosmetic. Comparing
+   * per owner and then dividing lets each spouse take whichever candidate suits
+   * them: a spouse eligible all year with self-only coverage keeps their
+   * ordinary eleven-twelfths while the other spouse's December family election
+   * carries the couple's whole family limitation, and the two accounts together
+   * exceed the single limitation IRC 223(b)(5) allows.
+   *
+   * What is compared is the paragraph (1) limitation plus the paragraph (3)
+   * amount, before IRC 223(b)(4)(C): IRC 223(b)(8) computes "the limitation
+   * under paragraph (1)", and paragraph (4) reduces what that produced.
+   */
+  const combinedCandidateTotal = (
+    pick: (amounts: HsaOwnerAmounts) => HsaCandidatePortions,
+  ): Money => {
+    const union = HSA_ALL_MONTHS.reduce<number>((sum, _month, index) => {
+      const monthAmounts = coupleMembersWithAccounts
+        .map((personId) => {
+          const owned = amountsByOwner.get(personId);
+          return owned === undefined ? null : (pick(owned).familyMonthlyAmounts[index] ?? null);
+        })
+        .filter((value): value is Money => value !== null);
+      return monthAmounts.length === 0 ? sum : sum + Math.max(...monthAmounts);
+    }, 0) / HSA_MONTHS_IN_YEAR;
+    let total = nonnegative(union - coupleArcherAggregate);
+    for (const personId of coupleMembersWithAccounts) {
+      const owned = amountsByOwner.get(personId);
+      if (owned === undefined) continue;
+      const candidate = pick(owned);
+      total += archerReducedPortions(
+        candidate.familyPortion,
+        candidate.selfPortion,
+        coupleArcherAggregate,
+      )[1];
+      total += candidate.catchUp;
+    }
+    return roundMoney(total);
+  };
+  const ownCandidateTotal = (ownerId: string, candidate: HsaCandidatePortions): Money => {
+    const [base, catchUp] = subsectionBReducedBy(
+      candidate.prorated,
+      candidate.catchUp,
+      archerForPerson(ownerId),
+    );
+    return roundMoney(base + catchUp);
+  };
+  {
+    const ordinary = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.ordinaryCandidate;
+    const full = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.fullContributionCandidate;
+    const chooseFull = new Set<string>();
+    if (familySharingApplies && coupleMembersWithAccounts.length > 0) {
+      if (combinedCandidateTotal(full) > combinedCandidateTotal(ordinary)) {
+        for (const personId of coupleMembersWithAccounts) chooseFull.add(personId);
+      }
+    }
+    for (const ownerId of ownerIds) {
+      if (familySharingApplies && coupleMembersWithAccounts.includes(ownerId)) continue;
+      const amounts = amountsByOwner.get(ownerId);
+      if (amounts === undefined) continue;
+      if (ownCandidateTotal(ownerId, full(amounts)) > ownCandidateTotal(ownerId, ordinary(amounts))) {
+        chooseFull.add(ownerId);
+      }
+    }
+    for (const ownerId of chooseFull) {
+      const amounts = amountsByOwner.get(ownerId);
+      if (amounts === undefined) continue;
+      const chosen = amounts.fullContributionCandidate;
+      amounts.proratedApplied = chosen.prorated;
+      amounts.familyPortionApplied = chosen.familyPortion;
+      amounts.familySharedPortionApplied = chosen.familySharedPortion;
+      amounts.familySolePortionApplied = chosen.familySolePortion;
+      amounts.familyMonthlyAmounts = chosen.familyMonthlyAmounts;
+      amounts.selfPortionApplied = chosen.selfPortion;
+      amounts.catchUpApplied = chosen.catchUp;
+      amounts.appliedAnnualLimitByMonth = chosen.annualLimitByMonth;
+    }
+  }
+
   const reducedPortionsFor = (personId: string): [number, number] =>
     archerReducedPortions(
       amountsByOwner.get(personId)?.familyPortionApplied ?? 0,
@@ -13010,6 +13219,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * every scenario but this one.
    */
   let archerAcrossMixedFamilyMonths = false;
+  /**
+   * The same reduction, unapportionable for a different reason: it would come
+   * out of *both* spouses' undivided months. Held apart from
+   * `archerAcrossMixedFamilyMonths` because the two are withheld under
+   * different conditions -- a mixed owner's problem is which of their own
+   * months a *share* reaches, which cannot arise unless some month is shared,
+   * while this one arises exactly when none is.
+   */
+  let archerAcrossUndividedSpouses = false;
   const eligibleSpouses = familySharingApplies
     ? (couple ?? coupleMembersWithAccounts).filter((personId) =>
         HSA_ALL_MONTHS.some((_, index) => eligibleInMonth(personId, index)),
@@ -13326,31 +13544,64 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * no share was ever established.
    */
   if (familySharingApplies && coupleArcherAggregate > 0) {
-    for (const personId of coupleMembersWithAccounts) {
-      const owned = amountsByOwner.get(personId);
-      if (owned === undefined) continue;
-      // Both candidates, because the counterfactual feeds the IRC 223(b)(8)(B)
-      // attributable amount and rests on the same apportionment. A last-month
-      // candidate can be homogeneous while the ordinary one is mixed, and
-      // checking only the applied decomposition would leave the testing-period
-      // figure resting on the very apportionment this refuses to invent.
-      const mixed = (shared: number, total: number): boolean => shared > 0 && shared < total;
-      if (
-        mixed(owned.familySharedPortionApplied, owned.familyPortionApplied) ||
-        mixed(
-          owned.familySharedPortionWithoutLastMonthRule,
-          owned.familyPortionWithoutLastMonthRule,
-        )
-      ) {
-        archerAcrossMixedFamilyMonths = true;
+    const mixed = (shared: number, total: number): boolean => shared > 0 && shared < total;
+    /**
+     * Whether the one aggregate reduction would come out of *this* spouse's
+     * undivided capacity.
+     *
+     * IRC 223(b)(5)(B)(i) reduces the couple's single limitation once, and the
+     * division that follows is what makes a single subtraction come out right:
+     * each spouse subtracts the aggregate from the shared portion and takes a
+     * share of the remainder, so the shares put the reduction back together
+     * exactly once. Nothing does that for a portion no share touches. A
+     * sole-eligible spouse's family months, and any residue that runs past the
+     * family portion into self-only months, are each subtracted whole from that
+     * spouse alone -- so where two spouses both have such a portion, the same
+     * aggregate is charged twice and the couple loses capacity that no rule
+     * took from them.
+     *
+     * Which spouse's undivided months the reduction actually consumed decides
+     * both their shares, and the statute never segments by month while Q&A-31
+     * and Q&A-32 never mention Archer MSAs. So this is reported unestablished
+     * rather than apportioned by invention, exactly as the mixed case is.
+     */
+    const absorbsUndivided = (family: number, shared: number, self: number): boolean =>
+      family - shared > 0 || (coupleArcherAggregate > family && self > 0);
+    // Both candidates, because the counterfactual feeds the IRC 223(b)(8)(B)
+    // attributable amount and rests on the same apportionment. A last-month
+    // candidate can be homogeneous while the ordinary one is mixed, and
+    // checking only the applied decomposition would leave the testing-period
+    // figure resting on the very apportionment this refuses to invent.
+    const decompositions: Array<(owned: HsaOwnerAmounts) => [number, number, number]> = [
+      (owned) => [
+        owned.familyPortionApplied,
+        owned.familySharedPortionApplied,
+        owned.selfPortionApplied,
+      ],
+      (owned) => [
+        owned.familyPortionWithoutLastMonthRule,
+        owned.familySharedPortionWithoutLastMonthRule,
+        owned.selfPortionWithoutLastMonthRule,
+      ],
+    ];
+    for (const decompose of decompositions) {
+      let absorbers = 0;
+      for (const personId of coupleMembersWithAccounts) {
+        const owned = amountsByOwner.get(personId);
+        if (owned === undefined) continue;
+        const [family, shared, self] = decompose(owned);
+        if (mixed(shared, family)) archerAcrossMixedFamilyMonths = true;
+        if (absorbsUndivided(family, shared, self)) absorbers += 1;
       }
+      if (absorbers >= 2) archerAcrossUndividedSpouses = true;
     }
   }
   const householdDivisionUnestablished =
     householdDivisionIndeterminate ||
     divisionEligibilityDoubtPersons.length > 0 ||
     divisionEligibilityUnknownPersons.length > 0 ||
-    archerAcrossMixedFamilyMonths;
+    archerAcrossMixedFamilyMonths ||
+    archerAcrossUndividedSpouses;
   /**
    * Whether any month is actually shared. An unestablished division can only
    * withhold an *amount* where some amount is subject to it: two spouses
@@ -13370,7 +13621,17 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * immateriality count, and it is the narrower question of the two.
    */
   const householdDivisionUnknown =
-    !nothingLeftToDivide && someFamilyMonthIsShared && householdDivisionUnestablished;
+    !nothingLeftToDivide &&
+    // `someFamilyMonthIsShared` asks whether a *share* is in question, which is
+    // the right test for every unestablished division but one. Where the one
+    // aggregate Archer MSA reduction would be subtracted from both spouses'
+    // undivided months, the question is not whose share a month falls in but
+    // whose months the reduction came out of -- and that question exists only
+    // because no month is shared. Requiring a shared month would have withheld
+    // nothing and left each spouse charged the whole aggregate, so the couple's
+    // two accounts together fell a full aggregate short of the one limitation
+    // the IRC 223(b)(5) pool beside them still reported.
+    (archerAcrossUndividedSpouses || (someFamilyMonthIsShared && householdDivisionUnestablished));
   /**
    * Whether a settled division is worth announcing. Same test: where nothing is
    * left to divide, saying how it was divided is noise about nought, and where
@@ -13418,6 +13679,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       .join(" and ")} supplied no persons[].hsaCoverage at all, so whether they are an eligible individual is unstated rather than known. The two readings give this account different answers: IRC 223(b)(5)(B)(ii) divides the limitation equally if that spouse is an eligible individual, and Notice 2004-50 Q&A-31 gives the whole of it to the other spouse if they are not -- "if only one spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding the treatment under section 223(b)(5)(A) of both spouses as having only family coverage)" -- with Notice 2008-59 Q&A-16 forbidding any allocation to a spouse who is not otherwise eligible. Supply that spouse's coverage months, or persons[].hsaCoverage of {} to state that they held none.`;
     const monthlyCause =
       'A spouse is an eligible individual in some of the family-coverage months and not in others, and the spouses also made Archer MSA contributions. Those two facts together have no determinable answer here. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse, while a month in which both are is divided under IRC 223(b)(5)(B)(ii), so the months are of two kinds; IRC 223(b)(5)(B)(i) then reduces the limitation by "the aggregate amount paid to Archer MSAs of such spouses for the taxable year" before that division, and which kind of month the reduction consumed decides this share. The statute never segments by month and Q&A-31 and Q&A-32 never mention Archer MSAs, so nothing settles the apportionment and the engine will not invent one. The limitation itself is unaffected. Remove the Archer MSA contributions from the scenario, or state family coverage months over which both spouses\' eligibility is constant.';
+    const undividedCause =
+      'Each spouse has family-coverage months in which the other is not an eligible individual, and the spouses also made Archer MSA contributions. Those two facts together have no determinable answer here. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse, so neither spouse\'s months are reached by the IRC 223(b)(5)(B)(ii) division; IRC 223(b)(5)(B)(i) then reduces the couple\'s single limitation by "the aggregate amount paid to Archer MSAs of such spouses for the taxable year" once, and nothing says out of which spouse\'s undivided months that one reduction came. Charging it to each of them subtracts it twice and loses the couple capacity no rule took away, so the limitation is reported and its allocation is not. The statute never segments by month and Q&A-31 and Q&A-32 never mention Archer MSAs, so the engine will not invent the apportionment. Remove the Archer MSA contributions from the scenario, or state family coverage months over which both spouses are eligible individuals.';
     const shareCause = `${
       unsettledCause[context.hsaFamilyLimitDivision.status] ?? "hsaFamilyLimitDivision is not settled"
     }, so no account's share of the limitation can be stated. Settle it as { status: "statutory_equal" } or { status: "agreed", taxpayerShare }.`;
@@ -13433,6 +13696,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
             ? unstatedCause
             : archerAcrossMixedFamilyMonths
             ? monthlyCause
+            : archerAcrossUndividedSpouses
+            ? undividedCause
             : householdDivisionIndeterminate
               ? shareCause
               : eligibilityCause
@@ -13943,7 +14208,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // leaves it reportable, and `familyLimitShare` beside it is the field
       // that goes unusable. Reading the division flag here would null the one
       // figure a caller reconciling contradictory shares actually needs.
-      sharedFamilyContributionLimit: isSharingMember && !householdPoolAmountIndeterminate
+      //
+      // `archerAcrossUndividedSpouses` is the one exception, and it is an
+      // exception about the amount rather than the division. Where the couple's
+      // single Archer MSA reduction would come out of both spouses' undivided
+      // months, which spouse it came out of decides *this* figure and not just
+      // the share of it -- so the pre-division amount is itself unknown, and
+      // `archerReducedPortions` would report this owner charged the whole
+      // aggregate while the other owner was charged it too. The mixed-months
+      // case is not an exception: there only one owner's months are in play, so
+      // the aggregate does come out of that owner's limitation whole and only
+      // its placement among their months, which is the share, is unsettled.
+      sharedFamilyContributionLimit: isSharingMember
+        && !householdPoolAmountIndeterminate
+        && !archerAcrossUndividedSpouses
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
         : null,
       archerMsaContributionsApplied: archerAmount,

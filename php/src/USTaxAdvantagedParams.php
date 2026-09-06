@@ -12893,15 +12893,27 @@ final class Engine
             $slots = $coverageSlotsByPerson[$personId] ?? null;
             return $slots !== null && $slots[self::HSA_MONTHS_IN_YEAR - 1] !== 'none';
         };
-        $eligibleInMonth = static function (string $personId, int $monthIndex) use (
-            &$coverageSlotsByPerson,
-            $lastMonthRuleDeemsEligible
+        /*
+         * Eligibility as the facts state it, with no IRC 223(b)(8) deeming. This
+         * is what the ordinary candidate reads: Notice 2008-52 builds that
+         * candidate from "eligibility and HDHP coverage on the first day of each
+         * month", which the last-month rule does not touch.
+         */
+        $actuallyEligibleInMonth = static function (string $personId, int $monthIndex) use (
+            &$coverageSlotsByPerson
         ): bool {
             $slots = $coverageSlotsByPerson[$personId] ?? null;
             if ($slots === null) {
                 return true;
             }
-            return $slots[$monthIndex] !== 'none' || $lastMonthRuleDeemsEligible($personId);
+            return $slots[$monthIndex] !== 'none';
+        };
+        $eligibleInMonth = static function (string $personId, int $monthIndex) use (
+            $actuallyEligibleInMonth,
+            $lastMonthRuleDeemsEligible
+        ): bool {
+            return $actuallyEligibleInMonth($personId, $monthIndex)
+                || $lastMonthRuleDeemsEligible($personId);
         };
         $recharacterized = [];
         if ($familySharingApplies) {
@@ -12917,6 +12929,101 @@ final class Engine
                         $facts[$personId]['months'][$month - 1] = 'family';
                         $recharacterized[$personId] = true;
                     }
+                }
+            }
+        }
+
+        /*
+         * The coverage schedule of the IRC 223(b)(8) full-contribution candidate.
+         *
+         * Notice 2008-52 does not blend the two rules, it compares them. A
+         * December-eligible individual's annual limit is "the greater of" (1)
+         * "the sum of the limits determined separately for each month under
+         * section 223(b)(2), based on eligibility and HDHP coverage on the first
+         * day of each month, plus catch-up contributions for each month", or (2)
+         * "the maximum annual HSA contribution under section 223(b)(2)(A) or
+         * section 223(b)(2)(B) based on the individual's HDHP coverage (self-only
+         * or family) on the first day of the last month of the individual's
+         * taxable year, plus catch-up contributions under section 223(b)(3)". The
+         * rule "may increase, but not decrease, the contribution limit" and
+         * "applies without regard to whether the individual was an eligible
+         * individual for the entire year, had HDHP coverage for the entire year,
+         * or had disqualifying non-HDHP coverage for part of the year".
+         *
+         * Example 3 is what rules out reading clause (ii) of IRC 223(b)(8)(A) as
+         * a per-month filter. B is an eligible individual in every month of 2008,
+         * self-only through October and family from November, so no month of B's
+         * is eligible "solely by reason of clause (i)" and imputing December's
+         * plan only to such months changes nothing at all. The notice still gives
+         * B $5,800, "the greater of $5,800 or $3,383.34". Candidate (2) is
+         * December's tier for the whole year, not December's tier poured into the
+         * gaps.
+         *
+         * The schedule is built for the couple rather than privately inside one
+         * owner's arithmetic, because IRC 223(b)(5)(A) reads the spouses'
+         * coverage together: a spouse deemed to hold family coverage for twelve
+         * months makes the other spouse's eligible self-only months family months
+         * too. Building it privately would let a full-year family candidate stack
+         * on top of the other spouse's eleven undivided self-only months and put
+         * more than one family limitation into the two accounts, where Notice
+         * 2008-52 Example 14 has the couple compare, and then divide, a single
+         * combined figure.
+         */
+        $deemedMonthsByPerson = [];
+        $decemberIndex = self::HSA_MONTHS_IN_YEAR - 1;
+        $deemedFamilyMonth = array_fill(0, self::HSA_MONTHS_IN_YEAR, false);
+        $deemedCandidateIds = [];
+        foreach ($ownerIds as $personId) {
+            $deemedCandidateIds[$personId] = true;
+        }
+        foreach (($couple ?? []) as $personId) {
+            $deemedCandidateIds[$personId] = true;
+        }
+        foreach (array_keys($deemedCandidateIds) as $personId) {
+            $ownMonths = $facts[$personId]['months'] ?? null;
+            if ($ownMonths !== null) {
+                // December's tier is read after the recharacterization above,
+                // because the plan the individual is "treated as having been
+                // enrolled" in is the one IRC 223(b)(5)(A) already resolved for
+                // that month.
+                $decemberTier = $ownMonths[$decemberIndex];
+                $deemedMonthsByPerson[$personId] =
+                    ($lastMonthRuleDeemsEligible($personId) && $decemberTier !== null)
+                        ? array_fill(0, self::HSA_MONTHS_IN_YEAR, $decemberTier)
+                        : $ownMonths;
+            } else {
+                // A spouse who owns no HSA still states coverage that IRC
+                // 223(b)(5)(A) reads, and the same deeming reaches it. Only their
+                // family months are ever read back, which is all this projection
+                // carries.
+                $stated = $statedCoverageByPerson[$personId] ?? null;
+                if ($stated === null) {
+                    continue;
+                }
+                $deemedMonthsByPerson[$personId] =
+                    ($lastMonthRuleDeemsEligible($personId) && ($stated[$decemberIndex] ?? null) === 'family')
+                        ? array_fill(0, self::HSA_MONTHS_IN_YEAR, 'family')
+                        : $stated;
+            }
+            for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                if (($deemedMonthsByPerson[$personId][$month - 1] ?? null) === 'family') {
+                    $deemedFamilyMonth[$month - 1] = true;
+                }
+            }
+        }
+        // IRC 223(b)(5)(A) once more, over the deemed schedules. One pass
+        // suffices: a spouse's December tier is already the recharacterized one,
+        // so no month added here can promote a December tier and open a further
+        // round.
+        foreach ($coupleMembersWithAccounts as $personId) {
+            if (!isset($deemedMonthsByPerson[$personId])) {
+                continue;
+            }
+            for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                if ($deemedFamilyMonth[$month - 1]
+                    && $deemedMonthsByPerson[$personId][$month - 1] === 'self_only'
+                ) {
+                    $deemedMonthsByPerson[$personId][$month - 1] = 'family';
                 }
             }
         }
@@ -13531,36 +13638,17 @@ final class Engine
                 );
             }
 
-            $tierPortionFrom = static function (
-                array $limits,
-                array $tiers,
-                string $tier,
-                ?bool $shared = null,
-            ) use (&$otherSpouseEligibleInMonth): float {
-                $sum = 0.0;
-                foreach ($limits as $index => $value) {
-                    if ($tiers[$index] !== $tier) {
-                        continue;
-                    }
-                    if ($shared !== null && $otherSpouseEligibleInMonth($index) !== $shared) {
-                        continue;
-                    }
-                    $sum += $value ?? 0.0;
-                }
-                return $sum / self::HSA_MONTHS_IN_YEAR;
-            };
-            $tierPortion = static function (string $tier) use (
-                $tierPortionFrom,
-                $monthlyAnnualLimits,
-                $months
-            ): float {
-                return $tierPortionFrom($monthlyAnnualLimits, $months, $tier);
-            };
             /*
              * The other spouse's eligibility, month by month, because that is
              * what decides which rule governs each month of this owner's family
              * portion. A spouse who stated nothing has no slots and is eligible
              * throughout -- absence of a statement is not a statement of absence.
+             *
+             * Read on the candidate being computed rather than once for the
+             * owner. The ordinary candidate is the sum of the monthly limits
+             * "based on eligibility and HDHP coverage on the first day of each
+             * month" (Notice 2008-52), which the last-month rule does not reach;
+             * only the full-contribution candidate reads the deemed months.
              */
             $spouseForMonthlySplit = null;
             foreach (($couple ?? []) as $candidateId) {
@@ -13569,23 +13657,36 @@ final class Engine
                     break;
                 }
             }
-            $spouseSlotsForSplit = $spouseForMonthlySplit === null
-                ? null
-                : ($coverageSlotsByPerson[$spouseForMonthlySplit] ?? null);
-            $otherSpouseEligibleInMonth = static function (int $index) use (
+            $otherSpouseEligibleInMonth = static function (int $index, bool $deemed) use (
                 $spouseForMonthlySplit,
-                $eligibleInMonth
+                $eligibleInMonth,
+                $actuallyEligibleInMonth
             ): bool {
-                return $spouseForMonthlySplit === null
-                    ? false
-                    : $eligibleInMonth($spouseForMonthlySplit, $index);
+                if ($spouseForMonthlySplit === null) {
+                    return false;
+                }
+                return $deemed
+                    ? $eligibleInMonth($spouseForMonthlySplit, $index)
+                    : $actuallyEligibleInMonth($spouseForMonthlySplit, $index);
             };
-            $tierPortionWhere = static function (string $tier, bool $shared) use (
-                $tierPortionFrom,
-                $monthlyAnnualLimits,
-                $months
-            ): float {
-                return $tierPortionFrom($monthlyAnnualLimits, $months, $tier, $shared);
+            $tierPortionFrom = static function (
+                array $limits,
+                array $tiers,
+                string $tier,
+                bool $deemed,
+                ?bool $shared = null,
+            ) use ($otherSpouseEligibleInMonth): float {
+                $sum = 0.0;
+                foreach ($limits as $index => $value) {
+                    if ($tiers[$index] !== $tier) {
+                        continue;
+                    }
+                    if ($shared !== null && $otherSpouseEligibleInMonth($index, $deemed) !== $shared) {
+                        continue;
+                    }
+                    $sum += $value ?? 0.0;
+                }
+                return $sum / self::HSA_MONTHS_IN_YEAR;
             };
             $familyMonthlyAmountsFrom = static function (array $limits, array $tiers): array {
                 $out = [];
@@ -13594,33 +13695,61 @@ final class Engine
                 }
                 return $out;
             };
-            $familySharedWithoutLastMonthRule = $tierPortionWhere('family', true);
-            $familySoleWithoutLastMonthRule = $tierPortionWhere('family', false);
-            $familyMonthlyAmounts = $familyMonthlyAmountsFrom($monthlyAnnualLimits, $months);
-            $familyPortionWithoutLastMonthRule = $tierPortion('family');
-            $selfPortionWithoutLastMonthRule = $tierPortion('self_only');
-            $sum = 0.0;
-            foreach ($monthlyAnnualLimits as $value) {
-                $sum += $value ?? 0.0;
-            }
-            $proratedWithoutLastMonthRule = self::roundMoney($sum / self::HSA_MONTHS_IN_YEAR);
             $catchUpEligible = $age !== null && $age >= 55;
-            $catchUpWithoutLastMonthRule = $catchUpEligible
-                ? self::roundMoney(
-                    ((float) $parameters['additionalContributionAmountAge55'] * $eligibleMonthCount)
-                        / self::HSA_MONTHS_IN_YEAR,
-                )
-                : 0.0;
+
+            /*
+             * One candidate's whole decomposition. Both are built by this one
+             * helper so that the comparison IRC 223(b)(8) calls for is between two
+             * figures that differ only in the schedule they were computed from.
+             */
+            $portionsFor = static function (
+                array $tiers,
+                bool $deemed,
+                bool $wholeYearCatchUp,
+            ) use (
+                $annualLimitFor,
+                $tierPortionFrom,
+                $familyMonthlyAmountsFrom,
+                $catchUpEligible,
+                $parameters
+            ): array {
+                $limits = [];
+                $eligibleMonths = 0;
+                foreach ($tiers as $index => $tier) {
+                    $limits[$index] = $tier === null ? null : $annualLimitFor($tier, $index);
+                    if ($tier !== null) {
+                        $eligibleMonths++;
+                    }
+                }
+                $sum = 0.0;
+                foreach ($limits as $value) {
+                    $sum += $value ?? 0.0;
+                }
+                $additional = (float) $parameters['additionalContributionAmountAge55'];
+                return [
+                    'familyPortion' => $tierPortionFrom($limits, $tiers, 'family', $deemed),
+                    'familySharedPortion' => $tierPortionFrom($limits, $tiers, 'family', $deemed, true),
+                    'familySolePortion' => $tierPortionFrom($limits, $tiers, 'family', $deemed, false),
+                    'selfPortion' => $tierPortionFrom($limits, $tiers, 'self_only', $deemed),
+                    'prorated' => self::roundMoney($sum / self::HSA_MONTHS_IN_YEAR),
+                    'familyMonthlyAmounts' => $familyMonthlyAmountsFrom($limits, $tiers),
+                    'annualLimitByMonth' => $limits,
+                    // Notice 2008-52 computes the catch-up amount the same way as
+                    // the limitation it accompanies: monthly in candidate (1) --
+                    // "The catch-up contribution is also computed on a monthly
+                    // basis" -- and whole in candidate (2), where Example 5 gives a
+                    // December-only eligible individual the entire $900.
+                    'catchUp' => !$catchUpEligible
+                        ? 0.0
+                        : ($wholeYearCatchUp
+                            ? self::roundMoney($additional)
+                            : self::roundMoney(($additional * $eligibleMonths) / self::HSA_MONTHS_IN_YEAR)),
+                ];
+            };
+
+            $ordinaryCandidate = $portionsFor($months, false, false);
 
             $lastMonthRuleApplied = false;
-            $appliedAnnualLimitByMonth = $monthlyAnnualLimits;
-            $proratedApplied = $proratedWithoutLastMonthRule;
-            $familyPortionApplied = $familyPortionWithoutLastMonthRule;
-            $familySharedApplied = $familySharedWithoutLastMonthRule;
-            $familySoleApplied = $familySoleWithoutLastMonthRule;
-            $selfPortionApplied = $selfPortionWithoutLastMonthRule;
-            $catchUpApplied = $catchUpWithoutLastMonthRule;
-
             if (!empty($owner['lastMonthRule']['useLastMonthRule'])) {
                 $decemberTier = $months[self::HSA_MONTHS_IN_YEAR - 1];
                 if ($parameters['lastMonthRuleAvailable'] !== true) {
@@ -13645,43 +13774,23 @@ final class Engine
                     );
                 } else {
                     $lastMonthRuleApplied = true;
-                    $decemberAnnualLimit = $annualLimitFor($decemberTier, self::HSA_MONTHS_IN_YEAR - 1);
-                    /*
-                     * Clause (ii), not a replacement of the year. IRC 223(b)(8)(A)
-                     * imputes December's plan only "during each of the months such
-                     * individual is treated as an eligible individual solely by
-                     * reason of clause (i)" -- the months they were not actually an
-                     * eligible individual. A month of actual eligibility keeps its
-                     * own coverage, which is why the paragraph is headed an
-                     * *increase in limit* and can never reduce one. Overwriting
-                     * every month with December's figure did reduce one: eleven
-                     * family months followed by a self-only December returned 4400
-                     * where the ordinary computation gives 8387.50.
-                     */
-                    $deemedMonths = [];
-                    foreach ($months as $index => $tier) {
-                        $deemedMonths[$index] = $tier ?? $decemberTier;
-                    }
-                    $deemedMonthlyLimits = [];
-                    foreach ($deemedMonths as $index => $tier) {
-                        $deemedMonthlyLimits[$index] = $annualLimitFor($tier, $index);
-                    }
-                    $appliedAnnualLimitByMonth = $deemedMonthlyLimits;
-                    $deemedSum = 0.0;
-                    foreach ($deemedMonthlyLimits as $value) {
-                        $deemedSum += $value;
-                    }
-                    $proratedApplied = self::roundMoney($deemedSum / self::HSA_MONTHS_IN_YEAR);
-                    $familyPortionApplied = $tierPortionFrom($deemedMonthlyLimits, $deemedMonths, 'family');
-                    $familySharedApplied = $tierPortionFrom($deemedMonthlyLimits, $deemedMonths, 'family', true);
-                    $familySoleApplied = $tierPortionFrom($deemedMonthlyLimits, $deemedMonths, 'family', false);
-                    $selfPortionApplied = $tierPortionFrom($deemedMonthlyLimits, $deemedMonths, 'self_only');
-                    $familyMonthlyAmounts = $familyMonthlyAmountsFrom($deemedMonthlyLimits, $deemedMonths);
-                    $catchUpApplied = $catchUpEligible
-                        ? self::roundMoney((float) $parameters['additionalContributionAmountAge55'])
-                        : 0.0;
                 }
             }
+
+            /*
+             * Candidate (2). The schedule comes from $deemedMonthsByPerson, so
+             * this owner's own election is not the only thing that can build one:
+             * a spouse who elects the rule is treated as holding family coverage
+             * all year, and IRC 223(b)(5)(A) then makes this owner's eligible
+             * self-only months family months in the same candidate. Only the
+             * owner's own election earns the whole IRC 223(b)(3) amount, which is
+             * why $lastMonthRuleApplied and not the schedule decides that.
+             */
+            $fullContributionCandidate = $portionsFor(
+                $deemedMonthsByPerson[$ownerId] ?? $months,
+                true,
+                $lastMonthRuleApplied,
+            );
 
 
             // A health FSA whose Rev. Rul. 2004-45 purpose is not stated leaves
@@ -13718,24 +13827,31 @@ final class Engine
                 );
             }
 
+            // The applied figures start as candidate (1) and are moved to
+            // candidate (2) only where the greater-of below chooses it, which
+            // cannot be decided here: Notice 2008-52 Example 14 compares the
+            // couple's *combined* limitations, so the comparison needs every
+            // owner's figures first.
             $amountsByOwner[$ownerId] = [
-                'proratedApplied' => $proratedApplied,
-                'proratedWithoutLastMonthRule' => $proratedWithoutLastMonthRule,
-                'familyPortionApplied' => $familyPortionApplied,
-                'familySharedPortionApplied' => $familySharedApplied,
-                'familySolePortionApplied' => $familySoleApplied,
-                'familySharedPortionWithoutLastMonthRule' => $familySharedWithoutLastMonthRule,
-                'familySolePortionWithoutLastMonthRule' => $familySoleWithoutLastMonthRule,
-                'familyMonthlyAmounts' => $familyMonthlyAmounts,
-                'selfPortionApplied' => $selfPortionApplied,
-                'familyPortionWithoutLastMonthRule' => $familyPortionWithoutLastMonthRule,
-                'selfPortionWithoutLastMonthRule' => $selfPortionWithoutLastMonthRule,
-                'catchUpApplied' => $catchUpApplied,
+                'ordinaryCandidate' => $ordinaryCandidate,
+                'fullContributionCandidate' => $fullContributionCandidate,
+                'proratedApplied' => $ordinaryCandidate['prorated'],
+                'proratedWithoutLastMonthRule' => $ordinaryCandidate['prorated'],
+                'familyPortionApplied' => $ordinaryCandidate['familyPortion'],
+                'familySharedPortionApplied' => $ordinaryCandidate['familySharedPortion'],
+                'familySolePortionApplied' => $ordinaryCandidate['familySolePortion'],
+                'familySharedPortionWithoutLastMonthRule' => $ordinaryCandidate['familySharedPortion'],
+                'familySolePortionWithoutLastMonthRule' => $ordinaryCandidate['familySolePortion'],
+                'familyMonthlyAmounts' => $ordinaryCandidate['familyMonthlyAmounts'],
+                'selfPortionApplied' => $ordinaryCandidate['selfPortion'],
+                'familyPortionWithoutLastMonthRule' => $ordinaryCandidate['familyPortion'],
+                'selfPortionWithoutLastMonthRule' => $ordinaryCandidate['selfPortion'],
+                'catchUpApplied' => $ordinaryCandidate['catchUp'],
                 // IRC 223(b)(3) turns on age, so an absent birth year leaves its
                 // amount untestable rather than nil.
                 'ageKnown' => $age !== null,
-                'catchUpWithoutLastMonthRule' => $catchUpWithoutLastMonthRule,
-                'appliedAnnualLimitByMonth' => $appliedAnnualLimitByMonth,
+                'catchUpWithoutLastMonthRule' => $ordinaryCandidate['catchUp'],
+                'appliedAnnualLimitByMonth' => $ordinaryCandidate['annualLimitByMonth'],
                 'eligibleMonthCount' => $eligibleMonthCount,
                 'lastMonthRuleApplied' => $lastMonthRuleApplied,
                 'diagnostics' => $diagnostics,
@@ -13768,6 +13884,103 @@ final class Engine
             $coupleArcherAggregateRaw += $archerForPerson($personId);
         }
         $coupleArcherAggregate = self::roundMoney($coupleArcherAggregateRaw);
+        /*
+         * Notice 2008-52's greater-of, taken once for the couple and once for
+         * anyone outside it.
+         *
+         * "L and M's combined full contribution limit for 2008 is $5,800. L and
+         * M's combined sum of the monthly contribution limits is $483.33 ... L
+         * and M's combined annual contribution limit under section 223(b)(8) is
+         * $5,800, the greater of $5,800 or $483.33." Example 14 compares the
+         * couple's combined figures and divides the winner, and that order is not
+         * cosmetic. Comparing per owner and then dividing lets each spouse take
+         * whichever candidate suits them: a spouse eligible all year with
+         * self-only coverage keeps their ordinary eleven-twelfths while the other
+         * spouse's December family election carries the couple's whole family
+         * limitation, and the two accounts together exceed the single limitation
+         * IRC 223(b)(5) allows.
+         *
+         * What is compared is the paragraph (1) limitation plus the paragraph (3)
+         * amount, before IRC 223(b)(4)(C): IRC 223(b)(8) computes "the limitation
+         * under paragraph (1)", and paragraph (4) reduces what that produced.
+         */
+        $combinedCandidateTotal = static function (string $key) use (
+            $amountsByOwner,
+            $coupleMembersWithAccounts,
+            $coupleArcherAggregate
+        ): float {
+            $unionSum = 0.0;
+            for ($monthIndex = 0; $monthIndex < self::HSA_MONTHS_IN_YEAR; $monthIndex++) {
+                $monthAmounts = [];
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $value = $amountsByOwner[$personId][$key]['familyMonthlyAmounts'][$monthIndex] ?? null;
+                    if ($value !== null) {
+                        $monthAmounts[] = (float) $value;
+                    }
+                }
+                if ($monthAmounts !== []) {
+                    $unionSum += max($monthAmounts);
+                }
+            }
+            $total = self::nonnegative(($unionSum / self::HSA_MONTHS_IN_YEAR) - $coupleArcherAggregate);
+            foreach ($coupleMembersWithAccounts as $personId) {
+                $candidate = $amountsByOwner[$personId][$key] ?? null;
+                if ($candidate === null) {
+                    continue;
+                }
+                $total += self::archerReducedPortions(
+                    (float) $candidate['familyPortion'],
+                    (float) $candidate['selfPortion'],
+                    $coupleArcherAggregate,
+                )[1];
+                $total += (float) $candidate['catchUp'];
+            }
+            return self::roundMoney($total);
+        };
+        $ownCandidateTotal = static function (array $candidate, float $archer): float {
+            [$base, $catchUp] = self::subsectionBReducedBy(
+                (float) $candidate['prorated'],
+                (float) $candidate['catchUp'],
+                $archer,
+            );
+            return self::roundMoney($base + $catchUp);
+        };
+        $chooseFull = [];
+        if ($familySharingApplies && count($coupleMembersWithAccounts) > 0) {
+            if ($combinedCandidateTotal('fullContributionCandidate')
+                > $combinedCandidateTotal('ordinaryCandidate')
+            ) {
+                foreach ($coupleMembersWithAccounts as $personId) {
+                    $chooseFull[$personId] = true;
+                }
+            }
+        }
+        foreach ($ownerIds as $ownerCandidate) {
+            if ($familySharingApplies && in_array($ownerCandidate, $coupleMembersWithAccounts, true)) {
+                continue;
+            }
+            if (!isset($amountsByOwner[$ownerCandidate])) {
+                continue;
+            }
+            $archer = $archerForPerson($ownerCandidate);
+            if ($ownCandidateTotal($amountsByOwner[$ownerCandidate]['fullContributionCandidate'], $archer)
+                > $ownCandidateTotal($amountsByOwner[$ownerCandidate]['ordinaryCandidate'], $archer)
+            ) {
+                $chooseFull[$ownerCandidate] = true;
+            }
+        }
+        foreach (array_keys($chooseFull) as $ownerCandidate) {
+            $chosen = $amountsByOwner[$ownerCandidate]['fullContributionCandidate'];
+            $amountsByOwner[$ownerCandidate]['proratedApplied'] = $chosen['prorated'];
+            $amountsByOwner[$ownerCandidate]['familyPortionApplied'] = $chosen['familyPortion'];
+            $amountsByOwner[$ownerCandidate]['familySharedPortionApplied'] = $chosen['familySharedPortion'];
+            $amountsByOwner[$ownerCandidate]['familySolePortionApplied'] = $chosen['familySolePortion'];
+            $amountsByOwner[$ownerCandidate]['familyMonthlyAmounts'] = $chosen['familyMonthlyAmounts'];
+            $amountsByOwner[$ownerCandidate]['selfPortionApplied'] = $chosen['selfPortion'];
+            $amountsByOwner[$ownerCandidate]['catchUpApplied'] = $chosen['catchUp'];
+            $amountsByOwner[$ownerCandidate]['appliedAnnualLimitByMonth'] = $chosen['annualLimitByMonth'];
+        }
+
         $reducedPortionsFor = static function (string $personId) use ($amountsByOwner, $coupleArcherAggregate): array {
             return self::archerReducedPortions(
                 (float) ($amountsByOwner[$personId]['familyPortionApplied'] ?? 0.0),
@@ -14220,35 +14433,77 @@ final class Engine
          * contribution there is nothing to apportion.
          */
         $archerAcrossMixedFamilyMonths = false;
+        /*
+         * The same reduction, unapportionable for a different reason: it would
+         * come out of *both* spouses' undivided months. Held apart from
+         * $archerAcrossMixedFamilyMonths because the two are withheld under
+         * different conditions -- a mixed owner's problem is which of their own
+         * months a *share* reaches, which cannot arise unless some month is
+         * shared, while this one arises exactly when none is.
+         */
+        $archerAcrossUndividedSpouses = false;
         if ($familySharingApplies && $coupleArcherAggregate > 0.0) {
-            foreach ($coupleMembersWithAccounts as $ownerCandidate) {
-                $owned = $amountsByOwner[$ownerCandidate] ?? null;
-                if ($owned === null) {
-                    continue;
+            $mixed = static fn (float $shared, float $total): bool
+                => $shared > 0.0 && $shared < $total;
+            /*
+             * Whether the one aggregate reduction would come out of *this*
+             * spouse's undivided capacity.
+             *
+             * IRC 223(b)(5)(B)(i) reduces the couple's single limitation once,
+             * and the division that follows is what makes a single subtraction
+             * come out right: each spouse subtracts the aggregate from the shared
+             * portion and takes a share of the remainder, so the shares put the
+             * reduction back together exactly once. Nothing does that for a
+             * portion no share touches. A sole-eligible spouse's family months,
+             * and any residue that runs past the family portion into self-only
+             * months, are each subtracted whole from that spouse alone -- so
+             * where two spouses both have such a portion, the same aggregate is
+             * charged twice and the couple loses capacity that no rule took from
+             * them.
+             */
+            $absorbsUndivided = static function (float $family, float $shared, float $self) use (
+                $coupleArcherAggregate
+            ): bool {
+                return $family - $shared > 0.0 || ($coupleArcherAggregate > $family && $self > 0.0);
+            };
+            // Both candidates, because the counterfactual feeds the IRC
+            // 223(b)(8)(B) attributable amount and rests on the same
+            // apportionment.
+            $decompositions = [
+                ['familyPortionApplied', 'familySharedPortionApplied', 'selfPortionApplied'],
+                [
+                    'familyPortionWithoutLastMonthRule',
+                    'familySharedPortionWithoutLastMonthRule',
+                    'selfPortionWithoutLastMonthRule',
+                ],
+            ];
+            foreach ($decompositions as [$familyKey, $sharedKey, $selfKey]) {
+                $absorbers = 0;
+                foreach ($coupleMembersWithAccounts as $ownerCandidate) {
+                    $owned = $amountsByOwner[$ownerCandidate] ?? null;
+                    if ($owned === null) {
+                        continue;
+                    }
+                    $family = (float) $owned[$familyKey];
+                    $shared = (float) $owned[$sharedKey];
+                    $self = (float) $owned[$selfKey];
+                    if ($mixed($shared, $family)) {
+                        $archerAcrossMixedFamilyMonths = true;
+                    }
+                    if ($absorbsUndivided($family, $shared, $self)) {
+                        $absorbers++;
+                    }
                 }
-                // Both candidates, because the counterfactual feeds the IRC
-                // 223(b)(8)(B) attributable amount and rests on the same
-                // apportionment.
-                $mixed = static fn (float $shared, float $total): bool
-                    => $shared > 0.0 && $shared < $total;
-                if (
-                    $mixed(
-                        (float) $owned['familySharedPortionApplied'],
-                        (float) $owned['familyPortionApplied'],
-                    )
-                    || $mixed(
-                        (float) $owned['familySharedPortionWithoutLastMonthRule'],
-                        (float) $owned['familyPortionWithoutLastMonthRule'],
-                    )
-                ) {
-                    $archerAcrossMixedFamilyMonths = true;
+                if ($absorbers >= 2) {
+                    $archerAcrossUndividedSpouses = true;
                 }
             }
         }
         $householdDivisionUnestablished = $householdDivisionIndeterminate
             || count($divisionEligibilityDoubtPersons) > 0
             || count($divisionEligibilityUnknownPersons) > 0
-            || $archerAcrossMixedFamilyMonths;
+            || $archerAcrossMixedFamilyMonths
+            || $archerAcrossUndividedSpouses;
         /*
          * Whether any month is actually shared. An unestablished division can only
          * withhold an *amount* where some amount is subject to it: two spouses
@@ -14274,9 +14529,21 @@ final class Engine
          * Whether that unestablished division withholds the *amount*. Only here
          * does immateriality count, and it is the narrower question of the two.
          */
+        /*
+         * $someFamilyMonthIsShared asks whether a *share* is in question, which
+         * is the right test for every unestablished division but one. Where the
+         * one aggregate Archer MSA reduction would be subtracted from both
+         * spouses' undivided months, the question is not whose share a month
+         * falls in but whose months the reduction came out of -- and that
+         * question exists only because no month is shared. Requiring a shared
+         * month would have withheld nothing and left each spouse charged the
+         * whole aggregate, so the couple's two accounts together fell a full
+         * aggregate short of the one limitation the IRC 223(b)(5) pool beside
+         * them still reported.
+         */
         $householdDivisionUnknown = !$nothingLeftToDivide
-            && $someFamilyMonthIsShared
-            && $householdDivisionUnestablished;
+            && ($archerAcrossUndividedSpouses
+                || ($someFamilyMonthIsShared && $householdDivisionUnestablished));
         /*
          * Whether a settled division is worth announcing. Same test: where nothing
          * is left to divide, saying how it was divided is noise about nought, and
@@ -14351,6 +14618,18 @@ final class Engine
                 . 'apportionment and the engine will not invent one. The limitation itself is unaffected. Remove the '
                 . "Archer MSA contributions from the scenario, or state family coverage months over which both "
                 . "spouses' eligibility is constant.";
+            $undividedCause = 'Each spouse has family-coverage months in which the other is not an eligible '
+                . 'individual, and the spouses also made Archer MSA contributions. Those two facts together have no '
+                . 'determinable answer here. Notice 2004-50 Q&A-31 gives a month in which only one spouse is an '
+                . "eligible individual wholly to that spouse, so neither spouse's months are reached by the IRC "
+                . "223(b)(5)(B)(ii) division; IRC 223(b)(5)(B)(i) then reduces the couple's single limitation by "
+                . '"the aggregate amount paid to Archer MSAs of such spouses for the taxable year" once, and nothing '
+                . "says out of which spouse's undivided months that one reduction came. Charging it to each of them "
+                . 'subtracts it twice and loses the couple capacity no rule took away, so the limitation is reported '
+                . 'and its allocation is not. The statute never segments by month and Q&A-31 and Q&A-32 never mention '
+                . 'Archer MSAs, so the engine will not invent the apportionment. Remove the Archer MSA contributions '
+                . 'from the scenario, or state family coverage months over which both spouses are eligible '
+                . 'individuals.';
             $shareCause = ($unsettledCause[$division['status'] ?? ''] ?? 'hsaFamilyLimitDivision is not settled')
                 . ', so no account\'s share of the limitation can be stated. Settle it as '
                 . '{ status: "statutory_equal" } or { status: "agreed", taxpayerShare }.';
@@ -14373,7 +14652,9 @@ final class Engine
                         ? $unstatedCause
                         : ($archerAcrossMixedFamilyMonths
                             ? $monthlyCause
-                            : ($householdDivisionIndeterminate ? $shareCause : $eligibilityCause)))
+                            : ($archerAcrossUndividedSpouses
+                                ? $undividedCause
+                                : ($householdDivisionIndeterminate ? $shareCause : $eligibilityCause))))
                     // Only where the limitation really is still reported. Where the
                     // couple's coverage facts left the amount itself undeterminable,
                     // the IRC 223(b)(5) pool limit is null too, and this sentence
@@ -14979,8 +15260,21 @@ final class Engine
                 // beside it is the field that goes unusable. Reading the division
                 // flag here would null the one figure a caller reconciling
                 // contradictory shares actually needs.
+                // $archerAcrossUndividedSpouses is the one exception, and it is
+                // an exception about the amount rather than the division. Where
+                // the couple's single Archer MSA reduction would come out of both
+                // spouses' undivided months, which spouse it came out of decides
+                // *this* figure and not just the share of it -- so the
+                // pre-division amount is itself unknown, and archerReducedPortions
+                // would report this owner charged the whole aggregate while the
+                // other owner was charged it too. The mixed-months case is not an
+                // exception: there only one owner's months are in play, so the
+                // aggregate does come out of that owner's limitation whole and
+                // only its placement among their months, which is the share, is
+                // unsettled.
                 'sharedFamilyContributionLimit' => $isSharingMember
                     && $householdPoolAmountIndeterminate !== true
+                    && $archerAcrossUndividedSpouses !== true
                     ? self::roundMoney(self::archerReducedPortions(
                         (float) $amounts['familyPortionApplied'],
                         (float) $amounts['selfPortionApplied'],
