@@ -9457,23 +9457,61 @@ interface NormalizedAccount extends Omit<AccountInput, "type" | "planRules" | "e
   inputIndex: number;
 }
 
+/**
+ * A known quantity whose exact value is not settled, given as the closed range
+ * of values the supplied facts leave open. A settled quantity is the degenerate
+ * interval whose endpoints are equal, so one type covers both states and no
+ * caller has to ask which one it is holding.
+ */
+interface MoneyInterval {
+  minimum: Money;
+  maximum: Money;
+}
+
+/** The degenerate interval: a quantity that is not in doubt. */
+function settled(amount: Money): MoneyInterval {
+  return { minimum: amount, maximum: amount };
+}
+
+function intervalIsSettled(interval: MoneyInterval): boolean {
+  return interval.minimum === interval.maximum;
+}
+
 interface LimitPool {
   id: string;
   legalLimit: string;
   limit: Money | null;
-  used: Money;
   /**
-   * The pool's ceiling is known but how much of it is already spent is not, so
-   * `used` is not a figure anyone may rely on and no remainder is reported.
+   * How much of the ceiling is already spent, as a range rather than a figure.
    *
-   * This is a third state, distinct from a null `limit`. A null limit says the
-   * statute's ceiling could not be determined; this says the ceiling is a
-   * number while the draw against it turns on facts the caller did not supply.
-   * Reporting a remainder either way asserts headroom the record does not
-   * establish -- too much of it, or too little, depending on which way the
-   * missing fact resolves.
+   * Both endpoints move together for an ordinary charge, because an amount
+   * whose attribution is not in doubt is spent under every reading of the
+   * facts. The endpoints separate only where a known amount's *assignment* is
+   * unresolved -- the IRC 223(b)(5) division between the paragraph (1)
+   * limitation and the paragraph (3) additional amount, or an existing
+   * contribution IRC 414(v)(7)(A) may or may not have condemned as a catch-up.
+   * In that state `minimum` is what the pool has certainly spent and `maximum`
+   * what it may have spent, and the difference is exactly the amount in doubt.
+   *
+   * This replaces a `used` figure beside a `usageIndeterminate` flag. The flag
+   * was the fully open case of this interval and nothing else, and having only
+   * a flag forced every partially-known usage into one of the two bounds --
+   * which is what published a pool as wholly untouched when at most 250 of room
+   * remained, and accused a 56-year-old of exceeding a pool they were within.
+   * A bound is not a usage. The interval says so in the type.
    */
-  usageIndeterminate?: boolean;
+  usage: MoneyInterval;
+  /**
+   * Which unresolved facts widened `usage`, by a key naming each one.
+   *
+   * Two pools widened by the *same* contribution are correlated: the reading
+   * that charges it to one is the reading that does not charge it to the other,
+   * so their maxima do not both occur in any single completion of the facts.
+   * Adding such maxima together would report headroom no set of facts provides.
+   * Minima may always be summed; maxima may be summed only across pools sharing
+   * no key.
+   */
+  uncertaintyGroupIds?: string[];
 }
 
 interface IraOwnerPool extends LimitPool {
@@ -10387,7 +10425,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: "ira-household",
       legalLimit: "IRC 219(c) joint-return compensation limit",
       limit: roundMoney(householdLimit),
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10405,7 +10443,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
         limit: statutory === null
           ? null
           : minMoney(statutory, ownCompensation * parameters.ira.compensationFraction),
-        used: 0,
+        usage: settled(0),
       });
     }
 
@@ -10425,7 +10463,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: `ira-owner:${person.id}`,
       legalLimit: "IRC 219(b) aggregate traditional and Roth IRA contribution limit",
       limit: personalLimit,
-      used: 0,
+      usage: settled(0),
       blocked: false,
       compensationPoolId,
     });
@@ -10451,14 +10489,14 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: `roth-ira-eligibility:${person.id}`,
       legalLimit: "IRC 408A(c)(3) direct Roth IRA MAGI limit",
       limit: rothEligibilityLimit,
-      used: 0,
+      usage: settled(0),
     });
 
     context.iraDeductionPools.set(person.id, {
       id: `traditional-ira-deduction:${person.id}`,
       legalLimit: "IRC 219(g) traditional IRA deduction limit",
       limit: traditionalIraDeductionLimit(context, person, personalLimit),
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10468,13 +10506,13 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
     const existing = regularIraContributionAmount(account.existingContributions);
     const ownerPool = context.iraOwnerPools.get(account.ownerId);
     if (!ownerPool) continue;
-    ownerPool.used = roundMoney(ownerPool.used + existing);
+    chargePool(ownerPool, existing);
     const compensationPool = context.iraCompensationPools.get(ownerPool.compensationPoolId);
-    if (compensationPool) compensationPool.used = roundMoney(compensationPool.used + existing);
+    if (compensationPool) chargePool(compensationPool, existing);
     const rothPool = context.iraRothEligibilityPools.get(account.ownerId);
-    if (rothPool) rothPool.used = roundMoney(rothPool.used + account.existingContributions.rothIra);
+    if (rothPool) chargePool(rothPool, account.existingContributions.rothIra);
     const deductionPool = context.iraDeductionPools.get(account.ownerId);
-    if (deductionPool) deductionPool.used = roundMoney(deductionPool.used + account.existingContributions.deductibleIra);
+    if (deductionPool) chargePool(deductionPool, account.existingContributions.deductibleIra);
   }
 }
 
@@ -10484,19 +10522,19 @@ function initializeElectiveDeferralPools(context: CalculationContext, accounts: 
       id: `402g:${person.id}`,
       legalLimit: "IRC 402(g) aggregate elective-deferral limit",
       limit: context.parameters.electiveDeferral402g,
-      used: 0,
+      usage: settled(0),
     });
     context.catchUpPools.set(person.id, {
       id: `414v:${person.id}`,
       legalLimit: "IRC 414(v) aggregate age-based catch-up limit",
       limit: ownerGeneralCatchUpLimit(context.parameters, person),
-      used: 0,
+      usage: settled(0),
     });
     context.special403bCatchUpPools.set(person.id, {
       id: `402g7:${person.id}`,
       legalLimit: "IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit",
       limit: context.parameters.special403b15YearCatchUp.annualLimit,
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10505,14 +10543,12 @@ function initializeElectiveDeferralPools(context: CalculationContext, accounts: 
     if (!traits.shares402g) continue;
     const basePool = context.elective402gPools.get(account.ownerId);
     const catchUpPool = context.catchUpPools.get(account.ownerId);
-    if (basePool) basePool.used = roundMoney(basePool.used + baseElectiveDeferrals(account.existingContributions));
-    if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + ageCatchUpDeferrals(account.existingContributions));
+    if (basePool) chargePool(basePool, baseElectiveDeferrals(account.existingContributions));
+    if (catchUpPool) chargePool(catchUpPool, ageCatchUpDeferrals(account.existingContributions));
     if (traits.is403b) {
       const special403bPool = context.special403bCatchUpPools.get(account.ownerId);
       if (special403bPool) {
-        special403bPool.used = roundMoney(
-          special403bPool.used + account.existingContributions.special403bCatchUp,
-        );
+        chargePool(special403bPool, account.existingContributions.special403bCatchUp);
       }
     }
   }
@@ -10563,7 +10599,7 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
       id: `415c:${groupId}`,
       legalLimit: "IRC 415(c) annual-additions limit",
       limit,
-      used: existing,
+      usage: settled(existing),
       compensation: roundMoney(recognizedCompensation),
     });
   }
@@ -10908,7 +10944,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       id: `457b:${person.id}`,
       legalLimit: "IRC 457(b) aggregate annual deferral limit (separate from IRC 402(g))",
       limit: context.parameters.section457b.baseDeferralLimit,
-      used: 0,
+      usage: settled(0),
     });
     context.section457CatchUpPools.set(person.id, {
       id: `457b-catch-up:${person.id}`,
@@ -10922,7 +10958,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       // unbounded annual figure instead let two plans whose compensation each
       // bound them separately add up past the individual limitation.
       limit: context.section457CatchUpResolutions.get(person.id)?.ageAmount ?? 0,
-      used: 0,
+      usage: settled(0),
     });
     context.section457SpecialCatchUpPools.set(person.id, {
       id: `457b-special-catch-up:${person.id}`,
@@ -10933,7 +10969,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       // amount applicable to the participant". A pool limited to the statutory
       // base instead let two plans' separate amounts add.
       limit: context.section457CatchUpResolutions.get(person.id)?.specialAmount ?? 0,
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10953,16 +10989,18 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     const catchUp = ageCatchUpDeferrals(account.existingContributions);
     const basePool = context.section457BasePools.get(account.ownerId);
     const catchUpPool = context.section457CatchUpPools.get(account.ownerId);
-    if (basePool) basePool.used = roundMoney(basePool.used + base);
-    if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + catchUp);
+    if (basePool) chargePool(basePool, base);
+    if (catchUpPool) chargePool(catchUpPool, catchUp);
     const specialPool = context.section457SpecialCatchUpPools.get(account.ownerId);
     if (specialPool) {
       // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
       // catch-up does not change which statutory limitation it was made under.
-      specialPool.used = roundMoney(
-        specialPool.used +
+      chargePool(
+        specialPool,
+        roundMoney(
           account.existingContributions.special457CatchUp +
-          account.existingContributions.special457RothCatchUp,
+            account.existingContributions.special457RothCatchUp,
+        ),
       );
     }
   }
@@ -11318,11 +11356,11 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
         // over elections under a different plan of the same group, so it caps
         // the account rather than the pool.
         limit: statutoryMaximum === null ? null : salaryReductionLimit,
-        used: 0,
+        usage: settled(0),
       };
       context.healthFsaPools.set(poolKey, pool);
     }
-    pool.used = roundMoney(pool.used + flexCreditCounted + elected);
+    chargePool(pool, flexCreditCounted + elected);
 
     context.healthFsaPlans.set(account.id, {
       status: accountStatusFromDiagnostics(status, diagnostics),
@@ -11634,7 +11672,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         id: `irc-129:${poolKey}`,
         legalLimit: "IRC 129(a)(2)(A) dependent care assistance exclusion, per return",
         limit: statutoryExclusion,
-        used: 0,
+        usage: settled(0),
       });
     }
 
@@ -11698,12 +11736,12 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     // account alone: the IRC 129(b)(1) ceiling is the return's for the year.
     const ceiling = minMoney(
       householdRemaining,
-      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.usage.maximum))]),
       ...(plan.planDocumentLimit === null ? [] : [plan.planDocumentLimit]),
     );
     const excludable = minMoney(elected, ceiling);
     const includible = roundMoney(elected - excludable);
-    pool.used = roundMoney(pool.used + excludable);
+    chargePool(pool, excludable);
     plan.detail.excludableAmount = excludable;
     plan.detail.includibleInIncome = includible;
     if (includible > 0) {
@@ -11764,7 +11802,7 @@ function allocateDependentCareFsa(
   const earnedIncomeCeiling =
     plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
   const ownCeilings = [
-    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.usage.maximum))]),
     ...(plan.planDocumentLimit === null ? [] : [nonnegative(roundMoney(plan.planDocumentLimit - alreadyExcluded))]),
   ];
   let additionalExcludable: Money;
@@ -14437,7 +14475,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         limit: householdPoolAmountIndeterminate
           ? null
           : householdParagraph1AfterArcher === null ? null : roundMoney(householdParagraph1AfterArcher),
-        used: 0,
+        usage: settled(0),
       });
     }
   }
@@ -14665,7 +14703,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       id: `hsa223b1:${ownerId}`,
       legalLimit: "IRC 223(b)(1) annual HSA contribution limit",
       limit: baseLimit,
-      used: 0,
+      usage: settled(0),
     });
     // Paragraph (5) cannot consume paragraph (3). A known schedule and age
     // retain that separate amount when only the Archer base allocation is open.
@@ -14677,7 +14715,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       id: `hsa223b3:${ownerId}`,
       legalLimit: "IRC 223(b)(3) age 55 additional contribution amount",
       limit: catchUpAmountEstablished ? catchUpApplied : null,
-      used: 0,
+      usage: settled(0),
     });
 
     if (!indeterminate && catchUpApplied > 0 && couple !== null) {
@@ -15100,17 +15138,29 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         if (context.hsaPlans.get(account.ownerId)?.familyPoolUsageDeterminable === true) {
           // Nothing can absorb a spill, so the whole contribution came out of
           // the couple's limitation whichever way the division falls.
-          familyPool.used = roundMoney(familyPool.used + existing);
+          chargePool(familyPool, existing);
         } else {
-          familyPool.usageIndeterminate = true;
+          // The contribution is known and the pool's ceiling is known; what is
+          // unknown is how much of it this pool bore. Before, that was a flag
+          // saying "not a figure"; it is the same statement as an interval
+          // spanning everything still open, and now it says how much is at
+          // stake rather than only that something is.
+          familyPool.usage = {
+            minimum: familyPool.usage.minimum,
+            maximum: roundMoney(
+              familyPool.limit === null
+                ? familyPool.usage.minimum + existing
+                : Math.max(familyPool.limit, familyPool.usage.minimum),
+            ),
+          };
         }
       }
       continue;
     }
-    const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));
-    basePool.used = roundMoney(basePool.used + toBase);
-    catchUpPool.used = roundMoney(catchUpPool.used + existing - toBase);
-    if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
+    const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.usage.maximum));
+    chargePool(basePool, toBase);
+    chargePool(catchUpPool, existing - toBase);
+    if (familyPool) chargePool(familyPool, toBase);
   }
 }
 
@@ -15196,14 +15246,51 @@ function regularIraContributionAmount(components: ContributionComponents): Money
   );
 }
 
+/**
+ * Spend a settled amount. Both endpoints move, because an amount whose
+ * attribution is not in doubt is spent under every reading of the facts: it
+ * narrows nothing and widens nothing.
+ */
+function chargePool(pool: LimitPool, amount: Money): void {
+  pool.usage = {
+    minimum: roundMoney(pool.usage.minimum + amount),
+    maximum: roundMoney(pool.usage.maximum + amount),
+  };
+}
+
+/** Whether the pool's usage is settled, which is to say its interval is a point. */
+function poolUsageSettled(pool: LimitPool): boolean {
+  return intervalIsSettled(pool.usage);
+}
+
+/**
+ * What is left, as a range. The endpoints invert: the *most* the pool may have
+ * spent leaves the *least* room, so `remaining.minimum` pairs with
+ * `usage.maximum`. `remaining.minimum` is therefore the room that exists under
+ * every reading of the facts -- the only room an allocation may rely on.
+ */
+function poolRemainingInterval(pool: LimitPool): MoneyInterval | null {
+  if (pool.limit === null) return null;
+  return {
+    minimum: nonnegative(roundMoney(pool.limit - pool.usage.maximum)),
+    maximum: nonnegative(roundMoney(pool.limit - pool.usage.minimum)),
+  };
+}
+
+/**
+ * The remainder as a figure, which exists only where the usage is settled. An
+ * unsettled pool has a range and no single remainder, and reporting either
+ * endpoint as one asserts headroom the record does not establish -- too much of
+ * it or too little, depending on which way the missing fact resolves.
+ */
 function poolRemaining(pool: LimitPool): Money | null {
-  if (pool.limit === null || pool.usageIndeterminate === true) return null;
-  return nonnegative(pool.limit - pool.used);
+  if (pool.limit === null || !poolUsageSettled(pool)) return null;
+  return nonnegative(pool.limit - pool.usage.maximum);
 }
 
 function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLimitUse[]): Money {
-  const usedBefore = pool.used;
-  if (pool.limit === null || pool.usageIndeterminate === true) {
+  const usedBefore = pool.usage.minimum;
+  if (pool.limit === null || !poolUsageSettled(pool)) {
     sharedLimits.push({
       id: pool.id,
       legalLimit: pool.legalLimit,
@@ -15212,21 +15299,21 @@ function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLim
       limit: pool.limit,
       // A null limit leaves the draw perfectly knowable; only the third state
       // withholds it.
-      usedBeforeAccount: pool.usageIndeterminate === true ? null : usedBefore,
-      usedByAccount: pool.usageIndeterminate === true ? null : 0,
+      usedBeforeAccount: poolUsageSettled(pool) ? usedBefore : null,
+      usedByAccount: poolUsageSettled(pool) ? 0 : null,
       remainingAfterAccount: null,
     });
     return 0;
   }
-  const taken = minMoney(requested, nonnegative(pool.limit - pool.used));
-  pool.used = roundMoney(pool.used + taken);
+  const taken = minMoney(requested, nonnegative(pool.limit - pool.usage.maximum));
+  chargePool(pool, taken);
   sharedLimits.push({
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
     usedBeforeAccount: usedBefore,
     usedByAccount: taken,
-    remainingAfterAccount: nonnegative(pool.limit - pool.used),
+    remainingAfterAccount: nonnegative(pool.limit - pool.usage.maximum),
   });
   return taken;
 }
@@ -15236,8 +15323,8 @@ function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUs
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
-    usedBeforeAccount: pool.usageIndeterminate === true ? null : pool.used,
-    usedByAccount: pool.usageIndeterminate === true ? null : 0,
+    usedBeforeAccount: poolUsageSettled(pool) ? pool.usage.minimum : null,
+    usedByAccount: poolUsageSettled(pool) ? 0 : null,
     remainingAfterAccount: poolRemaining(pool),
   });
 }
@@ -15263,14 +15350,14 @@ function takeAcrossPools(
   requested: Money,
   sharedLimits: SharedLimitUse[],
 ): Money {
-  if (pools.some((pool) => pool.limit === null || pool.usageIndeterminate === true)) {
+  if (pools.some((pool) => pool.limit === null || !poolUsageSettled(pool))) {
     for (const pool of pools) reportPoolWithoutConsuming(pool, sharedLimits);
     return 0;
   }
   const taken = minMoney(requested, ...pools.map((pool) => poolRemaining(pool)));
   for (const pool of pools) {
-    const usedBefore = pool.used;
-    pool.used = roundMoney(pool.used + taken);
+    const usedBefore = pool.usage.minimum;
+    chargePool(pool, taken);
     sharedLimits.push({
       id: pool.id,
       legalLimit: pool.legalLimit,
@@ -15284,8 +15371,8 @@ function takeAcrossPools(
 }
 
 function consumeExactFromPool(pool: LimitPool, amount: Money, sharedLimits: SharedLimitUse[]): void {
-  const usedBefore = pool.used;
-  pool.used = roundMoney(pool.used + amount);
+  const usedBefore = pool.usage.minimum;
+  chargePool(pool, amount);
   sharedLimits.push({
     id: pool.id,
     legalLimit: pool.legalLimit,
@@ -15772,7 +15859,7 @@ function pensionLinkedEmergencySavingsPool(
     id: `plesa402Ae3:${account.id}`,
     legalLimit: "IRC 402A(e)(3)(A) participant-contribution balance cap",
     limit: caps.effectiveCap,
-    used: caps.balance,
+    usage: settled(caps.balance),
   };
 }
 

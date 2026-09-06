@@ -10753,7 +10753,7 @@ final class Engine
                 'id' => 'ira-household',
                 'legalLimit' => 'IRC 219(c) joint-return compensation limit',
                 'limit' => self::roundMoney($householdLimit),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
 
@@ -10770,7 +10770,7 @@ final class Engine
                     'limit' => $statutory === null
                         ? null
                         : self::minMoney($statutory, $ownCompensation * (float) $parameters['ira']['compensationFraction']),
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
             $personalLimit = $statutory;
@@ -10799,7 +10799,7 @@ final class Engine
                 'id' => "ira-owner:{$person['id']}",
                 'legalLimit' => 'IRC 219(b) aggregate traditional and Roth IRA contribution limit',
                 'limit' => $personalLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
                 'blocked' => false,
                 'compensationPoolId' => $compensationPoolId,
             ];
@@ -10825,13 +10825,13 @@ final class Engine
                 'id' => "roth-ira-eligibility:{$person['id']}",
                 'legalLimit' => 'IRC 408A(c)(3) direct Roth IRA MAGI limit',
                 'limit' => $rothEligibilityLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['iraDeductionPools'][$person['id']] = [
                 'id' => "traditional-ira-deduction:{$person['id']}",
                 'legalLimit' => 'IRC 219(g) traditional IRA deduction limit',
                 'limit' => self::traditionalIraDeductionLimit($context, $person, $personalLimit),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
 
@@ -10845,18 +10845,16 @@ final class Engine
                 continue;
             }
             $ownerPool =& $context['iraOwnerPools'][$account['ownerId']];
-            $ownerPool['used'] = self::roundMoney($ownerPool['used'] + $existing);
+            self::chargePool($ownerPool, (float) ($existing));
             $compensationPoolId = $ownerPool['compensationPoolId'];
-            $context['iraCompensationPools'][$compensationPoolId]['used'] = self::roundMoney(
-                $context['iraCompensationPools'][$compensationPoolId]['used'] + $existing,
+            self::chargePool($context['iraCompensationPools'][$compensationPoolId], (float) ($existing));
+            self::chargePool(
+                $context['iraRothEligibilityPools'][$account['ownerId']],
+                (float) $account['existingContributions']['rothIra'],
             );
-            $context['iraRothEligibilityPools'][$account['ownerId']]['used'] = self::roundMoney(
-                $context['iraRothEligibilityPools'][$account['ownerId']]['used']
-                + $account['existingContributions']['rothIra'],
-            );
-            $context['iraDeductionPools'][$account['ownerId']]['used'] = self::roundMoney(
-                $context['iraDeductionPools'][$account['ownerId']]['used']
-                + $account['existingContributions']['deductibleIra'],
+            self::chargePool(
+                $context['iraDeductionPools'][$account['ownerId']],
+                (float) $account['existingContributions']['deductibleIra'],
             );
             unset($ownerPool);
         }
@@ -10875,19 +10873,19 @@ final class Engine
                 'limit' => $context['parameters']['electiveDeferral402g'] === null
                     ? null
                     : (float) $context['parameters']['electiveDeferral402g'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['catchUpPools'][$id] = [
                 'id' => "414v:{$id}",
                 'legalLimit' => 'IRC 414(v) aggregate age-based catch-up limit',
                 'limit' => self::ownerGeneralCatchUpLimit($context['parameters'], $person),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['special403bCatchUpPools'][$id] = [
                 'id' => "402g7:{$id}",
                 'legalLimit' => 'IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit',
                 'limit' => (float) $context['parameters']['special403b15YearCatchUp']['annualLimit'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
         foreach ($accounts as $account) {
@@ -10896,19 +10894,10 @@ final class Engine
                 continue;
             }
             $ownerId = $account['ownerId'];
-            $context['elective402gPools'][$ownerId]['used'] = self::roundMoney(
-                $context['elective402gPools'][$ownerId]['used']
-                + self::baseDeferrals($account['existingContributions']),
-            );
-            $context['catchUpPools'][$ownerId]['used'] = self::roundMoney(
-                $context['catchUpPools'][$ownerId]['used']
-                + self::ageCatchUps($account['existingContributions']),
-            );
+            self::chargePool($context['elective402gPools'][$ownerId], (float) (self::baseDeferrals($account['existingContributions'])));
+            self::chargePool($context['catchUpPools'][$ownerId], (float) (self::ageCatchUps($account['existingContributions'])));
             if (!empty($traits['is403b'])) {
-                $context['special403bCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                    $context['special403bCatchUpPools'][$ownerId]['used']
-                    + $account['existingContributions']['special403bCatchUp'],
-                );
+                self::chargePool($context['special403bCatchUpPools'][$ownerId], (float) ($account['existingContributions']['special403bCatchUp']));
             }
         }
     }
@@ -10964,7 +10953,7 @@ final class Engine
                 'id' => "415c:{$groupId}",
                 'legalLimit' => 'IRC 415(c) annual-additions limit',
                 'limit' => $limit,
-                'used' => $existing,
+                'usage' => self::settled($existing),
                 'compensation' => self::roundMoney($recognizedCompensation),
             ];
         }
@@ -11329,7 +11318,7 @@ final class Engine
                 'limit' => $context['parameters']['section457b']['baseDeferralLimit'] === null
                     ? null
                     : (float) $context['parameters']['section457b']['baseDeferralLimit'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['section457CatchUpPools'][$id] = [
                 'id' => "457b-catch-up:{$id}",
@@ -11343,7 +11332,7 @@ final class Engine
                 // the unbounded annual figure instead let two plans whose compensation
                 // each bound them separately add up past the individual limitation.
                 'limit' => $context['section457CatchUpResolutions'][$id]['ageAmount'] ?? 0.0,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['section457SpecialCatchUpPools'][$id] = [
                 'id' => "457b-special-catch-up:{$id}",
@@ -11352,7 +11341,7 @@ final class Engine
                 // the sum of what they all provide: 26 CFR 1.457-5(c). A pool limited
                 // to the statutory base instead let two plans' separate amounts add.
                 'limit' => $context['section457CatchUpResolutions'][$id]['specialAmount'] ?? 0.0,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
         foreach ($accounts as $account) {
@@ -11375,19 +11364,14 @@ final class Engine
                 + $components['employerRoth'],
             );
             $ownerId = $account['ownerId'];
-            $context['section457BasePools'][$ownerId]['used'] = self::roundMoney(
-                $context['section457BasePools'][$ownerId]['used'] + $base,
-            );
-            $context['section457CatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                $context['section457CatchUpPools'][$ownerId]['used'] + self::ageCatchUps($components),
-            );
-            $context['section457SpecialCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of
-                // a catch-up does not change which statutory limitation it was made
-                // under.
-                $context['section457SpecialCatchUpPools'][$ownerId]['used']
-                    + $components['special457CatchUp']
-                    + $components['special457RothCatchUp'],
+            self::chargePool($context['section457BasePools'][$ownerId], (float) ($base));
+            self::chargePool($context['section457CatchUpPools'][$ownerId], (float) (self::ageCatchUps($components)));
+            // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of
+            // a catch-up does not change which statutory limitation it was made
+            // under.
+            self::chargePool(
+                $context['section457SpecialCatchUpPools'][$ownerId],
+                (float) ($components['special457CatchUp'] + $components['special457RothCatchUp']),
             );
         }
     }
@@ -12123,12 +12107,10 @@ final class Engine
                     // under a different plan of the same group, so it caps the
                     // account rather than the pool.
                     'limit' => $statutoryMaximum === null ? null : $salaryReductionLimit,
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
-            $context['healthFsaPools'][$poolKey]['used'] = self::roundMoney(
-                (float) $context['healthFsaPools'][$poolKey]['used'] + $flexCreditCounted + $elected,
-            );
+            self::chargePool($context['healthFsaPools'][$poolKey], (float) ($flexCreditCounted + $elected));
 
             $context['healthFsaPlans'][(string) $account['id']] = [
                 'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
@@ -12489,7 +12471,7 @@ final class Engine
                     'id' => "irc-129:{$poolKey}",
                     'legalLimit' => 'IRC 129(a)(2)(A) dependent care assistance exclusion, per return',
                     'limit' => $statutoryExclusion,
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
 
@@ -12568,7 +12550,7 @@ final class Engine
             $ceilingCandidates = [$householdRemaining];
             if ($earnedIncomeCeiling !== null) {
                 $ceilingCandidates[] = self::nonnegative(self::roundMoney(
-                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['used'],
+                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['usage']['maximum'],
                 ));
             }
             if (($plan['planDocumentLimit'] ?? null) !== null) {
@@ -12577,9 +12559,7 @@ final class Engine
             $ceiling = self::minMoney(...$ceilingCandidates);
             $excludable = self::minMoney($elected, $ceiling);
             $includible = self::roundMoney($elected - $excludable);
-            $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
-                (float) $context['dependentCarePools'][$plan['poolKey']]['used'] + $excludable,
-            );
+            self::chargePool($context['dependentCarePools'][$plan['poolKey']], (float) $excludable);
             $context['dependentCarePlans'][$accountId]['detail']['excludableAmount'] = $excludable;
             $context['dependentCarePlans'][$accountId]['detail']['includibleInIncome'] = $includible;
             if ($includible > 0) {
@@ -12659,7 +12639,7 @@ final class Engine
         $ownCeilings = [];
         if ($earnedIncomeCeiling !== null) {
             $ownCeilings[] = self::nonnegative(self::roundMoney(
-                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['used'],
+                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['usage']['maximum'],
             ));
         }
         if (($plan['planDocumentLimit'] ?? null) !== null) {
@@ -15362,7 +15342,7 @@ final class Engine
                     'limit' => $householdPoolAmountIndeterminate
                         ? null
                         : ($householdParagraph1AfterArcher === null ? null : self::roundMoney($householdParagraph1AfterArcher)),
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
         }
@@ -15612,7 +15592,7 @@ final class Engine
                 'id' => "hsa223b1:{$ownerId}",
                 'legalLimit' => 'IRC 223(b)(1) annual HSA contribution limit',
                 'limit' => $baseLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             // Paragraph (5) cannot consume the separately established paragraph (3) amount.
             $catchUpAmountEstablished = !$indeterminate || ($isSharingMember &&
@@ -15623,7 +15603,7 @@ final class Engine
                 'id' => "hsa223b3:{$ownerId}",
                 'legalLimit' => 'IRC 223(b)(3) age 55 additional contribution amount',
                 'limit' => $catchUpAmountEstablished ? $catchUpApplied : null,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
 
             if (!$indeterminate && $catchUpApplied > 0 && $couple !== null) {
@@ -16146,27 +16126,39 @@ final class Engine
                         // Nothing can absorb a spill, so the whole contribution came
                         // out of the couple's limitation whichever way the division
                         // falls.
-                        $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
-                            (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing,
-                        );
+                        self::chargePool($context['hsaFamilyPools'][$poolKeyEarly], (float) ($existing));
                     } else {
-                        $context['hsaFamilyPools'][$poolKeyEarly]['usageIndeterminate'] = true;
+                        // The contribution is known and the pool's ceiling is
+                        // known; what is unknown is how much of it this pool
+                        // bore. Before, that was a flag saying "not a figure";
+                        // it is the same statement as an interval spanning
+                        // everything still open, and now it says how much is at
+                        // stake rather than only that something is.
+                        $familyPoolEarly =& $context['hsaFamilyPools'][$poolKeyEarly];
+                        $familyPoolEarly['usage'] = [
+                            'minimum' => (float) $familyPoolEarly['usage']['minimum'],
+                            'maximum' => self::roundMoney(
+                                $familyPoolEarly['limit'] === null
+                                    ? (float) $familyPoolEarly['usage']['minimum'] + $existing
+                                    : max(
+                                        (float) $familyPoolEarly['limit'],
+                                        (float) $familyPoolEarly['usage']['minimum'],
+                                    ),
+                            ),
+                        ];
+                        unset($familyPoolEarly);
                     }
                 }
                 continue;
             }
             $basePool =& $context['hsaBasePools'][$ownerId];
-            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['used']));
-            $basePool['used'] = self::roundMoney((float) $basePool['used'] + $toBase);
+            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['usage']['maximum']));
+            self::chargePool($basePool, (float) ($toBase));
             unset($basePool);
-            $context['hsaCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                (float) $context['hsaCatchUpPools'][$ownerId]['used'] + $existing - $toBase,
-            );
+            self::chargePool($context['hsaCatchUpPools'][$ownerId], (float) ($existing - $toBase));
             $poolKey = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
             if ($poolKey !== null && isset($context['hsaFamilyPools'][$poolKey])) {
-                $context['hsaFamilyPools'][$poolKey]['used'] = self::roundMoney(
-                    (float) $context['hsaFamilyPools'][$poolKey]['used'] + $toBase,
-                );
+                self::chargePool($context['hsaFamilyPools'][$poolKey], (float) ($toBase));
             }
         }
     }
@@ -16279,13 +16271,82 @@ final class Engine
         );
     }
 
-    /** @param array<string,mixed> $pool */
-    private static function poolRemaining(array $pool): ?float
+    /**
+     * The degenerate interval: a quantity that is not in doubt.
+     *
+     * @return array{minimum: float, maximum: float}
+     */
+    private static function settled(float $amount): array
     {
-        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
+        return ['minimum' => $amount, 'maximum' => $amount];
+    }
+
+    /** @param array{minimum: float, maximum: float} $interval */
+    private static function intervalIsSettled(array $interval): bool
+    {
+        return $interval['minimum'] === $interval['maximum'];
+    }
+
+    /**
+     * Spend a settled amount. Both endpoints move, because an amount whose
+     * attribution is not in doubt is spent under every reading of the facts: it
+     * narrows nothing and widens nothing.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function chargePool(array &$pool, float $amount): void
+    {
+        $pool['usage'] = [
+            'minimum' => self::roundMoney((float) $pool['usage']['minimum'] + $amount),
+            'maximum' => self::roundMoney((float) $pool['usage']['maximum'] + $amount),
+        ];
+    }
+
+    /**
+     * Whether the pool's usage is settled, which is to say its interval is a point.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function poolUsageSettled(array $pool): bool
+    {
+        return self::intervalIsSettled($pool['usage']);
+    }
+
+    /**
+     * What is left, as a range. The endpoints invert: the *most* the pool may
+     * have spent leaves the *least* room, so 'minimum' pairs with the usage
+     * 'maximum'. That minimum is the room that exists under every reading of the
+     * facts -- the only room an allocation may rely on.
+     *
+     * @param array<string,mixed> $pool
+     * @return array{minimum: float, maximum: float}|null
+     */
+    private static function poolRemainingInterval(array $pool): ?array
+    {
+        if ($pool['limit'] === null) {
             return null;
         }
-        return self::nonnegative((float) $pool['limit'] - (float) $pool['used']);
+        return [
+            'minimum' => self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']),
+            'maximum' => self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['minimum']),
+        ];
+    }
+
+    /**
+     * The remainder as a figure, which exists only where the usage is settled.
+     * An unsettled pool has a range and no single remainder, and reporting
+     * either endpoint as one asserts headroom the record does not establish --
+     * too much of it or too little, depending on which way the missing fact
+     * resolves.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function poolRemaining(array $pool): ?float
+    {
+        if ($pool['limit'] === null || !self::poolUsageSettled($pool)) {
+            return null;
+        }
+        return self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']);
     }
 
     /** @param array<string,mixed> $pool
@@ -16293,8 +16354,8 @@ final class Engine
      */
     private static function takeFromPool(array &$pool, float $requested, array &$sharedLimits): float
     {
-        $usedBefore = (float) $pool['used'];
-        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
+        $usedBefore = (float) $pool['usage']['minimum'];
+        if ($pool['limit'] === null || !self::poolUsageSettled($pool)) {
             $sharedLimits[] = [
                 'id' => $pool['id'],
                 'legalLimit' => $pool['legalLimit'],
@@ -16304,21 +16365,26 @@ final class Engine
                 'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
                 // A null limit leaves the draw perfectly knowable; only the third
                 // state withholds it.
-                'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : $usedBefore,
-                'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
+                'usedBeforeAccount' => self::poolUsageSettled($pool) ? $usedBefore : null,
+                'usedByAccount' => self::poolUsageSettled($pool) ? 0.0 : null,
                 'remainingAfterAccount' => null,
             ];
             return 0.0;
         }
-        $taken = self::minMoney($requested, self::nonnegative((float) $pool['limit'] - (float) $pool['used']));
-        $pool['used'] = self::roundMoney((float) $pool['used'] + $taken);
+        $taken = self::minMoney(
+            $requested,
+            self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']),
+        );
+        self::chargePool($pool, (float) ($taken));
         $sharedLimits[] = [
             'id' => $pool['id'],
             'legalLimit' => $pool['legalLimit'],
             'limit' => (float) $pool['limit'],
             'usedBeforeAccount' => $usedBefore,
             'usedByAccount' => $taken,
-            'remainingAfterAccount' => self::nonnegative((float) $pool['limit'] - (float) $pool['used']),
+            'remainingAfterAccount' => self::nonnegative(
+                (float) $pool['limit'] - (float) $pool['usage']['maximum'],
+            ),
         ];
         return $taken;
     }
@@ -16332,10 +16398,10 @@ final class Engine
             'id' => $pool['id'],
             'legalLimit' => $pool['legalLimit'],
             'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true
-                ? null
-                : (float) $pool['used'],
-            'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
+            'usedBeforeAccount' => self::poolUsageSettled($pool)
+                ? (float) $pool['usage']['minimum']
+                : null,
+            'usedByAccount' => self::poolUsageSettled($pool) ? 0.0 : null,
             'remainingAfterAccount' => self::poolRemaining($pool),
         ];
     }
@@ -16370,7 +16436,7 @@ final class Engine
         foreach ($refs as [$category, $key]) {
             if (
                 $context[$category][$key]['limit'] === null
-                || ($context[$category][$key]['usageIndeterminate'] ?? false) === true
+                || !self::poolUsageSettled($context[$category][$key])
             ) {
                 foreach ($refs as [$reportCategory, $reportKey]) {
                     self::reportPoolWithoutConsuming($context[$reportCategory][$reportKey], $sharedLimits);
@@ -16385,8 +16451,8 @@ final class Engine
         $taken = self::minMoney(...$limits);
         foreach ($refs as [$category, $key]) {
             $pool =& $context[$category][$key];
-            $usedBefore = (float) $pool['used'];
-            $pool['used'] = self::roundMoney((float) $pool['used'] + $taken);
+            $usedBefore = (float) $pool['usage']['minimum'];
+            self::chargePool($pool, (float) ($taken));
             $sharedLimits[] = [
                 'id' => $pool['id'],
                 'legalLimit' => $pool['legalLimit'],
@@ -16405,8 +16471,8 @@ final class Engine
      */
     private static function consumeExactFromPool(array &$pool, float $amount, array &$sharedLimits): void
     {
-        $usedBefore = (float) $pool['used'];
-        $pool['used'] = self::roundMoney((float) $pool['used'] + $amount);
+        $usedBefore = (float) $pool['usage']['minimum'];
+        self::chargePool($pool, (float) ($amount));
         $sharedLimits[] = [
             'id' => $pool['id'],
             'legalLimit' => $pool['legalLimit'],
@@ -16908,7 +16974,7 @@ final class Engine
             'id' => "plesa402Ae3:{$account['id']}",
             'legalLimit' => 'IRC 402A(e)(3)(A) participant-contribution balance cap',
             'limit' => $caps['effectiveCap'],
-            'used' => $caps['balance'],
+            'usage' => self::settled((float) $caps['balance']),
         ];
     }
 
