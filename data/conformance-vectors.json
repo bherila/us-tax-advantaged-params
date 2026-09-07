@@ -16071,6 +16071,203 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE"
       ]
+    },
+    {
+      "name": "2026 an unestablished ceiling reports no fall at all, rather than a fall of nothing",
+      "description": "A single taxpayer states self-only coverage for December 2026 alone with an annual deductible of 1000. The 2026 IRC 223(c)(2)(A)(i) minimum annual deductible for self-only coverage is 1700 (Rev. Proc. 2025-19), so the same caller has asserted a plan that cannot be the high deductible health plan the coverage months claim: HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM makes the account indeterminate and proratedContributionLimit and contributionLimitWithoutLastMonthRule are both null, because both are computed from the very deductible the diagnostic rejects. 2026 is past the years in which IRC 223(b)(2) capped the monthly limitation by the deductible, so the figures are withheld for the assertion's inconsistency and not for any arithmetic the deductible would have entered.\n\nThe taxpayer also paid 100 to an Archer MSA and contributed 100 to the account under IRC 408(d)(9). Both reductions are operations on a ceiling: IRC 223(b)(4)(A) reduces \"the limitation which would (but for this paragraph) apply\" by the Archer amount, and IRC 223(b)(4)(C) reduces what is left by the 408(d)(9) amount. A fall is the difference between the ceiling before and the ceiling after, and there is no established ceiling here for either of them to fall from -- so archerMsaLimitReduction and qualifiedHsaFundingLimitReduction are null. Reporting 0 said each paragraph applied and cost this taxpayer nothing, beside a diagnostic refusing them a ceiling at all: the conditional arithmetic on the rejected figures would have been 4400 - 100 - 100, a fall of 100 apiece, so nought was not merely unknown but false. The amounts supplied are still reported by archerMsaContributionsApplied and qualifiedHsaFundingDistributionsApplied, which are facts about the caller's input rather than about a limitation.\n\namountAttributableToLastMonthRule is null for the same reason. The taxpayer is an eligible individual on 1 December, so IRC 223(b)(8)(A) applies and Notice 2008-52's greater-of would compare a month-by-month 4400/12 = 366.67 against a whole-year 4400; fullContributionCandidateSelected reports that the second is the larger, which is a comparison of coverage facts and needs no ceiling. But the amount that \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i) is a difference between two limitations neither of which is established, so it is not the 0 that would state the rule was worth nothing. testingPeriod is null beside it, which is what a null attributable amount means: an obligation that could not be computed, not one that does not exist.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "archerMsaContributions": 100,
+            "qualifiedHsaFundingDistributions": 100
+          }
+        ],
+        "accounts": [
+          {
+            "id": "hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  12
+                ],
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.proratedContributionLimit": null,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": null,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.archerMsaContributionsApplied": 100,
+        "accounts.0.hsa.archerMsaLimitReduction": null,
+        "accounts.0.hsa.qualifiedHsaFundingDistributionsApplied": 100,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": null,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": null,
+        "accounts.0.hsa.testingPeriod": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2026 a spouse's eligibility conflict announces no division branch, covered account first",
+      "description": "The taxpayer holds family high deductible health plan coverage for every month of 2026. The spouse owns two health savings accounts whose statements cannot both be true: one states family coverage for the whole year, the other states no covered month at all. That is HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER and every account is indeterminate with the IRC 223 detail withheld.\n\nWhat this pair pins is the division branch, which is a separate question from the amount and was still being announced. IRC 223(b)(5)(B)(ii) divides the one family limitation \"equally between them unless they agree on a different division\", and Notice 2004-50 Q&A-31 holds that \"if only one spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding the treatment under section 223(b)(5)(A) of both spouses as having only family coverage)\", with Notice 2008-59 Q&A-16 forbidding any allocation to a spouse who is not otherwise eligible. The spouse's two statements land on opposite sides of that line: on one the limitation is divided equally, on the other the whole of it is the taxpayer's. Neither branch is established, so HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT must be absent -- it names a statutory branch, not an arithmetic result -- and so must HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT. HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE reports the unresolved division in their place.\n\nThis is narrower than any coverage conflict. Two statements disagreeing about the coverage *tier*, or about a deductible a post-2006 year never reads, both still assert an eligible individual and leave the division branch fixed; only a disagreement about whether there was any coverage at all reaches it. The two vectors differ only in the order of the spouse's two account records and must agree on every asserted value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-covered",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-not-covered",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": []
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.accountId": "s-covered",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null,
+        "accounts.2.accountId": "s-not-covered",
+        "accounts.2.status": "indeterminate",
+        "accounts.2.hsa": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
+        "HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 that pair announces the same absence with the uncovered account first",
+      "description": "The taxpayer holds family high deductible health plan coverage for every month of 2026. The spouse owns two health savings accounts whose statements cannot both be true: one states family coverage for the whole year, the other states no covered month at all. That is HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER and every account is indeterminate with the IRC 223 detail withheld.\n\nWhat this pair pins is the division branch, which is a separate question from the amount and was still being announced. IRC 223(b)(5)(B)(ii) divides the one family limitation \"equally between them unless they agree on a different division\", and Notice 2004-50 Q&A-31 holds that \"if only one spouse is an eligible individual, only that spouse may contribute to an HSA (notwithstanding the treatment under section 223(b)(5)(A) of both spouses as having only family coverage)\", with Notice 2008-59 Q&A-16 forbidding any allocation to a spouse who is not otherwise eligible. The spouse's two statements land on opposite sides of that line: on one the limitation is divided equally, on the other the whole of it is the taxpayer's. Neither branch is established, so HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT must be absent -- it names a statutory branch, not an arithmetic result -- and so must HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT. HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE reports the unresolved division in their place.\n\nThis is narrower than any coverage conflict. Two statements disagreeing about the coverage *tier*, or about a deductible a post-2006 year never reads, both still assert an eligible individual and leave the division branch fixed; only a disagreement about whether there was any coverage at all reaches it. The two vectors differ only in the order of the spouse's two account records and must agree on every asserted value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-not-covered",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": []
+              }
+            }
+          },
+          {
+            "id": "s-covered",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.accountId": "s-not-covered",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null,
+        "accounts.2.accountId": "s-covered",
+        "accounts.2.status": "indeterminate",
+        "accounts.2.hsa": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
+        "HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"
+      ]
     }
   ]
 }

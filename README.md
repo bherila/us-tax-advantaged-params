@@ -739,6 +739,14 @@ a couple-level figure:
 | `amountAttributableToLastMonthRule` | §223(b)(8)(B)(i) recaptures what "could not have been made but for subparagraph (A)" — the owner's share of the couple's increase |
 | `testingPeriod` | it exists only where that attributable amount is positive |
 
+These four, plus `familyLimitShare`, are also `null` where the account's **ceiling itself** was never
+established — a plan whose stated deductible contradicts §223(c)(2)(A)(i), say. A fall is the
+difference between two ceilings, so a $100 Archer MSA contribution against no established limitation
+took an unknown amount off an unknown amount; `0` would say the paragraph applied and cost nothing.
+`archerMsaContributionsApplied` and `qualifiedHsaFundingDistributionsApplied` still report what was
+supplied, and `0` is still exact where nothing was supplied — the operand settles that without a
+ceiling.
+
 Each is `null` where a share is genuinely in question, not `0`. Two spouses whose only coverage is
 family in December 2026 have a couple's limitation of 8750 against a month-by-month 729.17, so each
 owner's attributable amount is somewhere between nothing and 8020.83 — and a `0` there would say
@@ -785,6 +793,16 @@ limitation** for the couple; (B)(ii) **divides** it between them. A disagreement
 division — an `hsaFamilyLimitDivision` status of `unknown`, `disputed` or `inconsistent` —
 reaches only the second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
 is reached, so the couple's ceiling is still a number even though nobody can say whose it is.
+
+A **disagreement about eligibility** reaches it too, and only that kind does. Two of a spouse's
+statements saying self-only and family both assert an eligible individual and leave the division
+branch fixed; one saying family and another saying no covered month do not, because §223(b)(5)(B)(ii)
+divides the limitation between spouses who are each an eligible individual while Notice 2004-50
+Q&A-31 gives the whole of it to the other spouse when only one is. Neither branch is then established,
+so no `HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT` and no
+`HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` is announced — those name a statutory branch, not
+an arithmetic result. A deductible disagreement in a year that no longer reads the deductible is not
+an eligibility disagreement.
 
 The engine reports the two separately:
 
