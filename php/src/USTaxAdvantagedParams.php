@@ -9645,6 +9645,7 @@ final class Engine
             self::requireInputObject($input, 'hsaCoverage', "persons[{$index}].hsaCoverage");
             if (array_key_exists('hsaCoverage', $input)) {
                 self::validateHsaCoverage($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
+                self::rejectRelocatedHsaFields($input['hsaCoverage'], "persons[{$index}].hsaCoverage");
             }
             self::requireInputObject(
                 $input,
@@ -10043,14 +10044,33 @@ final class Engine
     ];
 
     /** @param array<string,mixed> $rules */
+    /**
+     * Rejected on persons[].hsaCoverage as well as on planRules.hsa.
+     *
+     * The nearest-looking home for a field the caller is told to move off the
+     * account is the person-level HSA object beside it, and reading these there
+     * would be worse than reading them on the account: an ignored
+     * familyLimitShare of 1 falls back to the statutory equal split, so the
+     * caller acting on HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED gets half
+     * the limitation they asked for, silently and with no diagnostic. Failing
+     * loudly on both paths is the whole point of rejecting rather than
+     * normalising.
+     *
+     * @param array<string,mixed> $rules
+     */
+    private static function rejectRelocatedHsaFields(array $rules, string $path): void
+    {
+        foreach (self::RELOCATED_HSA_ACCOUNT_FIELDS as [$field, $code, $guidance]) {
+            if (array_key_exists($field, $rules)) {
+                throw new ParameterException($code, "{$path}.{$field} is not read here. {$guidance}");
+            }
+        }
+    }
+
     private static function validateHsaRules(array $rules, string $path): void
     {
         self::validateHsaCoverage($rules, $path);
-        foreach (self::RELOCATED_HSA_ACCOUNT_FIELDS as [$field, $code, $guidance]) {
-            if (array_key_exists($field, $rules)) {
-                throw new ParameterException($code, "{$path}.{$field} was removed in 0.5.0. {$guidance}");
-            }
-        }
+        self::rejectRelocatedHsaFields($rules, $path);
     }
 
     /** @param array<string,mixed> $rules */
@@ -15846,6 +15866,23 @@ final class Engine
                         (float) $amounts['selfPortionApplied'],
                         $archerAmount,
                     )[0])
+                    : null,
+                // The same clamp $reducedDivided applies, and for the same
+                // reason: the shared portion is measured before the IRC
+                // 223(b)(5)(B)(i) reduction, so naming it as the divided part of
+                // a figure measured after the reduction would report more being
+                // divided than survives to be divided.
+                'dividedFamilyContributionLimit' => $isSharingMember
+                    && $householdPoolAmountIndeterminate !== true
+                    && $archerAcrossUndividedSpouses !== true
+                    ? self::roundMoney(min(
+                        (float) $amounts['familySharedPortionApplied'],
+                        self::archerReducedPortions(
+                            (float) $amounts['familyPortionApplied'],
+                            (float) $amounts['selfPortionApplied'],
+                            $archerAmount,
+                        )[0],
+                    ))
                     : null,
                 'archerMsaContributionsApplied' => $archerAmount,
                 'archerMsaReductionPrecedesFamilyDivision' => $share !== null,

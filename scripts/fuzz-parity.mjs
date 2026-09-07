@@ -364,8 +364,9 @@ function randomPerson(id, role, taxYear) {
     person.hsaLastMonthRuleTestingPeriod = chance(0.04) ? junk() : randomHsaLastMonthRuleTestingPeriod();
   }
   // Person-level IRC 223(c)(2) coverage. randomHsaRules() also emits the
-  // relocated keys, which persons[].hsaCoverage ignores rather than rejects --
-  // a difference between the two paths that both engines must reproduce.
+  // relocated keys, which persons[].hsaCoverage now rejects exactly as
+  // planRules.hsa does -- the two paths must reject identically, and both
+  // engines must agree on which code comes out.
   // Spouse coverage drives the IRC 223(b)(5)(A) family-sharing and
   // lowest-deductible rules even when that spouse owns no HSA, so it is
   // generated often and is allowed to be family-with-a-deductible, family

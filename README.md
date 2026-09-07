@@ -618,6 +618,21 @@ owner established ineligible on December 1, even if the household's full candida
 increases their ceiling through the other spouse. That owner receives no testing
 period, income-inclusion amount, additional tax, or testing-period warning.
 
+**Reading the division off the result.** `sharedFamilyContributionLimit` is the whole family
+limitation an owner refigured for their own family months, and Q&A-31 does not divide all of it:
+a month only one spouse was eligible for goes to that spouse whole. `dividedFamilyContributionLimit`
+is the part `familyLimitShare` actually multiplies, so with no Archer MSA amount in play
+
+```
+proratedContributionLimit - dividedFamilyContributionLimit * (1 - familyLimitShare)
+```
+
+is the owner's §223(b)(1) limitation. A taxpayer family-covered all year beside a spouse eligible
+in December alone holds 8750 and divides only December's 729.17 of it: 8750 - 729.17 × 0.5 =
+8385.42. Multiplying the share by the whole 8750 instead gives 4375, which is wrong by 4010.42.
+The published figures are rounded to cents while the engine divides the unrounded monthly amounts,
+so treat the identity as a description of the composition rather than a way to re-derive the ceiling.
+
 **A married spouse's own share can fall while the couple's limitation rises.** Notice 2008-52
 Example 14 compares the *couple's combined* candidates and divides the winner, and Form 8889
 follows that order — line 3 and line 5 before the spousal division on line 6. So where one
@@ -642,6 +657,12 @@ using half of what it stated:
 | `useLastMonthRule` | **nowhere — §223(b)(8) is not an election** | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
 | `testingPeriodSatisfied` | `persons[].hsaLastMonthRuleTestingPeriod.satisfied` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
 | `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+
+The same four are rejected on `persons[].hsaCoverage` too. That object is the nearest-looking
+home for a field you have just been told to move off the account, and reading them there would
+be the worse of the two failures: an ignored `familyLimitShare` falls back to the §223(b)(5)(B)(ii)
+statutory equal split, so acting on the error and moving the field one object sideways would hand
+you **half** the limitation you asked for, with nothing saying so.
 
 None of the four was ever a fact about an account. §223(b)(5)(B)(ii) divides the limitation
 between "them" — the married individuals — and §223(b)(8) operates on "an individual". An

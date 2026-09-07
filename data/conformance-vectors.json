@@ -14392,6 +14392,152 @@
       ]
     },
     {
+      "name": "2026 a sole-eligible family month is not divided, so the pre-division amount alone cannot rebuild the ceiling",
+      "description": "Notice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse, and Q&A-32 divides only the months of shared family coverage. The taxpayer holds family coverage for all twelve months of 2026 and the spouse is an eligible individual in December alone, so January through November are the taxpayer's own and December is the one month IRC 223(b)(5)(B)(ii) divides. On the 2026 family limitation of 8750 from Rev. Proc. 2025-19 that is 11 x 8750/12 = 8020.83 taken whole plus 8750/12 x 0.5 = 364.58 as the taxpayer's half of December, giving 8385.42; the spouse's whole limitation is that same half-month, 364.58. The two sum to 8750.00, the single family limitation, which is the check that the division loses nothing.\n\nThe vector pins `dividedFamilyContributionLimit` beside `sharedFamilyContributionLimit` because the second alone cannot rebuild the ceiling. `sharedFamilyContributionLimit` is the whole limitation this owner refigured for their family months -- 8750 for the taxpayer -- while only 729.17 of it is subject to the share. Multiplying the published `familyLimitShare` of 0.5 by 8750 gives 4375, understating the taxpayer's ceiling by 4010.42, which is what a caller following the field's former documented identity would have computed. The two fields together give `proratedContributionLimit - dividedFamilyContributionLimit * (1 - familyLimitShare)` = 8750 - 729.17 x 0.5 = 8385.42.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1981
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a1",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "a2",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 12,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8385.42,
+        "accounts.0.hsa.familyLimitShare": 0.5,
+        "accounts.0.hsa.proratedContributionLimit": 8750,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17,
+        "accounts.1.statutoryMaximumAnnualContribution": 364.58,
+        "accounts.1.hsa.sharedFamilyContributionLimit": 729.17,
+        "accounts.1.hsa.dividedFamilyContributionLimit": 729.17,
+        "totals.hsaContribution": 8750
+      }
+    },
+    {
+      "name": "2026 a relocated division field is rejected on the person as well as on the account",
+      "description": "The input contract asserted here, not a statutory amount. `familyLimitShare` was removed from `planRules.hsa` because IRC 223(b)(5)(B)(ii) divides the one family limitation between the spouses rather than between accounts, and the removal is enforced by rejection so a stale call fails loudly instead of quietly using half of what it stated. `persons[].hsaCoverage` is the nearest-looking home for a field a caller is told to move off the account, and ignoring it there is the worse failure of the two: an ignored share falls back to the IRC 223(b)(5)(B)(ii) statutory equal split, so a caller acting on HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED and moving the field one object sideways would receive half the limitation they asked for, with no diagnostic saying so. Both paths therefore raise the same code.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "familyLimitShare": 1
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1981
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a1",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED"
+      }
+    },
+    {
       "name": "2026 an Archer MSA reduction meeting mixed family months leaves the division unresolved",
       "description": "The vector above with one fact added: the taxpayer paid 1000 to an Archer MSA. That is enough to make the division undeterminable, and the reason is a gap in the sources rather than in the facts.\n\nThe months are of two kinds. January through June only the taxpayer is an eligible individual, so Notice 2004-50 Q&A-31 gives those months wholly to the taxpayer; July through December both spouses are, so IRC 223(b)(5)(B)(ii) divides them. IRC 223(b)(5)(B)(i) then reduces the limitation by \"the aggregate amount paid to Archer MSAs of such spouses for the taxable year\" *before* that division. Which kind of month the 1000 reduction came out of decides the answer: taken from the undivided months the taxpayer loses the whole 1000, taken from the divided ones they lose half of it, and the two readings differ by 500.\n\nNothing settles which. The statute divides an annual figure and never segments by month at all; Q&A-31 and Q&A-32 supply the monthly segmentation but never mention Archer MSAs. Under AGENTS.md rule 3 an engine that cannot reduce a rule to a universal value returns indeterminate with a diagnostic rather than inventing a modernized approximation, so HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE is reported and familyLimitShare is null.\n\nThe limitation itself is unaffected and is still published: 8750 less the 1000 aggregate Archer reduction is 7750, which subparagraph (B)(i) fixes before the division is reached and which no apportionment question touches. Removing the Archer contribution restores the determinate 6562.50 of the vector above; removing the mixed months -- making the spouse eligible all year or not at all -- restores a determinate answer too, because then there is only one kind of month for the reduction to have come out of.",
       "input": {

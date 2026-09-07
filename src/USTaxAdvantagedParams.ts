@@ -633,17 +633,51 @@ export interface HsaAccountDetail {
   /** IRC 223(b)(5)(B)(ii) share of the one family limit, or null when no family limit is shared. */
   familyLimitShare: number | null;
   /**
-   * The IRC 223(b)(5) family limitation *this owner* divides: the limitation
+   * The IRC 223(b)(5) family limitation *this owner* holds: the limitation
    * refigured for the months this owner was treated as having family coverage
    * (Form 8889 line 6, Step 1), excluding any self-only months, which stay
    * with the individual. It is per-owner rather than couple-wide because
-   * spouses with unequal family-coverage months refigure different amounts, so
-   * `familyLimitShare` times this figure plus the owner's undivided
-   * self-only-month limitation is the owner's IRC 223(b)(1) limit. Null when
-   * no family limit is shared. The IRC 223(b)(4)(C) reduction does not appear
-   * in it: that reduction is an individual one taken after the division.
+   * spouses with unequal family-coverage months refigure different amounts.
+   * Null when no family limit is shared. The IRC 223(b)(4)(C) reduction does
+   * not appear in it: that reduction is an individual one taken after the
+   * division.
+   *
+   * **Not all of it is divided.** Notice 2004-50 Q&A-31 gives a month in which
+   * only one spouse is an eligible individual wholly to that spouse, so only
+   * the part of this figure attributable to months *both* spouses were eligible
+   * is multiplied by `familyLimitShare`. That part is
+   * `dividedFamilyContributionLimit`, and the remainder is taken whole. An
+   * owner family-covered all year beside a spouse eligible in December alone
+   * holds the whole 8750 here and divides only December's 729.17 of it.
    */
   sharedFamilyContributionLimit: Money | null;
+  /**
+   * The part of `sharedFamilyContributionLimit` that `familyLimitShare`
+   * actually multiplies -- the months both spouses were eligible individuals,
+   * which IRC 223(b)(5)(B)(ii) divides. The rest of that figure is this owner's
+   * alone under Q&A-31.
+   *
+   * With no Archer MSA contribution this closes the arithmetic exactly:
+   *
+   * ```
+   * proratedContributionLimit - dividedFamilyContributionLimit * (1 - familyLimitShare)
+   * ```
+   *
+   * is the owner's IRC 223(b)(1) limitation. Where an Archer MSA amount was
+   * paid, IRC 223(b)(5)(B)(i) reduces the limitation before the division and
+   * `archerMsaLimitReduction` carries that step.
+   *
+   * Every figure here is rounded to cents while the engine divides the
+   * unrounded monthly amounts, so the reconstruction can land a penny off the
+   * reported maximum -- a December-only family month publishes as 729.17, and
+   * half of that is 364.59 against the 364.58 half of 8750/12 gives. Use the
+   * identity to understand the composition, not to re-derive the ceiling.
+   *
+   * Null exactly where `sharedFamilyContributionLimit` is, and for the same
+   * reason: an unapportionable aggregate leaves the pre-division amount itself
+   * unknown, so no part of it can be named as the divided one.
+   */
+  dividedFamilyContributionLimit: Money | null;
   /**
    * The aggregate amount paid to Archer MSAs that reduced this owner's IRC
    * 223(b) limitation: their own amount under IRC 223(b)(4)(A), or both
@@ -9466,6 +9500,7 @@ function normalizePersons(personsInput: PersonInput[]): Map<string, NormalizedPe
     requireInputObject(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     if (input.hsaCoverage !== undefined) {
       validateHsaCoverage(input.hsaCoverage, `persons[${index}].hsaCoverage`);
+      rejectRelocatedHsaFields(input.hsaCoverage, `persons[${index}].hsaCoverage`);
     }
     requireInputObject(
       input.hsaLastMonthRuleTestingPeriod,
@@ -9763,13 +9798,28 @@ const RELOCATED_HSA_ACCOUNT_FIELDS: ReadonlyArray<[string, string, string]> = [
   ],
 ];
 
-function validateHsaRules(rules: HsaRulesInput, path: string): void {
-  validateHsaCoverage(rules, path);
+/**
+ * Rejected on `persons[].hsaCoverage` as well as on `planRules.hsa`.
+ *
+ * The nearest-looking home for a field the caller is told to move off the
+ * account is the person-level HSA object beside it, and reading these there
+ * would be worse than reading them on the account: an ignored
+ * `familyLimitShare: 1` falls back to the statutory equal split, so the caller
+ * acting on HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED gets half the
+ * limitation they asked for, silently and with no diagnostic. Failing loudly on
+ * both paths is the whole point of rejecting rather than normalising.
+ */
+function rejectRelocatedHsaFields(rules: unknown, path: string): void {
   for (const [field, code, guidance] of RELOCATED_HSA_ACCOUNT_FIELDS) {
     if ((rules as Record<string, unknown>)[field] !== undefined) {
-      throw new ParameterError(code, `${path}.${field} was removed in 0.5.0. ${guidance}`);
+      throw new ParameterError(code, `${path}.${field} is not read here. ${guidance}`);
     }
   }
+}
+
+function validateHsaRules(rules: HsaRulesInput, path: string): void {
+  validateHsaCoverage(rules, path);
+  rejectRelocatedHsaFields(rules, path);
 }
 
 function validateHsaLastMonthRuleTestingPeriod(
@@ -14792,6 +14842,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         && !householdPoolAmountIndeterminate
         && !archerAcrossUndividedSpouses
         ? roundMoney(archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0])
+        : null,
+      // The same clamp `reducedDivided` applies, and for the same reason: the
+      // shared portion is measured before the IRC 223(b)(5)(B)(i) reduction, so
+      // naming it as the divided part of a figure measured after the reduction
+      // would report more being divided than survives to be divided.
+      dividedFamilyContributionLimit: isSharingMember
+        && !householdPoolAmountIndeterminate
+        && !archerAcrossUndividedSpouses
+        ? roundMoney(Math.min(
+            amounts.familySharedPortionApplied,
+            archerReducedPortions(amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount)[0],
+          ))
         : null,
       archerMsaContributionsApplied: archerAmount,
       archerMsaReductionPrecedesFamilyDivision: share !== null,
