@@ -12926,7 +12926,6 @@ final class Engine
             return $actuallyEligibleInMonth($personId, $monthIndex)
                 || $lastMonthRuleDeemsEligible($personId);
         };
-        $recharacterized = [];
         if ($familySharingApplies) {
             // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
             // as having only that family coverage. It does not make an otherwise
@@ -12938,11 +12937,43 @@ final class Engine
                 for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
                     if ($familyMonth[$month - 1] && $facts[$personId]['months'][$month - 1] === 'self_only') {
                         $facts[$personId]['months'][$month - 1] = 'family';
-                        $recharacterized[$personId] = true;
                     }
                 }
             }
         }
+        /*
+         * Whether the recharacterization above is a fact the statements
+         * establish, rather than one of the readings they leave open.
+         *
+         * $facts[$owner]['months'] holds whichever of an owner's contradictory
+         * coverage statements was merged first, so recording the rewrite as it
+         * happened made the INFO an artefact of record order: two accounts of one
+         * owner saying self-only and family, beside a spouse holding family
+         * coverage, produced the diagnostic when the self-only statement was
+         * listed first and not when it was listed second. Neither answer was
+         * established -- one statement asserts the self-only coverage
+         * subparagraph (A) rewrites and the other denies it -- so the conflict
+         * diagnostic is the whole of what those facts support.
+         *
+         * $coverageSlotsByPerson answers the diagnostic's own question instead: a
+         * month is 'self_only' there only when every statement made about it says
+         * so. A determinate case is unaffected, because a unanimously supplied
+         * self-only tier is exactly that.
+         */
+        $recharacterizationEstablished = function (string $personId) use (
+            $coverageSlotsByPerson,
+            $familyMonth
+        ): bool {
+            if (!isset($coverageSlotsByPerson[$personId])) {
+                return false;
+            }
+            for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
+                if ($coverageSlotsByPerson[$personId][$month - 1] === 'self_only' && $familyMonth[$month - 1]) {
+                    return true;
+                }
+            }
+            return false;
+        };
 
         /*
          * The coverage schedule of the IRC 223(b)(8) full-contribution candidate.
@@ -14670,10 +14701,8 @@ final class Engine
             }
         }
         /*
-         * Whether that unestablished division withholds the *amount*. Only here
-         * does immateriality count, and it is the narrower question of the two.
-         */
-        /*
+         * Whether any owner-specific figure turns on that unestablished division.
+         *
          * $someFamilyMonthIsShared asks whether a *share* is in question, which
          * is the right test for every unestablished division but one. Where the
          * one aggregate Archer MSA reduction would be subtracted from both
@@ -14685,9 +14714,13 @@ final class Engine
          * aggregate short of the one limitation the IRC 223(b)(5) pool beside
          * them still reported.
          */
-        $householdDivisionUnknown = !$nothingLeftToDivide
-            && ($archerAcrossUndividedSpouses
-                || ($someFamilyMonthIsShared && $householdDivisionUnestablished));
+        $divisionShareInQuestion = $archerAcrossUndividedSpouses
+            || ($someFamilyMonthIsShared && $householdDivisionUnestablished);
+        /*
+         * Whether that unestablished division withholds the *amount*. Only here
+         * does immateriality count, and it is the narrower question of the two.
+         */
+        $householdDivisionUnknown = !$nothingLeftToDivide && $divisionShareInQuestion;
         /*
          * Whether a settled division is worth announcing. Same test: where nothing
          * is left to divide, saying how it was divided is noise about nought, and
@@ -14920,7 +14953,7 @@ final class Engine
             $diagnostics = $amounts['diagnostics'];
             if ($isSharingMember) {
                 array_push($diagnostics, ...$sharingDiagnostics);
-                if (isset($recharacterized[$ownerId])) {
+                if ($recharacterizationEstablished($ownerId)) {
                     $diagnostics[] = self::diagnostic(
                         'HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE',
                         DiagnosticSeverity::INFO,
@@ -15033,7 +15066,27 @@ final class Engine
                     ? max(0.0, $archerAmount - (float) $amounts['proratedWithoutLastMonthRule'])
                     : 0.0),
             );
-            $archerMsaLimitReduction = $indeterminate || $baseLimitAfterArcher === null
+            /*
+             * Whether this owner's own fall is a share of the couple's reduction
+             * that no division fixes. IRC 223(b)(5)(B)(i) subtracts the aggregate
+             * from the one family limitation and subparagraph (B)(ii) then divides
+             * what is left, so an owner whose share is $x of a limitation $F
+             * reduced by $A falls by $x * min($A, $F) -- unknown for every $x the
+             * facts leave open, and not the whole aggregate, which is what
+             * charging both spouses reported.
+             *
+             * $divisionShareInQuestion rather than $householdDivisionUnknown: the
+             * latter forgives an unestablished division whose every completion
+             * yields the same maximum, which is true of a limitation the reduction
+             * exhausted to nothing. That immateriality rescues the maximum and not
+             * this figure -- both spouses' ceilings end at zero however the
+             * limitation was divided, but how far each of them fell to get there
+             * is still their share.
+             */
+            $ownerShareInQuestion = $isSharingMember && $divisionShareInQuestion;
+            $archerMsaLimitReduction = $ownerShareInQuestion && $archerAmount > 0.0
+                ? null
+                : ($indeterminate || $baseLimitAfterArcher === null
                 ? 0.0
                 : self::nonnegative(
                     $divided(
@@ -15045,7 +15098,7 @@ final class Engine
                     + (float) $amounts['catchUpApplied']
                     - $baseLimitAfterArcher
                     - $catchUpAfterArcher,
-                );
+                ));
 
             /*
              * IRC 223(b)(4)(C) then reduces what is left by "the aggregate amount
@@ -15081,12 +15134,21 @@ final class Engine
                     $fundingAmount,
                 );
             }
-            $qualifiedHsaFundingLimitReduction =
-                $indeterminate || $baseLimitAfterArcher === null || $baseLimit === null
+            /*
+             * IRC 223(b)(4)(C) reduces this spouse's *own* limitation, which is the
+             * share IRC 223(b)(5)(B)(ii) left them, so the fall it causes is
+             * bounded by that share: an owner holding $x of a limitation $F falls
+             * by min($fundingAmount, $x * $F), and an unestablished $x leaves that
+             * figure somewhere in a range rather than at the zero the
+             * indeterminate branch below would otherwise report.
+             */
+            $qualifiedHsaFundingLimitReduction = $ownerShareInQuestion && $fundingAmount > 0.0
+                ? null
+                : ($indeterminate || $baseLimitAfterArcher === null || $baseLimit === null
                     ? 0.0
                     : self::nonnegative(
                         $baseLimitAfterArcher + $catchUpAfterArcher - $baseLimit - $catchUpApplied,
-                    );
+                    ));
 
             $context['hsaBasePools'][$ownerId] = [
                 'id' => "hsa223b1:{$ownerId}",
@@ -15120,14 +15182,36 @@ final class Engine
                 ? CalculationStatus::INDETERMINATE->value
                 : CalculationStatus::DETERMINATE->value;
             $testingPeriod = null;
-            $attributable = $indeterminate || $baseLimit === null || $baseLimitWithoutLastMonthRule === null
+            /*
+             * Whether IRC 223(b)(8) reached this owner at all, asked of their
+             * undivided months so that it can be answered without the division.
+             * Where the two candidates give the same undivided figures the
+             * division scales both alike and the rule was worth nothing under
+             * every share, so the amount below is a settled zero rather than an
+             * unknown one -- which keeps the common case, an owner eligible all
+             * year, numeric.
+             *
+             * Otherwise it is $x * (applied - withoutLastMonthRule) for a share $x
+             * the facts never fixed, which ranges from nothing up to the whole of
+             * the couple's increase. Reporting the zero the indeterminate branch
+             * produces would say IRC 223(b)(8)(B)(i) has nothing to recapture from
+             * this owner -- and the testingPeriod beside it, which is null both
+             * where no obligation exists and where none could be computed, is read
+             * through this field.
+             */
+            $lastMonthRuleAddedNothingUndivided =
+                (float) $amounts['proratedApplied'] === (float) $amounts['proratedWithoutLastMonthRule']
+                && (float) $amounts['catchUpApplied'] === (float) $amounts['catchUpWithoutLastMonthRule'];
+            $attributable = $ownerShareInQuestion && !$lastMonthRuleAddedNothingUndivided
+                ? null
+                : ($indeterminate || $baseLimit === null || $baseLimitWithoutLastMonthRule === null
                 ? 0.0
                 : self::nonnegative(self::roundMoney(
                     $baseLimit
                     + $catchUpApplied
                     - $baseLimitWithoutLastMonthRule
                     - $catchUpWithoutLastMonthRule,
-                ));
+                )));
 
             /*
              * The obligation exists only where the rule actually produced
@@ -15144,7 +15228,15 @@ final class Engine
              * compares the couple's combined figures, and the IRC 223(b)(5)(B)(ii)
              * division of the winner is what reaches each spouse.
              */
-            if ($amounts['fullContributionCandidateSelected'] && $attributable > 0.0 && !$indeterminate) {
+            // A null attributable amount is not a positive one: nothing can be put
+            // on notice about an exposure whose size the division never fixed, and
+            // the field beside this reports that rather than a zero.
+            if (
+                $amounts['fullContributionCandidateSelected']
+                && $attributable !== null
+                && $attributable > 0.0
+                && !$indeterminate
+            ) {
                 $testingPeriodFacts = $facts[$ownerId]['testingPeriodFacts'];
                 $testingMonths = $parameters['testingPeriodMonths'] ?? 13;
                 if (($testingPeriodFacts['satisfied'] ?? null) === true) {
@@ -15207,8 +15299,20 @@ final class Engine
 
             if (!$indeterminate && $archerAmount > 0) {
                 $paidFormatted = self::localeNumber($archerAmount);
-                $takenFormatted = self::localeNumber($archerMsaLimitReduction);
-                $diagnostics[] = $share === null
+                $takenFormatted = $archerMsaLimitReduction === null
+                    ? null
+                    : self::localeNumber($archerMsaLimitReduction);
+                $archerCoupleClause = $takenFormatted === null
+                    ? ', and the IRC 223(b)(5) shared limit reports the couple\'s limitation after it. How much of '
+                        . "that reduction fell on this spouse's own ceiling is their share of it under subparagraph "
+                        . '(B)(ii), and no division was established, so accounts[].hsa.archerMsaLimitReduction is '
+                        . 'null rather than the aggregate: the reduction is taken from the couple\'s one limitation '
+                        . 'once, and charging it to each spouse would subtract it twice'
+                    : ", which took \${$takenFormatted} off this spouse's ceiling";
+                // The reduction is null only where a share decides it, and only IRC
+                // 223(b)(5) produces a share, so branching on it first leaves the
+                // unmarried wording where it can never meet one.
+                $diagnostics[] = $share === null && $takenFormatted !== null
                     ? self::diagnostic(
                         'HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT',
                         DiagnosticSeverity::INFO,
@@ -15226,8 +15330,8 @@ final class Engine
                         'IRC 223(b)(4) does not apply to an individual to whom IRC 223(b)(5) applies, so the '
                             . "\${$paidFormatted} aggregate amount paid to Archer MSAs of both spouses reduces the "
                             . 'single IRC 223(b)(1) family limitation under IRC 223(b)(5)(B)(i) before IRC '
-                            . "223(b)(5)(B)(ii) divides it, which took \${$takenFormatted} off this spouse's "
-                            . 'ceiling. IRC 223(b)(5)(B) is applied without regard to the IRC 223(b)(3) additional '
+                            . "223(b)(5)(B)(ii) divides it{$archerCoupleClause}"
+                            . '. IRC 223(b)(5)(B) is applied without regard to the IRC 223(b)(3) additional '
                             . 'contribution amount, so the reduction never reaches it. The amount paid is taken as '
                             . 'supplied; IRC 220 is not modelled.',
                         "persons.{$ownerId}",
@@ -15237,11 +15341,23 @@ final class Engine
 
             if (!$indeterminate && $fundingAmount > 0) {
                 $fundedFormatted = self::localeNumber($fundingAmount);
-                $fundingTakenFormatted = self::localeNumber($qualifiedHsaFundingLimitReduction);
+                $fundingTakenFormatted = $qualifiedHsaFundingLimitReduction === null
+                    ? null
+                    : self::localeNumber($qualifiedHsaFundingLimitReduction);
                 $diagnostics[] = self::diagnostic(
                     'HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT',
                     DiagnosticSeverity::INFO,
-                    $share === null
+                    $fundingTakenFormatted === null
+                        ? 'The IRC 223(b)(4) flush text withdraws subparagraph (A) alone from an individual to whom '
+                            . 'IRC 223(b)(5) applies, so IRC 223(b)(4)(C) still applies to this spouse. The '
+                            . "\${$fundedFormatted} contributed under IRC 408(d)(9) is an amount of this individual "
+                            . 'and not of the couple, and it reduces the limitation the IRC 223(b)(5)(B)(ii) division '
+                            . 'left them rather than the family limitation before it. That share was never '
+                            . "established, so how far this spouse's own ceiling fell is bounded by it and "
+                            . 'accounts[].hsa.qualifiedHsaFundingLimitReduction is null rather than nil. The amount '
+                            . 'is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the '
+                            . 'separate IRC 408(d)(9)(D) testing period are not modelled.'
+                        : ($share === null
                         ? 'IRC 223(b)(4)(C) reduces the IRC 223(b) limitation, but not below zero, by the '
                             . "\${$fundedFormatted} aggregate amount contributed to health savings accounts of this "
                             . 'individual for the taxable year under IRC 408(d)(9), which took '
@@ -15257,7 +15373,7 @@ final class Engine
                             . "\${$fundingTakenFormatted} off the ceiling, reaching the IRC 223(b)(3) additional "
                             . 'contribution amount with whatever the IRC 223(b)(1) limitation could not absorb. The '
                             . 'amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the '
-                            . 'separate IRC 408(d)(9)(D) testing period are not modelled.',
+                            . 'separate IRC 408(d)(9)(D) testing period are not modelled.'),
                     "persons.{$ownerId}",
                     'IRC 223(b)(4)(C)',
                 );
@@ -15381,7 +15497,7 @@ final class Engine
              * share of them. The mixed-months case beside it does not, for the
              * reason sharedFamilyContributionLimit gives below.
              */
-            $candidateSelectionUnestablished = $amounts['candidateSelectionUnestablished']
+            $hsaDetailUnestablished = $amounts['candidateSelectionUnestablished']
                 || ($isSharingMember && $archerAcrossUndividedSpouses);
 
             $detail = [
@@ -15468,7 +15584,7 @@ final class Engine
                 'statutoryMaximum' => $baseLimit === null
                     ? null
                     : self::roundMoney($baseLimit + $catchUpApplied),
-                'detail' => $candidateSelectionUnestablished ? null : $detail,
+                'detail' => $hsaDetailUnestablished ? null : $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
                 'familyPoolUsageDeterminable' => $amounts['ageKnown']
                     && (float) $amounts['catchUpApplied'] === 0.0

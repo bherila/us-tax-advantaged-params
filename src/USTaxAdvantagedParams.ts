@@ -658,8 +658,17 @@ export interface HsaAccountDetail {
    * rather than after.
    */
   archerMsaReductionPrecedesFamilyDivision: boolean;
-  /** The fall in this owner's IRC 223(b) ceiling caused by that reduction. */
-  archerMsaLimitReduction: Money;
+  /**
+   * The fall in this owner's IRC 223(b) ceiling caused by that reduction.
+   *
+   * Null where that fall is a share of the couple's reduction and no share was
+   * established. IRC 223(b)(5)(B)(i) takes the spouses' aggregate off the one
+   * family limitation *before* subparagraph (B)(ii) divides it, so an owner's
+   * own fall is their share of it — an amount this field cannot state when the
+   * share is unknown. Charging each spouse the whole aggregate instead reported
+   * a couple that lost it twice.
+   */
+  archerMsaLimitReduction: Money | null;
   /**
    * The aggregate amount contributed to health savings accounts of this owner
    * under IRC 408(d)(9) that reduced their IRC 223(b) limitation under IRC
@@ -676,7 +685,12 @@ export interface HsaAccountDetail {
    * attributed in subparagraph order: (A) is reported in full and this reports
    * only what was left for (C) to reach.
    */
-  qualifiedHsaFundingLimitReduction: Money;
+  /**
+   * Null on the same footing as `archerMsaLimitReduction`: IRC 223(b)(4)(C)
+   * reduces the share IRC 223(b)(5)(B)(ii) left this spouse, so how far their
+   * own ceiling fell is bounded by a share no division established.
+   */
+  qualifiedHsaFundingLimitReduction: Money | null;
   /**
    * True where this ceiling was built from Notice 2008-52's second candidate —
    * December's coverage tier taken for the whole year — because it came out
@@ -695,8 +709,19 @@ export interface HsaAccountDetail {
    * The part of this owner's ceiling that exists only because of IRC
    * 223(b)(8)(A) — the amount that "could not have been made but for"
    * the last-month rule if the HSA is funded to its calculated maximum.
+   *
+   * Null where it is a share of the couple's increase under IRC
+   * 223(b)(5)(B)(ii) and no share was established. The amount is then between
+   * nothing and the whole of that increase, which is not the zero it would
+   * otherwise read as.
    */
-  amountAttributableToLastMonthRule: Money;
+  amountAttributableToLastMonthRule: Money | null;
+  /**
+   * Null both where IRC 223(b)(8)(B) creates no obligation and where the amount
+   * that would create one could not be computed;
+   * `amountAttributableToLastMonthRule` separates the two, being zero in the
+   * first case and null in the second.
+   */
   testingPeriod: HsaTestingPeriodObligation | null;
 }
 
@@ -12186,7 +12211,6 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   };
   const eligibleInMonth = (personId: string, monthIndex: number): boolean =>
     actuallyEligibleInMonth(personId, monthIndex) || lastMonthRuleDeemsEligible(personId);
-  const recharacterized = new Set<string>();
   if (familySharingApplies) {
     // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
     // as having only that family coverage. It does not make an otherwise
@@ -12197,11 +12221,35 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       for (const month of HSA_ALL_MONTHS) {
         if (familyMonth[month - 1] && owner.months[month - 1] === "self_only") {
           owner.months[month - 1] = "family";
-          recharacterized.add(personId);
         }
       }
     }
   }
+  /**
+   * Whether the recharacterization above is a fact the statements establish,
+   * rather than one of the readings they leave open.
+   *
+   * `facts[owner].months` holds whichever of an owner's contradictory coverage
+   * statements was merged first, so recording the rewrite as it happened made
+   * the INFO an artefact of record order: two accounts of one owner saying
+   * self-only and family, beside a spouse holding family coverage, produced the
+   * diagnostic when the self-only statement was listed first and not when it
+   * was listed second. Neither answer was established -- one statement asserts
+   * the self-only coverage subparagraph (A) rewrites and the other denies it --
+   * so the conflict diagnostic is the whole of what those facts support.
+   *
+   * `coverageSlotsByPerson` answers the diagnostic's own question instead: a
+   * month is `self_only` there only when every statement made about it says so.
+   * A determinate case is unaffected, because a unanimously supplied self-only
+   * tier is exactly that.
+   */
+  const recharacterizationEstablished = (personId: string): boolean => {
+    const slots = coverageSlotsByPerson.get(personId);
+    return (
+      slots !== undefined &&
+      HSA_ALL_MONTHS.some((_month, index) => slots[index] === "self_only" && familyMonth[index])
+    );
+  };
 
   /**
    * The coverage schedule of the IRC 223(b)(8) full-contribution candidate.
@@ -13808,21 +13856,25 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     return owned.familySharedPortionApplied > 0 || owned.familySharedPortionWithoutLastMonthRule > 0;
   });
   /**
+   * Whether any owner-specific figure turns on that unestablished division.
+   *
+   * `someFamilyMonthIsShared` asks whether a *share* is in question, which is
+   * the right test for every unestablished division but one. Where the one
+   * aggregate Archer MSA reduction would be subtracted from both spouses'
+   * undivided months, the question is not whose share a month falls in but
+   * whose months the reduction came out of -- and that question exists only
+   * because no month is shared. Requiring a shared month would have withheld
+   * nothing and left each spouse charged the whole aggregate, so the couple's
+   * two accounts together fell a full aggregate short of the one limitation
+   * the IRC 223(b)(5) pool beside them still reported.
+   */
+  const divisionShareInQuestion =
+    archerAcrossUndividedSpouses || (someFamilyMonthIsShared && householdDivisionUnestablished);
+  /**
    * Whether that unestablished division withholds the *amount*. Only here does
    * immateriality count, and it is the narrower question of the two.
    */
-  const householdDivisionUnknown =
-    !nothingLeftToDivide &&
-    // `someFamilyMonthIsShared` asks whether a *share* is in question, which is
-    // the right test for every unestablished division but one. Where the one
-    // aggregate Archer MSA reduction would be subtracted from both spouses'
-    // undivided months, the question is not whose share a month falls in but
-    // whose months the reduction came out of -- and that question exists only
-    // because no month is shared. Requiring a shared month would have withheld
-    // nothing and left each spouse charged the whole aggregate, so the couple's
-    // two accounts together fell a full aggregate short of the one limitation
-    // the IRC 223(b)(5) pool beside them still reported.
-    (archerAcrossUndividedSpouses || (someFamilyMonthIsShared && householdDivisionUnestablished));
+  const householdDivisionUnknown = !nothingLeftToDivide && divisionShareInQuestion;
   /**
    * Whether a settled division is worth announcing. Same test: where nothing is
    * left to divide, saying how it was divided is noise about nought, and where
@@ -13996,7 +14048,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const diagnostics = [...amounts.diagnostics];
     if (isSharingMember) {
       diagnostics.push(...sharingDiagnostics);
-      if (recharacterized.has(ownerId)) {
+      if (recharacterizationEstablished(ownerId)) {
         diagnostics.push(
           diagnostic(
             "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE",
@@ -14104,7 +14156,26 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       amounts.catchUpWithoutLastMonthRule
         - (share === null ? Math.max(0, archerAmount - amounts.proratedWithoutLastMonthRule) : 0),
     );
-    const archerMsaLimitReduction = indeterminate || baseLimitAfterArcher === null
+    /**
+     * Whether this owner's own fall is a share of the couple's reduction that
+     * no division fixes. IRC 223(b)(5)(B)(i) subtracts the aggregate from the
+     * one family limitation and subparagraph (B)(ii) then divides what is left,
+     * so an owner whose share is `x` of a limitation `F` reduced by `A` falls
+     * by `x * min(A, F)` -- unknown for every `x` the facts leave open, and not
+     * the whole aggregate, which is what charging both spouses reported.
+     *
+     * `divisionShareInQuestion` rather than `householdDivisionUnknown`: the
+     * latter forgives an unestablished division whose every completion yields
+     * the same maximum, which is true of a limitation the reduction exhausted
+     * to nothing. That immateriality rescues the maximum and not this figure --
+     * both spouses' ceilings end at zero however the limitation was divided,
+     * but how far each of them fell to get there is still their share.
+     */
+    const ownerShareInQuestion = isSharingMember && divisionShareInQuestion;
+    const ownerArcherReductionUnestablished = ownerShareInQuestion && archerAmount > 0;
+    const archerMsaLimitReduction: Money | null = ownerArcherReductionUnestablished
+      ? null
+      : indeterminate || baseLimitAfterArcher === null
       ? 0
       : nonnegative(
           divided(
@@ -14143,9 +14214,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
             catchUpWithoutLastMonthRuleAfterArcher,
             fundingAmount,
           );
-    const qualifiedHsaFundingLimitReduction = indeterminate || baseLimitAfterArcher === null || baseLimit === null
-      ? 0
-      : nonnegative(baseLimitAfterArcher + catchUpAfterArcher - baseLimit - catchUpApplied);
+    /**
+     * IRC 223(b)(4)(C) reduces this spouse's *own* limitation, which is the
+     * share IRC 223(b)(5)(B)(ii) left them, so the fall it causes is bounded by
+     * that share: an owner holding `x` of a limitation `F` falls by
+     * `min(fundingAmount, x * F)`, and an unestablished `x` leaves that figure
+     * somewhere in a range rather than at the zero the indeterminate branch
+     * below would otherwise report.
+     */
+    const qualifiedHsaFundingLimitReduction: Money | null =
+      ownerShareInQuestion && fundingAmount > 0
+        ? null
+        : indeterminate || baseLimitAfterArcher === null || baseLimit === null
+        ? 0
+        : nonnegative(baseLimitAfterArcher + catchUpAfterArcher - baseLimit - catchUpApplied);
 
     context.hsaBasePools.set(ownerId, {
       id: `hsa223b1:${ownerId}`,
@@ -14174,8 +14256,29 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
 
     let status = indeterminate ? CalculationStatus.INDETERMINATE : CalculationStatus.DETERMINATE;
     let testingPeriod: HsaTestingPeriodObligation | null = null;
-    const attributable =
-      indeterminate || baseLimit === null || baseLimitWithoutLastMonthRule === null
+    /**
+     * Whether IRC 223(b)(8) reached this owner at all, asked of their undivided
+     * months so that it can be answered without the division. Where the two
+     * candidates give the same undivided figures the division scales both alike
+     * and the rule was worth nothing under every share, so the amount below is
+     * a settled zero rather than an unknown one -- which keeps the common case,
+     * an owner eligible all year, numeric.
+     */
+    const lastMonthRuleAddedNothingUndivided =
+      amounts.proratedApplied === amounts.proratedWithoutLastMonthRule &&
+      amounts.catchUpApplied === amounts.catchUpWithoutLastMonthRule;
+    /**
+     * Otherwise it is `x * (applied - withoutLastMonthRule)` for a share `x` the
+     * facts never fixed, which ranges from nothing up to the whole of the
+     * couple's increase. Reporting the zero the indeterminate branch produces
+     * would say IRC 223(b)(8)(B)(i) has nothing to recapture from this owner --
+     * and the `testingPeriod` beside it, which is null both where no obligation
+     * exists and where none could be computed, is read through this field.
+     */
+    const attributable: Money | null =
+      ownerShareInQuestion && !lastMonthRuleAddedNothingUndivided
+        ? null
+        : indeterminate || baseLimit === null || baseLimitWithoutLastMonthRule === null
         ? 0
         : nonnegative(
             roundMoney(baseLimit + catchUpApplied - baseLimitWithoutLastMonthRule - catchUpWithoutLastMonthRule),
@@ -14198,7 +14301,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * a period whose outcome cannot change a figure would report an exposure
      * that IRC 223(b)(8)(B)(i) does not create.
      */
-    if (amounts.fullContributionCandidateSelected && attributable > 0 && !indeterminate) {
+    // A null attributable amount is not a positive one: nothing can be put on
+    // notice about an exposure whose size the division never fixed, and the
+    // field beside this reports that rather than a zero.
+    if (amounts.fullContributionCandidateSelected && attributable !== null && attributable > 0 && !indeterminate) {
       const testingPeriodFacts = facts.get(ownerId)!.testingPeriodFacts;
       const months = parameters.testingPeriodMonths ?? 13;
       let testingStatus: HsaTestingPeriodStatus;
@@ -14257,7 +14363,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
 
     if (!indeterminate && archerAmount > 0) {
       diagnostics.push(
-        share === null
+        // The reduction is null only where a share decides it, and only IRC
+        // 223(b)(5) produces a share, so branching on it first leaves the
+        // unmarried wording where it can never meet one.
+        share === null && archerMsaLimitReduction !== null
           ? diagnostic(
               "HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT",
               DiagnosticSeverity.INFO,
@@ -14268,7 +14377,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           : diagnostic(
               "HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT",
               DiagnosticSeverity.INFO,
-              `IRC 223(b)(4) does not apply to an individual to whom IRC 223(b)(5) applies, so the $${archerAmount.toLocaleString()} aggregate amount paid to Archer MSAs of both spouses reduces the single IRC 223(b)(1) family limitation under IRC 223(b)(5)(B)(i) before IRC 223(b)(5)(B)(ii) divides it, which took $${archerMsaLimitReduction.toLocaleString()} off this spouse's ceiling. IRC 223(b)(5)(B) is applied without regard to the IRC 223(b)(3) additional contribution amount, so the reduction never reaches it. The amount paid is taken as supplied; IRC 220 is not modelled.`,
+              `IRC 223(b)(4) does not apply to an individual to whom IRC 223(b)(5) applies, so the $${archerAmount.toLocaleString()} aggregate amount paid to Archer MSAs of both spouses reduces the single IRC 223(b)(1) family limitation under IRC 223(b)(5)(B)(i) before IRC 223(b)(5)(B)(ii) divides it${
+                archerMsaLimitReduction === null
+                  ? ", and the IRC 223(b)(5) shared limit reports the couple's limitation after it. How much of that reduction fell on this spouse's own ceiling is their share of it under subparagraph (B)(ii), and no division was established, so accounts[].hsa.archerMsaLimitReduction is null rather than the aggregate: the reduction is taken from the couple's one limitation once, and charging it to each spouse would subtract it twice"
+                  : `, which took $${archerMsaLimitReduction.toLocaleString()} off this spouse's ceiling`
+              }. IRC 223(b)(5)(B) is applied without regard to the IRC 223(b)(3) additional contribution amount, so the reduction never reaches it. The amount paid is taken as supplied; IRC 220 is not modelled.`,
               `persons.${ownerId}`,
               "IRC 223(b)(5)(B)(i)",
             ),
@@ -14280,7 +14393,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         diagnostic(
           "HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT",
           DiagnosticSeverity.INFO,
-          share === null
+          qualifiedHsaFundingLimitReduction === null
+            ? `The IRC 223(b)(4) flush text withdraws subparagraph (A) alone from an individual to whom IRC 223(b)(5) applies, so IRC 223(b)(4)(C) still applies to this spouse. The $${fundingAmount.toLocaleString()} contributed under IRC 408(d)(9) is an amount of this individual and not of the couple, and it reduces the limitation the IRC 223(b)(5)(B)(ii) division left them rather than the family limitation before it. That share was never established, so how far this spouse's own ceiling fell is bounded by it and accounts[].hsa.qualifiedHsaFundingLimitReduction is null rather than nil. The amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not modelled.`
+            : share === null
             ? `IRC 223(b)(4)(C) reduces the IRC 223(b) limitation, but not below zero, by the $${fundingAmount.toLocaleString()} aggregate amount contributed to health savings accounts of this individual for the taxable year under IRC 408(d)(9), which took $${qualifiedHsaFundingLimitReduction.toLocaleString()} off the ceiling. The amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not modelled.`
             : `The IRC 223(b)(4) flush text withdraws subparagraph (A) alone from an individual to whom IRC 223(b)(5) applies, so IRC 223(b)(4)(C) still applies to this spouse. The $${fundingAmount.toLocaleString()} contributed under IRC 408(d)(9) is an amount of this individual and not of the couple, and IRC 223(b)(5)(B)(i) reduces the family limitation by the Archer MSA amount alone, so it reduces this spouse's own limitation after the IRC 223(b)(5)(B)(ii) division rather than the family limitation before it. That took $${qualifiedHsaFundingLimitReduction.toLocaleString()} off the ceiling, reaching the IRC 223(b)(3) additional contribution amount with whatever the IRC 223(b)(1) limitation could not absorb. The amount is taken as supplied; the IRC 408(d)(9)(C) once-per-lifetime limitation and the separate IRC 408(d)(9)(D) testing period are not modelled.`,
           `persons.${ownerId}`,
@@ -14382,8 +14497,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * beside it does not, for the reason `sharedFamilyContributionLimit` gives
      * below: there only one owner's months are in play, so the amount is settled
      * and only its placement -- the share -- is not.
+     *
+     * An unsettled IRC 223(b)(5)(B)(ii) division is deliberately not a cause,
+     * and the four fields it does reach are null individually instead. Both
+     * candidate schedules stay computable when only the share is unknown, so
+     * every figure here that describes the owner's *undivided* months or the
+     * couple's limitation is established and stays -- which is what the
+     * monthly-limit, prorated-limit and `sharedFamilyContributionLimit`
+     * assertions across this suite exist to hold. Withholding the object for an
+     * unknown share would take those with it and report a January the facts fix
+     * as unknowable because a share is.
      */
-    const candidateSelectionUnestablished =
+    const hsaDetailUnestablished =
       amounts.candidateSelectionUnestablished || (isSharingMember && archerAcrossUndividedSpouses);
 
     const detail: HsaAccountDetail = {
@@ -14457,7 +14582,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       status: planStatus,
       diagnostics,
       statutoryMaximum: baseLimit === null ? null : roundMoney(baseLimit + catchUpApplied),
-      detail: candidateSelectionUnestablished ? null : detail,
+      detail: hsaDetailUnestablished ? null : detail,
       familyPoolKey: isSharingMember ? familyPoolKey : null,
       familyPoolUsageDeterminable:
         amounts.ageKnown && amounts.catchUpApplied === 0 && archerAmount === 0 && fundingAmount === 0,

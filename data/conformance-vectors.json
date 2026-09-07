@@ -12813,7 +12813,7 @@
     },
     {
       "name": "2026 an unknown division of a limitation of nothing is still determinate",
-      "description": "IRC 223(b)(5)(B)(ii) divides \"the limitation under paragraph (1) ... after such reduction\", and this vector puts that reduced limitation at exactly zero. Both spouses hold family coverage for all twelve months of 2026, so IRC 223(b)(5)(A) gives the couple the one IRC 223(b)(2)(B) family amount of 8750 (Rev. Proc. 2025-19). IRC 223(b)(5)(B)(i) then reduces that limitation by \"the aggregate amount paid to Archer MSAs of such spouses for the taxable year\", and the two spouses paid 5000 and 3750, aggregating to exactly 8750. 8750 - 8750 = 0, so there is nothing left for subparagraph (B)(ii) to divide.\n\nThe scenario states hsaFamilyLimitDivision as { status: \"unknown\" }, which ordinarily makes the division unstatable and nulls every account's maximum. It must not do so here. Every division of nothing is the same division: half of 0 is 0, an agreed 100/0 of 0 is 0 and 0, and so is every other split. The unknown cannot change any account's answer, so withholding an answer for it would report a limitation as unknowable that the statute has already fixed at a number both spouses can be told. Both accounts are therefore determinate at 0, HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE is absent, and so is HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT -- there is no division worth announcing either.\n\nNeither spouse attains 55 before the close of 2026, so no IRC 223(b)(3) additional contribution amount survives the reduction to keep a positive maximum alive; IRC 223(b)(5)(B) reduces the paragraph (1) limitation \"without regard to\" that amount, so a catch-up here would be reported beside the zero rather than inside it, and this vector deliberately excludes one so that the zero is the whole answer. HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT is reported because the reduction is what produced the zero.\n\nThe division and the amount are pinned separately, because only one of them is rescued by the immateriality. Every division of nothing yields the same 0, so the maximum is determinate; but no division was ever established, so accounts.N.hsa.familyLimitShare is null on both accounts rather than a number. Reporting a share here would have to invent one -- the engine previously published familyLimitShare 1 for each spouse, two shares of a single limitation totalling 2, which contradicts both the stated \"unknown\" status and IRC 223(b)(5)(B)(ii)'s premise that the shares divide one limitation between them.",
+      "description": "IRC 223(b)(5)(B)(ii) divides \"the limitation under paragraph (1) ... after such reduction\", and this vector puts that reduced limitation at exactly zero. Both spouses hold family coverage for all twelve months of 2026, so IRC 223(b)(5)(A) gives the couple the one IRC 223(b)(2)(B) family amount of 8750 (Rev. Proc. 2025-19). IRC 223(b)(5)(B)(i) then reduces that limitation by \"the aggregate amount paid to Archer MSAs of such spouses for the taxable year\", and the two spouses paid 5000 and 3750, aggregating to exactly 8750. 8750 - 8750 = 0, so there is nothing left for subparagraph (B)(ii) to divide.\n\nThe scenario states hsaFamilyLimitDivision as { status: \"unknown\" }, which ordinarily makes the division unstatable and nulls every account's maximum. It must not do so here. Every division of nothing is the same division: half of 0 is 0, an agreed 100/0 of 0 is 0 and 0, and so is every other split. The unknown cannot change any account's answer, so withholding an answer for it would report a limitation as unknowable that the statute has already fixed at a number both spouses can be told. Both accounts are therefore determinate at 0, HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE is absent, and so is HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT -- there is no division worth announcing either.\n\nNeither spouse attains 55 before the close of 2026, so no IRC 223(b)(3) additional contribution amount survives the reduction to keep a positive maximum alive; IRC 223(b)(5)(B) reduces the paragraph (1) limitation \"without regard to\" that amount, so a catch-up here would be reported beside the zero rather than inside it, and this vector deliberately excludes one so that the zero is the whole answer. HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT is reported because the reduction is what produced the zero.\n\nThe division and the amount are pinned separately, because only one of them is rescued by the immateriality. Every division of nothing yields the same 0, so the maximum is determinate; but no division was ever established, so accounts.N.hsa.familyLimitShare is null on both accounts rather than a number. Reporting a share here would have to invent one -- the engine previously published familyLimitShare 1 for each spouse, two shares of a single limitation totalling 2, which contradicts both the stated \"unknown\" status and IRC 223(b)(5)(B)(ii)'s premise that the shares divide one limitation between them.\n\nThe per-owner Archer reduction follows the division rather than the amount, and is null for the same reason familyLimitShare is. IRC 223(b)(5)(B)(i) takes the 8750 aggregate off the couple's single limitation once, before subparagraph (B)(ii) divides what is left, so how far *this* spouse's own ceiling fell is their share of that reduction: x * 8750 for a share x nothing established, anywhere between nothing and the whole of it. Charging each of them the full 8750 published a couple that lost the aggregate twice, and the HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT note interpolated that same figure as the fall in each spouse's ceiling. Both accounts therefore report archerMsaLimitReduction as null while the maximum beside it stays the determinate 0 that every division yields alike -- the same separation of the amount from its allocation this vector already draws for familyLimitShare.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -12865,7 +12865,9 @@
         "accounts.1.status": "determinate",
         "accounts.1.statutoryMaximumAnnualContribution": 0,
         "accounts.1.hsa.familyLimitShare": null,
-        "totals.hsaContribution": 0
+        "totals.hsaContribution": 0,
+        "accounts.0.hsa.archerMsaLimitReduction": null,
+        "accounts.1.hsa.archerMsaLimitReduction": null
       },
       "expectAbsentDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE",
@@ -15785,6 +15787,289 @@
       },
       "expectDiagnosticCodes": [
         "BIRTH_YEAR_OR_DATE_REQUIRED_FOR_HSA_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 an unknown division leaves the last-month amount a range, not a nil",
+      "description": "Both spouses hold family high deductible health plan coverage on 1 December 2026 and in no other month, and hsaFamilyLimitDivision states { status: \"unknown\" }.\n\nIRC 223(b)(8)(A) treats an individual who is an eligible individual on the first day of the last month of the taxable year as an eligible individual for each month of that year, and Notice 2008-52 states the resulting maximum as the greater of (1) \"the sum of the limits determined separately for each month under section 223(b)(2), based on eligibility and HDHP coverage on the first day of each month\" or (2) \"the maximum annual HSA contribution under section 223(b)(2)(A) or section 223(b)(2)(B) based on the individual's HDHP coverage ... on the first day of the last month\". The 2026 family amount is 8750 (Rev. Proc. 2025-19), so candidate (1) is one month of it, 8750/12 = 729.17 to the cent, and candidate (2) is 8750. The greater is 8750: fullContributionCandidateSelected is true and contributionLimitWithoutLastMonthRule reports the 729.17 that lost. Neither spouse attains 55 before the close of 2026, so IRC 223(b)(3) adds nothing.\n\nIRC 223(b)(5)(A) gives the couple one family limitation of 8750, which sharedFamilyContributionLimit reports as the pre-division amount, and IRC 223(b)(5)(B)(ii) divides it \"between such spouses by agreement\". No agreement was established, so no account's share is stateable and each maximum is null under HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE.\n\nWhat this vector pins is the field that unknown share also reaches. amountAttributableToLastMonthRule is the part of *this owner's* ceiling that IRC 223(b)(8)(B)(i) would recapture -- \"the aggregate amount of the contributions ... which could not have been made but for subparagraph (A)\" -- so for a share x it is x * (8750 - 729.17) = x * 8020.83, which ranges across every division IRC 223(b)(5)(B)(ii) leaves open from nothing up to 8020.83. It is therefore null and not 0: a zero would state that the last-month rule left this owner nothing to recapture, and the testingPeriod beside it, which is null both where no obligation arises and where none can be computed, would then read as an absence of exposure rather than an uncomputed one.\n\nEverything the share does not decide is still reported, which is the other half of the pin. The eligible month count, the owner's undivided prorated limit of 8750, the 729.17 counterfactual and the couple's 8750 limitation are all fixed by coverage facts alone, and fullContributionCandidateSelected is decided on the couple's combined candidates under Notice 2008-52 Example 14, which no division touches.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  12
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        }
+      },
+      "expect": {
+        "accounts.0.accountId": "t-hsa",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa.eligibleMonthCount": 1,
+        "accounts.0.hsa.proratedContributionLimit": 8750,
+        "accounts.0.hsa.contributionLimitWithoutLastMonthRule": 729.17,
+        "accounts.0.hsa.sharedFamilyContributionLimit": 8750,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.additionalContributionAmount": 0,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": null,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.accountId": "s-hsa",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.hsa.amountAttributableToLastMonthRule": null,
+        "accounts.1.hsa.fullContributionCandidateSelected": true,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 an unknown division of months no spouse shares still states each owner's own reduction",
+      "description": "The taxpayer holds family high deductible health plan coverage for January through June 2026 and the spouse for July through December, so no month of the year has both of them as eligible individuals, and hsaFamilyLimitDivision states { status: \"unknown\" }. The taxpayer also contributed 2000 to a health savings account under IRC 408(d)(9).\n\nNotice 2004-50 Q&A-31 gives a month in which only one spouse is an eligible individual wholly to that spouse -- \"if only one spouse is an eligible individual, only that spouse may contribute to an HSA\" -- so no month here is reached by the IRC 223(b)(5)(B)(ii) division at all. Six months of the 8750 family amount (Rev. Proc. 2025-19) is 4375 for each of them.\n\nThe spouse is an eligible individual on 1 December, so Notice 2008-52 runs the greater-of on the couple's combined figures as in its Example 14: candidate (1) is 4375 + 4375 = 8750 and candidate (2) is the one IRC 223(b)(5)(A) family limitation of 8750. They are equal, so the greater is the month-by-month one, fullContributionCandidateSelected is false and amountAttributableToLastMonthRule is 0 for both.\n\nIRC 223(b)(4)'s flush text withdraws subparagraph (A) alone from an individual to whom paragraph (5) applies, so IRC 223(b)(4)(C) still reduces the taxpayer's own limitation by \"the aggregate amount contributed to health savings accounts of such individual for such taxable year under section 408(d)(9)\": 4375 - 2000 = 2375, a fall of 2000.\n\nThis is the control on the test that withholds owner-specific figures. familyLimitShare is null on both accounts, because the status is unknown and no share was ever established; every allocation-dependent amount beside it is nonetheless a number, because with no shared month there is no share for the unknown to move. A fall of 2000 in this taxpayer's ceiling is theirs alone. An unestablished division is therefore not by itself a reason to stop reporting these figures.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "qualifiedHsaFundingDistributions": 2000
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1986
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        }
+      },
+      "expect": {
+        "accounts.0.accountId": "a",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 2375,
+        "accounts.0.hsa.familyLimitShare": null,
+        "accounts.0.hsa.qualifiedHsaFundingLimitReduction": 2000,
+        "accounts.0.hsa.archerMsaLimitReduction": 0,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.1.accountId": "b",
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 4375,
+        "accounts.1.hsa.familyLimitShare": null,
+        "accounts.1.hsa.qualifiedHsaFundingLimitReduction": 0,
+        "accounts.1.hsa.amountAttributableToLastMonthRule": 0,
+        "totals.hsaContribution": 6750
+      },
+      "expectDiagnosticCodes": [
+        "HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 contradictory coverage asserts no IRC 223(b)(5)(A) recharacterization, self-only account first",
+      "description": "The taxpayer owns two health savings accounts stating irreconcilable IRC 223(c)(2) coverage for 2026 -- self-only on one and family on the other -- while the spouse states family coverage on persons[].hsaCoverage and owns no account. Coverage is a fact about the individual, so the two statements cannot both be true and HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER makes both accounts indeterminate with the whole IRC 223 detail withheld.\n\nWhat this pair pins is the diagnostic beside them. IRC 223(b)(5)(A) treats both spouses \"as having only such family coverage\" for any month in which either has family coverage, which rewrites a self-only month of the taxpayer's into a family month, and HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE reports that it happened. Whether it happened is exactly what the taxpayer's two statements disagree about: one asserts the self-only coverage subparagraph (A) rewrites and the other denies there was any. Neither reading is established, so the INFO must be absent -- the conflict diagnostic is the whole of what these facts support -- and it must be absent whichever statement the caller listed first, because two contradictory statements have no order.\n\nThe two vectors differ only in the order of the account records and must agree on every asserted value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-self",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "t-family",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-self",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.accountId": "t-family",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.hsa": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE"
+      ]
+    },
+    {
+      "name": "2026 that pair reports the same absence with the family account first",
+      "description": "The taxpayer owns two health savings accounts stating irreconcilable IRC 223(c)(2) coverage for 2026 -- self-only on one and family on the other -- while the spouse states family coverage on persons[].hsaCoverage and owns no account. Coverage is a fact about the individual, so the two statements cannot both be true and HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER makes both accounts indeterminate with the whole IRC 223 detail withheld.\n\nWhat this pair pins is the diagnostic beside them. IRC 223(b)(5)(A) treats both spouses \"as having only such family coverage\" for any month in which either has family coverage, which rewrites a self-only month of the taxpayer's into a family month, and HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE reports that it happened. Whether it happened is exactly what the taxpayer's two statements disagree about: one asserts the self-only coverage subparagraph (A) rewrites and the other denies there was any. Neither reading is established, so the INFO must be absent -- the conflict diagnostic is the whole of what these facts support -- and it must be absent whichever statement the caller listed first, because two contradictory statements have no order.\n\nThe two vectors differ only in the order of the account records and must agree on every asserted value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-family",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "t-self",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "t-family",
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.accountId": "t-self",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.hsa": null,
+        "totals.hsaContribution": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_TREATED_AS_HAVING_FAMILY_COVERAGE"
       ]
     }
   ]

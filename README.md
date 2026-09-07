@@ -498,7 +498,10 @@ reduction that would have consumed it under §223(b)(4)(A).
 
 Each account's `hsa` detail reports `archerMsaContributionsApplied`,
 `archerMsaReductionPrecedesFamilyDivision`, and `archerMsaLimitReduction`, and an
-`HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied.
+`HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied. For a
+married couple whose division was never settled, `archerMsaLimitReduction` is `null` and the
+diagnostic states the reduction at couple level instead — see
+[A share nobody established is not a zero](#a-share-nobody-established-is-not-a-zero).
 
 ### Qualified HSA funding distributions: `persons[].qualifiedHsaFundingDistributions`
 
@@ -719,7 +722,36 @@ whichever statement happened to be read first:
 
 Where the couple's *combined* candidates are what the greater-of compares, one spouse's open
 candidate withholds the other's detail too. **An unsettled §223(b)(5)(B)(ii) division does not**: it
-leaves both candidates exactly as computable and nulls `familyLimitShare` alone.
+leaves both candidates exactly as computable, so every figure describing the owner's own undivided
+months or the couple's limitation stays. What it does null is the four figures that are this owner's
+*share* of the result rather than the result — see below.
+
+### A share nobody established is not a zero
+
+`familyLimitShare` is not the only field an unsettled §223(b)(5)(B)(ii) division reaches. Four more
+report a fall in, or a slice of, **this owner's** ceiling, and each of them is that owner's share of
+a couple-level figure:
+
+| Field | Why the share decides it |
+|---|---|
+| `archerMsaLimitReduction` | §223(b)(5)(B)(i) takes the spouses' aggregate off the one limitation *before* (B)(ii) divides it, so an owner's own fall is their share of that reduction |
+| `qualifiedHsaFundingLimitReduction` | §223(b)(4)(C) reduces the share (B)(ii) left them, so how far their ceiling fell is bounded by it |
+| `amountAttributableToLastMonthRule` | §223(b)(8)(B)(i) recaptures what "could not have been made but for subparagraph (A)" — the owner's share of the couple's increase |
+| `testingPeriod` | it exists only where that attributable amount is positive |
+
+Each is `null` where a share is genuinely in question, not `0`. Two spouses whose only coverage is
+family in December 2026 have a couple's limitation of 8750 against a month-by-month 729.17, so each
+owner's attributable amount is somewhere between nothing and 8020.83 — and a `0` there would say
+§223(b)(8)(B)(i) has nothing to recapture from them. `testingPeriod` is `null` both where no
+obligation arises and where none can be computed; `amountAttributableToLastMonthRule` separates the
+two, being `0` in the first case and `null` in the second.
+
+**A share is only in question where a month is shared.** Spouses eligible in disjoint halves of the
+year each take their own months whole under Notice 2004-50 Q&A-31, so nothing of theirs is divided
+and all four figures stay numeric while `familyLimitShare` is still `null`. And the immateriality
+that rescues a *maximum* does not rescue these: where an Archer reduction exhausts the limitation to
+a zero every division yields alike, both ceilings end at zero, but how far each spouse fell to get
+there is still their share, so the maximum stays `0` and `archerMsaLimitReduction` is `null`.
 
 `null` here is not the same as the key being absent, which still means "not an HSA account". The
 account's status, its null maximum, its shared limits and its diagnostics are all reported as before
