@@ -682,14 +682,14 @@ That case reports `HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` instead. I
 states nothing, eligibility remains unknown: the owner might receive half or the whole. Where
 those readings change the answer, the engine reports `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE`,
 `familyLimitShare: null`, and a null maximum.
-For an MFJ or MFS family-covered HSA owner, omitting the other person does not bypass a
-supplied division or establish sole eligibility. Where that missing fact changes the
-answer, the result is indeterminate with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED`. A post-2006
-owner whose agreement already assigns them the whole family limitation keeps that amount
-under either partner-eligibility reading. That known whole share still follows §223(b)(5):
-Archer MSA contributions reduce the family base before division and do not reduce the
-separate age-55 additional amount. A missing spouse deductible can still matter
-in 2004–2006, and missing coverage can still change self-only months.
+For an MFJ or MFS family-covered HSA owner, supply both person records. An absent
+partner does not establish either their eligibility or their Archer MSA amount, so
+`HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` withholds the result even with an agreed whole
+share. That agreement settles the eligibility-dependent division but cannot settle
+the aggregate reduction in §223(b)(5)(B)(i). On a supplied person record an omitted
+Archer amount defaults to zero. The reduction precedes division and never consumes
+the separate age-55 amount. A missing spouse deductible can still matter in
+2004–2006, and missing coverage can still change self-only months.
 
 Earlier versions assumed a sole HSA owner had agreed to take everything when no
 account-level share was supplied, reporting `HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT`.

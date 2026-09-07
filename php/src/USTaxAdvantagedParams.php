@@ -11248,14 +11248,6 @@ final class Engine
         return (string) json_encode($value);
     }
 
-    /** The agreement fixes this owner's share under either partner-eligibility reading. */
-    private static function agreedWholeHsaShare(array $division, ?string $role): bool
-    {
-        return $division['status'] === 'agreed'
-            && (($role === 'taxpayer' && (float) $division['taxpayerShare'] === 1.0)
-                || ($role === 'spouse' && (float) $division['taxpayerShare'] === 0.0));
-    }
-
     /** Only the empty person statement affirmatively supplies no coverage. */
     private static function resolvePersonHsaMonths(array $coverage): ?array
     {
@@ -13552,9 +13544,8 @@ final class Engine
              */
             $spouseCoverageSupplied = $otherSpouseId !== null
                 && array_key_exists($otherSpouseId, $familyStatusByPerson);
-            $agreedWholeForOwner = self::agreedWholeHsaShare($context['hsaFamilyLimitDivision'], $person['role'] ?? null);
             $missingCoupleForFamilyDivision = $couple === null
-                && in_array('family', $months, true) && !$agreedWholeForOwner;
+                && in_array('family', $months, true);
             $recharacterizationCouldRaiseTier = in_array('self_only', $months, true);
             $lowestDeductibleCouldLowerAmount =
                 $parameters['contributionLimitCappedByHdhpAnnualDeductible']
@@ -13576,7 +13567,7 @@ final class Engine
                 // told only about self-only months would go looking for one in a
                 // record whose months are all family months.
                 if ($missingCoupleForFamilyDivision) {
-                    $reason = "Both taxpayer and spouse person records are required to establish the family division, including any supplied agreement. The absent spouse record does not establish ineligibility or permit the whole limitation to bypass division.";
+                    $reason = "Both taxpayer and spouse person records are required to establish the family limitation and its division. Even an agreed whole share does not establish the absent spouse's Archer MSA amount, which IRC 223(b)(5)(B)(i) includes in the reduction before division. The absent record also does not establish ineligibility.";
                 } elseif ($recharacterizationCouldRaiseTier && $lowestDeductibleCouldLowerAmount) {
                     $reason = 'This owner has at least one self-only month, which that treatment can raise to a '
                         . 'family month, and at least one family month, whose limitation for tax year '
@@ -15104,10 +15095,7 @@ final class Engine
         foreach ($ownerIds as $ownerId) {
             $amounts = $amountsByOwner[$ownerId];
             $isSharingMember = $familySharingApplies && in_array($ownerId, $coupleMembersWithAccounts, true);
-            $unpairedWholeShare = $couple === null && $amounts['familyPortionApplied'] > 0
-                && in_array($context['filingStatus'], [FilingStatus::MARRIED_FILING_JOINTLY->value, FilingStatus::MARRIED_FILING_SEPARATELY->value], true)
-                && self::agreedWholeHsaShare($context['hsaFamilyLimitDivision'], $context['persons'][$ownerId]['role'] ?? null);
-            $share = $isSharingMember ? ($shareByOwner[$ownerId] ?? 1.0) : ($unpairedWholeShare ? 1.0 : null);
+            $share = $isSharingMember ? ($shareByOwner[$ownerId] ?? 1.0) : null;
             $diagnostics = $amounts['diagnostics'];
             if ($isSharingMember) {
                 array_push($diagnostics, ...$sharingDiagnostics);

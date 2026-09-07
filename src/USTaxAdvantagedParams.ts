@@ -11726,13 +11726,6 @@ function fsaParametersForYear(year: number): FsaYearParameters | null {
   return row ? deepClone(row) : null;
 }
 
-/** The agreement fixes this owner's share under either partner-eligibility reading. */
-function agreedWholeHsaShare(division: HsaFamilyLimitDivisionInput, role: string | undefined): boolean {
-  return division.status === "agreed" &&
-    ((role === "taxpayer" && division.taxpayerShare === 1) ||
-     (role === "spouse" && division.taxpayerShare === 0));
-}
-
 /** Only the empty person statement affirmatively supplies no coverage. */
 function resolvePersonHsaMonths(coverage: HsaCoverageInput): Array<HsaCoverageTier | null> | null {
   const months = resolveHsaMonths(coverage);
@@ -12812,9 +12805,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
-    const agreedWholeForOwner = agreedWholeHsaShare(context.hsaFamilyLimitDivision, person.role);
     const missingCoupleForFamilyDivision = couple === null &&
-      months.some((tier) => tier === "family") && !agreedWholeForOwner;
+      months.some((tier) => tier === "family");
     const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
     const lowestDeductibleCouldLowerAmount =
       parameters.contributionLimitCappedByHdhpAnnualDeductible &&
@@ -12835,7 +12827,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // about self-only months would go looking for one in a record whose months
       // are all family months.
       const reason = missingCoupleForFamilyDivision
-        ? "Both taxpayer and spouse person records are required to establish the family division, including any supplied agreement. The absent spouse record does not establish ineligibility or permit the whole limitation to bypass division."
+        ? "Both taxpayer and spouse person records are required to establish the family limitation and its division. Even an agreed whole share does not establish the absent spouse's Archer MSA amount, which IRC 223(b)(5)(B)(i) includes in the reduction before division. The absent record also does not establish ineligibility."
         : recharacterizationCouldRaiseTier
         ? lowestDeductibleCouldLowerAmount
           ? `This owner has at least one self-only month, which that treatment can raise to a family month, and at least one family month, whose limitation for tax year ${context.taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under IRC 223(b)(2). The other spouse's coverage changes the answer both ways and is not supplied.`
@@ -14166,13 +14158,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   for (const ownerId of ownerIds) {
     const amounts = amountsByOwner.get(ownerId)!;
     const isSharingMember = familySharingApplies && coupleMembersWithAccounts.includes(ownerId);
-    // Marriage and family coverage invoke paragraph (5) even without the
-    // partner record. A known whole share must retain its reduction ordering.
-    const unpairedWholeShare = couple === null && amounts.familyPortionApplied > 0 &&
-      (context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
-       context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY) &&
-      agreedWholeHsaShare(context.hsaFamilyLimitDivision, context.persons.get(ownerId)?.role);
-    const share = isSharingMember ? (shareByOwner.get(ownerId) ?? 1) : unpairedWholeShare ? 1 : null;
+    const share = isSharingMember ? (shareByOwner.get(ownerId) ?? 1) : null;
     const diagnostics = [...amounts.diagnostics];
     if (isSharingMember) {
       diagnostics.push(...sharingDiagnostics);

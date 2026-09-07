@@ -17510,8 +17510,8 @@
       ]
     },
     {
-      "name": "2026 absent partner cannot change sole taxpayer HSA owner agreed whole",
-      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 assign the whole family limitation to this owner under the stated agreement; Notice 2004-50 Q&A-31 assigns the same whole if the absent partner is ineligible. Thus either eligibility completion gives this under-55 owner the 8750 family amount from Rev. Proc. 2025-19, without assuming the absent partner eligible or ineligible. The post-2006 repeal of the deductible cap leaves no unknown spouse deductible to change the family amount. The maximum and scenario contribution are 8750 with determinate status and no missing-spouse or division-indeterminate diagnostic.",
+      "name": "2026 absent partner leaves Archer reduction unknown for sole taxpayer HSA owner agreed whole",
+      "description": "IRC 223(b)(5)(B)(i) reduces the family limitation by both spouses' Archer MSA aggregate before (B)(ii) divides it. The agreed whole share makes partner eligibility immaterial, but the absent partner record does not establish their Archer amount. The 8750 family amount (Rev. Proc. 2025-19) remains 8750 if the partner paid zero and becomes 7750 if they paid 1000. Thus the strict missing-person contract withholds the maximum and HSA detail and reports indeterminate with HSA_SPOUSE_COVERAGE_FACTS_REQUIRED. A known agreement cannot establish an unknown operand.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -17540,18 +17540,17 @@
         }
       },
       "expect": {
-        "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 8750,
-        "totals.hsaContribution": 8750
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null
       },
-      "expectAbsentDiagnosticCodes": [
-        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
-        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
       ]
     },
     {
-      "name": "2026 absent partner cannot change sole spouse HSA owner agreed whole",
-      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 assign the whole family limitation to this owner under the stated agreement; Notice 2004-50 Q&A-31 assigns the same whole if the absent partner is ineligible. Thus either eligibility completion gives this under-55 owner the 8750 family amount from Rev. Proc. 2025-19, without assuming the absent partner eligible or ineligible. The post-2006 repeal of the deductible cap leaves no unknown spouse deductible to change the family amount. The maximum and scenario contribution are 8750 with determinate status and no missing-spouse or division-indeterminate diagnostic.",
+      "name": "2026 absent partner leaves Archer reduction unknown for sole spouse HSA owner agreed whole",
+      "description": "IRC 223(b)(5)(B)(i) reduces the family limitation by both spouses' Archer MSA aggregate before (B)(ii) divides it. The agreed whole share makes partner eligibility immaterial, but the absent partner record does not establish their Archer amount. The 8750 family amount (Rev. Proc. 2025-19) remains 8750 if the partner paid zero and becomes 7750 if they paid 1000. Thus the strict missing-person contract withholds the maximum and HSA detail and reports indeterminate with HSA_SPOUSE_COVERAGE_FACTS_REQUIRED. A known agreement cannot establish an unknown operand.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -17580,18 +17579,17 @@
         }
       },
       "expect": {
-        "accounts.0.status": "determinate",
-        "accounts.0.statutoryMaximumAnnualContribution": 8750,
-        "totals.hsaContribution": 8750
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null
       },
-      "expectAbsentDiagnosticCodes": [
-        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
-        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
       ]
     },
     {
-      "name": "2026 absent partner agreed whole preserves the age-55 amount after Archer reduction",
-      "description": "Marriage plus family coverage invokes IRC 223(b)(5). Its (B)(i) reduction is computed without regard to the paragraph (3) age-55 amount, and the paragraph (4) flush text disapplies (4)(A). Rev. Proc. 2025-19 supplies the 8750 family base; IRC 223(b)(3) supplies 1000 at age 66. The synthetic 9000 Archer MSA contribution exhausts the base but cannot consume that 1000. The agreed taxpayerShare of 1 gives this owner the whole under either missing-partner eligibility reading, so status is determinate and the maximum and total are 1000. The actual reduction is 8750, not 9000, it precedes division, and the effective share is 1.",
+      "name": "2026 known partner agreed whole preserves the age-55 amount after Archer reduction",
+      "description": "Marriage plus family coverage invokes IRC 223(b)(5). Its (B)(i) reduction is computed without regard to the paragraph (3) age-55 amount, and the paragraph (4) flush text disapplies (4)(A). Rev. Proc. 2025-19 supplies the 8750 family base; IRC 223(b)(3) supplies 1000 at age 66. The synthetic 9000 Archer MSA contribution exhausts the base but cannot consume that 1000. The agreed taxpayerShare of 1 gives this owner the whole under either partner-eligibility reading; both person records establish the Archer aggregate, so status is determinate and the maximum and total are 1000. The actual reduction is 8750, not 9000, it precedes division, and the effective share is 1.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -17601,6 +17599,13 @@
             "role": "taxpayer",
             "birthYear": 1960,
             "archerMsaContributions": 9000
+          },
+          {
+            "id": "partner",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {},
+            "archerMsaContributions": 0
           }
         ],
         "accounts": [
@@ -17627,6 +17632,53 @@
         "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": true,
         "accounts.0.hsa.familyLimitShare": 1,
         "totals.hsaContribution": 1000
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 known accountless partner Archer amount reduces an agreed whole share",
+      "description": "IRC 223(b)(5)(B)(i) includes both spouses' Archer amounts even though only one owns an HSA and the other has no HSA-eligible coverage. Rev. Proc. 2025-19 supplies 8750, reduced by the accountless partner's synthetic 1000 to 7750. The sole eligible spouse receives the whole under Notice 2004-50 Q&A-31, consistent with the agreed zero taxpayer share; the maximum and total are 7750 and the reduction is 1000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "owner",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "partner",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {},
+            "archerMsaContributions": 1000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "owner",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 7750,
+        "accounts.0.hsa.archerMsaLimitReduction": 1000,
+        "totals.hsaContribution": 7750
       },
       "expectAbsentDiagnosticCodes": [
         "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"

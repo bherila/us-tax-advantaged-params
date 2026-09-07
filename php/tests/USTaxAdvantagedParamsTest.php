@@ -878,7 +878,7 @@ test('the married capped-year comparison preserves deductible conflict provenanc
     }
 });
 
-test('missing married person facts are required only when they can change the HSA result', static function (): void {
+test('missing married person records leave the Archer operand unestablished even with a whole share', static function (): void {
     foreach ([2005, 2026] as $taxYear) {
         foreach (['MFJ', 'MFS'] as $filingStatus) {
             foreach (['taxpayer', 'spouse'] as $role) {
@@ -889,24 +889,24 @@ test('missing married person facts are required only when they can change the HS
                             'planRules' => ['hsa' => ['coverageTier' => 'family', 'hdhpAnnualDeductible' => 3400]]]],
                         'hsaFamilyLimitDivision' => ['status' => 'agreed', 'taxpayerShare' => $taxpayerShare]]);
                     $row = accountResult($result, 'a');
-                    $determined = $taxYear === 2026 && $taxpayerShare !== 0.25;
-                    assertSameValue($determined ? 8750 : null, $row['statutoryMaximumAnnualContribution']);
-                    assertSameValue($determined ? 'determinate' : 'indeterminate', $row['status']);
-                    assertSameValue(!$determined, hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+                    assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+                    assertSameValue('indeterminate', $row['status']);
+                    assertSameValue(true, hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
                 }
             }
         }
     }
 });
 
-test('an unpaired agreed whole share retains paragraph-5 Archer ordering for either owner role', static function () use ($normalizationVectors): void {
+test('an agreed whole share with both person records retains paragraph-5 Archer ordering for either owner role', static function () use ($normalizationVectors): void {
     foreach ($normalizationVectors as $vector) {
-        if ($vector['name'] !== '2026 absent partner agreed whole preserves the age-55 amount after Archer reduction') continue;
+        if ($vector['name'] !== '2026 known partner agreed whole preserves the age-55 amount after Archer reduction') continue;
         foreach (['taxpayer', 'spouse'] as $role) {
             foreach (['MFJ', 'MFS'] as $filingStatus) {
                 $input = $vector['input'];
                 $input['filingStatus'] = $filingStatus;
                 $input['persons'][0]['role'] = $role;
+                $input['persons'][1]['role'] = $role === 'taxpayer' ? 'spouse' : 'taxpayer';
                 $input['hsaFamilyLimitDivision'] = ['status' => 'agreed', 'taxpayerShare' => $role === 'taxpayer' ? 1 : 0];
                 $row = accountResult(U::calculate($input), 'a');
                 assertSameValue(1000, $row['statutoryMaximumAnnualContribution']);

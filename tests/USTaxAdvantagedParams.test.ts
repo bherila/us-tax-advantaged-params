@@ -839,7 +839,7 @@ test("the married capped-year comparison preserves deductible conflict provenanc
   }
 });
 
-test("missing married person facts are required only when they can change the HSA result", () => {
+test("missing married person records leave the Archer operand unestablished even with a whole share", () => {
   for (const taxYear of [2005, 2026]) {
     for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
       for (const role of ["taxpayer", "spouse"] as const) {
@@ -850,25 +850,25 @@ test("missing married person facts are required only when they can change the HS
               planRules: { hsa: { coverageTier: "family", hdhpAnnualDeductible: 3_400 } } }],
             hsaFamilyLimitDivision: { status: "agreed", taxpayerShare } });
           const row = account(result, "a");
-          // In capped years, an absent spouse's family deductible still matters.
-          const determined = taxYear === 2026 && taxpayerShare !== 0.25;
-          assert.equal(row.statutoryMaximumAnnualContribution, determined ? 8_750 : null);
-          assert.equal(row.status, determined ? CalculationStatus.DETERMINATE : CalculationStatus.INDETERMINATE);
-          assert.equal(row.diagnostics.some(({ code }) => code === "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"), !determined);
+          // A known share does not establish the absent partner's Archer amount.
+          assert.equal(row.statutoryMaximumAnnualContribution, null);
+          assert.equal(row.status, CalculationStatus.INDETERMINATE);
+          assert.equal(row.diagnostics.some(({ code }) => code === "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"), true);
         }
       }
     }
   }
 });
 
-test("an unpaired agreed whole share retains paragraph-5 Archer ordering for either owner role", () => {
+test("an agreed whole share with both person records retains paragraph-5 Archer ordering for either owner role", () => {
   const vector = normalizationFollowups.find((entry) => entry.name ===
-    "2026 absent partner agreed whole preserves the age-55 amount after Archer reduction")!;
+    "2026 known partner agreed whole preserves the age-55 amount after Archer reduction")!;
   for (const role of ["taxpayer", "spouse"] as const) {
     for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
       const input = structuredClone(vector.input);
       input.filingStatus = filingStatus;
       input.persons[0].role = role;
+      input.persons[1].role = role === "taxpayer" ? "spouse" : "taxpayer";
       input.hsaFamilyLimitDivision = { status: "agreed", taxpayerShare: role === "taxpayer" ? 1 : 0 };
       const row = account(U.calculate(input), "a");
       assert.equal(row.statutoryMaximumAnnualContribution, 1_000);
