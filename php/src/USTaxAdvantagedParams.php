@@ -12765,6 +12765,29 @@ final class Engine
                 : ['supplied' => false, 'months' => null, 'deductible' => ['value' => null, 'missing' => false, 'conflicting' => false]];
         }
 
+        // Include accountless capacity when it can absorb the spouses' Archer
+        // aggregate; otherwise the pool guards the represented accounts only.
+        $coupleHasArcher = false;
+        foreach ($couple ?? [] as $id) {
+            if (($context['persons'][$id]['archerMsaContributions'] ?? 0) > 0) $coupleHasArcher = true;
+        }
+        $candidatePersonIds = $ownerIds;
+        foreach ($couple ?? [] as $personId) {
+            $coverage = $coupleCoverage[$personId] ?? null;
+            if (isset($facts[$personId]) || ($coverage['months'] ?? null) === null || !$coupleHasArcher) continue;
+            $person = $context['persons'][$personId];
+            $facts[$personId] = [
+                'ownerId' => $personId, 'resolvedMonths' => $coverage['months'],
+                'resolvedDeductible' => $coverage['deductible'],
+                'coverageVariants' => [['source' => 'person', 'coverage' => $person['hsaCoverage'], 'months' => $coverage['months']]],
+                'hasUnusableAccountStatement' => false, 'hasUnusablePersonStatement' => false,
+                'conflict' => false, 'personConflict' => false,
+                'testingPeriodFacts' => $person['hsaLastMonthRuleTestingPeriod'] ?? [],
+            ];
+            $candidatePersonIds[] = $personId;
+        }
+        $coupleCandidatePersons = array_values(array_filter($couple ?? [], static fn (string $id): bool => isset($facts[$id])));
+
         /*
          * The coverage each spouse actually *stated*, month by month, snapshotted
          * before the IRC 223(b)(5)(A) recharacterization below rewrites self-only
@@ -12998,7 +13021,7 @@ final class Engine
             // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
             // as having only that family coverage. It does not make an otherwise
             // ineligible month eligible, so only supplied months are rewritten.
-            foreach ($coupleMembersWithAccounts as $personId) {
+            foreach ($coupleCandidatePersons as $personId) {
                 if ($facts[$personId]['resolvedMonths'] === null) {
                     continue;
                 }
@@ -13009,24 +13032,9 @@ final class Engine
                 }
             }
         }
-        /*
-         * Whether the recharacterization above is a fact the statements
-         * establish, rather than one of the readings they leave open.
-         *
-         * $facts[$owner]['months'] holds whichever of an owner's contradictory
-         * coverage statements was merged first, so recording the rewrite as it
-         * happened made the INFO an artefact of record order: two accounts of one
-         * owner saying self-only and family, beside a spouse holding family
-         * coverage, produced the diagnostic when the self-only statement was
-         * listed first and not when it was listed second. Neither answer was
-         * established -- one statement asserts the self-only coverage
-         * subparagraph (A) rewrites and the other denies it -- so the conflict
-         * diagnostic is the whole of what those facts support.
-         *
-         * $coverageSlotsByPerson answers the diagnostic's own question instead: a
-         * month is 'self_only' there only when every statement made about it says
-         * so. A determinate case is unaffected, because a unanimously supplied
-         * self-only tier is exactly that.
+        /**
+         * Coverage is resolved across every owner statement before candidate construction.
+         * The monthly recharacterization diagnostic requires unanimous original self-only coverage.
          */
         $recharacterizationEstablished = function (string $personId) use (
             $coverageSlotsByPerson,
@@ -13081,23 +13089,9 @@ final class Engine
          */
         $deemedMonthsByPerson = [];
         $decemberIndex = self::HSA_MONTHS_IN_YEAR - 1;
-        /*
-         * Which months IRC 223(b)(5)(A) reads as family months across the deemed
-         * schedules, decided the same way $familyMonth above decides it for the
-         * stated ones: from $familyStatusByPerson, which reads every statement
-         * made about a person and answers 'unknown' where they disagree.
-         *
-         * Reading it back off the schedules built below would take one of two
-         * contradictory statements as the answer -- $facts[..]['months'] holds
-         * whichever of an owner's accounts was merged, not a reconciliation of
-         * them -- and promote the *other* spouse's month on a fact the input
-         * denies. That owner is already refused for the contradiction; the
-         * spouse must not be given a confident figure built on it.
-         *
-         * The second term is the deeming itself: a person the rule reaches whose
-         * December tier is a family one holds family coverage in every month of
-         * candidate (2), so their spouse's months are shared throughout. It is
-         * month-independent, which is why it is not read per month.
+        /**
+         * Coverage is resolved across every owner statement before candidate construction.
+         * The monthly recharacterization diagnostic requires unanimous original self-only coverage.
          */
         $decemberFamilyDeemsWholeYear = false;
         foreach (($couple ?? []) as $personId) {
@@ -13330,7 +13324,7 @@ final class Engine
         }
 
         $amountsByOwner = [];
-        foreach ($ownerIds as $ownerId) {
+        foreach ($candidatePersonIds as $ownerId) {
             $owner = $facts[$ownerId];
             $person = $context['persons'][$ownerId];
             $diagnostics = [];
@@ -13363,28 +13357,9 @@ final class Engine
              * disagree about.
              */
             $familyPoolAmountIndeterminate = false;
-            /*
-             * Whether the candidate schedule this owner's figures were built from
-             * is the one their facts establish, or one completion of several the
-             * input leaves open.
-             *
-             * It is a third question beside the two above, and it decides whether
-             * the hsa detail is published at all rather than what any single
-             * field says. That object is an audit trail of a *chosen* candidate --
-             * the schedule, its monthly amounts, the winner of the Notice 2008-52
-             * comparison and the amount attributable to it -- and
-             * $facts[owner]['months'] holds whichever of an owner's contradictory
-             * accounts was merged rather than a reconciliation of them. So where
-             * the schedule or the comparison is not established, every one of
-             * those fields would report one arbitrary completion beside a
-             * diagnostic saying the fact was never established, and reversing two
-             * account records would change them. They are withheld together,
-             * because they are one answer and not several.
-             *
-             * An unsettled IRC 223(b)(5)(B)(ii) *division* is deliberately not
-             * among the causes: it leaves both candidates exactly as computable
-             * as they were and puts only the owner's eventual share in question,
-             * which familyLimitShare already reports as null.
+            /**
+             * Coverage is resolved across every owner statement before candidate construction.
+             * The monthly recharacterization diagnostic requires unanimous original self-only coverage.
              */
             $candidateSelectionUnestablished = false;
 
@@ -14141,13 +14116,13 @@ final class Engine
          */
         $combinedCandidateTotal = static function (string $key) use (
             $amountsByOwner,
-            $coupleMembersWithAccounts,
+            $coupleCandidatePersons,
             $coupleArcherAggregate
         ): float {
             $unionSum = 0.0;
             for ($monthIndex = 0; $monthIndex < self::HSA_MONTHS_IN_YEAR; $monthIndex++) {
                 $monthAmounts = [];
-                foreach ($coupleMembersWithAccounts as $personId) {
+                foreach ($coupleCandidatePersons as $personId) {
                     $value = $amountsByOwner[$personId][$key]['familyMonthlyAmounts'][$monthIndex] ?? null;
                     if ($value !== null) {
                         $monthAmounts[] = (float) $value;
@@ -14157,20 +14132,15 @@ final class Engine
                     $unionSum += max($monthAmounts);
                 }
             }
-            $total = self::nonnegative(($unionSum / self::HSA_MONTHS_IN_YEAR) - $coupleArcherAggregate);
-            foreach ($coupleMembersWithAccounts as $personId) {
+            $self = 0.0;
+            $catchUp = 0.0;
+            foreach ($coupleCandidatePersons as $personId) {
                 $candidate = $amountsByOwner[$personId][$key] ?? null;
-                if ($candidate === null) {
-                    continue;
-                }
-                $total += self::archerReducedPortions(
-                    (float) $candidate['familyPortion'],
-                    (float) $candidate['selfPortion'],
-                    $coupleArcherAggregate,
-                )[1];
-                $total += (float) $candidate['catchUp'];
+                if ($candidate === null) continue;
+                $self += (float) $candidate['selfPortion'];
+                $catchUp += (float) $candidate['catchUp'];
             }
-            return self::roundMoney($total);
+            return self::roundMoney(self::nonnegative($unionSum / self::HSA_MONTHS_IN_YEAR + $self - $coupleArcherAggregate) + $catchUp);
         };
         $ownCandidateTotal = static function (array $candidate, float $archer): float {
             [$base, $catchUp] = self::subsectionBReducedBy(
@@ -14193,30 +14163,30 @@ final class Engine
          * by facts of their own that are not in doubt.
          */
         $anyCoupleCandidateUnestablished = false;
-        foreach ($coupleMembersWithAccounts as $personId) {
+        foreach ($coupleCandidatePersons as $personId) {
             if ($amountsByOwner[$personId]['candidateSelectionUnestablished'] ?? false) {
                 $anyCoupleCandidateUnestablished = true;
             }
         }
         if ($familySharingApplies && $anyCoupleCandidateUnestablished) {
-            foreach ($coupleMembersWithAccounts as $personId) {
+            foreach ($coupleCandidatePersons as $personId) {
                 if (isset($amountsByOwner[$personId])) {
                     $amountsByOwner[$personId]['candidateSelectionUnestablished'] = true;
                 }
             }
         }
         $chooseFull = [];
-        if ($familySharingApplies && count($coupleMembersWithAccounts) > 0) {
+        if ($familySharingApplies && count($coupleCandidatePersons) > 0) {
             if ($combinedCandidateTotal('fullContributionCandidate')
                 > $combinedCandidateTotal('ordinaryCandidate')
             ) {
-                foreach ($coupleMembersWithAccounts as $personId) {
+                foreach ($coupleCandidatePersons as $personId) {
                     $chooseFull[$personId] = true;
                 }
             }
         }
-        foreach ($ownerIds as $ownerCandidate) {
-            if ($familySharingApplies && in_array($ownerCandidate, $coupleMembersWithAccounts, true)) {
+        foreach ($candidatePersonIds as $ownerCandidate) {
+            if ($familySharingApplies && in_array($ownerCandidate, $coupleCandidatePersons, true)) {
                 continue;
             }
             if (!isset($amountsByOwner[$ownerCandidate])) {
@@ -14242,14 +14212,6 @@ final class Engine
             $amountsByOwner[$ownerCandidate]['appliedAnnualLimitByMonth'] = $chosen['annualLimitByMonth'];
         }
 
-        $reducedPortionsFor = static function (string $personId) use ($amountsByOwner, $coupleArcherAggregate): array {
-            return self::archerReducedPortions(
-                (float) ($amountsByOwner[$personId]['familyPortionApplied'] ?? 0.0),
-                (float) ($amountsByOwner[$personId]['selfPortionApplied'] ?? 0.0),
-                $coupleArcherAggregate,
-            );
-        };
-
         /*
          * The couple's family-month capacity, taken as the union of their family
          * months rather than the largest single spouse's year.
@@ -14267,11 +14229,12 @@ final class Engine
          */
         $rawSharedFamilyLimit = null;
         $sharedFamilyLimit = null;
+        $householdParagraph1AfterArcher = null;
         if ($familySharingApplies) {
             $unionSum = 0.0;
             for ($monthIndex = 0; $monthIndex < self::HSA_MONTHS_IN_YEAR; $monthIndex++) {
                 $monthAmounts = [];
-                foreach ($coupleMembersWithAccounts as $personId) {
+                foreach ($coupleCandidatePersons as $personId) {
                     $value = $amountsByOwner[$personId]['familyMonthlyAmounts'][$monthIndex] ?? null;
                     if ($value !== null) {
                         $monthAmounts[] = (float) $value;
@@ -14287,6 +14250,9 @@ final class Engine
                 ($unionSum / self::HSA_MONTHS_IN_YEAR) - $coupleArcherAggregate,
             );
             $sharedFamilyLimit = self::roundMoney($rawSharedFamilyLimit);
+            $selfPortions = 0.0;
+            foreach ($coupleCandidatePersons as $id) $selfPortions += $amountsByOwner[$id]['selfPortionApplied'] ?? 0.0;
+            $householdParagraph1AfterArcher = self::nonnegative($unionSum / self::HSA_MONTHS_IN_YEAR + $selfPortions - $coupleArcherAggregate);
         }
         /**
          * True where any spouse who holds an HSA has an undeterminable
@@ -14294,7 +14260,7 @@ final class Engine
          * built from those limitations undeterminable too.
          */
         $householdPoolAmountIndeterminate = false;
-        foreach ($coupleMembersWithAccounts as $personId) {
+        foreach ($coupleCandidatePersons as $personId) {
             if (($amountsByOwner[$personId]['familyPoolAmountIndeterminate'] ?? false) === true) {
                 $householdPoolAmountIndeterminate = true;
             }
@@ -14716,7 +14682,7 @@ final class Engine
          * null is not zero and does not qualify: an undeterminable amount is
          * exactly the case where the engine cannot say the division is harmless.
          */
-        $nothingLeftToDivide = $sharedFamilyLimit !== null && $sharedFamilyLimit <= 0;
+        $nothingLeftToDivide = !$householdPoolAmountIndeterminate && $householdParagraph1AfterArcher !== null && $householdParagraph1AfterArcher <= 0;
         /*
          * Whether the division was ever established, asked without reference to
          * whether it mattered. $nothingLeftToDivide says the unknown cannot move
@@ -14787,7 +14753,7 @@ final class Engine
             ];
             foreach ($decompositions as [$familyKey, $sharedKey, $selfKey]) {
                 $absorbers = 0;
-                foreach ($coupleMembersWithAccounts as $ownerCandidate) {
+                foreach ($coupleCandidatePersons as $ownerCandidate) {
                     $owned = $amountsByOwner[$ownerCandidate] ?? null;
                     if ($owned === null) {
                         continue;
@@ -14861,7 +14827,8 @@ final class Engine
          * where the division did not settle the INFO would contradict the ERROR
          * beside it.
          */
-        $divisionIsReportable = !$householdDivisionUnknown && !$nothingLeftToDivide;
+        $eligibilityBranchEstablished = $divisionEligibilityUnknownPersons === [] && $divisionEligibilityConflictPersons === [] && $divisionEligibilityDoubtPersons === [];
+        $divisionIsReportable = !$householdDivisionUnknown && !$nothingLeftToDivide && $eligibilityBranchEstablished;
 
         if ($familySharingApplies && $householdPoolAmountIndeterminate) {
             // IRC 223(b)(5)(A) gives the spouses one family limitation and (B)(ii)
@@ -15057,10 +15024,6 @@ final class Engine
                 );
             }
             if ($couple !== null && $familyPoolKey !== null) {
-                $undividedSelfPortions = 0.0;
-                foreach ($coupleMembersWithAccounts as $personId) {
-                    $undividedSelfPortions += $reducedPortionsFor($personId)[1];
-                }
                 $context['hsaFamilyPools'][$familyPoolKey] = [
                     'id' => "hsa223b5:{$familyPoolKey}",
                     'legalLimit' => 'IRC 223(b)(5) single family contribution limit divided between the spouses, '
@@ -15084,9 +15047,7 @@ final class Engine
                     // share conflict withheld a number the record did support.
                     'limit' => $householdPoolAmountIndeterminate
                         ? null
-                        : ($rawSharedFamilyLimit === null
-                            ? $sharedFamilyLimit
-                            : self::roundMoney($rawSharedFamilyLimit + $undividedSelfPortions)),
+                        : ($householdParagraph1AfterArcher === null ? null : self::roundMoney($householdParagraph1AfterArcher)),
                     'used' => 0.0,
                 ];
             }
@@ -15321,10 +15282,15 @@ final class Engine
                 'limit' => $baseLimit,
                 'used' => 0.0,
             ];
+            // Paragraph (5) cannot consume the separately established paragraph (3) amount.
+            $catchUpAmountEstablished = !$indeterminate || ($isSharingMember &&
+                $archerAcrossUndividedSpouses && !$amounts['indeterminate'] && $amounts['ageKnown'] &&
+                !$amounts['candidateSelectionUnestablished'] && !$householdPoolAmountIndeterminate &&
+                $eligibilityBranchEstablished && $fundingAmount === 0.0);
             $context['hsaCatchUpPools'][$ownerId] = [
                 'id' => "hsa223b3:{$ownerId}",
                 'legalLimit' => 'IRC 223(b)(3) age 55 additional contribution amount',
-                'limit' => $indeterminate ? null : $catchUpApplied,
+                'limit' => $catchUpAmountEstablished ? $catchUpApplied : null,
                 'used' => 0.0,
             ];
 
@@ -15377,7 +15343,7 @@ final class Engine
              * scales both alike. Neither needs a limitation, so both survive an
              * account whose limitation is unestablished.
              */
-            $attributableKnownZero = !$amounts['fullContributionCandidateSelected']
+            $attributableKnownZero = ($eligibilityStatusByPerson[$ownerId][11] ?? null) === 'ineligible' || !$amounts['fullContributionCandidateSelected']
                 || ($ownerShareInQuestion && $lastMonthRuleAddedNothingUndivided);
             $attributable = $attributableKnownZero
                 ? 0.0
@@ -15668,7 +15634,7 @@ final class Engine
              * facts establish. Every field below is an audit trail of a chosen
              * schedule and a chosen winner, so where the choice was one
              * completion among several the whole object is withheld rather than
-             * filled in from whichever account happened to be merged first.
+             * filled in from an unestablished coverage completion.
              *
              * The unapportionable Archer case joins the per-owner causes here
              * because it is a couple-level fact: where two spouses' undivided

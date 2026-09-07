@@ -465,6 +465,15 @@ must be identical, and a contradiction returns
 spouse held no high deductible health plan coverage in any month. A nonempty object
 without a usable tier/month schedule leaves coverage unknown, even if a deductible is supplied.
 
+The `hsa223b5` shared pool is a capacity guard for the represented HSA accounts,
+not a complete calculation of every accountless spouse's personal allowance. When
+an Archer aggregate can consume an accountless spouse's supplied capacity, that
+capacity participates in the household guard and in the apportionment analysis.
+The aggregate is subtracted once from the family-month union plus undivided
+self-only portions. A known household residue does not establish which spouse's
+undivided months absorbed it; those owner limits remain indeterminate. A separately
+established age-55 amount remains outside that reduction.
+
 ### Archer MSA contributions: `persons[].archerMsaContributions`
 
 §223(b)(4)(A) reduces the §223(b) limitation by "the aggregate amount paid for such taxable
@@ -591,7 +600,11 @@ Testing-period facts are stated per person, and only the consequence is stateabl
 
 Omitting them leaves the period unresolved, which is reported
 (`HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED`, status `determinate_with_assumptions`) rather
-than assumed satisfied — but only where the attributable amount is positive.
+than assumed satisfied — but only where the attributable amount is positive. The attributable
+amount measures this individual's potential recapture exposure. It is zero for an
+owner established ineligible on December 1, even if the household's full candidate
+increases their ceiling through the other spouse. That owner receives no testing
+period, income-inclusion amount, additional tax, or testing-period warning.
 
 **A married spouse's own share can fall while the couple's limitation rises.** Notice 2008-52
 Example 14 compares the *couple's combined* candidates and divides the winner, and Form 8889

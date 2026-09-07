@@ -17683,6 +17683,374 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
       ]
+    },
+    {
+      "name": "2026 Archer spill reduces the household base once across two undivided owners",
+      "description": "IRC 223(b)(5)(B)(i) subtracts the spouses' aggregate once from the paragraph-(1) base before division. Rev. Proc. 2025-19 gives 8750 family and 4400 self-only: January family plus February and March self-only is (8750 + 4400 + 4400)/12 = 1462.50. Subtracting the synthetic 800 Archer aggregate once leaves 662.50. The 70.8333 spill beyond January could consume either spouse's undivided month; the encoded authorities establish no apportionment, so both owner maxima and details are null with indeterminate status, while the household guard is 662.50. Neither owner reaches 55.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "archerMsaContributions": 800
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.hsa": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 662.5,
+        "accounts.1.sharedLimits.1.limit": 662.5
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 Archer spill leaves the separate age-55 monthly amount intact",
+      "description": "IRC 223(b)(5)(B)(i) subtracts the spouses' aggregate once from the paragraph-(1) base before division. Rev. Proc. 2025-19 gives 8750 family and 4400 self-only: January family plus February and March self-only is (8750 + 4400 + 4400)/12 = 1462.50. Subtracting the synthetic 800 Archer aggregate once leaves 662.50. The 70.8333 spill beyond January could consume either spouse's undivided month; the encoded authorities establish no apportionment, so both owner maxima and details are null with indeterminate status, while the household guard is 662.50. Neither owner reaches 55. This control makes the taxpayer age 66. IRC 223(b)(3) supplies 1000 annually, or 1000 times 2/12 = 166.67 for the two eligible months. Paragraph (5)(B) expressly excludes this amount from the Archer reduction; the age-55 pool therefore retains 166.67 beside the unknown base allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1960,
+            "archerMsaContributions": 800
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.hsa": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 662.5,
+        "accounts.1.sharedLimits.1.limit": 662.5,
+        "accounts.0.sharedLimits.2.limit": 166.67
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 accountless spouse capacity can absorb the Archer aggregate",
+      "description": "IRC 223(b)(5)(B)(i) includes both spouses and their Archer amounts regardless of HSA ownership. Notice 2004-50 Q&A-31 assigns the disjoint eligible months to each individual. Rev. Proc. 2025-19 gives two family months worth 8750 times 2/12 = 1458.3333; subtracting the accountless spouse's synthetic 1000 once leaves 458.33. The aggregate may consume either January or February first, so the taxpayer's owner limit and detail remain null with indeterminate status. The household capacity guard includes the accountless month because it can absorb this reduction.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "eligibleMonths": [
+                1
+              ]
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family",
+              "eligibleMonths": [
+                2
+              ]
+            },
+            "archerMsaContributions": 1000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
+        "accounts.0.sharedLimits.1.limit": 458.33
+      },
+      "expectDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 a December-ineligible owner has no personal last-month testing exposure",
+      "description": "Notice 2008-52 and IRC 223(b)(8)(A)-(B) attach the testing period to an individual eligible on December 1. The taxpayer is eligible January through November only. The household full candidate may win through the spouse's December family coverage, but it creates no personal testing obligation for the taxpayer: potential recapture amount is zero and testingPeriod is null even though failed testing facts were supplied. The spouse receives only their sole-eligible December amount under the stated whole taxpayer share for shared months, so the spouse also has no incremental testing exposure. No failed, unresolved, or exception testing diagnostic is justified.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaLastMonthRuleTestingPeriod": {
+              "satisfied": false
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 12,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_FAILED",
+        "HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED",
+        "HSA_TESTING_PERIOD_FAILURE_EXCEPTED"
+      ]
+    },
+    {
+      "name": "2026 disputed sole eligibility cannot establish an inoperative family agreement",
+      "description": "The synthetic 1000 deductible is below the 2026 family HDHP minimum of 3400 (Rev. Proc. 2025-19 and IRC 223(c)(2)(A)(i)). The engine cannot affirm eligibility from the contradictory plan facts. Notice 2004-50 Q&A-31 gives the whole only to an established sole eligible spouse; neither that branch nor the inoperability of the stated division is established here. The below-minimum error and indeterminate maximum remain, while both affirmative branch diagnostics must be absent.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 1000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT",
+        "HSA_FAMILY_LIMIT_DIVISION_INOPERATIVE"
+      ]
     }
   ]
 }
