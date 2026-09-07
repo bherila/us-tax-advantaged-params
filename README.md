@@ -423,7 +423,7 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
-| §223(b)(5)(B)(ii) agreed division | An agreed division must exhaust the limitation. Shares that total more or less than 1 are both reported as errors and return `indeterminate` (see below) |
+| §223(b)(5)(B)(ii) agreed division | One scenario-level `taxpayerShare` gives the taxpayer that share and the spouse its complement, including when either spouse owns no HSA (see below) |
 | §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
 | §223(b)(8) last-month rule | Applied automatically, never elected. An individual eligible on December 1 takes the **greater of** the month-by-month sum and December's tier for the whole year; where the greater one is the second, the difference carries a 13-month testing-period obligation (see below) |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |

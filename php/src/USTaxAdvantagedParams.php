@@ -14438,7 +14438,7 @@ final class Engine
              * HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE.
              */
             $taxpayerId = null;
-            foreach ($coupleMembersWithAccounts as $personId) {
+            foreach ($couple ?? $coupleMembersWithAccounts as $personId) {
                 if (($context['persons'][$personId]['role'] ?? null) === 'taxpayer') {
                     $taxpayerId = $personId;
                     break;

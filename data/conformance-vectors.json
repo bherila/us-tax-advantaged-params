@@ -4431,7 +4431,7 @@
     },
     {
       "name": "2026 sole HSA-owning spouse may agree a share below one without forfeiting anything",
-      "description": "IRC 223(b)(5)(B)(ii) divides the limitation between the spouses, and the shares that can be supplied cover only spouses who own a health savings account. Where one spouse owns none, a share of 0.6 on the other is a complete division whose remaining 0.4 the first spouse has no account to use, not an under-allocation, so no shares-below-one error applies: 0.6 x 8750 = 5250. Pinning the first diagnostic as the general disclaimer proves neither HSA_FAMILY_LIMIT_SHARES_BELOW_ONE nor the equal-division default fired.",
+      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 permit the spouses to agree how to divide the family limitation. This scenario states one agreed taxpayerShare of 0.6, so the taxpayer receives 60 percent and the spouse receives the complementary 40 percent, whether or not either owns an HSA. Rev. Proc. 2025-19 fixes the 2026 family amount at 8750; 0.6 x 8750 = 5250 is the taxpayer account maximum and, as the only account, the scenario total. Both spouses are under 55, so there is no additional amount. The stated coverage and agreement establish the result without an assumed division, giving determinate status and the general eligibility disclaimer as the first diagnostic.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -17381,6 +17381,51 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
         "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2026 sole spouse HSA owner receives the agreed whole despite unknown taxpayer eligibility",
+      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 allow a couple-level agreed taxpayerShare of zero, allocating the whole family limitation to the spouse. The taxpayer owns no HSA and their eligibility is unstated. If the taxpayer is eligible, the agreed zero share gives the spouse the whole; if not, Notice 2004-50 Q&A-31 gives the sole eligible spouse the same whole. Both completions therefore establish a share of 1 and the 8750 family maximum from Rev. Proc. 2025-19. The spouse is under 55 and has no reductions, so the account and total contribution are 8750 with determinate status and no division-indeterminate diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.hsa.familyLimitShare": 1,
+        "totals.hsaContribution": 8750
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
     }
   ]

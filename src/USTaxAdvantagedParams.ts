@@ -13634,7 +13634,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * account. Only an agreement moves it, which is the point of
      * `HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE`.
      */
-    const taxpayerId = coupleMembersWithAccounts.find(
+    const taxpayerId = (couple ?? coupleMembersWithAccounts).find(
       (personId) => context.persons.get(personId)?.role === "taxpayer",
     );
     if (soleEligibleSpouse) {
