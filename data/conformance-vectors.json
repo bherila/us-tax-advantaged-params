@@ -14464,6 +14464,74 @@
       ]
     },
     {
+      "name": "2026 an Archer MSA aggregate exhausting the family union leaves the IRC 223(b)(3) amount whole across mixed months",
+      "description": "IRC 223(b)(8)(A) treats an individual who is an eligible individual for December as eligible for every month of the year, so the taxpayer's December family coverage yields a full-contribution candidate of twelve family months. Notice 2008-52 takes the greater of that candidate and the month-by-month one on the couple's combined figures: 8750 + 1000 against 729.17 + 83.33, so the full candidate is selected. The spouse is an eligible individual in January alone, so under the selected candidate January is a month in which both spouses are eligible individuals -- a shared month IRC 223(b)(5)(B)(ii) divides -- while February through December belong to the taxpayer alone under Notice 2004-50 Q&A-31. The taxpayer's 8750 family portion is therefore mixed: 729.17 shared and 8020.83 sole-eligible.\n\nIRC 223(b)(5)(B)(i) then reduces the couple's one family limitation by \"the aggregate amount paid to Archer MSAs of such spouses for the taxable year\". That aggregate is 8750, which is the whole 2026 family limitation from Rev. Proc. 2025-19, so nothing survives for (B)(ii) to divide. Which months the reduction consumed is consequently a question that cannot change an answer -- every month of the household family union is consumed however the reduction is placed -- so each spouse's paragraph (1) limitation is 0 whatever division the spouses agreed, and the maximum stays determinate even though the division itself does not. The agreed taxpayer share of 0 is thus immaterial: it divides nought.\n\nThe reduction stops at paragraph (1). IRC 223(b)(5)(B)(i) reduces that limitation \"determined without regard to any additional contribution amount under paragraph (3)\", and the IRC 223(b)(4) flush text withdraws subparagraph (A) -- the only clause that could reach paragraph (3) -- from an individual to whom paragraph (5) applies. So the IRC 223(b)(3)(B) additional contribution amount of 1000 survives the aggregate intact. The taxpayer is 66 in 2026 and deemed eligible for twelve months, keeping the whole 1000; the spouse is 56 and an eligible individual for one month, keeping 1000 * 1/12 = 83.33. The totals are 0 + 1000 and 0 + 83.33.\n\nBoth `hsa` details are withheld, which is the established treatment of an unapportionable aggregate and is not disturbed here: in the counterfactual schedule without the last-month rule the spouses hold disjoint sole-eligible family months, December and January, so the one aggregate would be charged whole to each of them and which spouse's undivided months absorbed it is unestablished. That withholds the owner-level figures without touching the maximum, because every placement still ends at the same nought.\n\nThis vector exists because the mixed apportionment subtracted a shared portion measured before the (B)(i) reduction from a family total measured after it. With the reduction exhausting the family total, that produced a base of 0 - 729.17 and the negative was charged against the paragraph (3) amount, reporting 1000 - 729.17 = 270.83 for the taxpayer -- a reduction of the additional contribution amount that IRC 223(b)(5)(B)(i) forbids.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1960,
+            "archerMsaContributions": 8750
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 12,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "a",
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 1000,
+        "accounts.0.hsa": null,
+        "accounts.1.accountId": "b",
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 83.33,
+        "accounts.1.hsa": null,
+        "totals.hsaContribution": 1083.33
+      }
+    },
+    {
       "name": "2026 the last-month rule does not reduce a limit the ordinary months already earned",
       "description": "Notice 2008-52 makes IRC 223(b)(8) a comparison: a December-eligible individual's annual limit is \"the greater of\" (1) the sum of the monthly limits \"based on eligibility and HDHP coverage on the first day of each month\", or (2) \"the maximum annual HSA contribution ... based on the individual's HDHP coverage (self-only or family) on the first day of the last month\". The notice adds that the rule \"may increase, but not decrease, the contribution limit\", which is what taking the greater of the two guarantees.\n\nThe taxpayer holds family coverage from January through November 2026 and self-only coverage in December, and is an eligible individual throughout. December is an eligible month, so IRC 223(b)(8)(A) reaches this individual with no election and Notice 2008-52's greater-of is taken. The 2026 amounts are Rev. Proc. 2025-19: 8750 family, 4400 self-only.\n\n  candidate (1)  11/12 x 8750 + 1/12 x 4400  =  8387.50\n  candidate (2)  December's tier for the year =  4400.00\n  greater                                     =  8387.50\n\nThis is Notice 2008-52 Example 8 in a later year and with the tiers of that example reversed in time: there, family coverage through August and self-only from September gave \"$4,833.33, the greater of $2,900 or $4,833.33\", the monthly candidate winning over a self-only December.\n\nTaking candidate (2) alone would give 4400, a reduction of 3987.50 from a rule the statute offers only as an increase -- which is why it is a greater-of and not a substitution. Because candidate (1) is the one that won, nothing in this limit \"could not have been made but for subparagraph (A)\" under IRC 223(b)(8)(B)(i), so the amount attributable to the rule is 0, no part of the limit is exposed to the testing-period inclusion, and no testing-period obligation is reported at all -- which is the conclusion Example 8 reaches on its own facts.",
       "input": {

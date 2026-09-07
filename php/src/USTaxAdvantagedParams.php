@@ -15249,12 +15249,30 @@ final class Engine
                 if ($shared <= 0.0) {
                     return self::roundMoney($family + $self);
                 }
-                // Mixed. Reachable only with no Archer MSA contribution, so
-                // $family is $familyPortion untouched and the split is exact;
-                // where there is one, $archerAcrossMixedFamilyMonths has already
-                // left the division unestablished rather than pick which months
-                // the reduction consumed.
-                return self::roundMoney($share * $shared + ($family - $shared) + $self);
+                // Mixed. $shared is measured before the IRC 223(b)(5)(B)(i)
+                // reduction, so subtracting it from $family states the
+                // sole-eligible remainder only where the reduction left the
+                // shared months whole. Which months a positive aggregate
+                // consumed is what $archerAcrossMixedFamilyMonths refuses to
+                // invent -- but that refusal is forgiven where
+                // $noDivisibleFamilyResidue holds, and the forgiveness reaches
+                // here. It is exact at both ends rather than a guess about the
+                // middle: $sharedFamilyLimit is the family union less the
+                // aggregate, so nought left for the couple to divide bounds this
+                // owner's own $family at nought as well, every month having been
+                // consumed however they are placed. Clamping is therefore inert
+                // where nothing was paid and yields nought where the aggregate
+                // took everything.
+                //
+                // Subtracting the unreduced portion drove the base negative
+                // instead, and subsectionBReducedBy then charged the difference
+                // against the IRC 223(b)(3) additional contribution amount --
+                // which IRC 223(b)(5)(B)(i) reduces the paragraph (1) limitation
+                // "without regard to" entirely.
+                $survivingShared = min($shared, $family);
+                return self::roundMoney(
+                    $share * $survivingShared + ($family - $survivingShared) + $self,
+                );
             };
             $baseLimitAfterArcher = $indeterminate
                 ? null
