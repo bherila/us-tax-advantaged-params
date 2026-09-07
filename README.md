@@ -686,7 +686,9 @@ For an MFJ or MFS family-covered HSA owner, omitting the other person does not b
 supplied division or establish sole eligibility. Where that missing fact changes the
 answer, the result is indeterminate with `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED`. A post-2006
 owner whose agreement already assigns them the whole family limitation keeps that amount
-under either partner-eligibility reading. A missing spouse deductible can still matter
+under either partner-eligibility reading. That known whole share still follows §223(b)(5):
+Archer MSA contributions reduce the family base before division and do not reduce the
+separate age-55 additional amount. A missing spouse deductible can still matter
 in 2004–2006, and missing coverage can still change self-only months.
 
 Earlier versions assumed a sole HSA owner had agreed to take everything when no

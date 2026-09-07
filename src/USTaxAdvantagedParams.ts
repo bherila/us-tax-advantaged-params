@@ -11726,6 +11726,13 @@ function fsaParametersForYear(year: number): FsaYearParameters | null {
   return row ? deepClone(row) : null;
 }
 
+/** The agreement fixes this owner's share under either partner-eligibility reading. */
+function agreedWholeHsaShare(division: HsaFamilyLimitDivisionInput, role: string | undefined): boolean {
+  return division.status === "agreed" &&
+    ((role === "taxpayer" && division.taxpayerShare === 1) ||
+     (role === "spouse" && division.taxpayerShare === 0));
+}
+
 /** Only the empty person statement affirmatively supplies no coverage. */
 function resolvePersonHsaMonths(coverage: HsaCoverageInput): Array<HsaCoverageTier | null> | null {
   const months = resolveHsaMonths(coverage);
@@ -12805,10 +12812,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
-    const ownerDivision = context.hsaFamilyLimitDivision;
-    const agreedWholeForOwner = ownerDivision.status === "agreed" &&
-      ((person.role === "taxpayer" && ownerDivision.taxpayerShare === 1) ||
-       (person.role === "spouse" && ownerDivision.taxpayerShare === 0));
+    const agreedWholeForOwner = agreedWholeHsaShare(context.hsaFamilyLimitDivision, person.role);
     const missingCoupleForFamilyDivision = couple === null &&
       months.some((tier) => tier === "family") && !agreedWholeForOwner;
     const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
@@ -14109,7 +14113,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         diagnostic(
           "HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE",
           DiagnosticSeverity.INFO,
-          'Only one spouse has a health savings account, and no different division was agreed, so IRC 223(b)(5)(B)(ii) still divides the family limit equally between the spouses: this account takes half of it and the other half belongs to the spouse who has no account to use it. Owning the only HSA is not itself an agreement to a different division. If the spouses did agree to allocate the whole limit here, state it as hsaFamilyLimitDivision { status: "agreed", taxpayerShare } -- Notice 2004-50 Q&A-32 permits any division, "including allocating nothing to one spouse".',
+          'Only one spouse has a health savings account, and no different division was agreed, so IRC 223(b)(5)(B)(ii) divides only the portion for family months in which both spouses are eligible equally between them. This account keeps its sole-eligible family months whole; the other spouse\'s half of the shared-month portion remains theirs even without an account. Owning the only HSA is not itself an agreement to a different division. If the spouses did agree to allocate the whole limit here, state it as hsaFamilyLimitDivision { status: "agreed", taxpayerShare } -- Notice 2004-50 Q&A-32 permits any division, "including allocating nothing to one spouse".',
           "accounts",
           "IRC 223(b)(5)(B)(ii)",
         ),
@@ -14119,7 +14123,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         diagnostic(
           "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
           DiagnosticSeverity.INFO,
-          'IRC 223(b)(5)(B)(ii) divides the single family contribution limit equally between the spouses unless they agree on a different division. Supply hsaFamilyLimitDivision as { status: "agreed", taxpayerShare } on the scenario to record a different agreement.',
+          'IRC 223(b)(5)(B)(ii) divides the portion for family months in which both spouses are eligible equally between them unless they agree on a different division. Sole-eligible family months stay with that individual. Supply hsaFamilyLimitDivision as { status: "agreed", taxpayerShare } on the scenario to record a different agreement.',
           "accounts",
           "IRC 223(b)(5)(B)(ii)",
         ),
@@ -14162,7 +14166,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   for (const ownerId of ownerIds) {
     const amounts = amountsByOwner.get(ownerId)!;
     const isSharingMember = familySharingApplies && coupleMembersWithAccounts.includes(ownerId);
-    const share = isSharingMember ? (shareByOwner.get(ownerId) ?? 1) : null;
+    // Marriage and family coverage invoke paragraph (5) even without the
+    // partner record. A known whole share must retain its reduction ordering.
+    const unpairedWholeShare = couple === null && amounts.familyPortionApplied > 0 &&
+      (context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY ||
+       context.filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY) &&
+      agreedWholeHsaShare(context.hsaFamilyLimitDivision, context.persons.get(ownerId)?.role);
+    const share = isSharingMember ? (shareByOwner.get(ownerId) ?? 1) : unpairedWholeShare ? 1 : null;
     const diagnostics = [...amounts.diagnostics];
     if (isSharingMember) {
       diagnostics.push(...sharingDiagnostics);
@@ -14224,7 +14234,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * paragraph (3)", and (ii) divides only what survives the reduction. So
      * the ordering differs with the paragraph, not just the amount.
      */
-    const archerAmount = share === null ? archerForPerson(ownerId) : coupleArcherAggregate;
+    const archerAmount = isSharingMember ? coupleArcherAggregate : archerForPerson(ownerId);
     const reducedDivided = (
       familyPortion: number,
       selfPortion: number,

@@ -11248,6 +11248,14 @@ final class Engine
         return (string) json_encode($value);
     }
 
+    /** The agreement fixes this owner's share under either partner-eligibility reading. */
+    private static function agreedWholeHsaShare(array $division, ?string $role): bool
+    {
+        return $division['status'] === 'agreed'
+            && (($role === 'taxpayer' && (float) $division['taxpayerShare'] === 1.0)
+                || ($role === 'spouse' && (float) $division['taxpayerShare'] === 0.0));
+    }
+
     /** Only the empty person statement affirmatively supplies no coverage. */
     private static function resolvePersonHsaMonths(array $coverage): ?array
     {
@@ -13544,10 +13552,7 @@ final class Engine
              */
             $spouseCoverageSupplied = $otherSpouseId !== null
                 && array_key_exists($otherSpouseId, $familyStatusByPerson);
-            $ownerDivision = $context['hsaFamilyLimitDivision'];
-            $agreedWholeForOwner = $ownerDivision['status'] === 'agreed'
-                && ((($person['role'] ?? null) === 'taxpayer' && (float) $ownerDivision['taxpayerShare'] === 1.0)
-                    || (($person['role'] ?? null) === 'spouse' && (float) $ownerDivision['taxpayerShare'] === 0.0));
+            $agreedWholeForOwner = self::agreedWholeHsaShare($context['hsaFamilyLimitDivision'], $person['role'] ?? null);
             $missingCoupleForFamilyDivision = $couple === null
                 && in_array('family', $months, true) && !$agreedWholeForOwner;
             $recharacterizationCouldRaiseTier = in_array('self_only', $months, true);
@@ -15042,9 +15047,8 @@ final class Engine
                     'HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE',
                     DiagnosticSeverity::INFO,
                     'Only one spouse has a health savings account, and no different division was agreed, so '
-                        . 'IRC 223(b)(5)(B)(ii) still divides the family limit equally between the spouses: this '
-                        . 'account takes half of it and the other half belongs to the spouse who has no account to '
-                        . 'use it. Owning the only HSA is not itself an agreement to a different division. If the '
+                        . 'IRC 223(b)(5)(B)(ii) divides only the portion for family months in which both spouses are eligible equally between them. '
+                        . 'This account keeps its sole-eligible family months whole; the other spouse\'s half of the shared-month portion remains theirs even without an account. Owning the only HSA is not itself an agreement to a different division. If the '
                         . 'spouses did agree to allocate the whole limit here, state it as hsaFamilyLimitDivision '
                         . '{ status: "agreed", taxpayerShare } -- Notice 2004-50 Q&A-32 permits any division, '
                         . '"including allocating nothing to one spouse".',
@@ -15055,8 +15059,7 @@ final class Engine
                 $sharingDiagnostics[] = self::diagnostic(
                     'HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT',
                     DiagnosticSeverity::INFO,
-                    'IRC 223(b)(5)(B)(ii) divides the single family contribution limit equally between the spouses '
-                        . 'unless they agree on a different division. Supply hsaFamilyLimitDivision as '
+                    'IRC 223(b)(5)(B)(ii) divides the portion for family months in which both spouses are eligible equally between them unless they agree on a different division. Sole-eligible family months stay with that individual. Supply hsaFamilyLimitDivision as '
                         . '{ status: "agreed", taxpayerShare } on the scenario to record a different agreement.',
                     'accounts',
                     'IRC 223(b)(5)(B)(ii)',
@@ -15101,7 +15104,10 @@ final class Engine
         foreach ($ownerIds as $ownerId) {
             $amounts = $amountsByOwner[$ownerId];
             $isSharingMember = $familySharingApplies && in_array($ownerId, $coupleMembersWithAccounts, true);
-            $share = $isSharingMember ? ($shareByOwner[$ownerId] ?? 1.0) : null;
+            $unpairedWholeShare = $couple === null && $amounts['familyPortionApplied'] > 0
+                && in_array($context['filingStatus'], [FilingStatus::MARRIED_FILING_JOINTLY->value, FilingStatus::MARRIED_FILING_SEPARATELY->value], true)
+                && self::agreedWholeHsaShare($context['hsaFamilyLimitDivision'], $context['persons'][$ownerId]['role'] ?? null);
+            $share = $isSharingMember ? ($shareByOwner[$ownerId] ?? 1.0) : ($unpairedWholeShare ? 1.0 : null);
             $diagnostics = $amounts['diagnostics'];
             if ($isSharingMember) {
                 array_push($diagnostics, ...$sharingDiagnostics);
@@ -15158,7 +15164,7 @@ final class Engine
              * paragraph (3)", and (ii) divides only what survives the reduction. So
              * the ordering differs with the paragraph, not just the amount.
              */
-            $archerAmount = $share === null ? $archerForPerson($ownerId) : $coupleArcherAggregate;
+            $archerAmount = $isSharingMember ? $coupleArcherAggregate : $archerForPerson($ownerId);
             $reducedDivided = static function (
                 float $familyPortion,
                 float $selfPortion,

@@ -860,3 +860,21 @@ test("missing married person facts are required only when they can change the HS
     }
   }
 });
+
+test("an unpaired agreed whole share retains paragraph-5 Archer ordering for either owner role", () => {
+  const vector = normalizationFollowups.find((entry) => entry.name ===
+    "2026 absent partner agreed whole preserves the age-55 amount after Archer reduction")!;
+  for (const role of ["taxpayer", "spouse"] as const) {
+    for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
+      const input = structuredClone(vector.input);
+      input.filingStatus = filingStatus;
+      input.persons[0].role = role;
+      input.hsaFamilyLimitDivision = { status: "agreed", taxpayerShare: role === "taxpayer" ? 1 : 0 };
+      const row = account(U.calculate(input), "a");
+      assert.equal(row.statutoryMaximumAnnualContribution, 1_000);
+      assert.equal(row.hsa?.archerMsaLimitReduction, 8_750);
+      assert.equal(row.hsa?.archerMsaReductionPrecedesFamilyDivision, true);
+      assert.equal(row.hsa?.familyLimitShare, 1);
+    }
+  }
+});

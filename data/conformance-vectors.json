@@ -17588,6 +17588,49 @@
         "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
+    },
+    {
+      "name": "2026 absent partner agreed whole preserves the age-55 amount after Archer reduction",
+      "description": "Marriage plus family coverage invokes IRC 223(b)(5). Its (B)(i) reduction is computed without regard to the paragraph (3) age-55 amount, and the paragraph (4) flush text disapplies (4)(A). Rev. Proc. 2025-19 supplies the 8750 family base; IRC 223(b)(3) supplies 1000 at age 66. The synthetic 9000 Archer MSA contribution exhausts the base but cannot consume that 1000. The agreed taxpayerShare of 1 gives this owner the whole under either missing-partner eligibility reading, so status is determinate and the maximum and total are 1000. The actual reduction is 8750, not 9000, it precedes division, and the effective share is 1.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "owner",
+            "role": "taxpayer",
+            "birthYear": 1960,
+            "archerMsaContributions": 9000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "owner",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 1000,
+        "accounts.0.hsa.archerMsaLimitReduction": 8750,
+        "accounts.0.hsa.archerMsaReductionPrecedesFamilyDivision": true,
+        "accounts.0.hsa.familyLimitShare": 1,
+        "totals.hsaContribution": 1000
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
     }
   ]
 }

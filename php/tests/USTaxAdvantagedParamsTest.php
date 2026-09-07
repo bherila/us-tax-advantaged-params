@@ -899,6 +899,25 @@ test('missing married person facts are required only when they can change the HS
     }
 });
 
+test('an unpaired agreed whole share retains paragraph-5 Archer ordering for either owner role', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2026 absent partner agreed whole preserves the age-55 amount after Archer reduction') continue;
+        foreach (['taxpayer', 'spouse'] as $role) {
+            foreach (['MFJ', 'MFS'] as $filingStatus) {
+                $input = $vector['input'];
+                $input['filingStatus'] = $filingStatus;
+                $input['persons'][0]['role'] = $role;
+                $input['hsaFamilyLimitDivision'] = ['status' => 'agreed', 'taxpayerShare' => $role === 'taxpayer' ? 1 : 0];
+                $row = accountResult(U::calculate($input), 'a');
+                assertSameValue(1000, $row['statutoryMaximumAnnualContribution']);
+                assertSameValue(8750, $row['hsa']['archerMsaLimitReduction']);
+                assertSameValue(true, $row['hsa']['archerMsaReductionPrecedesFamilyDivision']);
+                assertSameValue(1, $row['hsa']['familyLimitShare']);
+            }
+        }
+    }
+});
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {
