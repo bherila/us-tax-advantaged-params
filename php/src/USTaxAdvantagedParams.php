@@ -11248,6 +11248,30 @@ final class Engine
         return (string) json_encode($value);
     }
 
+    /** Only the empty person statement affirmatively supplies no coverage. */
+    private static function resolvePersonHsaMonths(array $coverage): ?array
+    {
+        $months = self::resolveHsaMonths($coverage);
+        if ($months !== null) return $months;
+        return count($coverage) === 0 ? array_fill(0, self::HSA_MONTHS_IN_YEAR, null) : null;
+    }
+
+    /** Preserve missing and conflicting operands separately from their unresolved value. */
+    private static function resolveHsaDeductible(array $variants): array
+    {
+        $missing = false;
+        $values = [];
+        foreach ($variants as $variant) {
+            if ($variant['months'] === null || count(array_filter($variant['months'], static fn ($tier) => $tier !== null)) === 0) continue;
+            $value = $variant['coverage']['hdhpAnnualDeductible'] ?? null;
+            if ($value === null) $missing = true;
+            else $values[(string) json_encode($value)] = (float) $value;
+        }
+        $conflicting = count($values) > 1;
+        return ['value' => !$missing && !$conflicting ? (array_values($values)[0] ?? null) : null,
+            'missing' => $missing, 'conflicting' => $conflicting];
+    }
+
     /**
      * Canonical monthly facts, independent of representation. Only the person
      * route interprets absent coverage fields as an explicit no-coverage fact.
@@ -11257,7 +11281,7 @@ final class Engine
     private static function hsaCoverageSignature(array $coverage, string $source = 'account'): string
     {
         return (string) json_encode([
-            self::resolveHsaMonths($coverage) ?? ($source === 'person' ? array_fill(0, self::HSA_MONTHS_IN_YEAR, null) : null),
+            $source === 'person' ? self::resolvePersonHsaMonths($coverage) : self::resolveHsaMonths($coverage),
             $coverage['hdhpAnnualDeductible'] ?? null,
         ]);
     }
@@ -12637,7 +12661,7 @@ final class Engine
             $conflict = count($usableSignatures) > 1;
             $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
             $personConflict = false;
-            if (is_array($declared)) {
+            if (is_array($declared) && self::resolvePersonHsaMonths($declared) !== null) {
                 $declaredSignature = self::hsaCoverageSignature($declared, 'person');
                 foreach (array_keys($usableSignatures) as $encoded) {
                     if ($encoded !== $declaredSignature) $personConflict = true;
@@ -12665,30 +12689,17 @@ final class Engine
                     // The one place an empty object is an answer:
                     // persons[].hsaCoverage of {} records that this person held
                     // no high deductible health plan coverage.
-                    'months' => self::resolveHsaMonths($declared)
-                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                    'months' => self::resolvePersonHsaMonths($declared),
                 ];
             }
             $slots = self::resolvedCoverageSlotsFor($coverageVariants);
             $resolvedMonths = in_array('unknown', $slots, true) ? null
                 : array_map(static fn ($slot) => $slot === 'none' ? null : $slot, $slots);
-            $deductibles = array_map(static fn ($variant) => $variant['coverage']['hdhpAnnualDeductible'] ?? null, $coverageVariants);
-            $resolvedDeductible = self::unanimousField($deductibles) ? ($deductibles[0] ?? null) : null;
-            $deductibleMissingInCappedYear = false;
-            if ($parameters['contributionLimitCappedByHdhpAnnualDeductible']) {
-                foreach ($coverageVariants as $variant) {
-                    if ($variant['months'] !== null
-                        && count(array_filter($variant['months'], static fn ($tier) => $tier !== null)) > 0
-                        && ($variant['coverage']['hdhpAnnualDeductible'] ?? null) === null) {
-                        $deductibleMissingInCappedYear = true;
-                    }
-                }
-            }
+            $resolvedDeductible = self::resolveHsaDeductible($coverageVariants);
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'resolvedDeductible' => $resolvedDeductible,
                 'hasUnusableAccountStatement' => $hasUnusableAccountStatement || count($usableSignatures) === 0,
-                'deductibleMissingInCappedYear' => $deductibleMissingInCappedYear,
                 'conflict' => $conflict,
                 'personConflict' => $personConflict,
                 /**
@@ -12733,20 +12744,13 @@ final class Engine
          * therefore read from the person: from planRules.hsa where that spouse has
          * an HSA, and from persons[].hsaCoverage where they do not.
          */
-        /*
-         * `hdhpAnnualDeductible` is null here whenever the caller stated no
-         * annual deductible for this person, including where they supplied a
-         * literal null: money() already treats null as "absent" everywhere
-         * else in both engines, so the two must not be told apart here. The
-         * `?? null` below is load-bearing for that, not defensive padding.
-         */
         $coupleCoverage = [];
         foreach ($couple ?? [] as $personId) {
             if (isset($facts[$personId]) && count($facts[$personId]['coverageVariants']) > 0) {
                 $coupleCoverage[$personId] = [
                     'supplied' => true,
                     'months' => $facts[$personId]['resolvedMonths'],
-                    'hdhpAnnualDeductible' => $facts[$personId]['resolvedDeductible'],
+                    'deductible' => $facts[$personId]['resolvedDeductible'],
                 ];
                 continue;
             }
@@ -12754,11 +12758,10 @@ final class Engine
             $coupleCoverage[$personId] = is_array($declared)
                 ? [
                     'supplied' => true,
-                    'months' => self::resolveHsaMonths($declared)
-                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
-                    'hdhpAnnualDeductible' => $declared['hdhpAnnualDeductible'] ?? null,
+                    'months' => self::resolvePersonHsaMonths($declared),
+                    'deductible' => self::resolveHsaDeductible([['source' => 'person', 'coverage' => $declared, 'months' => self::resolvePersonHsaMonths($declared)]]),
                 ]
-                : ['supplied' => false, 'months' => null, 'hdhpAnnualDeductible' => null];
+                : ['supplied' => false, 'months' => null, 'deductible' => ['value' => null, 'missing' => false, 'conflicting' => false]];
         }
 
         /*
@@ -12800,8 +12803,7 @@ final class Engine
                 $variants = [[
                     'source' => 'person',
                     'coverage' => $declaredCoverage,
-                    'months' => self::resolveHsaMonths($declaredCoverage)
-                        ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                    'months' => self::resolvePersonHsaMonths($declaredCoverage),
                 ]];
             }
             $coverageVariantsByPerson[$personId] = $variants;
@@ -13292,7 +13294,7 @@ final class Engine
          * Each entry is one of:
          *   ['state' => 'not_applicable']
          *   ['state' => 'known', 'value' => float]
-         *   ['state' => 'indeterminate', 'missingPersonIds' => string[]]
+         *   ['state' => 'indeterminate', 'missingPersonIds' => string[], 'conflictingPersonIds' => string[]]
          */
         $familyDeductibleByMonth = [];
         for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
@@ -13313,20 +13315,17 @@ final class Engine
                 continue;
             }
             $missingPersonIds = [];
+            $conflictingPersonIds = [];
             $values = [];
             foreach ($candidates as $personId) {
-                $value = $coupleCoverage[$personId]['hdhpAnnualDeductible'] ?? null;
-                if ($value === null) {
-                    $missingPersonIds[] = $personId;
-                } else {
-                    $values[] = (float) $value;
-                }
+                $resolved = $coupleCoverage[$personId]['deductible'];
+                if ($resolved['missing']) $missingPersonIds[] = $personId;
+                if ($resolved['conflicting']) $conflictingPersonIds[] = $personId;
+                if ($resolved['value'] !== null) $values[] = $resolved['value'];
             }
-            // A candidate's plan could be the lowest, so an unstated one leaves the
-            // least of them unknown rather than simply absent from the comparison.
-            $familyDeductibleByMonth[$month - 1] = $missingPersonIds === []
+            $familyDeductibleByMonth[$month - 1] = $missingPersonIds === [] && $conflictingPersonIds === []
                 ? ['state' => 'known', 'value' => min($values)]
-                : ['state' => 'indeterminate', 'missingPersonIds' => $missingPersonIds];
+                : ['state' => 'indeterminate', 'missingPersonIds' => $missingPersonIds, 'conflictingPersonIds' => $conflictingPersonIds];
         }
 
         $amountsByOwner = [];
@@ -13592,6 +13591,18 @@ final class Engine
                 );
             }
 
+            $spouseDeclaration = $otherSpouseId === null ? null : ($context['persons'][$otherSpouseId]['hsaCoverage'] ?? null);
+            if (!$spouseCoverageSupplied && is_array($spouseDeclaration)
+                && self::resolvePersonHsaMonths($spouseDeclaration) === null
+                && !$recharacterizationCouldRaiseTier && !$lowestDeductibleCouldLowerAmount
+                && in_array('family', $months, true)) {
+                $diagnostics[] = self::diagnostic(
+                    'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED', DiagnosticSeverity::ERROR,
+                    "The spouse's nonempty persons[].hsaCoverage does not establish an eligible-month schedule. Supply a coverage tier or monthlyCoverage; only an empty object affirmatively states no coverage. Eligibility is required to determine the IRC 223(b)(5)(B)(ii) division.",
+                    "persons.{$ownerId}", 'IRC 223(b)(5)(B)(ii)',
+                );
+            }
+
             /**
              * The same question one step further out. A spouse who supplied
              * coverage facts that contradict each other on the family question
@@ -13685,8 +13696,8 @@ final class Engine
                 );
             }
 
-            $ownDeductible = $owner['resolvedDeductible'];
-            $deductibleMissing = $owner['deductibleMissingInCappedYear'];
+            $ownDeductible = $owner['resolvedDeductible']['value'];
+            $deductibleMissing = $parameters['contributionLimitCappedByHdhpAnnualDeductible'] && $owner['resolvedDeductible']['missing'];
             $missingDeductibleSpouses = [];
             $deductibleFor = static function (string $tier, int $monthIndex) use (
                 $familySharingApplies,
@@ -13694,6 +13705,7 @@ final class Engine
                 $ownDeductible,
                 $ownerId,
                 &$missingDeductibleSpouses,
+                &$deductibleMissing,
             ): ?float {
                 if ($tier === 'family' && $familySharingApplies) {
                     $resolved = $familyDeductibleByMonth[$monthIndex];
@@ -13701,6 +13713,7 @@ final class Engine
                         return (float) $resolved['value'];
                     }
                     if ($resolved['state'] === 'indeterminate') {
+                        if (count($resolved['missingPersonIds']) > 0) $deductibleMissing = true;
                         foreach ($resolved['missingPersonIds'] as $personId) {
                             if ($personId !== $ownerId) {
                                 $missingDeductibleSpouses[$personId] = true;
@@ -13714,7 +13727,8 @@ final class Engine
             $annualLimitFor = static function (string $tier, int $monthIndex) use (
                 $parameters,
                 $deductibleFor,
-                &$deductibleMissing,
+                &$indeterminate,
+                &$familyPoolAmountIndeterminate,
             ): float {
                 $statutory = (float) $parameters['annualContributionLimit'][$tier === 'family' ? 'family' : 'selfOnly'];
                 if ($parameters['contributionLimitCappedByHdhpAnnualDeductible'] !== true) {
@@ -13722,7 +13736,8 @@ final class Engine
                 }
                 $deductible = $deductibleFor($tier, $monthIndex);
                 if ($deductible === null) {
-                    $deductibleMissing = true;
+                    $indeterminate = true;
+                    $familyPoolAmountIndeterminate = true;
                     return $statutory;
                 }
                 return self::minMoney($deductible, $statutory);

@@ -11661,9 +11661,8 @@ interface HsaOwnerPlan {
 
 interface HsaOwnerFacts {
   ownerId: string;
-  resolvedDeductible: Money | null;
+  resolvedDeductible: HsaDeductibleResolution;
   hasUnusableAccountStatement: boolean;
-  deductibleMissingInCappedYear: boolean;
   conflict: boolean;
   /** The owner's own `persons[].hsaCoverage` contradicts their account's `planRules.hsa`. */
   personConflict: boolean;
@@ -11695,14 +11694,7 @@ interface HsaPersonCoverage {
   /** False when nothing in the input states this person's coverage either way. */
   supplied: boolean;
   months: Array<HsaCoverageTier | null> | null;
-  /**
-   * `undefined` means the caller stated no annual deductible for this person.
-   * A supplied `null` normalizes to `undefined` here, because `money()` already
-   * treats `null` as "absent" everywhere else in both engines; keeping the two
-   * apart let a supplied `null` reach `Math.min` as a zero and read as a
-   * deductible that binds at nothing.
-   */
-  hdhpAnnualDeductible: Money | undefined;
+  deductible: HsaDeductibleResolution;
 }
 
 /** The tier as it reads in a diagnostic sentence. */
@@ -11733,13 +11725,36 @@ function fsaParametersForYear(year: number): FsaYearParameters | null {
   return row ? deepClone(row) : null;
 }
 
+/** Only the empty person statement affirmatively supplies no coverage. */
+function resolvePersonHsaMonths(coverage: HsaCoverageInput): Array<HsaCoverageTier | null> | null {
+  const months = resolveHsaMonths(coverage);
+  if (months !== null) return months;
+  const empty = Object.keys(coverage).length === 0;
+  return empty ? HSA_ALL_MONTHS.map(() => null) : null;
+}
+
+interface HsaDeductibleResolution {
+  value: Money | null;
+  missing: boolean;
+  conflicting: boolean;
+}
+
+function resolveHsaDeductible(variants: ReadonlyArray<HsaCoverageVariant>): HsaDeductibleResolution {
+  const relevant = variants.filter((variant) => variant.months?.some((tier) => tier !== null));
+  const missing = relevant.some((variant) => variant.coverage.hdhpAnnualDeductible == null);
+  const values = new Set(relevant.flatMap((variant) =>
+    variant.coverage.hdhpAnnualDeductible == null ? [] : [variant.coverage.hdhpAnnualDeductible]));
+  const conflicting = values.size > 1;
+  return { value: !missing && !conflicting ? [...values][0] ?? null : null, missing, conflicting };
+}
+
 /**
  * Canonical monthly facts, independent of input representation. Only the
  * person route interprets absent coverage fields as an explicit no-coverage fact.
  */
 function hsaCoverageSignature(coverage: HsaCoverageInput, source: "account" | "person" = "account"): string {
   return JSON.stringify([
-    resolveHsaMonths(coverage) ?? (source === "person" ? HSA_ALL_MONTHS.map(() => null) : null),
+    source === "person" ? resolvePersonHsaMonths(coverage) : resolveHsaMonths(coverage),
     coverage.hdhpAnnualDeductible ?? null,
   ]);
 }
@@ -11971,7 +11986,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const usableAccounts = accountVariants.filter((coverage) => resolveHsaMonths(coverage) !== null);
     const conflict = new Set(usableAccounts.map((coverage) => hsaCoverageSignature(coverage))).size > 1;
     const declared = context.persons.get(ownerId)?.hsaCoverage;
-    const personConflict = declared !== undefined && usableAccounts.some(
+    const personConflict = declared !== undefined && resolvePersonHsaMonths(declared) !== null && usableAccounts.some(
       (coverage) => hsaCoverageSignature(coverage) !== hsaCoverageSignature(declared, "person"),
     );
     /**
@@ -11992,7 +12007,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         coverage: declared,
         // The one place an empty object is an answer: `persons[].hsaCoverage: {}`
         // records that this person held no high deductible health plan coverage.
-        months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
+        months: resolvePersonHsaMonths(declared),
       });
     }
     // Candidate schedules and deductible comparisons read only consensus facts.
@@ -12000,16 +12015,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const slots = resolvedCoverageSlotsFor(coverageVariants);
     const resolvedMonths = slots.some((slot) => slot === "unknown")
       ? null : slots.map((slot) => slot === "none" ? null : slot as HsaCoverageTier);
-    const deductibles = coverageVariants.map((variant) => variant.coverage.hdhpAnnualDeductible ?? null);
-    const resolvedDeductible = unanimousField(deductibles) ? deductibles[0] ?? null : null;
-    const deductibleMissingInCappedYear = parameters.contributionLimitCappedByHdhpAnnualDeductible &&
-      coverageVariants.some((variant) => variant.months?.some((tier) => tier !== null) &&
-        variant.coverage.hdhpAnnualDeductible == null);
+    const resolvedDeductible = resolveHsaDeductible(coverageVariants);
     facts.set(ownerId, {
       ownerId,
       resolvedDeductible,
       hasUnusableAccountStatement: hasUnusableAccountStatement || usableAccounts.length === 0,
-      deductibleMissingInCappedYear,
       conflict,
       personConflict,
       coverageVariants,
@@ -12043,7 +12053,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       coupleCoverage.set(personId, {
         supplied: true,
         months: owned.resolvedMonths,
-        hdhpAnnualDeductible: owned.resolvedDeductible ?? undefined,
+        deductible: owned.resolvedDeductible,
       });
       continue;
     }
@@ -12051,11 +12061,11 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     coupleCoverage.set(
       personId,
       declared === undefined
-        ? { supplied: false, months: null, hdhpAnnualDeductible: undefined }
+        ? { supplied: false, months: null, deductible: { value: null, missing: false, conflicting: false } }
         : {
             supplied: true,
-            months: resolveHsaMonths(declared) ?? HSA_ALL_MONTHS.map(() => null),
-            hdhpAnnualDeductible: declared.hdhpAnnualDeductible ?? undefined,
+            months: resolvePersonHsaMonths(declared),
+            deductible: resolveHsaDeductible([{ source: "person", coverage: declared, months: resolvePersonHsaMonths(declared) }]),
           },
     );
   }
@@ -12099,7 +12109,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
               {
                 source: "person",
                 coverage: declaredCoverage,
-                months: resolveHsaMonths(declaredCoverage) ?? HSA_ALL_MONTHS.map(() => null),
+                months: resolvePersonHsaMonths(declaredCoverage),
               },
             ]
           : [];
@@ -12490,7 +12500,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   type FamilyMonthDeductible =
     | { state: "not_applicable" }
     | { state: "known"; value: Money }
-    | { state: "indeterminate"; missingPersonIds: string[] };
+    | { state: "indeterminate"; missingPersonIds: string[]; conflictingPersonIds: string[] };
 
   const familyDeductibleByMonth: FamilyMonthDeductible[] = HSA_ALL_MONTHS.map((month) => {
     // IRC 223(b)(5)(A) reaches the lowest annual deductible only "if such
@@ -12504,15 +12514,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
     if (candidates.length === 0) return { state: "not_applicable" };
     const missingPersonIds = candidates.filter(
-      (personId) => coupleCoverage.get(personId)?.hdhpAnnualDeductible === undefined,
+      (personId) => coupleCoverage.get(personId)?.deductible.missing === true,
     );
     // A candidate's plan could be the lowest, so an unstated one leaves the
     // least of them unknown rather than simply absent from the comparison.
-    if (missingPersonIds.length > 0) return { state: "indeterminate", missingPersonIds };
+    const conflictingPersonIds = candidates.filter(
+      (personId) => coupleCoverage.get(personId)?.deductible.conflicting === true,
+    );
+    if (missingPersonIds.length > 0 || conflictingPersonIds.length > 0) {
+      return { state: "indeterminate", missingPersonIds, conflictingPersonIds };
+    }
     return {
       state: "known",
       value: Math.min(
-        ...candidates.map((personId) => coupleCoverage.get(personId)!.hdhpAnnualDeductible!),
+        ...candidates.map((personId) => coupleCoverage.get(personId)!.deductible.value!),
       ),
     };
   });
@@ -12822,6 +12837,18 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
+    const spouseDeclaration = otherSpouseId === undefined ? undefined : context.persons.get(otherSpouseId)?.hsaCoverage;
+    if (!spouseCoverageSupplied && spouseDeclaration !== undefined &&
+        resolvePersonHsaMonths(spouseDeclaration) === null &&
+        !recharacterizationCouldRaiseTier && !lowestDeductibleCouldLowerAmount &&
+        months.some((tier) => tier === "family")) {
+      diagnostics.push(diagnostic(
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED", DiagnosticSeverity.ERROR,
+        "The spouse's nonempty persons[].hsaCoverage does not establish an eligible-month schedule. Supply a coverage tier or monthlyCoverage; only an empty object affirmatively states no coverage. Eligibility is required to determine the IRC 223(b)(5)(B)(ii) division.",
+        `persons.${ownerId}`, "IRC 223(b)(5)(B)(ii)",
+      ));
+    }
+
     /**
      * The same question one step further out. A spouse who supplied coverage
      * facts that contradict each other on the family question has not answered
@@ -12901,14 +12928,15 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       );
     }
 
-    const ownDeductible = owner.resolvedDeductible;
-    let deductibleMissing = owner.deductibleMissingInCappedYear;
+    const ownDeductible = owner.resolvedDeductible.value;
+    let deductibleMissing = parameters.contributionLimitCappedByHdhpAnnualDeductible && owner.resolvedDeductible.missing;
     const missingDeductibleSpouses = new Set<string>();
     const deductibleFor = (tier: HsaCoverageTier, monthIndex: number): Money | null => {
       if (tier === "family" && familySharingApplies) {
         const resolved = familyDeductibleByMonth[monthIndex];
         if (resolved.state === "known") return resolved.value;
         if (resolved.state === "indeterminate") {
+          if (resolved.missingPersonIds.length > 0) deductibleMissing = true;
           for (const personId of resolved.missingPersonIds) {
             if (personId !== ownerId) missingDeductibleSpouses.add(personId);
           }
@@ -12922,7 +12950,8 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       if (!parameters.contributionLimitCappedByHdhpAnnualDeductible) return statutory;
       const deductible = deductibleFor(tier, monthIndex);
       if (deductible === null) {
-        deductibleMissing = true;
+        indeterminate = true;
+        familyPoolAmountIndeterminate = true;
         return statutory;
       }
       return minMoney(deductible, statutory);

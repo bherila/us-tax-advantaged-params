@@ -840,6 +840,44 @@ foreach ($normalizationVectors as $vector) {
     };
 }
 
+test('nonempty unusable person HSA statements never assert no coverage', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2026 nonempty unusable person HSA coverage is not explicit no coverage') continue;
+        foreach ([['hdhpAnnualDeductible' => 3400], ['eligibleMonths' => [1]]] as $coverage) {
+            $input = $vector['input'];
+            $input['persons'][1]['hsaCoverage'] = $coverage;
+            $row = accountResult(U::calculate($input), 't-hsa');
+            assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+            assertSameValue(CalculationStatus::INDETERMINATE->value, $row['status']);
+            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE'));
+            assertTrue(!hasDiagnostic($row['diagnostics'], 'HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT'));
+        }
+    }
+});
+test('the married capped-year comparison preserves deductible conflict provenance', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2005 supplied conflicting HSA deductibles A first') continue;
+        foreach ([false, true] as $reverse) {
+            $input = $vector['input'];
+            $input['filingStatus'] = FilingStatus::MARRIED_FILING_JOINTLY;
+            $input['persons'][] = ['id' => 's', 'role' => 'spouse', 'birthYear' => 1980];
+            foreach ($input['accounts'] as &$a) $a['planRules']['hsa']['coverageTier'] = 'family';
+            unset($a);
+            $input['accounts'][] = ['id' => 's-hsa', 'ownerId' => 's', 'type' => AccountType::HSA,
+                'priority' => 3, 'planRules' => ['hsa' => ['coverageTier' => 'family', 'hdhpAnnualDeductible' => 4000]]];
+            if ($reverse) $input['accounts'] = array_reverse($input['accounts']);
+            $result = U::calculate($input);
+            foreach ($input['accounts'] as $a) {
+                $row = accountResult($result, $a['id']);
+                assertSameValue(CalculationStatus::INDETERMINATE->value, $row['status']);
+                assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+                assertTrue(!hasDiagnostic($row['diagnostics'], 'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED'));
+            }
+        }
+    }
+});
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {

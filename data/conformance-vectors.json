@@ -17224,6 +17224,164 @@
         "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
         "HSA_COVERAGE_FACTS_REQUIRED"
       ]
+    },
+    {
+      "name": "2026 nonempty unusable person HSA coverage is not explicit no coverage",
+      "description": "Input contract: a deductible-only person statement does not establish any eligible-month schedule; only an empty person object affirmatively states no coverage. Under IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-31, the owner receives an equal share if both spouses are eligible, or the whole limitation if only this owner is eligible. The supplied facts cannot choose between those completions, so status is indeterminate and the statutory maximum is null. The unusable spouse statement and unknown division are diagnosed; the sole-eligible branch cannot be asserted.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "hdhpAnnualDeductible": 3400
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"
+      ]
+    },
+    {
+      "name": "2005 supplied conflicting HSA deductibles A first",
+      "description": "IRC 223(b)(2) before the post-2006 repeal caps the limitation by the annual deductible. Synthetic supplied deductibles of 2000 and 2500 imply different ceilings, so neither candidate is established: both accounts are indeterminate, their statutory maxima and hsa details null. Both values exceed the 2005 self-only HDHP minimum of 1000 (Rev. Proc. 2004-71). Neither value is missing or subminimum; only the contradictory owner statements must be diagnosed.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2500
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
+    },
+    {
+      "name": "2005 supplied conflicting HSA deductibles B first",
+      "description": "IRC 223(b)(2) before the post-2006 repeal caps the limitation by the annual deductible. Synthetic supplied deductibles of 2000 and 2500 imply different ceilings, so neither candidate is established: both accounts are indeterminate, their statutory maxima and hsa details null. Both values exceed the 2005 self-only HDHP minimum of 1000 (Rev. Proc. 2004-71). Neither value is missing or subminimum; only the contradictory owner statements must be diagnosed.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2500
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED",
+        "HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM"
+      ]
     }
   ]
 }

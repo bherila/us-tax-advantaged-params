@@ -799,3 +799,42 @@ for (const vector of ownerNormalizationVectors.filter((entry) =>
     }
   });
 }
+
+const normalizationFollowups = JSON.parse(readFileSync(
+  new URL("../../data/conformance-vectors.json", import.meta.url), "utf8",
+)).vectors as Array<{ name: string; input: Parameters<typeof U.calculate>[0] }>;
+test("nonempty unusable person HSA statements never assert no coverage", () => {
+  const vector = normalizationFollowups.find((entry) => entry.name ===
+    "2026 nonempty unusable person HSA coverage is not explicit no coverage")!;
+  for (const hsaCoverage of [{ hdhpAnnualDeductible: 3_400 }, { eligibleMonths: [1] }]) {
+    const input = structuredClone(vector.input);
+    input.persons[1].hsaCoverage = hsaCoverage;
+    const row = account(U.calculate(input), "t-hsa");
+    assert.equal(row.statutoryMaximumAnnualContribution, null);
+    assert.equal(row.status, CalculationStatus.INDETERMINATE);
+    const codes = new Set(row.diagnostics.map(({ code }) => code));
+    assert.ok(codes.has("HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"));
+    assert.ok(codes.has("HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"));
+    assert.ok(!codes.has("HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"));
+  }
+});
+test("the married capped-year comparison preserves deductible conflict provenance", () => {
+  const vector = normalizationFollowups.find((entry) => entry.name ===
+    "2005 supplied conflicting HSA deductibles A first")!;
+  for (const reverse of [false, true]) {
+    const input = structuredClone(vector.input);
+    input.filingStatus = FilingStatus.MARRIED_FILING_JOINTLY;
+    input.persons.push({ id: "s", role: "spouse", birthYear: 1980 });
+    for (const a of input.accounts) a.planRules!.hsa!.coverageTier = "family";
+    input.accounts.push({ id: "s-hsa", ownerId: "s", type: AccountType.HSA,
+      priority: 3, planRules: { hsa: { coverageTier: "family", hdhpAnnualDeductible: 4_000 } } });
+    if (reverse) input.accounts.reverse();
+    const result = U.calculate(input);
+    for (const a of input.accounts) {
+      const row = account(result, a.id);
+      assert.equal(row.status, CalculationStatus.INDETERMINATE);
+      assert.equal(row.statutoryMaximumAnnualContribution, null);
+      assert.ok(!row.diagnostics.some(({ code }) => code === "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"));
+    }
+  }
+});

@@ -849,7 +849,14 @@ representations agree. An explicit `planRules.hsa: {}` is unusable: even with a 
 duplicate statement, it produces `HSA_COVERAGE_FACTS_REQUIRED` and `hsa: null` on that
 owner's accounts. It is not a contradictory assertion of no coverage. Person-level coverage
 is compared with every usable account statement, and a missing 2004–2006 deductible is
-diagnosed across the statements rather than taken from the first account.
+diagnosed across the statements rather than taken from the first account. Conflicting supplied
+deductibles are diagnosed as conflicts, without also claiming a deductible is missing.
+
+Only an empty person-level `hsaCoverage: {}` affirmatively states no coverage. A nonempty
+statement with no usable schedule, such as `{ hdhpAnnualDeductible: 3400 }` or
+`{ eligibleMonths: [1] }`, leaves coverage unknown. It cannot establish that the other
+spouse is the sole eligible individual. Explicit empty schedules (`monthlyCoverage: []`
+or a tier with `eligibleMonths: []`) still establish no eligible months.
 
 ### A deductible below the statutory minimum is inconsistent input
 
