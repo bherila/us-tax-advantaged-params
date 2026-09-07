@@ -11663,6 +11663,7 @@ interface HsaOwnerFacts {
   ownerId: string;
   resolvedDeductible: HsaDeductibleResolution;
   hasUnusableAccountStatement: boolean;
+  hasUnusablePersonStatement: boolean;
   conflict: boolean;
   /** The owner's own `persons[].hsaCoverage` contradicts their account's `planRules.hsa`. */
   personConflict: boolean;
@@ -12020,6 +12021,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       ownerId,
       resolvedDeductible,
       hasUnusableAccountStatement: hasUnusableAccountStatement || usableAccounts.length === 0,
+      hasUnusablePersonStatement: declared !== undefined && resolvePersonHsaMonths(declared) === null,
       conflict,
       personConflict,
       coverageVariants,
@@ -12707,6 +12709,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         !deductibleUnanimous &&
         ownerSlots.some((slot) => slot !== "none"));
     if (amountInputsIndeterminate) {
+      indeterminate = true;
       familyPoolAmountIndeterminate = true;
       // The months themselves, or the deductible that priced them in a capped
       // year, are not established -- so neither is the schedule either candidate
@@ -12738,7 +12741,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         ),
       );
     }
-    if (owner.hasUnusableAccountStatement) {
+    if (owner.hasUnusableAccountStatement || owner.hasUnusablePersonStatement) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
       candidateSelectionUnestablished = true;
@@ -12746,7 +12749,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         diagnostic(
           "HSA_COVERAGE_FACTS_REQUIRED",
           DiagnosticSeverity.ERROR,
-          "planRules.hsa with a coverage tier (or a monthlyCoverage list) is required. Whether a person is an eligible individual under IRC 223(c)(1), including Medicare entitlement under IRC 223(b)(7), is a caller-supplied fact.",
+          "Each supplied coverage statement needs a coverage tier or a monthlyCoverage list; only an empty persons[].hsaCoverage explicitly states no coverage. Whether a person is an eligible individual under IRC 223(c)(1), including Medicare entitlement under IRC 223(b)(7), is a caller-supplied fact.",
           `persons.${ownerId}`,
           "IRC 223(b)(1)",
         ),

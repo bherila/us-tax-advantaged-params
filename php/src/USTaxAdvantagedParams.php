@@ -12700,6 +12700,7 @@ final class Engine
                 'ownerId' => $ownerId,
                 'resolvedDeductible' => $resolvedDeductible,
                 'hasUnusableAccountStatement' => $hasUnusableAccountStatement || count($usableSignatures) === 0,
+                'hasUnusablePersonStatement' => is_array($declared) && self::resolvePersonHsaMonths($declared) === null,
                 'conflict' => $conflict,
                 'personConflict' => $personConflict,
                 /**
@@ -13435,6 +13436,7 @@ final class Engine
                     && !$deductibleUnanimous
                     && $ownerHasCoveredMonth);
             if ($amountInputsIndeterminate) {
+                $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
                 // The months themselves, or the deductible that priced them in a
                 // capped year, are not established -- so neither is the schedule
@@ -13465,14 +13467,14 @@ final class Engine
                     'IRC 223(b)',
                 );
             }
-            if ($owner['hasUnusableAccountStatement']) {
+            if ($owner['hasUnusableAccountStatement'] || $owner['hasUnusablePersonStatement']) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
                 $candidateSelectionUnestablished = true;
                 $diagnostics[] = self::diagnostic(
                     'HSA_COVERAGE_FACTS_REQUIRED',
                     DiagnosticSeverity::ERROR,
-                    'planRules.hsa with a coverage tier (or a monthlyCoverage list) is required. Whether a person is an '
+                    'Each supplied coverage statement needs a coverage tier or a monthlyCoverage list; only an empty persons[].hsaCoverage explicitly states no coverage. Whether a person is an '
                         . 'eligible individual under IRC 223(c)(1), including Medicare entitlement under IRC 223(b)(7), '
                         . 'is a caller-supplied fact.',
                     "persons.{$ownerId}",

@@ -460,9 +460,10 @@ owns an HSA, `planRules.hsa` already carries these facts; supplying both is allo
 must be identical, and a contradiction returns
 `HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT`.
 
-**Supplying the key at all declares the fact known.** An empty object —
+**An empty object explicitly states no coverage.** The shape
 `{ id: "s", hsaCoverage: {} }`, or `.noHsaCoverage()` on the builder — records that the
-spouse held no high deductible health plan coverage in any month.
+spouse held no high deductible health plan coverage in any month. A nonempty object
+without a usable tier/month schedule leaves coverage unknown, even if a deductible is supplied.
 
 ### Archer MSA contributions: `persons[].archerMsaContributions`
 
@@ -677,22 +678,22 @@ HDHP coverage in any month (`hsaCoverage: {}`), they are not an eligible individ
 no share, and the owner gets the whole limitation — Notice 2004-50 Q&A-31: "if only one spouse is an
 eligible individual, only that spouse may contribute to an HSA (**notwithstanding** the treatment under
 section 223(b)(5)(A) of both spouses as having only family coverage)", worked by Example (1) of that Q&A.
-That case reports `HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` instead. A spouse who stated nothing
-at all is not placed outside eligibility — absence of a statement is not a statement of absence — and takes
-their half.
+That case reports `HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` instead. If the other spouse
+states nothing, eligibility remains unknown: the owner might receive half or the whole. Where
+those readings change the answer, the engine reports `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE`,
+`familyLimitShare: null`, and a null maximum.
 
-This changed in 0.5.0. Before it, an account-level model could not express a division at all, so
-the engine assumed a sole owner had agreed to take everything and reported
-`HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT` with a `determinate_with_assumptions` status.
-Now that the division can be *stated*, assuming one would override a caller who has said in so
-many words that no different division was agreed. The status is `determinate`, because applying
-the statutory default is not an assumption. **If you relied on the old behaviour, state the
-agreement explicitly.**
+Earlier versions assumed a sole HSA owner had agreed to take everything when no
+account-level share was supplied, reporting `HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT`.
+The scenario-level contract applies the statutory default when the supplied eligibility
+and coverage establish it; otherwise the division remains unknown. **If you relied on
+that earlier assumption, state the agreement explicitly.**
 
 **An unknown division of nothing is still determinate.** The division is only ever a fact about
 something: where the limitation left after the §223(b)(5)(B)(i) Archer reduction is zero, every
-division of it is the same division, so an unsettled status changes no account's answer and
-nulls nothing. The same principle applies one level down — an eligibility doubt about a spouse
+division yields the same zero monetary maximum, so that maximum remains determinate. The
+division itself is still unestablished and `familyLimitShare` remains null. The same principle
+applies one level down — an eligibility doubt about a spouse
 whose agreed share is already exactly `0` stands aside, because that spouse gets nothing whether
 they are an eligible individual or not. Both rules exist because an unknown that cannot change
 an answer is not worth withholding an answer for.
@@ -855,7 +856,9 @@ deductibles are diagnosed as conflicts, without also claiming a deductible is mi
 Only an empty person-level `hsaCoverage: {}` affirmatively states no coverage. A nonempty
 statement with no usable schedule, such as `{ hdhpAnnualDeductible: 3400 }` or
 `{ eligibleMonths: [1] }`, leaves coverage unknown. It cannot establish that the other
-spouse is the sole eligible individual. Explicit empty schedules (`monthlyCoverage: []`
+spouse is the sole eligible individual. An unusable person-level duplicate also leaves its
+owner indeterminate with `HSA_COVERAGE_FACTS_REQUIRED`, even if an account supplies a complete
+schedule. Explicit empty schedules (`monthlyCoverage: []`
 or a tier with `eligibleMonths: []`) still establish no eligible months.
 
 ### A deductible below the statutory minimum is inconsistent input
@@ -888,12 +891,12 @@ The **division** is a separate question with a different answer, and any tier re
 divides the limitation only between spouses who are each an eligible individual: "if only one
 spouse is an eligible individual, only that spouse may contribute to an HSA". This engine reads
 your month list as the assertion of eligibility, so a deductible contradicting that list
-impeaches it. Where the contradicting spouse **owns an HSA**, the engine therefore cannot tell
-whether the limitation is wholly the other spouse's — as in Example (1) — or divided, so
-`familyLimitShare` and both maximums go null while the §223(b)(5) pool keeps reporting the
-amount. Do not expect the full family maximum in that case; expect nothing, and a diagnostic
-saying why. Where that spouse owns no HSA there is no division to doubt and the owner takes the
-whole limitation.
+impeaches it. That doubt can change the division whether or not the contradicting spouse
+owns an HSA. Where the alternative eligibility readings change an owner's allocation,
+`familyLimitShare` and the affected maximum are null with a diagnostic. The §223(b)(5)
+pool can still report its amount when only the division is uncertain. A doubt that cannot
+move the allocation, such as an already agreed zero share for that spouse, leaves the
+monetary result intact.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).

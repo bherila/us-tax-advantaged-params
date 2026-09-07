@@ -17427,6 +17427,48 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
       ]
+    },
+    {
+      "name": "2005 incomplete person deductible statement cannot establish an owner ceiling",
+      "description": "Input contract: a deductible-only persons[].hsaCoverage is an unusable duplicate, not an assertion of no coverage and not a complete schedule. The complete self-only account statement supplies a synthetic 2000 deductible while the incomplete person statement supplies 2500. Under the pre-2007 IRC 223(b)(2) cap these yield different possible ceilings; the engine must not report a settled maximum while refusing its candidate detail. The missing-coverage contract therefore makes status indeterminate and both the maximum and hsa null, with HSA_COVERAGE_FACTS_REQUIRED. Neither deductible is absent, so no missing-deductible diagnostic applies.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "hdhpAnnualDeductible": 2500
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
     }
   ]
 }
