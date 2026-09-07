@@ -12074,14 +12074,36 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     );
   }
 
-  // Accountless capacity is relevant to the represented accounts when the
-  // spouses' Archer aggregate can consume it. Otherwise the pool remains the
-  // capacity guard for the accounts being calculated.
+  /**
+   * Whether the spouses paid anything to an Archer MSA. IRC 223(b)(5)(B)(i)
+   * reduces the couple's one limitation by "the aggregate amount paid to Archer
+   * MSAs of such spouses", which is the one reduction that has to find room
+   * somewhere in the household's capacity, so it is what decides whether a
+   * spouse with no health savings account still belongs in the *pool*. Read
+   * here because the two person sets below are built before
+   * `coupleArcherAggregate` is.
+   */
+  const coupleArcherPositive = (couple ?? []).some(
+    (id) => (context.persons.get(id)?.archerMsaContributions ?? 0) > 0,
+  );
+  /**
+   * Every person whose coverage IRC 223(b)(5) reads, including a spouse who
+   * owns no health savings account and states their coverage on
+   * `persons[].hsaCoverage` instead.
+   *
+   * Owning an account is not a condition of anything the subsection does.
+   * Notice 2004-50 Q&A-31 conditions a share on being an *eligible individual*,
+   * and IRC 223(c)(1) does not mention accounts; Notice 2004-50 Q&A-33 says a
+   * spouse who wants to contribute needs an HSA of their own, which is a fact
+   * about where money may be put and not about whose coverage builds the
+   * limitation. So an accountless spouse's schedule is computed like any
+   * other's, and it reaches the comparison and the division through the same
+   * route the account-owning spouse's does.
+   */
   const candidatePersonIds = [...ownerIds];
   for (const personId of couple ?? []) {
     const coverage = coupleCoverage.get(personId);
-    if (facts.has(personId) || coverage?.months == null ||
-        !(couple ?? []).some((id) => (context.persons.get(id)?.archerMsaContributions ?? 0) > 0)) continue;
+    if (facts.has(personId) || coverage?.months == null) continue;
     const person = context.persons.get(personId)!;
     facts.set(personId, {
       ownerId: personId, resolvedMonths: [...coverage.months],
@@ -12093,7 +12115,39 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     });
     candidatePersonIds.push(personId);
   }
-  const coupleCandidatePersons = (couple ?? []).filter((id) => facts.has(id));
+  /**
+   * The spouses the IRC 223(b)(8) greater-of is taken across.
+   *
+   * Notice 2008-52 Example 14 compares "L and M's combined full contribution
+   * limit" against "L and M's combined sum of the monthly contribution limits"
+   * and divides the winner, and neither figure is qualified by who holds an
+   * account. Leaving an accountless spouse out of that comparison decided the
+   * *other* spouse's limitation from a fact the statute never consults: the
+   * same December family coverage gave the owner half a shared January month
+   * when the spouse happened to own an HSA and the whole of it when they did
+   * not.
+   */
+  const coupleComparisonPersons = (couple ?? []).filter((id) => facts.has(id));
+  /**
+   * The narrower set the published IRC 223(b)(5) pool is built from: the
+   * capacity the represented accounts can actually draw on.
+   *
+   * An accountless spouse's own capacity is not available to any account in
+   * this scenario, so adding it to the pool would report a ceiling no account
+   * could reach. The exception is the one reduction that crosses the boundary:
+   * where the spouses paid into an Archer MSA, IRC 223(b)(5)(B)(i) takes the
+   * aggregate out of the couple's single limitation once, and leaving the
+   * accountless spouse's capacity out of the amount it is taken from charges
+   * the represented accounts with a reduction part of which the statute placed
+   * elsewhere.
+   *
+   * This is only about the *amount*. Which candidate that amount is built from
+   * is decided across `coupleComparisonPersons` above, because the greater-of
+   * is a question about the couple rather than about the accounts.
+   */
+  const couplePoolPersons = coupleComparisonPersons.filter(
+    (id) => accountsByOwner.has(id) || coupleArcherPositive,
+  );
 
   /**
    * The coverage each spouse actually *stated*, month by month, snapshotted
@@ -12290,7 +12344,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     // IRC 223(b)(5)(A): if either spouse has family coverage, both are treated
     // as having only that family coverage. It does not make an otherwise
     // ineligible month eligible, so only supplied months are rewritten.
-    for (const personId of coupleCandidatePersons) {
+    for (const personId of coupleComparisonPersons) {
       const owner = facts.get(personId)!;
       if (!owner.resolvedMonths) continue;
       for (const month of HSA_ALL_MONTHS) {
@@ -12349,29 +12403,6 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const deemedMonthsByPerson = new Map<string, Array<HsaCoverageTier | null>>();
   {
     const decemberIndex = HSA_MONTHS_IN_YEAR - 1;
-    /**
-     * Which months IRC 223(b)(5)(A) reads as family months across the deemed
-     * schedules, decided the same way `familyMonth` above decides it for the
-     * stated ones: from `familyStatusByPerson`, which reads every statement made
-     * about a person and answers "unknown" where they disagree.
-     *
-     * The resolved schedules are recharacterized working values. This test
-     * reads the original consensus projections so a rewritten month cannot
-     * establish a family assertion that the supplied variants leave unknown.
-     *
-     * The second term is the deeming itself: a person the rule reaches whose
-     * December tier is a family one holds family coverage in every month of
-     * candidate (2), so their spouse's months are shared throughout. It is
-     * month-independent, which is why it is not read per month.
-     */
-    const decemberFamilyDeemsWholeYear = (couple ?? []).some(
-      (personId) =>
-        lastMonthRuleDeemsEligible(personId) &&
-        familyStatusByPerson.get(personId)?.[decemberIndex] === "family",
-    );
-    const deemedFamilyMonth = HSA_ALL_MONTHS.map(
-      (month) => familyMonth[month - 1] || decemberFamilyDeemsWholeYear,
-    );
     const record = (personId: string, monthTiers: Array<HsaCoverageTier | null>): void => {
       deemedMonthsByPerson.set(personId, monthTiers);
     };
@@ -12402,10 +12433,47 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
           : stated.map((tier) => tier),
       );
     }
+    /**
+     * Which months IRC 223(b)(5)(A) reads as family months *in candidate (2)*,
+     * read off the candidate (2) schedules themselves and nothing else.
+     *
+     * Candidate (2) is a different year from the one the individual lived, not
+     * an overlay on it. Notice 2008-52 Example 8 settles the point: G holds
+     * family coverage from January through August and self-only coverage from
+     * September, and "G's full contribution limit under section 223(b)(8) for
+     * 2008 is $2,900" -- the plain self-only maximum, with G's eight actual
+     * family months contributing nothing to it. The notice then takes "the
+     * greater of $2,900 or $4,833.33", so the earlier family months reach the
+     * answer through candidate (1) alone.
+     *
+     * Carrying the stated family months into this mask instead built a hybrid
+     * year that is neither candidate: a taxpayer with family coverage January
+     * to June, no coverage July to November and self-only coverage in December
+     * had candidate (2) computed as six family months plus six self-only ones,
+     * beating a candidate (1) that correctly skips the ineligible months and
+     * manufacturing an IRC 223(b)(8)(B) testing period out of the difference.
+     *
+     * A spouse whom the rule does not reach keeps their own schedule here, so
+     * their real family months are in this mask already -- they are in their
+     * candidate (2) because their candidate (2) is their actual year. Only a
+     * spouse whose year the deeming *replaced* drops out, which is the whole
+     * correction.
+     */
+    const deemedFamilyMonth = HSA_ALL_MONTHS.map((_month, index) =>
+      (couple ?? []).some(
+        (personId) => deemedMonthsByPerson.get(personId)?.[index] === "family",
+      ),
+    );
     // IRC 223(b)(5)(A) once more, over the deemed schedules. One pass suffices:
-    // a spouse's December tier is already the recharacterized one, so no month
-    // added here can promote a December tier and open a further round.
-    for (const personId of coupleMembersWithAccounts) {
+    // promotion only turns self-only months into family months in months that
+    // already hold family coverage, so recomputing the mask afterwards would
+    // return the same months and no further round can open.
+    //
+    // Over every spouse the comparison reads, not only those holding accounts:
+    // an accountless spouse's candidate (2) is an operand of the couple's
+    // combined total, so leaving their self-only months unrecharacterized would
+    // compare a figure IRC 223(b)(5)(A) has not finished with.
+    for (const personId of coupleComparisonPersons) {
       const monthTiers = deemedMonthsByPerson.get(personId);
       if (monthTiers === undefined) continue;
       for (const month of HSA_ALL_MONTHS) {
@@ -12843,6 +12911,28 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         "The spouse's nonempty persons[].hsaCoverage does not establish an eligible-month schedule. Supply a coverage tier or monthlyCoverage; only an empty object affirmatively states no coverage. Eligibility is required to determine the IRC 223(b)(5)(B)(ii) division.",
         `persons.${ownerId}`, "IRC 223(b)(5)(B)(ii)",
       ));
+      /**
+       * Where the spouses also paid into an Archer MSA, the unusable statement
+       * takes the couple's *amount* with it and not only its division.
+       *
+       * A spouse with no usable schedule holds no place in `couplePoolPersons`,
+       * so the household figure is computed as though they had no capacity at
+       * all -- and IRC 223(b)(5)(B)(i) subtracts the spouses' aggregate from
+       * that figure before subparagraph (B)(ii) divides it. The completions the
+       * statement leaves open are not variations on one answer: a February the
+       * spouse spent under self-only coverage adds a twelfth of the self-only
+       * limitation to the amount the aggregate comes out of, a February under
+       * family coverage adds a twelfth of the family one, and no February at
+       * all adds nothing. Reporting the last of those as the couple's ceiling
+       * asserts the very fact the diagnostic beside it has just called
+       * unstated.
+       *
+       * With no Archer MSA amount there is nothing to place, and an accountless
+       * spouse's own capacity reaches no account in this scenario, so the pool
+       * keeps reporting the represented accounts' ceiling exactly as it does
+       * for a spouse who stated nothing at all.
+       */
+      if (coupleArcherPositive) familyPoolAmountIndeterminate = true;
     }
 
     /**
@@ -13280,7 +13370,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     pick: (amounts: HsaOwnerAmounts) => HsaCandidatePortions,
   ): Money => {
     const union = HSA_ALL_MONTHS.reduce<number>((sum, _month, index) => {
-      const monthAmounts = coupleCandidatePersons
+      const monthAmounts = coupleComparisonPersons
         .map((personId) => {
           const owned = amountsByOwner.get(personId);
           return owned === undefined ? null : (pick(owned).familyMonthlyAmounts[index] ?? null);
@@ -13290,7 +13380,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     }, 0) / HSA_MONTHS_IN_YEAR;
     let self = 0;
     let catchUp = 0;
-    for (const personId of coupleCandidatePersons) {
+    for (const personId of coupleComparisonPersons) {
       const owned = amountsByOwner.get(personId);
       if (owned === undefined) continue;
       const candidate = pick(owned);
@@ -13319,10 +13409,10 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * contradiction in one of their records leaves the other's winner decided by
    * facts of their own that are not in doubt.
    */
-  if (familySharingApplies && coupleCandidatePersons.some(
+  if (familySharingApplies && coupleComparisonPersons.some(
     (personId) => amountsByOwner.get(personId)?.candidateSelectionUnestablished === true,
   )) {
-    for (const personId of coupleCandidatePersons) {
+    for (const personId of coupleComparisonPersons) {
       const owned = amountsByOwner.get(personId);
       if (owned !== undefined) owned.candidateSelectionUnestablished = true;
     }
@@ -13331,13 +13421,13 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const ordinary = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.ordinaryCandidate;
     const full = (amounts: HsaOwnerAmounts): HsaCandidatePortions => amounts.fullContributionCandidate;
     const chooseFull = new Set<string>();
-    if (familySharingApplies && coupleCandidatePersons.length > 0) {
+    if (familySharingApplies && coupleComparisonPersons.length > 0) {
       if (combinedCandidateTotal(full) > combinedCandidateTotal(ordinary)) {
-        for (const personId of coupleCandidatePersons) chooseFull.add(personId);
+        for (const personId of coupleComparisonPersons) chooseFull.add(personId);
       }
     }
     for (const ownerId of candidatePersonIds) {
-      if (familySharingApplies && coupleCandidatePersons.includes(ownerId)) continue;
+      if (familySharingApplies && coupleComparisonPersons.includes(ownerId)) continue;
       const amounts = amountsByOwner.get(ownerId);
       if (amounts === undefined) continue;
       if (ownCandidateTotal(ownerId, full(amounts)) > ownCandidateTotal(ownerId, ordinary(amounts))) {
@@ -13387,7 +13477,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * coincide entirely this is the old maximum exactly.
    */
   const householdFamilyMonthlyUnion = HSA_ALL_MONTHS.reduce<number>((sum, _month, index) => {
-    const monthAmounts = coupleCandidatePersons
+    const monthAmounts = couplePoolPersons
       .map((personId) => amountsByOwner.get(personId)?.familyMonthlyAmounts[index] ?? null)
       .filter((value): value is Money => value !== null);
     return monthAmounts.length === 0 ? sum : sum + Math.max(...monthAmounts);
@@ -13400,7 +13490,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     : null;
   const sharedFamilyLimit = rawSharedFamilyLimit === null ? null : roundMoney(rawSharedFamilyLimit);
   const householdParagraph1AfterArcher = familySharingApplies
-    ? nonnegative(householdFamilyMonthlyUnion + coupleCandidatePersons.reduce(
+    ? nonnegative(householdFamilyMonthlyUnion + couplePoolPersons.reduce(
         (sum, id) => sum + (amountsByOwner.get(id)?.selfPortionApplied ?? 0), 0,
       ) - coupleArcherAggregate)
     : null;
@@ -13409,7 +13499,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
    * their own, which makes the IRC 223(b)(5) aggregate built from those
    * limitations undeterminable too.
    */
-  const householdPoolAmountIndeterminate = coupleCandidatePersons.some(
+  const householdPoolAmountIndeterminate = couplePoolPersons.some(
     (personId) => amountsByOwner.get(personId)?.familyPoolAmountIndeterminate === true,
   );
   /**
@@ -13821,6 +13911,32 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   const nothingLeftToDivide = !householdPoolAmountIndeterminate &&
     householdParagraph1AfterArcher !== null && householdParagraph1AfterArcher <= 0;
   /**
+   * The same immateriality, asked of the portion a *share* actually multiplies.
+   *
+   * IRC 223(b)(5)(B)(ii) divides the family limitation; the spouses'
+   * self-only-month limitations sit beside it undivided, which is why
+   * `nothingLeftToDivide` above has to read the whole paragraph (1) residue for
+   * the one question that turns on it -- an Archer MSA aggregate large enough
+   * to run past the family months and into both spouses' self-only ones has to
+   * be placed somewhere, and that placement is unsettled while any of it
+   * remains to place.
+   *
+   * Every other doubt about the division moves nothing but the family portion,
+   * so the whole-residue test over-refuses on it. Two spouses whose shared
+   * family months the aggregate exactly exhausts, each with a self-only month
+   * of their own left over, have a positive household residue and a family
+   * residue of nought: the unknown share divides nothing, and both maxima are
+   * their own undivided self-only months whatever the spouses agreed. The
+   * engine withheld both of them.
+   *
+   * Each owner's own family portion is bounded by the union this is taken from,
+   * so a union the aggregate has exhausted leaves every owner nothing for a
+   * share to reach -- which is what makes the household test sufficient for the
+   * owners' figures.
+   */
+  const noDivisibleFamilyResidue = !householdPoolAmountIndeterminate &&
+    sharedFamilyLimit !== null && sharedFamilyLimit <= 0;
+  /**
    * Whether the division was ever established, asked without reference to
    * whether it mattered. `nothingLeftToDivide` says the unknown cannot move the
    * *amount*; it does not turn an unestablished share into an established one.
@@ -13875,7 +13991,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ];
     for (const decompose of decompositions) {
       let absorbers = 0;
-      for (const personId of coupleCandidatePersons) {
+      for (const personId of couplePoolPersons) {
         const owned = amountsByOwner.get(personId);
         if (owned === undefined) continue;
         const [family, shared, self] = decompose(owned);
@@ -13924,8 +14040,17 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
   /**
    * Whether that unestablished division withholds the *amount*. Only here does
    * immateriality count, and it is the narrower question of the two.
+   *
+   * Each cause is measured against the residue it could actually move, because
+   * the two causes reach different money. A doubtful share reaches only the
+   * divided family portion; an Archer MSA aggregate whose placement is open
+   * reaches the spouses' undivided self-only months as well, which is exactly
+   * why it needed the wider residue and why the wider residue cannot stand in
+   * for both.
    */
-  const householdDivisionUnknown = !nothingLeftToDivide && divisionShareInQuestion;
+  const householdDivisionUnknown =
+    (archerAcrossUndividedSpouses && !nothingLeftToDivide) ||
+    (someFamilyMonthIsShared && householdDivisionUnestablished && !noDivisibleFamilyResidue);
   /**
    * Whether a settled division is worth announcing. Same test: where nothing is
    * left to divide, saying how it was divided is noise about nought, and where

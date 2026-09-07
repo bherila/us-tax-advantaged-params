@@ -465,14 +465,26 @@ must be identical, and a contradiction returns
 spouse held no high deductible health plan coverage in any month. A nonempty object
 without a usable tier/month schedule leaves coverage unknown, even if a deductible is supplied.
 
-The `hsa223b5` shared pool is a capacity guard for the represented HSA accounts,
-not a complete calculation of every accountless spouse's personal allowance. When
-an Archer aggregate can consume an accountless spouse's supplied capacity, that
-capacity participates in the household guard and in the apportionment analysis.
-The aggregate is subtracted once from the family-month union plus undivided
-self-only portions. A known household residue does not establish which spouse's
-undivided months absorbed it; those owner limits remain indeterminate. A separately
-established age-55 amount remains outside that reduction.
+**An accountless spouse's coverage is read like anyone else's.** Whose coverage
+builds the limitation and where the money may be put are separate questions:
+§223(c)(1) does not mention accounts, and Notice 2008-52 Example 14 takes the
+§223(b)(8) greater-of on the couple's *combined* figures. So a spouse who states
+coverage on `persons[].hsaCoverage` takes part in that comparison and in the
+§223(b)(5)(B)(ii) division whether or not they own an HSA. Adding an HSA to a
+spouse whose coverage facts are unchanged never changes the other spouse's limit.
+
+The `hsa223b5` shared pool is narrower, and deliberately: it is a capacity guard
+for the represented HSA accounts, not a complete calculation of every accountless
+spouse's personal allowance. An accountless spouse's own capacity reaches no
+account in the scenario, so it stays out of the guard — except where an Archer
+aggregate can consume it, since §223(b)(5)(B)(i) subtracts that aggregate once
+from the family-month union plus undivided self-only portions and it has to come
+out of the whole household's capacity. A known household residue does not
+establish which spouse's undivided months absorbed it; those owner limits remain
+indeterminate. A separately established age-55 amount remains outside that
+reduction. Where the spouses paid into an Archer MSA and an accountless spouse's
+coverage statement is nonempty but unusable, the household amount itself is
+withheld rather than computed as though that spouse had no capacity.
 
 ### Archer MSA contributions: `persons[].archerMsaContributions`
 
@@ -713,7 +725,11 @@ that earlier assumption, state the agreement explicitly.**
 **An unknown division of nothing is still determinate.** The division is only ever a fact about
 something: where the limitation left after the §223(b)(5)(B)(i) Archer reduction is zero, every
 division yields the same zero monetary maximum, so that maximum remains determinate. The
-division itself is still unestablished and `familyLimitShare` remains null. The same principle
+division itself is still unestablished and `familyLimitShare` remains null. What counts as
+"nothing" depends on the doubt: a doubtful *share* divides only the family portion, so an
+exhausted family residue makes it immaterial even where undivided self-only months survive,
+while an Archer aggregate whose placement among undivided months is open is immaterial only
+once the whole paragraph (1) residue is gone. The same principle
 applies one level down — an eligibility doubt about a spouse
 whose agreed share is already exactly `0` stands aside, because that spouse gets nothing whether
 they are an eligible individual or not. Both rules exist because an unknown that cannot change
