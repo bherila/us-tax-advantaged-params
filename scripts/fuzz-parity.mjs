@@ -290,6 +290,10 @@ function randomPlanRules(type) {
     rules.section457SpecialCatchUp = { eligible: chance(0.8), unusedDeferralsFromPriorYears: money() };
   }
   if (chance(0.1)) rules.grandfatheredSarsep = chance(0.5);
+  // Generated across every year, not only the ones with a published figure, so
+  // the pre-1998 fallback and its warning are differentially tested beside the
+  // years the relief actually lifts the ceiling.
+  if (chance(0.1)) rules.grandfatheredGovernmentalCompensationLimit = chance(0.6);
   if (chance(0.1)) rules.simpleAdditionalNonelectiveContribution = money();
   // Present most of the time on a pension-linked emergency savings account, in
   // either host, and
@@ -315,6 +319,7 @@ function randomPlanRules(type) {
       "planCompensation", "employerMatchRate", "employerNonelectiveRate",
       "contributionPreference", "employerContributionTaxTreatment",
       "simpleEmployerContributionMethod", "expectedEmployerContribution",
+      "grandfatheredGovernmentalCompensationLimit",
     ])] = junk();
   }
   return rules;

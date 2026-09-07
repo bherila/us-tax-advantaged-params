@@ -623,6 +623,12 @@ final class AccountBuilder
         return $this;
     }
 
+    public function grandfatheredGovernmentalCompensationLimit(bool $applies = true): self
+    {
+        $this->value['planRules']['grandfatheredGovernmentalCompensationLimit'] = $applies;
+        return $this;
+    }
+
     public function grandfatheredSarsep(bool $grandfathered = true): self
     {
         $this->value['planRules']['grandfatheredSarsep'] = $grandfathered;
@@ -996,6 +1002,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1080,6 +1087,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1164,6 +1172,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1248,6 +1257,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1332,6 +1342,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1416,6 +1427,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1500,6 +1512,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1584,6 +1597,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1668,6 +1682,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1752,6 +1767,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1836,6 +1852,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1920,6 +1937,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2004,6 +2022,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2110,6 +2129,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2216,6 +2236,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2322,6 +2343,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2428,6 +2450,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2534,6 +2557,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2640,6 +2664,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2746,6 +2771,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2852,6 +2878,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2958,6 +2985,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3064,6 +3092,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3170,6 +3199,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": 265000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3289,6 +3319,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": 270000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3408,6 +3439,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "annualCompensation401a17GrandfatheredGovernmental": 275000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3527,6 +3559,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 35000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "annualCompensation401a17GrandfatheredGovernmental": 285000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3646,6 +3679,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": 295000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3765,6 +3799,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": 300000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3884,6 +3919,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 41000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
+      "annualCompensation401a17GrandfatheredGovernmental": 305000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4003,6 +4039,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 42000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
+      "annualCompensation401a17GrandfatheredGovernmental": 315000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4122,6 +4159,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 44000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
+      "annualCompensation401a17GrandfatheredGovernmental": 325000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4241,6 +4279,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 45000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
+      "annualCompensation401a17GrandfatheredGovernmental": 335000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4360,6 +4399,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 46000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
+      "annualCompensation401a17GrandfatheredGovernmental": 345000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4479,6 +4519,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4598,6 +4639,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4717,6 +4759,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4836,6 +4879,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
+      "annualCompensation401a17GrandfatheredGovernmental": 375000,
       "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4955,6 +4999,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 51000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
+      "annualCompensation401a17GrandfatheredGovernmental": 380000,
       "definedBenefitAnnualBenefit415b": 205000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5074,6 +5119,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 52000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
+      "annualCompensation401a17GrandfatheredGovernmental": 385000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5193,6 +5239,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "annualCompensation401a17GrandfatheredGovernmental": 395000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5312,6 +5359,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "annualCompensation401a17GrandfatheredGovernmental": 395000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5431,6 +5479,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 54000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
+      "annualCompensation401a17GrandfatheredGovernmental": 400000,
       "definedBenefitAnnualBenefit415b": 215000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5550,6 +5599,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 55000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
+      "annualCompensation401a17GrandfatheredGovernmental": 405000,
       "definedBenefitAnnualBenefit415b": 220000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5669,6 +5719,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 56000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
+      "annualCompensation401a17GrandfatheredGovernmental": 415000,
       "definedBenefitAnnualBenefit415b": 225000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5788,6 +5839,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 57000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
+      "annualCompensation401a17GrandfatheredGovernmental": 425000,
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5907,6 +5959,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 58000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
+      "annualCompensation401a17GrandfatheredGovernmental": 430000,
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6026,6 +6079,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 61000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
+      "annualCompensation401a17GrandfatheredGovernmental": 450000,
       "definedBenefitAnnualBenefit415b": 245000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6145,6 +6199,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 66000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
+      "annualCompensation401a17GrandfatheredGovernmental": 490000,
       "definedBenefitAnnualBenefit415b": 265000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6264,6 +6319,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 69000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
+      "annualCompensation401a17GrandfatheredGovernmental": 505000,
       "definedBenefitAnnualBenefit415b": 275000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -6383,6 +6439,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 70000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
+      "annualCompensation401a17GrandfatheredGovernmental": 520000,
       "definedBenefitAnnualBenefit415b": 280000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -6502,6 +6559,7 @@ private const PARAMETER_JSON = <<<'JSON'
       "annualAdditions415c": 72000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
+      "annualCompensation401a17GrandfatheredGovernmental": 535000,
       "definedBenefitAnnualBenefit415b": 290000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
@@ -9805,6 +9863,7 @@ final class Engine
                 'simpleEnhancedLimitEligible',
                 'isSelfEmployedOwner',
                 'grandfatheredSarsep',
+                'grandfatheredGovernmentalCompensationLimit',
             ] as $key
         ) {
             self::booleanFlag($rules, $key, "{$path}.{$key}");
@@ -10212,10 +10271,78 @@ final class Engine
         array $person,
     ): float {
         $compensation = self::planCompensation($account, $person);
-        $statutoryLimit = $context['parameters']['annualCompensation401a17'];
+        $statutoryLimit = self::compensationLimit401a17($context, $account);
         return $statutoryLimit === null
             ? $compensation
             : self::minMoney($compensation, (float) $statutoryLimit);
+    }
+
+    /**
+     * The relief OBRA '93 sec. 13212(d)(3) grants is measured by an amount, and
+     * for 1994 through 1997 no primary authority states it: the IRS first
+     * published the figure in Notice 97-58, for tax year 1998. Falling back to
+     * the ordinary limit is the conservative reading, but it silently withholds
+     * relief the caller asserted, so it is said out loud rather than left to be
+     * inferred from a total.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @return list<array<string,mixed>>
+     */
+    private static function grandfatheredGovernmentalLimitDiagnostics(array $context, array $account): array
+    {
+        if (($account['planRules']['grandfatheredGovernmentalCompensationLimit'] ?? null) !== true) {
+            return [];
+        }
+        if ($context['parameters']['annualCompensation401a17'] === null) {
+            return [];
+        }
+        if ($context['parameters']['annualCompensation401a17GrandfatheredGovernmental'] !== null) {
+            return [];
+        }
+        return [
+            self::diagnostic(
+                'GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED',
+                DiagnosticSeverity::WARNING,
+                "OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for {$context['taxYear']} — the first it published was for tax year 1998, in Notice 97-58. The ordinary IRC 401(a)(17) limit was applied instead, which may understate the compensation this plan may take into account.",
+                "accounts.{$account['id']}.planRules.grandfatheredGovernmentalCompensationLimit",
+                "OBRA '93 sec. 13212(d)(3)",
+            ),
+        ];
+    }
+
+    /**
+     * The IRC 401(a)(17) compensation limit this account's participant is
+     * actually subject to.
+     *
+     * OBRA '93 sec. 13212(d)(3) provides that the limit "shall not apply to the
+     * extent that it would reduce the amount of compensation that is allowed to
+     * be taken into account under the plan below the amount which was allowed to
+     * be taken into account under the plan as in effect on July 1, 1993". That
+     * is a floor rather than a separate ceiling, so it is taken as the greater
+     * of the two figures -- which is the published grandfathered amount in every
+     * year the IRS has published one, but says so from the statute rather than
+     * from the accident that the series has never crossed.
+     *
+     * A year with no published grandfathered figure falls back to the ordinary
+     * limit rather than going unlimited: the relief is measured by an amount
+     * that primary authority does not supply before 1998, and an unbounded
+     * compensation would overstate every figure derived from it.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     */
+    private static function compensationLimit401a17(array $context, array $account): int|float|null
+    {
+        $ordinary = $context['parameters']['annualCompensation401a17'];
+        if (($account['planRules']['grandfatheredGovernmentalCompensationLimit'] ?? null) !== true) {
+            return $ordinary;
+        }
+        $grandfathered = $context['parameters']['annualCompensation401a17GrandfatheredGovernmental'];
+        if ($grandfathered === null) {
+            return $ordinary;
+        }
+        return $ordinary === null ? $grandfathered : max($ordinary, $grandfathered);
     }
 
     /** @param array<string,mixed> $account */
@@ -10762,14 +10889,21 @@ final class Engine
             $existing = 0.0;
             foreach ($members as $account) {
                 $person = $context['persons'][$account['ownerId']];
-                $recognizedCompensation = max($recognizedCompensation, self::planCompensation($account, $person));
-                $existing = self::roundMoney($existing + self::annualAdditions($account['existingContributions']));
-            }
-            if ($context['parameters']['annualCompensation401a17'] !== null) {
-                $recognizedCompensation = min(
+                // Each member is capped by its own plan's limit before the group
+                // takes the greatest, because OBRA '93 sec. 13212(d)(3) lifts the
+                // limit for a participant in a particular plan and the accounts
+                // aggregated here need not all be that plan. Where they share one
+                // limit this is the previous order exactly, min being monotone:
+                // max_i min(c_i, L) = min(max_i c_i, L).
+                $memberLimit = self::compensationLimit401a17($context, $account);
+                $memberCompensation = self::planCompensation($account, $person);
+                $recognizedCompensation = max(
                     $recognizedCompensation,
-                    (float) $context['parameters']['annualCompensation401a17'],
+                    $memberLimit === null
+                        ? $memberCompensation
+                        : min($memberCompensation, (float) $memberLimit),
                 );
+                $existing = self::roundMoney($existing + self::annualAdditions($account['existingContributions']));
             }
             $limit = null;
             if (
@@ -17306,9 +17440,10 @@ final class Engine
         $diagnostics = [];
         $person = $context['persons'][$account['ownerId']];
         $compensation = self::planCompensation($account, $person);
-        $cappedCompensation = $context['parameters']['annualCompensation401a17'] === null
+        $statutoryLimit = self::compensationLimit401a17($context, $account);
+        $cappedCompensation = $statutoryLimit === null
             ? $compensation
-            : min($compensation, (float) $context['parameters']['annualCompensation401a17']);
+            : min($compensation, (float) $statutoryLimit);
         // SIMPLE IRA matching compensation is exempt from §401(a)(17); a SIMPLE 401(k)
         // is a qualified §401(k)(11) plan whose compensation remains subject to it.
         $matchCompensation = $applyCompensationLimitToMatch ? $cappedCompensation : $compensation;
@@ -17388,6 +17523,7 @@ final class Engine
                 ),
             ]);
         }
+        $diagnostics = array_merge($diagnostics, self::grandfatheredGovernmentalLimitDiagnostics($context, $account));
         if (!isset($context['annualAdditionsPools'][$groupId]) || $context['annualAdditionsPools'][$groupId]['limit'] === null) {
             $diagnostics[] = self::diagnostic(
                 'HISTORICAL_415C_LIMIT_INDETERMINATE',
@@ -17746,6 +17882,7 @@ final class Engine
         $annual = $account['existingContributions'];
         $additional = self::zeroComponents();
         $groupId = self::groupIdForAccount($account);
+        $diagnostics = array_merge($diagnostics, self::grandfatheredGovernmentalLimitDiagnostics($context, $account));
         if (!isset($context['annualAdditionsPools'][$groupId]) || $context['annualAdditionsPools'][$groupId]['limit'] === null) {
             $diagnostics[] = self::diagnostic(
                 'HISTORICAL_SEP_MAXIMUM_REQUIRES_PLAN_FACTS',
@@ -17836,6 +17973,7 @@ final class Engine
         $annual = $account['existingContributions'];
         $additional = self::zeroComponents();
         $groupId = self::groupIdForAccount($account);
+        $diagnostics = array_merge($diagnostics, self::grandfatheredGovernmentalLimitDiagnostics($context, $account));
         if (!isset($context['annualAdditionsPools'][$groupId]) || $context['annualAdditionsPools'][$groupId]['limit'] === null) {
             $diagnostics[] = self::diagnostic(
                 'HISTORICAL_415C_LIMIT_INDETERMINATE',

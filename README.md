@@ -1192,6 +1192,14 @@ For a self-employed owner, the maximum percentage contribution is the lesser of:
 
 The result remains subject to §415(c), plan-document limits, and existing annual additions.
 
+### The OBRA '93 grandfathered governmental ceiling
+
+OBRA '93 §13212(d)(3) preserves the higher pre-OBRA ceiling for an eligible participant in a governmental plan that already indexed its own compensation limitation on July 1, 1993. The IRS publishes that amount annually beside the ordinary one — $535,000 against $360,000 for 2026 — and the engine uses the greater of the two, which is what the statute's "shall not apply to the extent that it would reduce" language directs.
+
+Set `planRules.grandfatheredGovernmentalCompensationLimit` to claim it. The one flag asserts both halves of the rule — that the plan qualifies and that this participant is an "eligible participant" under the pre-1994 participation test — because both are plan-document and service facts outside this package's scope.
+
+For a tax year with no published figure the ordinary limit applies and a `GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED` warning is emitted. The IRS first published the amount for tax year 1998, so 1994 through 1997 carry `null` rather than an extrapolation.
+
 The compensation ceiling is **not** imposed as an extra dollar cap that prematurely stops an employee’s otherwise valid §402(g) elective deferral. Employee deferrals remain subject to actual compensation, §402(g), catch-up rules, shared pools, and plan terms.
 
 SIMPLE formulas preserve their distinct treatment: the ordinary 3% matching method is based on compensation and deferrals, while the 2% nonelective method and applicable additional nonelective contribution use recognized compensation.

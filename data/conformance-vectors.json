@@ -994,6 +994,111 @@
       }
     },
     {
+      "name": "2026 the OBRA '93 grandfathered governmental compensation limit lifts the IRC 401(a)(17) ceiling",
+      "description": "OBRA '93 section 13212(d)(3) provides that the IRC 401(a)(17) limit \"shall not apply to the extent that it would reduce the amount of compensation that is allowed to be taken into account under the plan below the amount which was allowed to be taken into account under the plan as in effect on July 1, 1993\". Notice 2025-67 publishes that preserved amount for 2026 as $535,000, beside the ordinary IRC 401(a)(17) limit of $360,000. The account asserts the two facts the relief turns on -- a governmental plan within IRC 414(d) that allowed cost-of-living adjustments to its own compensation limitation on July 1, 1993, and an \"eligible participant\" in it -- so the compensation taken into account is min(600000, 535000) = 535000 rather than 360000, and the supplied 10 percent nonelective formula gives 0.10 x 535000 = 53500. IRC 415(c)(1) caps annual additions at the lesser of the 2026 dollar limit of 72000 (Notice 2025-67) and 100 percent of that same recognized compensation, so the statutory maximum is 72000, which the 53500 formula amount does not reach.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 600000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 600000,
+              "employerNonelectiveRate": 0.1,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 72000,
+        "accounts.0.contributionComponents.employerPreTax": 53500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 53500
+      }
+    },
+    {
+      "name": "2026 the same plan without the OBRA '93 assertion takes the ordinary IRC 401(a)(17) limit",
+      "description": "The control for the vector above, identical but for the omitted assertion. Without it the ordinary IRC 401(a)(17) limit published by Notice 2025-67 for 2026 governs, so the compensation taken into account is min(600000, 360000) = 360000 and the 10 percent nonelective formula gives 0.10 x 360000 = 36000. The IRC 415(c)(1) maximum is the lesser of 72000 and 100 percent of 360000, so it remains 72000. This pins that the relief is an asserted fact and not a default: an ordinary plan is unaffected by the new series.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 600000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 600000,
+              "employerNonelectiveRate": 0.1
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 72000,
+        "accounts.0.contributionComponents.employerPreTax": 36000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 36000
+      }
+    },
+    {
+      "name": "1997 the grandfathered governmental limit is asserted for a year the IRS never published one",
+      "description": "The IRS first published the OBRA '93 section 13212(d)(3) amount in Notice 97-58, for tax year 1998, at $265,000. Notice 96-55, which publishes the 1997 limitations, does not mention the grandfathered figure at all, so no value for 1997 is recoverable from primary authority and the data records null rather than an extrapolation. The relief is measured by that amount, so with none published the ordinary IRC 401(a)(17) limit of 160000 for 1997 applies: 0.15 x 160000 = 24000, exactly as it would without the assertion. Falling back rather than going unlimited is the conservative reading, and the WARNING says so instead of leaving the caller to infer it from an unchanged total. IRC 415(c)(1) for 1997 is the lesser of 30000 and 25 percent of 160000 = 40000, so the statutory maximum is 30000.",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 30000,
+        "accounts.0.contributionComponents.employerPreTax": 24000,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "warning"
+      }
+    },
+    {
       "name": "1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings",
       "description": "The IRS self-employed SEP worksheet reduces a 15-percent plan rate to 15 / 115 = 13.043478 percent for net earnings: that rate times 500000 exceeds the separate 15 percent x 160000 = 24000 capped-plan-rate ceiling under IRC 401(a)(17). The 1997 IRC 415(c) dollar ceiling is higher, so all asserted contribution maxima are 24000.",
       "input": {
