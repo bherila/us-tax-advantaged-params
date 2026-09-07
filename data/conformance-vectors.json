@@ -16268,6 +16268,962 @@
         "HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT",
         "HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"
       ]
+    },
+    {
+      "name": "HSA owner normalization: complete and unusable account",
+      "description": "Input contract: an empty account HSA statement supplies no IRC 223(c)(1) eligible-month facts. Under the strict missing-facts policy a complete duplicate does not repair it: both accounts are indeterminate and their candidate schedules, hence hsa objects, are null. Missing facts are not contradictory assertions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {}
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: complete and unusable account reversed",
+      "description": "Input contract: an empty account HSA statement supplies no IRC 223(c)(1) eligible-month facts. Under the strict missing-facts policy a complete duplicate does not repair it: both accounts are indeterminate and their candidate schedules, hence hsa objects, are null. Missing facts are not contradictory assertions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {}
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: person agrees with only one account",
+      "description": "Input contract: coverage is one fact per owner. The family and self-only account statements disagree, and the self-only account also contradicts the person-level family statement. Both conflict diagnostics must appear. IRC 223(b)(2) assigns different tier limitations, so neither candidate schedule is established and both hsa objects are null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: person agrees with only one account reversed",
+      "description": "Input contract: coverage is one fact per owner. The family and self-only account statements disagree, and the self-only account also contradicts the person-level family statement. Both conflict diagnostics must appear. IRC 223(b)(2) assigns different tier limitations, so neither candidate schedule is established and both hsa objects are null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: missing capped-year deductible",
+      "description": "IRC 223(b)(2), before the Tax Relief and Health Care Act of 2006 section 303 removed the cap, requires the lesser of the annual deductible and statutory tier amount. One statement omits that operand and the other supplies a synthetic 2000. The missing operand must be diagnosed irrespective of order; the contradictory owner statements leave both candidate schedules unestablished, so status is indeterminate and hsa is null.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: missing capped-year deductible reversed",
+      "description": "IRC 223(b)(2), before the Tax Relief and Health Care Act of 2006 section 303 removed the cap, requires the lesser of the annual deductible and statutory tier amount. One statement omits that operand and the other supplies a synthetic 2000. The missing operand must be diagnosed irrespective of order; the contradictory owner statements leave both candidate schedules unestablished, so status is indeterminate and hsa is null.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "hdhpAnnualDeductible": 2000
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: reordered eligible months",
+      "description": "IRC 223(b)(1)-(2) operates on eligible months: January and February self-only coverage is the same fact regardless of list order or the tier/list versus monthlyCoverage representation. The person and both accounts therefore agree, no required operands are missing, and both accounts are determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 2,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  2,
+                  1
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: reordered eligible months reversed",
+      "description": "IRC 223(b)(1)-(2) operates on eligible months: January and February self-only coverage is the same fact regardless of list order or the tier/list versus monthlyCoverage representation. The person and both accounts therefore agree, no required operands are missing, and both accounts are determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 2,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  2,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: equivalent monthly representation",
+      "description": "IRC 223(b)(1)-(2) operates on eligible months: January and February self-only coverage is the same fact regardless of list order or the tier/list versus monthlyCoverage representation. The person and both accounts therefore agree, no required operands are missing, and both accounts are determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 2,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 2,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: equivalent monthly representation reversed",
+      "description": "IRC 223(b)(1)-(2) operates on eligible months: January and February self-only coverage is the same fact regardless of list order or the tier/list versus monthlyCoverage representation. The person and both accounts therefore agree, no required operands are missing, and both accounts are determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 2,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 2,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: empty account with person coverage",
+      "description": "Input contract: an empty account statement is unusable, not a no-coverage assertion. The person and usable account agree on family coverage, so no conflict is asserted. The unusable duplicate still invokes the strict required-facts policy; both accounts are indeterminate with null hsa objects.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {}
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: empty account with person coverage reversed",
+      "description": "Input contract: an empty account statement is unusable, not a no-coverage assertion. The person and usable account agree on family coverage, so no conflict is asserted. The unusable duplicate still invokes the strict required-facts policy; both accounts are indeterminate with null hsa objects.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {}
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: spouse capped-year deductible",
+      "description": "IRC 223(b)(5)(A) compares family-plan deductibles across spouses; in 2005 that comparison feeds the IRC 223(b)(2) deductible cap. One taxpayer account omits the deductible, so neither choosing its duplicate synthetic 3000 nor the spouse synthetic 4000 establishes the couple limitation. All accounts are indeterminate with null candidate details and the missing-deductible diagnostic must survive either account ordering.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "s",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 4000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: spouse capped-year deductible reversed",
+      "description": "IRC 223(b)(5)(A) compares family-plan deductibles across spouses; in 2005 that comparison feeds the IRC 223(b)(2) deductible cap. One taxpayer account omits the deductible, so neither choosing its duplicate synthetic 3000 nor the spouse synthetic 4000 establishes the couple limitation. All accounts are indeterminate with null candidate details and the missing-deductible diagnostic must survive either account ordering.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "s",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 4000
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.hsa": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.hsa": null,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: person and account explicit no coverage",
+      "description": "Input contract: persons[].hsaCoverage {} explicitly states no HDHP coverage, as do an empty monthlyCoverage list and a tier with no eligible months. IRC 223(b)(1) has no eligible months to count; these equivalent statements are coherent, so both accounts are determinate without conflict or missing-facts diagnostics.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": []
+              }
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": []
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "HSA owner normalization: person and account explicit no coverage reversed",
+      "description": "Input contract: persons[].hsaCoverage {} explicitly states no HDHP coverage, as do an empty monthlyCoverage list and a tier with no eligible months. IRC 223(b)(1) has no eligible months to count; these equivalent statements are coherent, so both accounts are determinate without conflict or missing-facts diagnostics.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "hsaCoverage": {}
+          }
+        ],
+        "accounts": [
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only",
+                "eligibleMonths": []
+              }
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": []
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.1.status": "determinate"
+      },
+      "expectDiagnosticCodes": [],
+      "expectAbsentDiagnosticCodes": [
+        "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER",
+        "HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT",
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
     }
   ]
 }

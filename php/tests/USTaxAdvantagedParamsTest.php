@@ -825,6 +825,21 @@ test('the IRC 223(b)(5)(B)(ii) division diagnostic does not claim a shared limit
 });
 
 $failed = 0;
+// Fixed priorities hold allocation order constant; compare all public account fields.
+$normalizationVectors = json_decode(file_get_contents(dirname(__DIR__, 2) . '/data/conformance-vectors.json'), true, 512, JSON_THROW_ON_ERROR)['vectors'];
+foreach ($normalizationVectors as $vector) {
+    if (!str_starts_with($vector['name'], 'HSA owner normalization:') || str_ends_with($vector['name'], ' reversed')) continue;
+    $tests[$vector['name'] . ' is invariant under account permutation'] = static function () use ($vector): void {
+        $input = $vector['input'];
+        $forward = U::calculate($input);
+        $input['accounts'] = array_reverse($input['accounts']);
+        $reverse = U::calculate($input);
+        foreach ($input['accounts'] as $account) {
+            assertSameValue(accountResult($forward, $account['id']), accountResult($reverse, $account['id']));
+        }
+    };
+}
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {

@@ -11249,18 +11249,15 @@ final class Engine
     }
 
     /**
-     * The four IRC 223(c)(2) coverage fields, in a stable order, so coverage
-     * stated on a person can be compared with coverage stated on that person's
-     * account.
+     * Canonical monthly facts, independent of representation. Only the person
+     * route interprets absent coverage fields as an explicit no-coverage fact.
      *
      * @param array<string,mixed> $coverage
      */
-    private static function hsaCoverageSignature(array $coverage): string
+    private static function hsaCoverageSignature(array $coverage, string $source = 'account'): string
     {
         return (string) json_encode([
-            $coverage['coverageTier'] ?? null,
-            $coverage['eligibleMonths'] ?? null,
-            $coverage['monthlyCoverage'] ?? null,
+            self::resolveHsaMonths($coverage) ?? ($source === 'person' ? array_fill(0, self::HSA_MONTHS_IN_YEAR, null) : null),
             $coverage['hdhpAnnualDeductible'] ?? null,
         ]);
     }
@@ -12619,32 +12616,33 @@ final class Engine
 
         $facts = [];
         foreach ($ownerIds as $ownerId) {
-            $rules = null;
-            $signature = null;
-            $conflict = false;
             $accountVariants = [];
             $seenSignatures = [];
+            $hasUnusableAccountStatement = false;
+            $usableSignatures = [];
             foreach ($accountsByOwner[$ownerId] as $account) {
-                if (!array_key_exists('hsa', $account['planRules'])) {
-                    continue;
-                }
-                $supplied = $account['planRules']['hsa'];
-                $encoded = (string) json_encode($supplied);
-                if ($signature === null) {
-                    $signature = $encoded;
-                    $rules = is_array($supplied) ? $supplied : [];
-                } elseif ($signature !== $encoded) {
-                    $conflict = true;
+                if (!array_key_exists('hsa', $account['planRules'])) continue;
+                $supplied = is_array($account['planRules']['hsa']) ? $account['planRules']['hsa'] : [];
+                $encoded = self::hsaCoverageSignature($supplied);
+                if (self::resolveHsaMonths($supplied) === null) {
+                    $hasUnusableAccountStatement = true;
+                } else {
+                    $usableSignatures[$encoded] = true;
                 }
                 if (!array_key_exists($encoded, $seenSignatures)) {
                     $seenSignatures[$encoded] = true;
-                    $accountVariants[] = is_array($supplied) ? $supplied : [];
+                    $accountVariants[] = $supplied;
                 }
             }
+            $conflict = count($usableSignatures) > 1;
             $declared = $context['persons'][$ownerId]['hsaCoverage'] ?? null;
-            $personConflict = $rules !== null
-                && is_array($declared)
-                && self::hsaCoverageSignature($rules) !== self::hsaCoverageSignature($declared);
+            $personConflict = false;
+            if (is_array($declared)) {
+                $declaredSignature = self::hsaCoverageSignature($declared, 'person');
+                foreach (array_keys($usableSignatures) as $encoded) {
+                    if ($encoded !== $declaredSignature) $personConflict = true;
+                }
+            }
             /*
              * Every coverage statement made about this person, the person-level
              * one included. persons[].hsaCoverage is a statement of the same fact
@@ -12660,7 +12658,7 @@ final class Engine
                     'months' => self::resolveHsaMonths($variant),
                 ];
             }
-            if (is_array($declared) && !array_key_exists((string) json_encode($declared), $seenSignatures)) {
+            if (is_array($declared) && !array_key_exists(self::hsaCoverageSignature($declared, 'person'), $seenSignatures)) {
                 $coverageVariants[] = [
                     'source' => 'person',
                     'coverage' => $declared,
@@ -12671,9 +12669,26 @@ final class Engine
                         ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
                 ];
             }
+            $slots = self::resolvedCoverageSlotsFor($coverageVariants);
+            $resolvedMonths = in_array('unknown', $slots, true) ? null
+                : array_map(static fn ($slot) => $slot === 'none' ? null : $slot, $slots);
+            $deductibles = array_map(static fn ($variant) => $variant['coverage']['hdhpAnnualDeductible'] ?? null, $coverageVariants);
+            $resolvedDeductible = self::unanimousField($deductibles) ? ($deductibles[0] ?? null) : null;
+            $deductibleMissingInCappedYear = false;
+            if ($parameters['contributionLimitCappedByHdhpAnnualDeductible']) {
+                foreach ($coverageVariants as $variant) {
+                    if ($variant['months'] !== null
+                        && count(array_filter($variant['months'], static fn ($tier) => $tier !== null)) > 0
+                        && ($variant['coverage']['hdhpAnnualDeductible'] ?? null) === null) {
+                        $deductibleMissingInCappedYear = true;
+                    }
+                }
+            }
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
-                'rules' => $rules,
+                'resolvedDeductible' => $resolvedDeductible,
+                'hasUnusableAccountStatement' => $hasUnusableAccountStatement || count($usableSignatures) === 0,
+                'deductibleMissingInCappedYear' => $deductibleMissingInCappedYear,
                 'conflict' => $conflict,
                 'personConflict' => $personConflict,
                 /**
@@ -12699,7 +12714,7 @@ final class Engine
                 )
                     ? $context['persons'][$ownerId]['hsaLastMonthRuleTestingPeriod']
                     : [],
-                'months' => $rules === null ? null : self::resolveHsaMonths($rules),
+                'resolvedMonths' => $resolvedMonths,
             ];
         }
 
@@ -12727,11 +12742,11 @@ final class Engine
          */
         $coupleCoverage = [];
         foreach ($couple ?? [] as $personId) {
-            if (isset($facts[$personId]) && $facts[$personId]['rules'] !== null) {
+            if (isset($facts[$personId]) && count($facts[$personId]['coverageVariants']) > 0) {
                 $coupleCoverage[$personId] = [
                     'supplied' => true,
-                    'months' => $facts[$personId]['months'],
-                    'hdhpAnnualDeductible' => $facts[$personId]['rules']['hdhpAnnualDeductible'] ?? null,
+                    'months' => $facts[$personId]['resolvedMonths'],
+                    'hdhpAnnualDeductible' => $facts[$personId]['resolvedDeductible'],
                 ];
                 continue;
             }
@@ -12981,12 +12996,12 @@ final class Engine
             // as having only that family coverage. It does not make an otherwise
             // ineligible month eligible, so only supplied months are rewritten.
             foreach ($coupleMembersWithAccounts as $personId) {
-                if ($facts[$personId]['months'] === null) {
+                if ($facts[$personId]['resolvedMonths'] === null) {
                     continue;
                 }
                 for ($month = 1; $month <= self::HSA_MONTHS_IN_YEAR; $month++) {
-                    if ($familyMonth[$month - 1] && $facts[$personId]['months'][$month - 1] === 'self_only') {
-                        $facts[$personId]['months'][$month - 1] = 'family';
+                    if ($familyMonth[$month - 1] && $facts[$personId]['resolvedMonths'][$month - 1] === 'self_only') {
+                        $facts[$personId]['resolvedMonths'][$month - 1] = 'family';
                     }
                 }
             }
@@ -13101,7 +13116,7 @@ final class Engine
             $deemedCandidateIds[$personId] = true;
         }
         foreach (array_keys($deemedCandidateIds) as $personId) {
-            $ownMonths = $facts[$personId]['months'] ?? null;
+            $ownMonths = $facts[$personId]['resolvedMonths'] ?? null;
             if ($ownMonths !== null) {
                 // December's tier is read after the recharacterization above,
                 // because the plan the individual is "treated as having been
@@ -13172,7 +13187,7 @@ final class Engine
             if ($familySharingApplies !== true) {
                 return $reaching;
             }
-            $ownMonths = $facts[$personId]['months'] ?? null;
+            $ownMonths = $facts[$personId]['resolvedMonths'] ?? null;
             if ($ownMonths === null) {
                 return $reaching;
             }
@@ -13234,7 +13249,7 @@ final class Engine
             &$facts,
             &$statedCoverageByPerson,
         ): array {
-            $ownMonths = $facts[$personId]['months'] ?? null;
+            $ownMonths = $facts[$personId]['resolvedMonths'] ?? null;
             if ($ownMonths === null) {
                 return array_fill(0, self::HSA_MONTHS_IN_YEAR, false);
             }
@@ -13451,7 +13466,7 @@ final class Engine
                     'IRC 223(b)',
                 );
             }
-            if ($owner['rules'] === null || $owner['months'] === null) {
+            if ($owner['hasUnusableAccountStatement']) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
                 $candidateSelectionUnestablished = true;
@@ -13466,7 +13481,7 @@ final class Engine
                 );
             }
 
-            $months = $owner['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
+            $months = $owner['resolvedMonths'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null);
 
             /*
              * IRC 223(b)(5)(A) makes the other spouse's coverage matter for two
@@ -13670,8 +13685,8 @@ final class Engine
                 );
             }
 
-            $ownDeductible = $owner['rules']['hdhpAnnualDeductible'] ?? null;
-            $deductibleMissing = false;
+            $ownDeductible = $owner['resolvedDeductible'];
+            $deductibleMissing = $owner['deductibleMissingInCappedYear'];
             $missingDeductibleSpouses = [];
             $deductibleFor = static function (string $tier, int $monthIndex) use (
                 $familySharingApplies,
@@ -15647,7 +15662,7 @@ final class Engine
                 || ($isSharingMember && $archerAcrossUndividedSpouses);
 
             $detail = [
-                'coverageTierByMonth' => $facts[$ownerId]['months'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
+                'coverageTierByMonth' => $facts[$ownerId]['resolvedMonths'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
                 'eligibleMonthCount' => $amounts['eligibleMonthCount'],
                 // Withheld where the rejected deductible fed them. Coverage
                 // months and the IRC 223(b)(3) amount beside them stay, because

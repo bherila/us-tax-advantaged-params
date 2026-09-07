@@ -843,6 +843,14 @@ stays determinate. The engine will not read silence as "no competing family plan
 that would answer the comparison from a fact you never supplied, and in the direction that
 costs a taxpayer the §4973 excise.
 
+Coverage is resolved across every statement for an owner, independently of account order.
+Equivalent month sets and equivalent `coverageTier`/`eligibleMonths` and `monthlyCoverage`
+representations agree. An explicit `planRules.hsa: {}` is unusable: even with a complete
+duplicate statement, it produces `HSA_COVERAGE_FACTS_REQUIRED` and `hsa: null` on that
+owner's accounts. It is not a contradictory assertion of no coverage. Person-level coverage
+is compared with every usable account statement, and a missing 2004–2006 deductible is
+diagnosed across the statements rather than taken from the first account.
+
 ### A deductible below the statutory minimum is inconsistent input
 
 `hdhpAnnualDeductible` is taken as stated, but it is checked for internal consistency. A figure

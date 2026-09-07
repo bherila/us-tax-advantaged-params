@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import USTaxAdvantagedParams, {
@@ -781,3 +782,20 @@ test("the IRC 223(b)(5)(B)(ii) division diagnostic does not claim a shared limit
   );
   assert.ok(division.message.includes("HSA_SHARED_FAMILY_LIMIT_INDETERMINATE"));
 });
+
+// Fixed priorities preserve allocation order while permuting the fact statements.
+// Expected statuses/diagnostics live in the shared, authority-derived vectors;
+// this assertion additionally pins every public field of each account.
+const ownerNormalizationVectors = JSON.parse(readFileSync(
+  new URL("../../data/conformance-vectors.json", import.meta.url), "utf8",
+)).vectors as Array<{ name: string; input: Parameters<typeof U.calculate>[0] }>;
+for (const vector of ownerNormalizationVectors.filter((entry) =>
+  entry.name.startsWith("HSA owner normalization:") && !entry.name.endsWith(" reversed"))) {
+  test(`${vector.name} is invariant under account permutation`, () => {
+    const forward = U.calculate(vector.input);
+    const reverse = U.calculate({ ...vector.input, accounts: [...vector.input.accounts].reverse() });
+    for (const input of vector.input.accounts) {
+      assert.deepEqual(account(forward, input.id), account(reverse, input.id));
+    }
+  });
+}
