@@ -838,3 +838,19 @@ test("the married capped-year comparison preserves deductible conflict provenanc
     }
   }
 });
+
+test("a missing married person cannot bypass HSA family division", () => {
+  for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
+    for (const role of ["taxpayer", "spouse"] as const) {
+      const result = U.calculate({ taxYear: 2026, filingStatus,
+        persons: [{ id: "owner", role, birthYear: 1980 }],
+        accounts: [{ id: "a", ownerId: "owner", type: AccountType.HSA,
+          planRules: { hsa: { coverageTier: "family" } } }],
+        hsaFamilyLimitDivision: { status: "agreed", taxpayerShare: 0.25 } });
+      const row = account(result, "a");
+      assert.equal(row.statutoryMaximumAnnualContribution, null);
+      assert.equal(row.status, CalculationStatus.INDETERMINATE);
+      assert.ok(row.diagnostics.some(({ code }) => code === "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"));
+    }
+  }
+});

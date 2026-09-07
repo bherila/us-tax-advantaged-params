@@ -17469,6 +17469,45 @@
       "expectAbsentDiagnosticCodes": [
         "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
       ]
+    },
+    {
+      "name": "2026 missing spouse record cannot bypass an agreed HSA family division",
+      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-31 distinguish a division between eligible spouses from the whole limitation of the sole eligible spouse. This MFJ scenario states taxpayerShare 0.25 but omits the spouse person record. If that spouse is eligible, 0.25 x the 8750 family limit (Rev. Proc. 2025-19) is 2187.50; if ineligible, the taxpayer receives 8750. Neither completion is established, and omitting a person must not silently bypass the agreement. Under the required-couple-facts contract the result is indeterminate, with null maximum and candidate detail and HSA_SPOUSE_COVERAGE_FACTS_REQUIRED.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.25
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.hsa": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
+      ]
     }
   ]
 }

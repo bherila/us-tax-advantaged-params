@@ -12805,6 +12805,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
+    const missingCoupleForFamilyDivision = couple === null && months.some((tier) => tier === "family");
     const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
     const lowestDeductibleCouldLowerAmount =
       parameters.contributionLimitCappedByHdhpAnnualDeductible &&
@@ -12813,7 +12814,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       marriedFiler &&
       (ownerIsSpouseOfCouple || person.role === "taxpayer" || person.role === "spouse") &&
       !spouseCoverageSupplied &&
-      (recharacterizationCouldRaiseTier || lowestDeductibleCouldLowerAmount)
+      (recharacterizationCouldRaiseTier || lowestDeductibleCouldLowerAmount || missingCoupleForFamilyDivision)
     ) {
       indeterminate = true;
       familyPoolAmountIndeterminate = true;
@@ -12824,7 +12825,9 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // Name the reason that actually applies. Both can, and a caller told only
       // about self-only months would go looking for one in a record whose months
       // are all family months.
-      const reason = recharacterizationCouldRaiseTier
+      const reason = missingCoupleForFamilyDivision
+        ? "Both taxpayer and spouse person records are required to establish the family division, including any supplied agreement. The absent spouse record does not establish ineligibility or permit the whole limitation to bypass division."
+        : recharacterizationCouldRaiseTier
         ? lowestDeductibleCouldLowerAmount
           ? `This owner has at least one self-only month, which that treatment can raise to a family month, and at least one family month, whose limitation for tax year ${context.taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under IRC 223(b)(2). The other spouse's coverage changes the answer both ways and is not supplied.`
           : "This owner has at least one self-only month, so the other spouse's coverage changes the answer and is not supplied."

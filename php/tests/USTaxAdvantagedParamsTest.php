@@ -878,6 +878,22 @@ test('the married capped-year comparison preserves deductible conflict provenanc
     }
 });
 
+test('a missing married person cannot bypass HSA family division', static function (): void {
+    foreach (['MFJ', 'MFS'] as $filingStatus) {
+        foreach (['taxpayer', 'spouse'] as $role) {
+            $result = U::calculate(['taxYear' => 2026, 'filingStatus' => $filingStatus,
+                'persons' => [['id' => 'owner', 'role' => $role, 'birthYear' => 1980]],
+                'accounts' => [['id' => 'a', 'ownerId' => 'owner', 'type' => 'hsa',
+                    'planRules' => ['hsa' => ['coverageTier' => 'family']]]],
+                'hsaFamilyLimitDivision' => ['status' => 'agreed', 'taxpayerShare' => 0.25]]);
+            $row = accountResult($result, 'a');
+            assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+            assertSameValue('indeterminate', $row['status']);
+            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+        }
+    }
+});
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {

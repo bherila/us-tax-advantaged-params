@@ -682,6 +682,10 @@ That case reports `HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` instead. I
 states nothing, eligibility remains unknown: the owner might receive half or the whole. Where
 those readings change the answer, the engine reports `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE`,
 `familyLimitShare: null`, and a null maximum.
+For an MFJ or MFS family-covered HSA owner, include both taxpayer and spouse person
+records. Omitting the other person does not bypass a supplied division or establish
+that the owner is the sole eligible spouse; the result is indeterminate with
+`HSA_SPOUSE_COVERAGE_FACTS_REQUIRED`.
 
 Earlier versions assumed a sole HSA owner had agreed to take everything when no
 account-level share was supplied, reporting `HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT`.

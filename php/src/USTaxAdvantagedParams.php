@@ -13544,6 +13544,7 @@ final class Engine
              */
             $spouseCoverageSupplied = $otherSpouseId !== null
                 && array_key_exists($otherSpouseId, $familyStatusByPerson);
+            $missingCoupleForFamilyDivision = $couple === null && in_array('family', $months, true);
             $recharacterizationCouldRaiseTier = in_array('self_only', $months, true);
             $lowestDeductibleCouldLowerAmount =
                 $parameters['contributionLimitCappedByHdhpAnnualDeductible']
@@ -13552,7 +13553,7 @@ final class Engine
                 $marriedFiler
                 && ($ownerIsSpouseOfCouple || ($person['role'] ?? null) === 'taxpayer' || ($person['role'] ?? null) === 'spouse')
                 && !$spouseCoverageSupplied
-                && ($recharacterizationCouldRaiseTier || $lowestDeductibleCouldLowerAmount)
+                && ($recharacterizationCouldRaiseTier || $lowestDeductibleCouldLowerAmount || $missingCoupleForFamilyDivision)
             ) {
                 $indeterminate = true;
                 $familyPoolAmountIndeterminate = true;
@@ -13564,7 +13565,9 @@ final class Engine
                 // Name the reason that actually applies. Both can, and a caller
                 // told only about self-only months would go looking for one in a
                 // record whose months are all family months.
-                if ($recharacterizationCouldRaiseTier && $lowestDeductibleCouldLowerAmount) {
+                if ($missingCoupleForFamilyDivision) {
+                    $reason = "Both taxpayer and spouse person records are required to establish the family division, including any supplied agreement. The absent spouse record does not establish ineligibility or permit the whole limitation to bypass division.";
+                } elseif ($recharacterizationCouldRaiseTier && $lowestDeductibleCouldLowerAmount) {
                     $reason = 'This owner has at least one self-only month, which that treatment can raise to a '
                         . 'family month, and at least one family month, whose limitation for tax year '
                         . "{$taxYear} is capped by the lowest of the spouses' family-plan annual deductibles under "
