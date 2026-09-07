@@ -878,18 +878,23 @@ test('the married capped-year comparison preserves deductible conflict provenanc
     }
 });
 
-test('a missing married person cannot bypass HSA family division', static function (): void {
-    foreach (['MFJ', 'MFS'] as $filingStatus) {
-        foreach (['taxpayer', 'spouse'] as $role) {
-            $result = U::calculate(['taxYear' => 2026, 'filingStatus' => $filingStatus,
-                'persons' => [['id' => 'owner', 'role' => $role, 'birthYear' => 1980]],
-                'accounts' => [['id' => 'a', 'ownerId' => 'owner', 'type' => 'hsa',
-                    'planRules' => ['hsa' => ['coverageTier' => 'family']]]],
-                'hsaFamilyLimitDivision' => ['status' => 'agreed', 'taxpayerShare' => 0.25]]);
-            $row = accountResult($result, 'a');
-            assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
-            assertSameValue('indeterminate', $row['status']);
-            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+test('missing married person facts are required only when they can change the HSA result', static function (): void {
+    foreach ([2005, 2026] as $taxYear) {
+        foreach (['MFJ', 'MFS'] as $filingStatus) {
+            foreach (['taxpayer', 'spouse'] as $role) {
+                foreach ([0.25, $role === 'taxpayer' ? 1 : 0] as $taxpayerShare) {
+                    $result = U::calculate(['taxYear' => $taxYear, 'filingStatus' => $filingStatus,
+                        'persons' => [['id' => 'owner', 'role' => $role, 'birthYear' => 1980]],
+                        'accounts' => [['id' => 'a', 'ownerId' => 'owner', 'type' => 'hsa',
+                            'planRules' => ['hsa' => ['coverageTier' => 'family', 'hdhpAnnualDeductible' => 3400]]]],
+                        'hsaFamilyLimitDivision' => ['status' => 'agreed', 'taxpayerShare' => $taxpayerShare]]);
+                    $row = accountResult($result, 'a');
+                    $determined = $taxYear === 2026 && $taxpayerShare !== 0.25;
+                    assertSameValue($determined ? 8750 : null, $row['statutoryMaximumAnnualContribution']);
+                    assertSameValue($determined ? 'determinate' : 'indeterminate', $row['status']);
+                    assertSameValue(!$determined, hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+                }
+            }
         }
     }
 });

@@ -17508,6 +17508,86 @@
       "expectDiagnosticCodes": [
         "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"
       ]
+    },
+    {
+      "name": "2026 absent partner cannot change sole taxpayer HSA owner agreed whole",
+      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 assign the whole family limitation to this owner under the stated agreement; Notice 2004-50 Q&A-31 assigns the same whole if the absent partner is ineligible. Thus either eligibility completion gives this under-55 owner the 8750 family amount from Rev. Proc. 2025-19, without assuming the absent partner eligible or ineligible. The post-2006 repeal of the deductible cap leaves no unknown spouse deductible to change the family amount. The maximum and scenario contribution are 8750 with determinate status and no missing-spouse or division-indeterminate diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "owner",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "owner",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "totals.hsaContribution": 8750
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
+    },
+    {
+      "name": "2026 absent partner cannot change sole spouse HSA owner agreed whole",
+      "description": "IRC 223(b)(5)(B)(ii) and Notice 2004-50 Q&A-32 assign the whole family limitation to this owner under the stated agreement; Notice 2004-50 Q&A-31 assigns the same whole if the absent partner is ineligible. Thus either eligibility completion gives this under-55 owner the 8750 family amount from Rev. Proc. 2025-19, without assuming the absent partner eligible or ineligible. The post-2006 repeal of the deductible cap leaves no unknown spouse deductible to change the family amount. The maximum and scenario contribution are 8750 with determinate status and no missing-spouse or division-indeterminate diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "owner",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "owner",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        }
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "totals.hsaContribution": 8750
+      },
+      "expectAbsentDiagnosticCodes": [
+        "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED",
+        "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
+      ]
     }
   ]
 }

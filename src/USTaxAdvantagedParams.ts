@@ -12805,7 +12805,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      */
     const spouseCoverageSupplied =
       otherSpouseId !== undefined && familyStatusByPerson.has(otherSpouseId);
-    const missingCoupleForFamilyDivision = couple === null && months.some((tier) => tier === "family");
+    const ownerDivision = context.hsaFamilyLimitDivision;
+    const agreedWholeForOwner = ownerDivision.status === "agreed" &&
+      ((person.role === "taxpayer" && ownerDivision.taxpayerShare === 1) ||
+       (person.role === "spouse" && ownerDivision.taxpayerShare === 0));
+    const missingCoupleForFamilyDivision = couple === null &&
+      months.some((tier) => tier === "family") && !agreedWholeForOwner;
     const recharacterizationCouldRaiseTier = months.some((tier) => tier === "self_only");
     const lowestDeductibleCouldLowerAmount =
       parameters.contributionLimitCappedByHdhpAnnualDeductible &&

@@ -839,18 +839,24 @@ test("the married capped-year comparison preserves deductible conflict provenanc
   }
 });
 
-test("a missing married person cannot bypass HSA family division", () => {
-  for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
-    for (const role of ["taxpayer", "spouse"] as const) {
-      const result = U.calculate({ taxYear: 2026, filingStatus,
-        persons: [{ id: "owner", role, birthYear: 1980 }],
-        accounts: [{ id: "a", ownerId: "owner", type: AccountType.HSA,
-          planRules: { hsa: { coverageTier: "family" } } }],
-        hsaFamilyLimitDivision: { status: "agreed", taxpayerShare: 0.25 } });
-      const row = account(result, "a");
-      assert.equal(row.statutoryMaximumAnnualContribution, null);
-      assert.equal(row.status, CalculationStatus.INDETERMINATE);
-      assert.ok(row.diagnostics.some(({ code }) => code === "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"));
+test("missing married person facts are required only when they can change the HSA result", () => {
+  for (const taxYear of [2005, 2026]) {
+    for (const filingStatus of [FilingStatus.MARRIED_FILING_JOINTLY, FilingStatus.MARRIED_FILING_SEPARATELY]) {
+      for (const role of ["taxpayer", "spouse"] as const) {
+        for (const taxpayerShare of [0.25, role === "taxpayer" ? 1 : 0]) {
+          const result = U.calculate({ taxYear, filingStatus,
+            persons: [{ id: "owner", role, birthYear: 1980 }],
+            accounts: [{ id: "a", ownerId: "owner", type: AccountType.HSA,
+              planRules: { hsa: { coverageTier: "family", hdhpAnnualDeductible: 3_400 } } }],
+            hsaFamilyLimitDivision: { status: "agreed", taxpayerShare } });
+          const row = account(result, "a");
+          // In capped years, an absent spouse's family deductible still matters.
+          const determined = taxYear === 2026 && taxpayerShare !== 0.25;
+          assert.equal(row.statutoryMaximumAnnualContribution, determined ? 8_750 : null);
+          assert.equal(row.status, determined ? CalculationStatus.DETERMINATE : CalculationStatus.INDETERMINATE);
+          assert.equal(row.diagnostics.some(({ code }) => code === "HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"), !determined);
+        }
+      }
     }
   }
 });

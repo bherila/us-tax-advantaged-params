@@ -13544,7 +13544,12 @@ final class Engine
              */
             $spouseCoverageSupplied = $otherSpouseId !== null
                 && array_key_exists($otherSpouseId, $familyStatusByPerson);
-            $missingCoupleForFamilyDivision = $couple === null && in_array('family', $months, true);
+            $ownerDivision = $context['hsaFamilyLimitDivision'];
+            $agreedWholeForOwner = $ownerDivision['status'] === 'agreed'
+                && ((($person['role'] ?? null) === 'taxpayer' && (float) $ownerDivision['taxpayerShare'] === 1.0)
+                    || (($person['role'] ?? null) === 'spouse' && (float) $ownerDivision['taxpayerShare'] === 0.0));
+            $missingCoupleForFamilyDivision = $couple === null
+                && in_array('family', $months, true) && !$agreedWholeForOwner;
             $recharacterizationCouldRaiseTier = in_array('self_only', $months, true);
             $lowestDeductibleCouldLowerAmount =
                 $parameters['contributionLimitCappedByHdhpAnnualDeductible']
