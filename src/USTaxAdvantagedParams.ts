@@ -15482,7 +15482,10 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
     const source = hsaCompletionStatements(context, accounts, spouseId);
     const unknown = source.length === 0 || source.some((entry) => entry.months === null);
     // A missing continuous capped-year deductible is not a finite domain.
-    if (unknown && context.hsaParameters.contributionLimitCappedByHdhpAnnualDeductible) continue;
+    if (unknown && context.hsaParameters.contributionLimitCappedByHdhpAnnualDeductible &&
+      (source.length === 0 || source.some((entry) => entry.months === null &&
+        entry.coverage.hdhpAnnualDeductible === undefined &&
+        resolveHsaMonths({ ...entry.coverage, coverageTier: "family" })!.some((tier) => tier !== null)))) continue;
     const options = new Map<string, HsaCoverageInput>();
     for (const entry of source) {
       if (entry.months !== null) options.set(hsaCoverageSignature(entry.coverage, entry.source), hsaCompletionCoverage(entry.months, entry.coverage.hdhpAnnualDeductible));

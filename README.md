@@ -636,7 +636,8 @@ statements give 4400 versus 4762.50.
 
 Partial statements retain the facts they supply: `eligibleMonths: [1]` without a
 tier leaves the common self-only/family tier unresolved, not January eligibility.
-For entirely unknown post-2006 schedules, the evaluator traverses every schedule
+For entirely unknown schedules with all relevant deductible amounts supplied, or
+after the 2006 deductible-cap repeal, the evaluator traverses every schedule
 up to permutations of equivalent January–November months, with December separate.
 It does not sample or truncate the possibilities. Missing continuous deductible
 facts in capped years remain conservative. A missing spouse person still leaves

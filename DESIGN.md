@@ -218,7 +218,8 @@ pool identities are never invented or transplanted.
 
 A complete supplied coverage statement and its deductible are one correlated
 variant. An incomplete statement retains its explicit eligible months. An entirely
-unknown schedule after 2006 is enumerated by counts of no coverage, self-only and
+unknown schedule with fixed annual deductible operands, or after their 2006
+repeal, is enumerated by counts of no coverage, self-only and
 family coverage within each January–November class having the same established
 spouse tier. These are all permutation orbits, not sampled cases: a class of n
 months has (n + 1)(n + 2) / 2 representatives. December forms its own class because

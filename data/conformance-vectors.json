@@ -24199,6 +24199,209 @@
       "expectDiagnosticCodes": [
         "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
       ]
+    },
+    {
+      "name": "2005 coherent partial January coverage with an established deductible",
+      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ],
+              "hdhpAnnualDeductible": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 416.67
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent wholly unknown coverage with an established deductible",
+      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "hdhpAnnualDeductible": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent explicit zero eligible months needs no missing deductible",
+      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": []
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent a competing lower family deductible does not collapse",
+      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A spouse family January completion introduces a competing deductible of 3000, making January worth 3000 rather than 5000; a self-only January plan does not compete. The annual taxpayer amounts are (3000 + 11 × 5000) / 12 = 4833.33 versus 5000, so the result remains indeterminate.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ],
+              "hdhpAnnualDeductible": 3000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
     }
   ]
 }

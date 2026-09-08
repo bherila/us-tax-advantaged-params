@@ -16513,7 +16513,16 @@ final class Engine
             $source = self::hsaCompletionStatements($context, $accounts, $spouseId);
             $unknown = $source === [] || array_filter($source, static fn (array $entry): bool => $entry['months'] === null) !== [];
             // Unknown capped-year deductible is a continuous domain, not a sample.
-            if ($unknown && $context['hsaParameters']['contributionLimitCappedByHdhpAnnualDeductible']) continue;
+            if ($unknown && $context['hsaParameters']['contributionLimitCappedByHdhpAnnualDeductible']) {
+                $missingDeductible = $source === [];
+                foreach ($source as $entry) {
+                    if ($entry['months'] !== null || isset($entry['coverage']['hdhpAnnualDeductible'])) continue;
+                    $family = $entry['coverage'];
+                    $family['coverageTier'] = 'family';
+                    if (array_filter(self::resolveHsaMonths($family), static fn ($tier): bool => $tier !== null) !== []) $missingDeductible = true;
+                }
+                if ($missingDeductible) continue;
+            }
             $options = [];
             foreach ($source as $entry) {
                 if ($entry['months'] !== null) $options[self::hsaCoverageSignature($entry['coverage'], $entry['source'])] = self::hsaCompletionCoverage($entry['months'], $entry['coverage']['hdhpAnnualDeductible'] ?? null);
