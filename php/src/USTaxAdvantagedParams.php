@@ -15799,6 +15799,13 @@ final class Engine
             $hsaDetailUnestablished = $amounts['candidateSelectionUnestablished']
                 || ($isSharingMember && $archerAcrossUndividedSpouses);
 
+            // Only ambiguity in the applied mixed schedule affects this field.
+            // An exhausted family portion still establishes a divided zero.
+            $dividedFamilyPortionIndeterminate = $archerAmount > 0
+                && $amounts['familySharedPortionApplied'] > 0
+                && $amounts['familySharedPortionApplied'] < $amounts['familyPortionApplied']
+                && $archerAmount < $amounts['familyPortionApplied'];
+
             $detail = [
                 'coverageTierByMonth' => $facts[$ownerId]['resolvedMonths'] ?? array_fill(0, self::HSA_MONTHS_IN_YEAR, null),
                 'eligibleMonthCount' => $amounts['eligibleMonthCount'],
@@ -15873,6 +15880,7 @@ final class Engine
                 // a figure measured after the reduction would report more being
                 // divided than survives to be divided.
                 'dividedFamilyContributionLimit' => $isSharingMember
+                    && !$dividedFamilyPortionIndeterminate
                     && $householdPoolAmountIndeterminate !== true
                     && $archerAcrossUndividedSpouses !== true
                     ? self::roundMoney(min(

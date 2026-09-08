@@ -673,9 +673,10 @@ export interface HsaAccountDetail {
    * half of that is 364.59 against the 364.58 half of 8750/12 gives. Use the
    * identity to understand the composition, not to re-derive the ceiling.
    *
-   * Null exactly where `sharedFamilyContributionLimit` is, and for the same
-   * reason: an unapportionable aggregate leaves the pre-division amount itself
-   * unknown, so no part of it can be named as the divided one.
+   * Null where `sharedFamilyContributionLimit` is null, and also where a
+   * positive Archer MSA reduction leaves family capacity but its placement
+   * between shared and sole-eligible months is unknown. The total family
+   * amount can be known while the portion remaining to divide is not.
    */
   dividedFamilyContributionLimit: Money | null;
   /**
@@ -14786,6 +14787,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     const hsaDetailUnestablished =
       amounts.candidateSelectionUnestablished || (isSharingMember && archerAcrossUndividedSpouses);
 
+    // A mixed applied schedule does not establish which kind of month the
+    // Archer reduction consumed. A zero family residue still fixes the divided
+    // portion at zero; counterfactual-only ambiguity does not affect this field.
+    const dividedFamilyPortionIndeterminate = archerAmount > 0
+      && amounts.familySharedPortionApplied > 0
+      && amounts.familySharedPortionApplied < amounts.familyPortionApplied
+      && archerAmount < amounts.familyPortionApplied;
+
     const detail: HsaAccountDetail = {
       coverageTierByMonth: facts.get(ownerId)!.resolvedMonths ?? HSA_ALL_MONTHS.map(() => null),
       eligibleMonthCount: amounts.eligibleMonthCount,
@@ -14848,6 +14857,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // naming it as the divided part of a figure measured after the reduction
       // would report more being divided than survives to be divided.
       dividedFamilyContributionLimit: isSharingMember
+        && !dividedFamilyPortionIndeterminate
         && !householdPoolAmountIndeterminate
         && !archerAcrossUndividedSpouses
         ? roundMoney(Math.min(

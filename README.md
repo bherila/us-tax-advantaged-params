@@ -632,6 +632,9 @@ in December alone holds 8750 and divides only December's 729.17 of it: 8750 - 72
 8385.42. Multiplying the share by the whole 8750 instead gives 4375, which is wrong by 4010.42.
 The published figures are rounded to cents while the engine divides the unrounded monthly amounts,
 so treat the identity as a description of the composition rather than a way to re-derive the ceiling.
+The divided portion is also `null` when an Archer MSA reduction leaves family capacity but its
+placement between shared and sole-eligible months is unresolved. The total family limitation
+can remain known in that case; exhausting it establishes a divided portion of zero.
 
 **A married spouse's own share can fall while the couple's limitation rises.** Notice 2008-52
 Example 14 compares the *couple's combined* candidates and divides the winner, and Form 8889
