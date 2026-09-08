@@ -308,6 +308,9 @@ absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,65
 - **IRS Notice 2001-56** states that §401(a)(17) limits annual compensation used to determine allocations under a defined-contribution plan and discusses the effective date of the EGTRRA compensation-limit increase.  
   `https://www.irs.gov/pub/irs-drop/n-01-56.pdf`
 
+- **Omnibus Budget Reconciliation Act of 1993, Pub. L. 103-66, §13212(d)(3)** grandfathers the pre-OBRA compensation limit for an eligible participant in a governmental plan that, as in effect on July 1, 1993, allowed cost-of-living adjustments to its own §401(a)(17) compensation limitation: the reduced limit "shall not apply to the extent that it would reduce the amount of compensation that is allowed to be taken into account under the plan below the amount which was allowed to be taken into account under the plan as in effect on July 1, 1993." The annual figure is published in the same cost-of-living notice as the ordinary §401(a)(17) limit; the series encoded here runs from tax year 1998, the first the IRS published, through 2026, each notice's "increased from" amount matching the prior year's. **Tax years 1994 through 1997 are `null`**: IRS Notice 96-55, which publishes the 1997 limitations, does not state the grandfathered figure at all, so no value is recoverable from primary authority and none is extrapolated.  
+  `https://www.govinfo.gov/content/pkg/STATUTE-107/pdf/STATUTE-107-Pg312.pdf`
+
 - **IRS Employee Plans News, Fall 2009, “When Limits Collide, Which One Wins?”** distinguishes §401(a)(17), §415(c), and §402(g). It describes the compensation cap for plan contributions while explaining why the cap should not be applied as an extra cutoff preventing an employee from completing the annual elective-deferral amount.  
   `https://www.irs.gov/pub/irs-tege/fall09.pdf`
 

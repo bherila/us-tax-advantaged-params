@@ -31,6 +31,11 @@ export default {
     ["catchUp60To63_414v2Ei", ["age60To63CatchUp"], "IRC 414(v)(2)(E)(i)"],
     ["rothCatchUpWageThreshold_414v7A", ["rothCatchUpPriorYearFicaWageThreshold"], "IRC 414(v)(7)(A)"],
     ["compensationLimit_401a17", ["annualCompensation401a17"], "IRC 401(a)(17)"],
+    [
+      "compensationLimit401a17GrandfatheredGovernmental_obra93_13212d3",
+      ["annualCompensation401a17GrandfatheredGovernmental"],
+      "OBRA '93 sec. 13212(d)(3) grandfathered compensation limit for eligible participants in certain governmental plans, published annually alongside the IRC 401(a)(17) limit",
+    ],
     ["dbAnnualBenefit_415b1A", ["definedBenefitAnnualBenefit415b"], "IRC 415(b)(1)(A)"],
     ["plesaBalanceCap_402Ae3Ai", ["pensionLinkedEmergencySavingsBalanceCap402A"], "IRC 402A(e)(3)(A)(i)"],
     ["iraContribution_219b5A", ["ira", "baseContributionLimit"], "IRC 219(b)(5)(A)"],

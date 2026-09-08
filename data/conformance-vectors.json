@@ -994,6 +994,457 @@
       }
     },
     {
+      "name": "2026 the OBRA '93 grandfathered governmental compensation limit lifts the IRC 401(a)(17) ceiling",
+      "description": "OBRA '93 section 13212(d)(3) provides that the IRC 401(a)(17) limit \"shall not apply to the extent that it would reduce the amount of compensation that is allowed to be taken into account under the plan below the amount which was allowed to be taken into account under the plan as in effect on July 1, 1993\". Notice 2025-67 publishes that preserved amount for 2026 as $535,000, beside the ordinary IRC 401(a)(17) limit of $360,000. The account asserts the two facts the relief turns on -- a governmental plan within IRC 414(d) that allowed cost-of-living adjustments to its own compensation limitation on July 1, 1993, and an \"eligible participant\" in it -- so the compensation taken into account is min(600000, 535000) = 535000 rather than 360000, and the supplied 10 percent nonelective formula gives 0.10 x 535000 = 53500. IRC 415(c)(1) caps annual additions at the lesser of the 2026 dollar limit of 72000 (Notice 2025-67) and 100 percent of that same recognized compensation, so the statutory maximum is 72000, which the 53500 formula amount does not reach.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 600000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 600000,
+              "employerNonelectiveRate": 0.1,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 72000,
+        "accounts.0.contributionComponents.employerPreTax": 53500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 53500
+      }
+    },
+    {
+      "name": "2026 the same plan without the OBRA '93 assertion takes the ordinary IRC 401(a)(17) limit",
+      "description": "The control for the vector above, identical but for the omitted assertion. Without it the ordinary IRC 401(a)(17) limit published by Notice 2025-67 for 2026 governs, so the compensation taken into account is min(600000, 360000) = 360000 and the 10 percent nonelective formula gives 0.10 x 360000 = 36000. The IRC 415(c)(1) maximum is the lesser of 72000 and 100 percent of 360000, so it remains 72000. This pins that the relief is an asserted fact and not a default: an ordinary plan is unaffected by the new series.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 600000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 600000,
+              "employerNonelectiveRate": 0.1
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 72000,
+        "accounts.0.contributionComponents.employerPreTax": 36000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 36000
+      }
+    },
+    {
+      "name": "1997 the grandfathered governmental limit is asserted for a year the IRS never published one",
+      "description": "OBRA '93 section 13212(d)(3) protects eligible governmental participants from the reduced section 401(a)(17) compensation limit. The committed Notice 96-55 does not supply the protected 1997 amount; the data therefore records null. Substituting the ordinary 160000 ceiling would deny asserted relief without authority. Under the documented historical uncertainty contract, capacity is indeterminate, statutory maximum and excess are null, and no employer amount may be invented. This corrects the prior fixture, whose ordinary-limit fallback was unsupported by the statute.",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "1994 unknown grandfathered compensation withholds traditional_401k capacity and preserves existing amounts",
+      "description": "OBRA '93 section 13212(d)(3) preserves the qualifying plan's compensation allowance instead of the ordinary reduced amount. No protected 1994 amount is encoded, so the historical uncertainty contract requires null statutory maximum and excess and withholds additional contributions. The synthetic 1200 employer contribution is a supplied fact, retained unchanged rather than recomputed from an unknown ceiling. ",
+      "input": {
+        "taxYear": 1994,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "traditional_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            },
+            "existingContributions": {
+              "employerPreTax": 1200
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 1200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "1995 unknown grandfathered compensation withholds sep_ira capacity and preserves existing amounts",
+      "description": "OBRA '93 section 13212(d)(3) preserves the qualifying plan's compensation allowance instead of the ordinary reduced amount. No protected 1995 amount is encoded, so the historical uncertainty contract requires null statutory maximum and excess and withholds additional contributions. The synthetic 1200 employer contribution is a supplied fact, retained unchanged rather than recomputed from an unknown ceiling. ",
+      "input": {
+        "taxYear": 1995,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "sep_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            },
+            "existingContributions": {
+              "employerPreTax": 1200
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 1200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "1996 unknown grandfathered compensation withholds profit_sharing_plan capacity and preserves existing amounts",
+      "description": "OBRA '93 section 13212(d)(3) preserves the qualifying plan's compensation allowance instead of the ordinary reduced amount. No protected 1996 amount is encoded, so the historical uncertainty contract requires null statutory maximum and excess and withholds additional contributions. The synthetic 1200 employer contribution is a supplied fact, retained unchanged rather than recomputed from an unknown ceiling. ",
+      "input": {
+        "taxYear": 1996,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            },
+            "existingContributions": {
+              "employerPreTax": 1200
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 1200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "1997 unknown grandfathered compensation withholds simple_ira capacity and preserves existing amounts",
+      "description": "OBRA '93 section 13212(d)(3) preserves the qualifying plan's compensation allowance instead of the ordinary reduced amount. No protected 1997 amount is encoded, so the historical uncertainty contract requires null statutory maximum and excess and withholds additional contributions. The synthetic 1200 employer contribution is a supplied fact, retained unchanged rather than recomputed from an unknown ceiling. ",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true,
+              "simpleEmployerContributionMethod": "nonelective_2_percent"
+            },
+            "existingContributions": {
+              "employerPreTax": 1200
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 1200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error"
+      }
+    },
+    {
+      "name": "1997 unknown grandfathered compensation withholds simple_401k capacity and preserves existing amounts",
+      "description": "OBRA '93 section 13212(d)(3) preserves the qualifying plan's compensation allowance instead of the ordinary reduced amount. No protected 1997 amount is encoded, so the historical uncertainty contract requires null statutory maximum and excess and withholds additional contributions. The synthetic 1200 employer contribution is a supplied fact, retained unchanged rather than recomputed from an unknown ceiling. ",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "simple_401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true,
+              "simpleEmployerContributionMethod": "nonelective_2_percent"
+            },
+            "existingContributions": {
+              "employerPreTax": 1200
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 1200,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null
+      }
+    },
+    {
+      "name": "1997 unknown grandfathered compensation also withholds a companion shared-pool ceiling",
+      "description": "OBRA '93 section 13212(d)(3) protects eligible governmental participants from the reduced section 401(a)(17) compensation limit. The committed Notice 96-55 does not supply the protected 1997 amount; the data therefore records null. Substituting the ordinary 160000 ceiling would deny asserted relief without authority. Under the documented historical uncertainty contract, capacity is indeterminate, statutory maximum and excess are null, and no employer amount may be invented. This corrects the prior fixture, whose ordinary-limit fallback was unsupported by the statute. Both accounts use the same employer and owner, hence the same section 415(c) pool. A missing applicable compensation operand makes that pool limit unknown; the ordinary companion account must not allocate against a fabricated ceiling.",
+      "input": {
+        "taxYear": 1997,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          },
+          {
+            "id": "companion",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 500000,
+              "employerNonelectiveRate": 0.15
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.excessContribution": null,
+        "accounts.0.contributionComponents.employerPreTax": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.0.diagnostics.0.code": "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+        "accounts.0.diagnostics.0.severity": "error",
+        "accounts.0.sharedLimits.0.limit": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.statutoryMaximumAnnualContribution": null,
+        "accounts.1.contributionComponents.employerPreTax": 0,
+        "accounts.1.excessContribution": null
+      }
+    },
+    {
+      "name": "1993 grandfathered compensation unknown-year guard respects effective and published boundaries",
+      "description": "OBRA '93 section 13212(d)(3) protects against the reduction effective after 1993; it does not create missing relief in 1993. Notice 97-58 supplies the protected 1998 amount of 265000. In 1993, synthetic plan compensation 10000 is below the applicable compensation ceiling, so the 15 percent employer formula yields 1500; the pre-2002 section 415(c) ceiling is min(30000, 25 percent of 10000) = 2500. No unknown-grandfathered diagnostic is warranted.",
+      "input": {
+        "taxYear": 1993,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 10000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.contributionComponents.employerPreTax": 1500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1500,
+        "accounts.0.diagnostics": []
+      }
+    },
+    {
+      "name": "1998 grandfathered compensation unknown-year guard respects effective and published boundaries",
+      "description": "OBRA '93 section 13212(d)(3) protects against the reduction effective after 1993; it does not create missing relief in 1993. Notice 97-58 supplies the protected 1998 amount of 265000. In 1998, synthetic plan compensation 10000 is below the applicable compensation ceiling, so the 15 percent employer formula yields 1500; the pre-2002 section 415(c) ceiling is min(30000, 25 percent of 10000) = 2500. No unknown-grandfathered diagnostic is warranted.",
+      "input": {
+        "taxYear": 1998,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1960,
+            "compensation": {
+              "w2Compensation": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "profit-sharing",
+            "ownerId": "t",
+            "type": "profit_sharing_plan",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 10000,
+              "employerNonelectiveRate": 0.15,
+              "grandfatheredGovernmentalCompensationLimit": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.contributionComponents.employerPreTax": 1500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 1500,
+        "accounts.0.diagnostics": []
+      }
+    },
+    {
       "name": "1997 self-employed SEP uses reduced-rate and capped plan-rate worksheet ceilings",
       "description": "The IRS self-employed SEP worksheet reduces a 15-percent plan rate to 15 / 115 = 13.043478 percent for net earnings: that rate times 500000 exceeds the separate 15 percent x 160000 = 24000 capped-plan-rate ceiling under IRC 401(a)(17). The 1997 IRC 415(c) dollar ceiling is higher, so all asserted contribution maxima are 24000.",
       "input": {

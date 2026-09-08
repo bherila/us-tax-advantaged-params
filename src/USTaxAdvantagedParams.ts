@@ -818,6 +818,21 @@ export interface PlanRulesInput {
 
   /** Grandfathered SARSEP established before 1997. */
   grandfatheredSarsep?: boolean;
+  /**
+   * Whether OBRA '93 sec. 13212(d)(3) lifts the IRC 401(a)(17) compensation
+   * limit for this participant in this plan.
+   *
+   * One flag asserts both halves of the rule, because both are facts about the
+   * plan document and the participant's history rather than anything derivable
+   * from the tax year: that the plan is a governmental plan within the meaning
+   * of IRC 414(d) which, as in effect on July 1, 1993, allowed cost-of-living
+   * adjustments to its own compensation limitation; and that this participant
+   * is an "eligible participant", having first become a participant before the
+   * first plan year beginning after the earlier of the plan's amendment date or
+   * December 31, 1993. Plan-document eligibility is outside this engine's
+   * scope, so the caller asserts the conclusion.
+   */
+  grandfatheredGovernmentalCompensationLimit?: boolean;
   /** Used to surface the statutory 2024+ additional SIMPLE nonelective amount. */
   simpleAdditionalNonelectiveContribution?: Money;
 }
@@ -1090,6 +1105,20 @@ export interface YearParameters {
   annualAdditions415c: Money | null;
   annualAdditionsCompensationFraction: number | null;
   annualCompensation401a17: Money | null;
+  /**
+   * OBRA '93 sec. 13212(d)(3) compensation limit for an eligible participant in
+   * a governmental plan that, as in effect on July 1, 1993, allowed
+   * cost-of-living adjustments to its own compensation limitation. The IRS
+   * publishes it in the same annual notice as the ordinary IRC 401(a)(17)
+   * figure and it is substantially higher, because it continues the pre-OBRA
+   * series the general limit was cut back from.
+   *
+   * `null` before 1998. The IRS first published the figure in Notice 97-58, for
+   * tax year 1998; the notice for 1997 does not mention it at all, so no value
+   * for 1994 through 1997 is recoverable from primary authority and none is
+   * invented here.
+   */
+  annualCompensation401a17GrandfatheredGovernmental: Money | null;
   /**
    * IRC 415(b)(1)(A) dollar limitation on the annual benefit payable by a
    * defined-benefit plan. It is a ceiling on the *benefit*, published in the
@@ -1378,6 +1407,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1462,6 +1492,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1546,6 +1577,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1630,6 +1662,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1714,6 +1747,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1798,6 +1832,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1882,6 +1917,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -1966,6 +2002,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2050,6 +2087,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2134,6 +2172,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2218,6 +2257,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2302,6 +2342,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": null,
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2386,6 +2427,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2492,6 +2534,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2598,6 +2641,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2704,6 +2748,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2810,6 +2855,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2916,6 +2962,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3022,6 +3069,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3128,6 +3176,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3234,6 +3283,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3340,6 +3390,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3446,6 +3497,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3552,6 +3604,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": 265000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3671,6 +3724,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
+      "annualCompensation401a17GrandfatheredGovernmental": 270000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3790,6 +3844,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 30000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "annualCompensation401a17GrandfatheredGovernmental": 275000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3909,6 +3964,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 35000,
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
+      "annualCompensation401a17GrandfatheredGovernmental": 285000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4028,6 +4084,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": 295000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4147,6 +4204,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 40000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
+      "annualCompensation401a17GrandfatheredGovernmental": 300000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4266,6 +4324,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 41000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
+      "annualCompensation401a17GrandfatheredGovernmental": 305000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4385,6 +4444,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 42000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
+      "annualCompensation401a17GrandfatheredGovernmental": 315000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4504,6 +4564,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 44000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
+      "annualCompensation401a17GrandfatheredGovernmental": 325000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4623,6 +4684,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 45000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
+      "annualCompensation401a17GrandfatheredGovernmental": 335000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4742,6 +4804,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 46000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
+      "annualCompensation401a17GrandfatheredGovernmental": 345000,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4861,6 +4924,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4980,6 +5044,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5099,6 +5164,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 49000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
+      "annualCompensation401a17GrandfatheredGovernmental": 360000,
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5218,6 +5284,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 50000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
+      "annualCompensation401a17GrandfatheredGovernmental": 375000,
       "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5337,6 +5404,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 51000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
+      "annualCompensation401a17GrandfatheredGovernmental": 380000,
       "definedBenefitAnnualBenefit415b": 205000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5456,6 +5524,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 52000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
+      "annualCompensation401a17GrandfatheredGovernmental": 385000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5575,6 +5644,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "annualCompensation401a17GrandfatheredGovernmental": 395000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5694,6 +5764,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 53000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
+      "annualCompensation401a17GrandfatheredGovernmental": 395000,
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5813,6 +5884,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 54000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
+      "annualCompensation401a17GrandfatheredGovernmental": 400000,
       "definedBenefitAnnualBenefit415b": 215000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5932,6 +6004,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 55000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
+      "annualCompensation401a17GrandfatheredGovernmental": 405000,
       "definedBenefitAnnualBenefit415b": 220000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6051,6 +6124,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 56000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
+      "annualCompensation401a17GrandfatheredGovernmental": 415000,
       "definedBenefitAnnualBenefit415b": 225000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6170,6 +6244,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 57000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
+      "annualCompensation401a17GrandfatheredGovernmental": 425000,
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6289,6 +6364,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 58000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
+      "annualCompensation401a17GrandfatheredGovernmental": 430000,
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6408,6 +6484,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 61000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
+      "annualCompensation401a17GrandfatheredGovernmental": 450000,
       "definedBenefitAnnualBenefit415b": 245000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6527,6 +6604,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 66000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
+      "annualCompensation401a17GrandfatheredGovernmental": 490000,
       "definedBenefitAnnualBenefit415b": 265000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6646,6 +6724,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 69000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
+      "annualCompensation401a17GrandfatheredGovernmental": 505000,
       "definedBenefitAnnualBenefit415b": 275000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -6765,6 +6844,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 70000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
+      "annualCompensation401a17GrandfatheredGovernmental": 520000,
       "definedBenefitAnnualBenefit415b": 280000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -6884,6 +6964,7 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditions415c": 72000,
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
+      "annualCompensation401a17GrandfatheredGovernmental": 535000,
       "definedBenefitAnnualBenefit415b": 290000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
@@ -9636,6 +9717,10 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
   booleanFlag(rules.simpleEnhancedLimitEligible, `${path}.simpleEnhancedLimitEligible`);
   booleanFlag(rules.isSelfEmployedOwner, `${path}.isSelfEmployedOwner`);
   booleanFlag(rules.grandfatheredSarsep, `${path}.grandfatheredSarsep`);
+  booleanFlag(
+    rules.grandfatheredGovernmentalCompensationLimit,
+    `${path}.grandfatheredGovernmentalCompensationLimit`,
+  );
   requireInputObject(rules.special403bCatchUp, `${path}.special403bCatchUp`);
   requireInputObject(rules.section457SpecialCatchUp, `${path}.section457SpecialCatchUp`);
   requireInputObject(rules.hsa, `${path}.hsa`);
@@ -9961,13 +10046,58 @@ function planCompensation(account: NormalizedAccount, person: NormalizedPerson):
   );
 }
 
+/**
+ * The IRC 401(a)(17) compensation limit this account's participant is actually
+ * subject to.
+ *
+ * OBRA '93 sec. 13212(d)(3) provides that the limit "shall not apply to the
+ * extent that it would reduce the amount of compensation that is allowed to be
+ * taken into account under the plan below the amount which was allowed to be
+ * taken into account under the plan as in effect on July 1, 1993". That is a
+ * floor rather than a separate ceiling, so it is taken as the greater of the
+ * two figures -- which is the published grandfathered amount in every year the
+ * IRS has published one, but says so from the statute rather than from the
+ * accident that the series has never crossed.
+ *
+ * Unpublished post-1993 relief is unknown; allocation is withheld before
+ * this provisional compensation value can become an account ceiling.
+ */
+function grandfatheredGovernmentalLimitDiagnostics(
+  context: CalculationContext,
+  account: NormalizedAccount,
+): Diagnostic[] {
+  if (account.planRules.grandfatheredGovernmentalCompensationLimit !== true) return [];
+  if (context.taxYear < 1994) return [];
+  if (context.parameters.annualCompensation401a17GrandfatheredGovernmental !== null) return [];
+  return [
+    diagnostic(
+      "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
+      DiagnosticSeverity.ERROR,
+      `OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for ${context.taxYear} — the first it published was for tax year 1998, in Notice 97-58. The applicable compensation ceiling is unknown, so contribution capacity is indeterminate rather than calculated using the ordinary limit.`,
+      `accounts.${account.id}.planRules.grandfatheredGovernmentalCompensationLimit`,
+      "OBRA '93 sec. 13212(d)(3)",
+    ),
+  ];
+}
+
+function compensationLimit401a17(
+  context: CalculationContext,
+  account: NormalizedAccount,
+): Money | null {
+  const ordinary = context.parameters.annualCompensation401a17;
+  if (account.planRules.grandfatheredGovernmentalCompensationLimit !== true) return ordinary;
+  const grandfathered = context.parameters.annualCompensation401a17GrandfatheredGovernmental;
+  if (grandfathered === null) return ordinary;
+  return ordinary === null ? grandfathered : Math.max(ordinary, grandfathered);
+}
+
 function recognizedCompensationForEmployerAllocation(
   context: CalculationContext,
   account: NormalizedAccount,
   person: NormalizedPerson,
 ): Money {
   const compensation = planCompensation(account, person);
-  const statutoryLimit = context.parameters.annualCompensation401a17;
+  const statutoryLimit = compensationLimit401a17(context, account);
   return statutoryLimit === null ? compensation : minMoney(compensation, statutoryLimit);
 }
 
@@ -10367,17 +10497,27 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
 
   for (const [groupId, members] of groupAccounts) {
     let recognizedCompensation = 0;
+    let compensationIndeterminate = false;
     let existing = 0;
     for (const account of members) {
       const person = context.persons.get(account.ownerId)!;
-      recognizedCompensation = Math.max(recognizedCompensation, planCompensation(account, person));
+      // Each member is capped by its own plan's limit before the group takes the
+      // greatest, because OBRA '93 sec. 13212(d)(3) lifts the limit for a
+      // participant in a particular plan and the accounts aggregated here need
+      // not all be that plan. Where they share one limit this is the previous
+      // order exactly, min being monotone: max_i min(c_i, L) = min(max_i c_i, L).
+      compensationIndeterminate ||= grandfatheredGovernmentalLimitDiagnostics(context, account).length > 0;
+      const limit = compensationLimit401a17(context, account);
+      const compensation = planCompensation(account, person);
+      recognizedCompensation = Math.max(
+        recognizedCompensation,
+        limit === null ? compensation : Math.min(compensation, limit),
+      );
       existing = roundMoney(existing + annualAdditionsAmount(account.existingContributions));
-    }
-    if (context.parameters.annualCompensation401a17 !== null) {
-      recognizedCompensation = Math.min(recognizedCompensation, context.parameters.annualCompensation401a17);
     }
     let limit: Money | null = null;
     if (
+      !compensationIndeterminate &&
       context.parameters.annualAdditions415c !== null &&
       context.parameters.annualAdditionsCompensationFraction !== null
     ) {
@@ -15168,6 +15308,18 @@ function allocateAccount(context: CalculationContext, account: NormalizedAccount
     return emptyOutcome(account, CalculationStatus.UNAVAILABLE, 0, diagnostics);
   }
 
+  // OBRA relief with an unencoded amount cannot become an ordinary-limit
+  // ceiling. This applies to SIMPLE employer formulas as well as §415(c) plans.
+  if (["qualified_elective", "annual_additions_only", "sep", "simple"].includes(traits.family)) {
+    const diagnostics = grandfatheredGovernmentalLimitDiagnostics(context, account);
+    if (diagnostics.length > 0) {
+      const outcome = emptyOutcome(account, CalculationStatus.INDETERMINATE, null, diagnostics);
+      const group = context.annualAdditionsPools.get(groupIdForAccount(account));
+      if (group) reportPoolWithoutConsuming(group, outcome.sharedLimits);
+      return outcome;
+    }
+  }
+
   switch (traits.family) {
     case "regular_traditional_ira":
       return allocateTraditionalIra(context, account, traits);
@@ -16339,9 +16491,10 @@ function simpleEmployerContribution(
   const diagnostics: Diagnostic[] = [];
   const person = context.persons.get(account.ownerId)!;
   const compensation = planCompensation(account, person);
-  const cappedCompensation = context.parameters.annualCompensation401a17 === null
+  const statutoryLimit = compensationLimit401a17(context, account);
+  const cappedCompensation = statutoryLimit === null
     ? compensation
-    : Math.min(compensation, context.parameters.annualCompensation401a17);
+    : Math.min(compensation, statutoryLimit);
   // SIMPLE IRA matching compensation is exempt from §401(a)(17); a SIMPLE 401(k)
   // is a qualified §401(k)(11) plan whose compensation remains subject to it.
   const matchCompensation = applyCompensationLimitToMatch ? cappedCompensation : compensation;
@@ -16422,6 +16575,7 @@ function allocateQualifiedElective(
       ),
     ]);
   }
+  diagnostics.push(...grandfatheredGovernmentalLimitDiagnostics(context, account));
   if (!annualGroup || annualGroup.limit === null) {
     diagnostics.push(
       diagnostic(
@@ -16763,6 +16917,7 @@ function allocateSep(
   const additional = zeroComponents();
   const person = context.persons.get(account.ownerId)!;
   const group = context.annualAdditionsPools.get(groupIdForAccount(account));
+  diagnostics.push(...grandfatheredGovernmentalLimitDiagnostics(context, account));
   if (!group || group.limit === null) {
     diagnostics.push(
       diagnostic(
@@ -16843,6 +16998,7 @@ function allocateAnnualAdditionsOnly(
   const annual = cloneComponentsFromComponents(account.existingContributions);
   const additional = zeroComponents();
   const group = context.annualAdditionsPools.get(groupIdForAccount(account));
+  diagnostics.push(...grandfatheredGovernmentalLimitDiagnostics(context, account));
   if (!group || group.limit === null) {
     diagnostics.push(
       diagnostic(
@@ -18445,6 +18601,11 @@ export class AccountBuilder {
   /** A lower dependent care maximum the employer's plan itself allows. */
   public dependentCarePlanDocumentLimit(limit: Money): this {
     ((this.value.planRules ??= {}).dependentCareFsa ??= {}).planDocumentLimit = limit;
+    return this;
+  }
+
+  public grandfatheredGovernmentalCompensationLimit(applies = true): this {
+    (this.value.planRules ??= {}).grandfatheredGovernmentalCompensationLimit = applies;
     return this;
   }
 
