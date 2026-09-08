@@ -25328,6 +25328,161 @@
         "accounts.1.contributionComponents.employeePreTaxDeferral": 24500,
         "accounts.1.contributionComponents.special457CatchUp": 8000
       }
+    },
+    {
+      "name": "2026 existing deferrals across one plan's records above its own IRC 457(b)(2) ceiling are rejected",
+      "description": "IRC 457(b)(2) and 26 CFR 1.457-4(c)(1)(i) cap the annual deferral \"under the plan\" at the lesser of the IRC 457(e)(15) amount and 100 percent of IRC 457(e)(5) includible compensation. The ceiling is the plan's, so records that are each inside it alone can still put the plan above it, and the account-level excess test cannot see that because it measures one record against one maximum. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000 and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. Includible compensation is $1,000, so the plan's ceiling is min($24,500, $1,000) = $1,000. Its host record holds $600 of pre-tax deferral and its emergency savings record $600 of Roth deferral: $1,200 under one plan whose ceiling is $1,000, and $200 more than IRC 457(b)(2) allows. The same $1,200 supplied on a single record is reported as a $200 excess, so the plan-level test is what keeps the answer the same however the caller splits it. Both records are indeterminate with SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING and their supplied components are preserved, because which record to reduce is the caller's decision.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "host",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 1000,
+              "section457PlanGroupId": "plan-w"
+            },
+            "existingContributions": {
+              "employeePreTaxDeferral": 600
+            }
+          },
+          {
+            "id": "savings",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "section457PlanGroupId": "plan-w",
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            },
+            "existingContributions": {
+              "employeeRothDeferral": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 600,
+        "accounts.0.diagnostics.0.code": "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeeRothDeferral": 600,
+        "accounts.1.diagnostics.1.code": "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING"
+      }
+    },
+    {
+      "name": "2026 one plan's includible compensation cannot be deferred twice by two of its records",
+      "description": "IRC 457(e)(5) defines includible compensation as compensation from the employer includible in gross income, so it is one amount for one plan and a salary reduction cannot exceed the salary there is to reduce. That bound has to be shared by a plan's records, and for the IRC 457(b)(3) catch-up it is the only bound there is: IRC 457(b)(3) provides that the paragraph (2) ceiling \"shall be\" the lesser of twice the dollar amount and the sum of the current ceiling and prior years' unused limitation, replacing the 100-percent-of-compensation term rather than reapplying it. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000 and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. Includible compensation is $1,000, so the plan's basic ceiling is min($24,500, $1,000) = $1,000; the plan supplies U = $5,000, so 26 CFR 1.457-4(c)(3)(i) gives it min(2 x $24,500 - $1,000, $5,000) = $5,000 above that. The host record defers the whole $1,000 of compensation as its basic annual deferral. Nothing is left for the emergency savings record to reduce, so it allocates nothing even though the plan's IRC 457(b)(3) ceiling and its own $2,600 IRC 402A(e)(3)(A) room are both untouched; the part of the ceiling compensation cannot fund is reported as SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_DEFERRABLE_COMPENSATION rather than allocated.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 1000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "host",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 1000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            }
+          },
+          {
+            "id": "savings",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "section457PlanGroupId": "plan-w",
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 1000,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.1.status": "determinate",
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 0,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0
+      }
+    },
+    {
+      "name": "2026 one IRC 457 plan cannot name two sponsoring employers",
+      "description": "IRC 414(v)(7)(A) applies its Roth requirement where the participant's wages \"for the preceding calendar year from the employer sponsoring the plan\" exceed the threshold, which Notice 2025-67 states as $150,000 for catch-up year 2026. A plan has one sponsor, so a group whose records name two employers does not describe two wage tests — it describes no plan. Left unchecked the caller could select the answer per record: here one record names an employer paying $200,000 and the other an employer paying nothing, and the second would take pre-tax the catch-up paragraph (7)(A) requires the first to make as a designated Roth contribution. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000 and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. employerId therefore joins the plan-level invariants, and both records are indeterminate with SECTION_457_PLAN_GROUP_FACTS_CONFLICT. An absent employerId is not a disagreement — an account without one is already asked for it wherever the wage test can decide something. The basic annual limitation is unaffected, so the first record still takes min($24,500, $400,000) = $24,500.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1971,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "rich": 200000,
+              "poor": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "rich",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w"
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "poor",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 0,
+        "accounts.1.diagnostics.0.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT"
+      }
     }
   ]
 }

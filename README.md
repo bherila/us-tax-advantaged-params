@@ -1416,7 +1416,8 @@ answer.
 | Age-based catch-up on a plan that cannot host one | `SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN` (error). §414(v)(6)(A)(ii) makes only an eligible **governmental** §457(b) plan an applicable employer plan |
 | Special catch-up on a plan providing none | `SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN` (error). §1.457-5(c) counts it only as a result of plan provisions permitted under §1.457-4(c)(3) |
 | Special catch-up above that plan's own amount | `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT` (error), even where the participant is entitled to more elsewhere. Measured on the plan, so two records of one plan each within their own share still trip it together |
-| Records of one plan disagreeing about that plan | `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` (error) on every record in the group. The provision, includible compensation, and governmental status must all agree |
+| Records of one plan disagreeing about that plan | `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` (error) on every record in the group. The provision, includible compensation, governmental status, and sponsoring employer must all agree |
+| Ordinary deferrals across a plan's records above that plan's own ceiling | `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING` (error). §1.457-4(c)(1)(i) caps the deferral "under the plan", so records each inside it alone can still put the plan above it |
 | Another of the participant's plans described inconsistently | `SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS` (error). §1.457-5(a) selects the method once across all eligible plans, so the contradiction is not local to the plan that carries it |
 
 ### One eligible plan, several records
@@ -1461,13 +1462,24 @@ Within a group:
   amount and 100% of the plan's includible compensation) and §1.457-4(c)(3)(i)'s
   special-catch-up ceiling. A plan whose compensation caps it at $1,000 does not
   host $1,000 per record, and where the participant's largest catch-up comes from
-  another plan, this plan's records may still take no more than this plan provides;
+  another plan, this plan's records may still take no more than this plan provides.
+  Existing amounts are measured the same way, so records each inside the ceiling
+  alone still raise `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING` together;
+- the plan's **§457(e)(5) includible compensation** is one salary, shared. A dollar
+  the host record has deferred is not available to the PLESA record. This is the
+  only bound on a §457(b)(3) catch-up — that provision *replaces* the paragraph (2)
+  ceiling rather than reapplying its 100%-of-compensation term — so without it two
+  records of one plan could reduce the same salary twice;
 - records that describe the plan inconsistently raise
   `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` on each of them and allocate no catch-up
   under either method. Three things must agree, because a group asserts one plan:
-  `section457SpecialCatchUp`, `includibleCompensation457`, and whether the plan is
-  an eligible **governmental** plan — settled by the account types, and decisive
-  under §414(v)(6)(A)(ii) for whether the age 50 method exists at all;
+  `section457SpecialCatchUp`, `includibleCompensation457`, whether the plan is an
+  eligible **governmental** plan (settled by the account types, and decisive under
+  §414(v)(6)(A)(ii) for whether the age 50 method exists at all), and the
+  sponsoring `employerId`, which §414(v)(7)(A) reads the prior-year wage figure
+  from. An *absent* `employerId` is not a disagreement. `planDocumentEmployeeDeferralLimit`
+  and the Roth/preference flags are deliberately not invariants — they mean
+  different things per record, and neither can enlarge an allocation;
 - a contradiction reaches the participant's **other** §457 accounts too. §1.457-5(a)
   selects the method once across all eligible plans, so an unrelated plan whose
   catch-up would differ according to which contradictory record is right is

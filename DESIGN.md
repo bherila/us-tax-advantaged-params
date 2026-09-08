@@ -73,6 +73,7 @@ Monetary outputs are rounded to cents, and allocation is deterministic.
 | 457(b) special catch-up | Owner | Last-three-years special catch-up |
 | 457(b)(2) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(1)(i) ceiling of one eligible plan — the lesser of the §457(e)(15) amount and 100% of that plan's includible compensation |
 | 457(b)(3) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(3)(i) ceiling of one eligible plan, bounding what its records absorb between them |
+| 457(e)(5) includible compensation | Owner and §457 plan group | The salary a plan's records have between them to reduce — the only bound on a §457(b)(3) catch-up, which replaces the paragraph (2) 100% term rather than reapplying it |
 
 Plans of the same controlled employer should use the same `annualAdditionsGroupId`. Unrelated employers should normally use different IDs.
 
@@ -88,12 +89,19 @@ a §402A(f)(1)(C) pension-linked emergency savings account and its host — so t
 of its ceilings bind those records together rather than each. Absent the key each account
 is its own eligible plan.
 
-A group asserts one plan, so three things must agree across its records: the §457(b)(3)
-provision, includible compensation, and whether it is an eligible governmental plan (which
-the account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50
-method). Records that disagree are diagnosed rather than reconciled. Because §1.457-5(a)
-selects the method once for the participant across all plans, a contradiction in one plan
-also leaves the participant's *other* §457 accounts without a settled catch-up.
+A group asserts one plan, so four things must agree across its records: the §457(b)(3)
+provision, includible compensation, whether it is an eligible governmental plan (which the
+account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50 method),
+and the sponsoring `employerId` (which §414(v)(7)(A) reads the wage figure from). Records
+that disagree are diagnosed rather than reconciled. Because §1.457-5(a) selects the method
+once for the participant across all plans, a contradiction in one plan also leaves the
+participant's *other* §457 accounts without a settled catch-up.
+
+Two things are deliberately **not** group invariants. `planDocumentEmployeeDeferralLimit`
+carries the sponsor's §402A(e)(3)(A)(ii) amount on a PLESA record and a plan-document
+deferral limit elsewhere, so its meaning is per-record; and a lower value can only reduce
+an allocation, never enlarge one. The Roth and contribution-preference flags likewise
+differ legitimately, since one plan may hold both a pre-tax and a designated Roth account.
 
 ## 6. Section 401(a)(17) recognized compensation
 

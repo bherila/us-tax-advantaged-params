@@ -9448,6 +9448,41 @@ final class Engine
                 'IRC 414(v)(6)(A)(ii)',
             );
         }
+        // The IRC 457(b)(2) counterpart of the IRC 457(b)(3) test below, and needed
+        // for the same reason: 26 CFR 1.457-4(c)(1)(i) caps the annual deferral
+        // "under the plan", so records that are each within the ceiling alone can
+        // still put the plan above it. The generic account-level excess test cannot
+        // see that -- it measures one record against one maximum -- which is why an
+        // amount it reports as a $200 excess when supplied on one record went
+        // unreported when split across two records of the same plan.
+        $accountExistingRegularDeferrals = self::roundMoney(
+            self::baseDeferrals($account['existingContributions'])
+            + $account['existingContributions']['employeeAfterTax']
+            + $account['existingContributions']['employerPreTax']
+            + $account['existingContributions']['employerRoth'],
+        );
+        if (
+            count($facts['memberIds']) > 1
+            && $accountExistingRegularDeferrals > 0.0
+            && $facts['existingRegularDeferrals'] > $ceilings['basicPlanCeiling']
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($facts['existingRegularDeferrals'])
+                    . ' of ordinary annual deferral under this eligible plan (across records '
+                    . implode(', ', $facts['memberIds'])
+                    . '), above the $'
+                    . self::localeNumber($ceilings['basicPlanCeiling'])
+                    . ' ceiling 26 CFR 1.457-4(c)(1)(i) sets for the plan, which is the lesser of the'
+                    . ' IRC 457(e)(15) amount and 100 percent of the participant\'s IRC 457(e)(5)'
+                    . ' includible compensation. No single record exceeds it, but the ceiling is the'
+                    . " plan's and these records are one plan.",
+                "accounts.{$account['id']}.existingContributions",
+                'IRC 457(b)(2); 26 CFR 1.457-4(c)(1)(i)',
+            );
+        }
         $planProvidesSpecialCatchUp = is_array($facts['special'])
             && !empty($facts['special']['eligible']);
         if ($accountExistingSpecialCatchUp > 0.0 && !$planProvidesSpecialCatchUp) {
@@ -9510,6 +9545,7 @@ final class Engine
         array $basePool,
         array $catchUpPool,
         ?array $planSpecialPool,
+        ?array $planCompensationPool,
     ): float {
         if (!isset($resolution['eligibleAccountIds'][$account['id']])) {
             return 0.0;
@@ -9538,14 +9574,19 @@ final class Engine
             $effectivePlesaCap,
         );
         $plesaRoomAfterBase = self::nonnegative($effectivePlesaCap - $baseCapacity);
-        $compensationBeforeBase = self::nonnegative(
-            $ceilings['includibleCompensation']
-                - self::baseDeferrals($existing)
-                - self::ageCatchUps($existing)
-                - $existing['special457CatchUp']
-                - $existing['special457RothCatchUp']
-                - $existing['employerPreTax']
-                - $existing['employerRoth'],
+        // The plan's compensation, not the record's: another record of this plan
+        // may already have deferred it.
+        $compensationBeforeBase = self::minMoney(
+            self::nonnegative(
+                $ceilings['includibleCompensation']
+                    - self::baseDeferrals($existing)
+                    - self::ageCatchUps($existing)
+                    - $existing['special457CatchUp']
+                    - $existing['special457RothCatchUp']
+                    - $existing['employerPreTax']
+                    - $existing['employerRoth'],
+            ),
+            $planCompensationPool === null ? null : self::poolRemaining($planCompensationPool),
         );
         $compensationAfterBase = self::nonnegative($compensationBeforeBase - $baseCapacity);
         // 26 CFR 1.457-4(c)(3)(i) sets its ceiling for the *plan*, so the
@@ -10787,6 +10828,10 @@ final class Engine
             // plan's: the owner-level base pool is the IRC 457(e)(15) dollar amount
             // 1.457-5(b) aggregates, this is the 100-percent-of-compensation half.
             'section457PlanBasePools' => [],
+            // IRC 457(e)(5) includible compensation is the resource every ceiling is
+            // drawn from, and one plan's compensation is one amount however many
+            // records describe it.
+            'section457PlanCompensationPools' => [],
             'section457PlanSpecialCatchUpPools' => [],
             // Which eligible plan each IRC 457 account belongs to, and its facts.
             'section457PlanFacts' => [],
@@ -11177,12 +11222,38 @@ final class Engine
                     . ' which the account types settle';
             }
 
+            // One plan has one sponsoring employer, and IRC 414(v)(7)(A) tests the
+            // participant's prior-year FICA wages from the employer sponsoring the
+            // plan. Left unchecked, one record could name a high-wage employer and
+            // another a zero-wage one, and the second would take pre-tax the
+            // catch-up paragraph (7)(A) requires the first to make as a designated
+            // Roth contribution. Absence is not a disagreement: an account with no
+            // employerId is already asked for one wherever that test can decide
+            // something.
+            $employers = [];
+            foreach ($members as $account) {
+                if (($account['employerId'] ?? null) !== null) {
+                    $employers[$account['employerId']] = true;
+                }
+            }
+            if (count($employers) > 1) {
+                $conflictingFields[] = 'employerId';
+            }
+
             $existingSpecialCatchUp = 0.0;
             foreach ($members as $account) {
                 $existingSpecialCatchUp += $account['existingContributions']['special457CatchUp']
                     + $account['existingContributions']['special457RothCatchUp'];
             }
             $existingSpecialCatchUp = self::roundMoney($existingSpecialCatchUp);
+            $existingRegularDeferrals = 0.0;
+            foreach ($members as $account) {
+                $existingRegularDeferrals += self::baseDeferrals($account['existingContributions'])
+                    + $account['existingContributions']['employeeAfterTax']
+                    + $account['existingContributions']['employerPreTax']
+                    + $account['existingContributions']['employerRoth'];
+            }
+            $existingRegularDeferrals = self::roundMoney($existingRegularDeferrals);
             $resolvedCompensation = array_values($candidates)[0];
             $resolvedSpecial = $statements === [] ? null : $statements[0];
 
@@ -11194,6 +11265,7 @@ final class Engine
                         'includibleCompensation' => $resolvedCompensation,
                         'special' => $resolvedSpecial,
                         'existingSpecialCatchUp' => $existingSpecialCatchUp,
+                        'existingRegularDeferrals' => $existingRegularDeferrals,
                         'conflictingFields' => $conflictingFields,
                     ]
                     : [
@@ -11206,6 +11278,12 @@ final class Engine
                         'existingSpecialCatchUp' => self::roundMoney(
                             $account['existingContributions']['special457CatchUp']
                                 + $account['existingContributions']['special457RothCatchUp'],
+                        ),
+                        'existingRegularDeferrals' => self::roundMoney(
+                            self::baseDeferrals($account['existingContributions'])
+                                + $account['existingContributions']['employeeAfterTax']
+                                + $account['existingContributions']['employerPreTax']
+                                + $account['existingContributions']['employerRoth'],
                         ),
                         'conflictingFields' => $conflictingFields,
                     ];
@@ -11466,6 +11544,16 @@ final class Engine
                     'limit' => max(
                         $context['section457PlanBasePools'][$key]['limit'] ?? 0.0,
                         $ceilings[$account['id']]['basicPlanCeiling'],
+                    ),
+                    'usage' => self::settled(0.0),
+                ];
+                $context['section457PlanCompensationPools'][$key] = [
+                    'id' => "457b-plan-compensation:{$key}",
+                    'legalLimit' => 'IRC 457(e)(5) includible compensation available to be deferred'
+                        . ' under the plan',
+                    'limit' => max(
+                        $context['section457PlanCompensationPools'][$key]['limit'] ?? 0.0,
+                        $ceilings[$account['id']]['includibleCompensation'],
                     ),
                     'usage' => self::settled(0.0),
                 ];
@@ -11781,6 +11869,23 @@ final class Engine
             // did when the ceiling was a subtraction rather than a pool.
             if ($planKey !== null && isset($context['section457PlanBasePools'][$planKey])) {
                 self::chargePool($context['section457PlanBasePools'][$planKey], (float) $base);
+            }
+            // Seeded with exactly what allocateSection457 subtracts from includible
+            // compensation, so a plan of one record has the same room in the pool
+            // that it had in the local subtraction. Employee after-tax amounts are
+            // outside both.
+            if ($planKey !== null && isset($context['section457PlanCompensationPools'][$planKey])) {
+                self::chargePool(
+                    $context['section457PlanCompensationPools'][$planKey],
+                    self::roundMoney(
+                        self::baseDeferrals($components)
+                        + self::ageCatchUps($components)
+                        + $components['special457CatchUp']
+                        + $components['special457RothCatchUp']
+                        + $components['employerPreTax']
+                        + $components['employerRoth'],
+                    ),
+                );
             }
         }
     }
@@ -19632,6 +19737,7 @@ final class Engine
         $facts = $context['section457PlanFacts'][$account['id']];
         $planPoolKey = $facts['key'];
         $hasPlanBasePool = isset($context['section457PlanBasePools'][$planPoolKey]);
+        $hasPlanCompensationPool = isset($context['section457PlanCompensationPools'][$planPoolKey]);
         $hasPlanSpecialPool = isset($context['section457PlanSpecialCatchUpPools'][$planPoolKey]);
         $ceilings = self::section457PlanCeilings(
             $context['parameters'],
@@ -19704,6 +19810,9 @@ final class Engine
                     $context[$catchUpPoolCategory][$ownerId],
                     $hasPlanSpecialPool
                         ? $context['section457PlanSpecialCatchUpPools'][$planPoolKey]
+                        : null,
+                    $hasPlanCompensationPool
+                        ? $context['section457PlanCompensationPools'][$planPoolKey]
                         : null,
                 ) > 0.0
             ) {
@@ -19847,6 +19956,9 @@ final class Engine
             if ($hasPlanBasePool) {
                 self::chargePool($context['section457PlanBasePools'][$planPoolKey], $employerAdded);
             }
+            if ($hasPlanCompensationPool) {
+                self::chargePool($context['section457PlanCompensationPools'][$planPoolKey], $employerAdded);
+            }
             self::addEmployerContribution($account, $traits, $annual, $additional, $employerAdded);
         }
         $regularBeforeEmployee = self::roundMoney(
@@ -19870,6 +19982,9 @@ final class Engine
         if ($hasPlanBasePool) {
             self::chargePool($context['section457PlanBasePools'][$planPoolKey], $regularAdded);
         }
+        if ($hasPlanCompensationPool) {
+            self::chargePool($context['section457PlanCompensationPools'][$planPoolKey], $regularAdded);
+        }
         if (self::accountUsesRothEmployeeContributions($account, $traits)) {
             $additional['employeeRothDeferral'] = $regularAdded;
             $annual['employeeRothDeferral'] = self::roundMoney($annual['employeeRothDeferral'] + $regularAdded);
@@ -19877,14 +19992,28 @@ final class Engine
             $additional['employeePreTaxDeferral'] = $regularAdded;
             $annual['employeePreTaxDeferral'] = self::roundMoney($annual['employeePreTaxDeferral'] + $regularAdded);
         }
-        $compensationRemaining = self::nonnegative(
-            $includibleCompensation
-            - self::baseDeferrals($annual)
-            - self::ageCatchUps($annual)
-            - $annual['special457CatchUp']
-            - $annual['special457RothCatchUp']
-            - $annual['employerPreTax']
-            - $annual['employerRoth'],
+        // IRC 457(e)(5) includible compensation is the participant's compensation
+        // from the employer under this plan, so it is one amount for the plan rather
+        // than one per record, and a dollar this plan's host record has already
+        // deferred is not available to its emergency savings record. IRC 457(b)(3)
+        // makes that bound the operative one for a catch-up: it replaces the
+        // paragraph (2) ceiling rather than reapplying its 100-percent-of-
+        // compensation term, so nothing else stops two records of one plan reducing
+        // the same salary twice. For a plan of one record the pool holds exactly the
+        // subtraction beside it.
+        $compensationRemaining = self::minMoney(
+            self::nonnegative(
+                $includibleCompensation
+                - self::baseDeferrals($annual)
+                - self::ageCatchUps($annual)
+                - $annual['special457CatchUp']
+                - $annual['special457RothCatchUp']
+                - $annual['employerPreTax']
+                - $annual['employerRoth'],
+            ),
+            $hasPlanCompensationPool
+                ? self::poolRemaining($context['section457PlanCompensationPools'][$planPoolKey])
+                : null,
         );
         // IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the participant the greater
         // of the two catch-up methods for the year, never their sum, and 1.457-5(a)
@@ -20053,6 +20182,41 @@ final class Engine
                     . ' limitation it was actually made under.',
                 "accounts.{$account['id']}.existingContributions",
                 'IRC 414(v)(6)(A)(ii)',
+            );
+        }
+        // The IRC 457(b)(2) counterpart of the IRC 457(b)(3) test below, and needed
+        // for the same reason: 26 CFR 1.457-4(c)(1)(i) caps the annual deferral
+        // "under the plan", so records that are each within the ceiling alone can
+        // still put the plan above it. The generic account-level excess test cannot
+        // see that -- it measures one record against one maximum -- which is why an
+        // amount it reports as a $200 excess when supplied on one record went
+        // unreported when split across two records of the same plan.
+        $accountExistingRegularDeferrals = self::roundMoney(
+            self::baseDeferrals($account['existingContributions'])
+            + $account['existingContributions']['employeeAfterTax']
+            + $account['existingContributions']['employerPreTax']
+            + $account['existingContributions']['employerRoth'],
+        );
+        if (
+            count($facts['memberIds']) > 1
+            && $accountExistingRegularDeferrals > 0.0
+            && $facts['existingRegularDeferrals'] > $ceilings['basicPlanCeiling']
+        ) {
+            $diagnostics[] = self::diagnostic(
+                'SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING',
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $'
+                    . self::localeNumber($facts['existingRegularDeferrals'])
+                    . ' of ordinary annual deferral under this eligible plan (across records '
+                    . implode(', ', $facts['memberIds'])
+                    . '), above the $'
+                    . self::localeNumber($ceilings['basicPlanCeiling'])
+                    . ' ceiling 26 CFR 1.457-4(c)(1)(i) sets for the plan, which is the lesser of the'
+                    . ' IRC 457(e)(15) amount and 100 percent of the participant\'s IRC 457(e)(5)'
+                    . ' includible compensation. No single record exceeds it, but the ceiling is the'
+                    . " plan's and these records are one plan.",
+                "accounts.{$account['id']}.existingContributions",
+                'IRC 457(b)(2); 26 CFR 1.457-4(c)(1)(i)',
             );
         }
         $planProvidesSpecialCatchUp = is_array($facts['special'])
@@ -20255,6 +20419,9 @@ final class Engine
             if ($hasPlanSpecialPool) {
                 self::chargePool($context['section457PlanSpecialCatchUpPools'][$planPoolKey], $specialAdded);
             }
+            if ($hasPlanCompensationPool) {
+                self::chargePool($context['section457PlanCompensationPools'][$planPoolKey], $specialAdded);
+            }
             $compensationRemaining = self::nonnegative($compensationRemaining - $specialAdded);
             if ($resolution['ageAmount'] > 0.0) {
                 $diagnostics[] = self::diagnostic(
@@ -20285,6 +20452,9 @@ final class Engine
                 } else {
                     $additional['employeePreTaxCatchUp'] = $ageAdded;
                     $annual['employeePreTaxCatchUp'] = self::roundMoney($annual['employeePreTaxCatchUp'] + $ageAdded);
+                }
+                if ($hasPlanCompensationPool) {
+                    self::chargePool($context['section457PlanCompensationPools'][$planPoolKey], $ageAdded);
                 }
                 $compensationRemaining = self::nonnegative($compensationRemaining - $ageAdded);
             }

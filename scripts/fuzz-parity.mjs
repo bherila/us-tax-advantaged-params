@@ -704,6 +704,10 @@ function randomScenario() {
       // rather than joining them in a group named for it.
       plesaRules.section457PlanGroupId = chance(0.85) ? shared : pick(["s1", "s2", "s3", null]);
       if (chance(0.25)) plesaRules.includibleCompensation457 = pick([0, 1000, 24500, 60000, money()]);
+      // A compensation-bounded plan ceiling, which is the shape where the plan's
+      // IRC 457(b)(2) ceiling and its includible compensation bind its records
+      // together rather than each of them separately.
+      if (chance(0.3)) hostRules.includibleCompensation457 = pick([0, 500, 1000, 2600, 5000]);
     }
     // Sometimes the emergency savings account stands alone, with no host
     // account sharing the participant's base pool. That is the shape where the
@@ -713,9 +717,13 @@ function randomScenario() {
     // never occurred: the host always either spent the base pool, leaving the
     // account-local room intact, or was reached second.
     const isolatedPlesa = chance(0.2);
+    // A second employer id on the emergency savings record: one plan has one
+    // sponsor, and IRC 414(v)(7)(A) reads the wage figure from it, so a group
+    // naming two is a contradiction rather than a second wage test.
+    const plesaEmployerId = chance(0.15) ? pick(["other", employerId, "0"]) : employerId;
     const pair = [
       { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
-      { id: "p1", ownerId: owner.id, type: plesaType, employerId, planRules: plesaRules },
+      { id: "p1", ownerId: owner.id, type: plesaType, employerId: plesaEmployerId, planRules: plesaRules },
     ];
     if (chance(0.3)) pair[1].existingContributions = randomExisting();
     if (exhaustHost) {
@@ -730,7 +738,14 @@ function randomScenario() {
       if (chance(0.4)) account.priority = integer(1, 200);
       accounts.splice(integer(0, accounts.length), 0, account);
     });
-    if (chance(0.3)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+    if (chance(0.3)) {
+      owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+      // The second sponsor's figure too, so the wage test has something to read
+      // on both readings of a contradictory pair.
+      if (plesaEmployerId !== employerId && chance(0.6)) {
+        owner.priorYearFicaWagesByEmployer[plesaEmployerId] = pick([0, 200000, money()]);
+      }
+    }
   }
 
   // A second targeted shape: two ordinary IRC 457(b) accounts for one
