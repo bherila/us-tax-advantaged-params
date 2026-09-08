@@ -847,6 +847,13 @@ test('nonempty unusable person HSA statements never assert no coverage', static 
             $input = $vector['input'];
             $input['persons'][1]['hsaCoverage'] = $coverage;
             $row = accountResult(U::calculate($input), 't-hsa');
+            if (isset($coverage['eligibleMonths'])) {
+                // Q&A-31: eleven family months whole, one equally divided.
+                // 8750 - (8750 / 12 / 2) = 8385.42, not the sole-spouse 8750.
+                assertSameValue(8385.42, $row['statutoryMaximumAnnualContribution']);
+                assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE'));
+                continue;
+            }
             assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
             assertSameValue(CalculationStatus::INDETERMINATE->value, $row['status']);
             assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));

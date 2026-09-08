@@ -8378,7 +8378,7 @@
     },
     {
       "name": "2026 a spouse's self-only-versus-no-coverage disagreement leaves the household ceiling indeterminate, all-year account first",
-      "description": "The IRC 223(b)(5) household ceiling is the divided family limitation *plus* each spouse's undivided self-only months, so a disagreement that never touches family coverage can still change it. Both of this spouse's statements agree they have family coverage in no month, so whether IRC 223(b)(5)(A) applies to the taxpayer is settled; they disagree about whether the spouse held self-only coverage in January through November, and IRC 223(b)(1) sums twelve monthly limitations, so those eleven months are worth 11/12 of the 2026 self-only amount under one statement and nothing under the other. The ceiling the couple share is therefore not one number, and every account drawing on it is indeterminate with a null IRC 223(b)(5) pool. Answering from whichever statement the accounts array happened to carry first is what an ordering pair exists to catch. This vector lists the all-year statement first; its companion lists the December-only one first, and both must produce identical output.\n\nThe `hsa` detail is withheld rather than reported with a null ceiling inside it: the disagreement is about which months exist, which is the schedule every figure in that object describes.",
+      "description": "Notice 2008-52 Example 14 compares the combined candidates before dividing. In both complete spouse schedules, December is self-only beside the taxpayer family plan, so IRC §223(b)(5)(A) recharacterizes both December tiers to family and the full-year candidate is 8750. It exceeds either monthly candidate and statutory equal division gives the taxpayer 4375. The ordinary December-only taxpayer share is 8750 / 12 / 2 = 364.5833, hence last-month-rule attributable capacity is 4375 - 364.5833 = 4010.42. The former fixture refused from unresolved monthly projections; whole schedules prove the reported allocation and candidate state invariant. The spouse still has conflicting own statements and remains indeterminate. Account ordering cannot change this reasoning.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -8438,19 +8438,20 @@
       },
       "expect": {
         "accounts.0.accountId": "t-hsa",
-        "accounts.0.status": "indeterminate",
-        "accounts.0.statutoryMaximumAnnualContribution": null,
-        "totals.hsaContribution": 0,
-        "accounts.0.hsa": null
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4010.42,
+        "totals.hsaContribution": 4375,
+        "accounts.1.status": "indeterminate"
       },
       "expectDiagnosticCodes": [
-        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE",
         "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
       ]
     },
     {
       "name": "2026 the same self-only-versus-no-coverage disagreement gives the same answer with the December-only account first",
-      "description": "The IRC 223(b)(5) household ceiling is the divided family limitation *plus* each spouse's undivided self-only months, so a disagreement that never touches family coverage can still change it. Both of this spouse's statements agree they have family coverage in no month, so whether IRC 223(b)(5)(A) applies to the taxpayer is settled; they disagree about whether the spouse held self-only coverage in January through November, and IRC 223(b)(1) sums twelve monthly limitations, so those eleven months are worth 11/12 of the 2026 self-only amount under one statement and nothing under the other. The ceiling the couple share is therefore not one number, and every account drawing on it is indeterminate with a null IRC 223(b)(5) pool. Answering from whichever statement the accounts array happened to carry first is what an ordering pair exists to catch. This vector lists the December-only statement first; its companion lists the all-year one first. The pair pins permutation invariance, which no single vector can state, and the differing element is array position rather than priority because coverage facts are read in input order.\n\nThe withheld `hsa` detail is the point of the pair. Reversing the two accounts changes which statement is merged first, so any figure computed from it would change with the input order; withholding the object is what makes the two orderings identical.",
+      "description": "Notice 2008-52 Example 14 compares the combined candidates before dividing. In both complete spouse schedules, December is self-only beside the taxpayer family plan, so IRC §223(b)(5)(A) recharacterizes both December tiers to family and the full-year candidate is 8750. It exceeds either monthly candidate and statutory equal division gives the taxpayer 4375. The ordinary December-only taxpayer share is 8750 / 12 / 2 = 364.5833, hence last-month-rule attributable capacity is 4375 - 364.5833 = 4010.42. The former fixture refused from unresolved monthly projections; whole schedules prove the reported allocation and candidate state invariant. The spouse still has conflicting own statements and remains indeterminate. Account ordering cannot change this reasoning.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -8510,19 +8511,20 @@
       },
       "expect": {
         "accounts.0.accountId": "t-hsa",
-        "accounts.0.status": "indeterminate",
-        "accounts.0.statutoryMaximumAnnualContribution": null,
-        "totals.hsaContribution": 0,
-        "accounts.0.hsa": null
+        "accounts.0.statutoryMaximumAnnualContribution": 4375,
+        "accounts.0.hsa.fullContributionCandidateSelected": true,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 4010.42,
+        "totals.hsaContribution": 4375,
+        "accounts.1.status": "indeterminate"
       },
       "expectDiagnosticCodes": [
-        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE",
         "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
       ]
     },
     {
       "name": "2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year",
-      "description": "The other half of the deductible narrowing. For 2004 through 2006 IRC 223(b)(2) capped each month's limitation at one twelfth of the lesser of the plan's annual deductible and the statutory dollar amount, and that cap applies to a self-only month as much as to a family one. The IRC 223(b)(5) household ceiling adds each spouse's undivided self-only months to the divided family limitation, so this spouse's self-only months are worth a different amount under a 2000 deductible than under a 3000 one and the ceiling is not one number. This is the case an earlier narrowing missed by requiring the conflicted person to have a family month: IRC 223(b)(5)(A) reaches the lowest deductible only where the spouses each have family coverage under different plans, which is why a self-only deductible never competes there -- but it is not the only way a deductible reaches the ceiling.\n\nThe `hsa` detail is withheld for the same reason as in the family-plan case above: in a capped year the contradicted deductible prices the months both candidates are built from, so no candidate is established to report.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. Notice 2004-50 Q&A-31 applies the lowest-family-deductible comparison only to competing family plans. The taxpayer actually holds family coverage with deductible 5000, while both complete spouse statements say self-only coverage. The spouse's 2000 or 3000 self-only deductible therefore does not compete: IRC §223(b)(5)(A) recharacterizes the spouse to the taxpayer's family limitation of min(5250,5000)=5000. Both are eligible all year, so equal division gives 2500 to the taxpayer in either completion; no last-month rule exists before 2007. The old fixture incorrectly treated the unresolved self-only deductible as a changing family ceiling. The spouse's own contradictory statements remain refused.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -8578,14 +8580,15 @@
         ]
       },
       "expect": {
-        "accounts.0.accountId": "t-hsa",
-        "accounts.0.status": "indeterminate",
-        "accounts.0.statutoryMaximumAnnualContribution": null,
-        "totals.hsaContribution": 0,
-        "accounts.0.hsa": null
+        "accounts.0.statutoryMaximumAnnualContribution": 2500,
+        "accounts.0.hsa.proratedContributionLimit": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 2500
       },
       "expectDiagnosticCodes": [
-        "HSA_SHARED_FAMILY_LIMIT_INDETERMINATE",
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE",
         "HSA_CONFLICTING_COVERAGE_FACTS_FOR_OWNER"
       ]
     },
@@ -22535,6 +22538,2069 @@
       },
       "expectDiagnosticCodes": [
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 a winning monthly candidate survives every coherent January spouse statement",
+      "description": "Rev. Proc. 2025-19 sets family 8750 and self-only 4400. Taxpayer family January-November and self-only December gives (11×8750+4400)/12=8387.50 under IRC §223(b)(1). The spouse statements are each one complete January-only schedule, family or self-only. The full-contribution candidate is at most (8750+11×4400)/12=4762.50; the couple comparison therefore retains the monthly candidate on either reading. An agreed taxpayer share 1 leaves 8387.50; candidateSelected is false and attributable/testing amounts are 0/null. The conflicted spouse is still refused. No monthly combination outside the two supplied schedules is synthesized.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8387.5,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 a winning monthly candidate survives every coherent January spouse statement with spouse statements reversed",
+      "description": "Rev. Proc. 2025-19 sets family 8750 and self-only 4400. Taxpayer family January-November and self-only December gives (11×8750+4400)/12=8387.50 under IRC §223(b)(1). The spouse statements are each one complete January-only schedule, family or self-only. The full-contribution candidate is at most (8750+11×4400)/12=4762.50; the couple comparison therefore retains the monthly candidate on either reading. An agreed taxpayer share 1 leaves 8387.50; candidateSelected is false and attributable/testing amounts are 0/null. The conflicted spouse is still refused. No monthly combination outside the two supplied schedules is synthesized.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8387.5,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 coherent monthly winner applies statutory division after candidate selection",
+      "description": "Rev. Proc. 2025-19 sets family 8750 and self-only 4400. Taxpayer family January-November and self-only December gives (11×8750+4400)/12=8387.50 under IRC §223(b)(1). The spouse statements are each one complete January-only schedule, family or self-only. The full-contribution candidate is at most (8750+11×4400)/12=4762.50; the couple comparison therefore retains the monthly candidate on either reading. An agreed taxpayer share 1 leaves 8387.50; candidateSelected is false and attributable/testing amounts are 0/null. The conflicted spouse is still refused. No monthly combination outside the two supplied schedules is synthesized. With no agreed division, the one shared January family month loses half of 8750/12=364.5833; the taxpayer retains 8387.50-364.5833=8022.92. This is division after candidate comparison, not a change to the candidate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8022.92,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8022.92,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 recovered owner allocation advances family usage before refused spouse readback",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. Family January–November and self-only December yields (11 × 8750 + 4400) / 12 = 8387.50; the agreed taxpayer whole share retains that ceiling under either January-only spouse schedule. The under-55 spouse has an agreed zero share but a synthetic existing contribution of 1200. Its allowable component usage is zero; its actual contribution nevertheless reserves 1200 under the household guard, leaving 7187.50 for the taxpayer. After that allocation, the refused spouse must report legal family usage 7187.50 and legal remainder 1200, rather than the unspent original pool. That remainder is reserved against the spouse actual excess, not additional capacity granted to either owner.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 1200
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 7187.5,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 7187.5,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 1200
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 unusable spouse tier preserves stated January eligibility in coherent completions",
+      "description": "Rev. Proc. 2025-19 gives an annual family limit 8750. Taxpayer is under 55 with full-year family coverage; IRC §223(b)(5)(A) cannot increase that tier. Notice 2004-50 Q&A-31 gives sole-eligible months wholly to the taxpayer and the agreed taxpayer share 1 gives all jointly eligible months to that same taxpayer. Both whole-year candidates remain 8750 and no last-month-rule increase exists. Both person records establish omitted Archer amounts as 0. Therefore each coherent spouse completion gives 8750 without assuming a local zero-share exception. The partial statement fixes January eligibility; the missing common tier has exactly self-only and family completions, both recharacterized to family. The divided portion is therefore 8750/12=729.17, not unknown.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 wholly unknown spouse schedule recovers invariant money and withholds varying audit portion",
+      "description": "Rev. Proc. 2025-19 gives an annual family limit 8750. Taxpayer is under 55 with full-year family coverage; IRC §223(b)(5)(A) cannot increase that tier. Notice 2004-50 Q&A-31 gives sole-eligible months wholly to the taxpayer and the agreed taxpayer share 1 gives all jointly eligible months to that same taxpayer. Both whole-year candidates remain 8750 and no last-month-rule increase exists. Both person records establish omitted Archer amounts as 0. Therefore each coherent spouse completion gives 8750 without assuming a local zero-share exception. The annual 5000 deductible is above both 2026 minimum deductibles and does not cap post 2006 contributions. No months are established; all none/self/family schedules are traversed modulo January-November permutation symmetry, with December separate. The divided portion ranges from 0 to 8750, so that nullable audit field stays null while the contribution amount remains 8750.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "hdhpAnnualDeductible": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 coherent coverage collapse retains the individual funding-distribution reduction",
+      "description": "Rev. Proc. 2025-19 gives an annual family limit 8750. Taxpayer is under 55 with full-year family coverage; IRC §223(b)(5)(A) cannot increase that tier. Notice 2004-50 Q&A-31 gives sole-eligible months wholly to the taxpayer and the agreed taxpayer share 1 gives all jointly eligible months to that same taxpayer. Both whole-year candidates remain 8750 and no last-month-rule increase exists. Both person records establish omitted Archer amounts as 0. Therefore each coherent spouse completion gives 8750 without assuming a local zero-share exception. The partial statement fixes January eligibility; the missing common tier has exactly self-only and family completions, both recharacterized to family. The divided portion is therefore 8750/12=729.17, not unknown. IRC §223(b)(4)(C) reduces the invariant 8750 owner limitation by the synthetic qualified funding distribution 500 after family division, yielding 8250 in both completions.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990,
+            "qualifiedHsaFundingDistributions": 500
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8250,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8250,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 absent spouse person still withholds the unestablished Archer operand",
+      "description": "Rev. Proc. 2025-19 sets the 2026 family HSA amount at 8750. IRC §223(b)(5)(B)(i) reduces the married couple’s family limitation by both spouses’ aggregate Archer MSA contributions before the division in §223(b)(5)(B)(ii). The taxpayer is under 55, has family coverage for the entire year, and is assigned the whole agreed share. Holding the other facts fixed, a spouse Archer amount of 0 leaves 8750, while a synthetic spouse Archer amount of 1000 leaves 7750. Because the spouse person is absent, the input does not establish that operand; completing coverage cannot establish it. The asserted indeterminate status and null statutory maximum report these differing possible statutory amounts rather than assuming the absent spouse contributed zero.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
+    },
+    {
+      "name": "2005 unknown capped-year spouse facts remain conservative",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. IRC §223(b)(2) before 2007 reads the spouse family deductible; a missing continuous deductible has no finite universal completion and remains indeterminate.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
+    },
+    {
+      "name": "2026 unknown spouse coverage can change a self-only owner tier",
+      "description": "IRC §223(b)(5)(A) can recharacterize self-only months to family, changing 4400 to a larger limit; complete outcomes do not collapse.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
+    },
+    {
+      "name": "2026 person-only established coverage participates in coherent spouse recovery",
+      "description": "Rev. Proc. 2025-19 sets family 8750 and self-only 4400. Taxpayer family January-November and self-only December gives (11×8750+4400)/12=8387.50 under IRC §223(b)(1). The spouse statements are each one complete January-only schedule, family or self-only. The full-contribution candidate is at most (8750+11×4400)/12=4762.50; the couple comparison therefore retains the monthly candidate on either reading. An agreed taxpayer share 1 leaves 8387.50; candidateSelected is false and attributable/testing amounts are 0/null. The conflicted spouse is still refused. No monthly combination outside the two supplied schedules is synthesized. Coverage is a person fact: placing the same complete owner schedule on persons[].hsaCoverage and omitting the optional account statement does not remove eligibility or create a contradictory statement.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "family"
+                },
+                {
+                  "month": 2,
+                  "coverage": "family"
+                },
+                {
+                  "month": 3,
+                  "coverage": "family"
+                },
+                {
+                  "month": 4,
+                  "coverage": "family"
+                },
+                {
+                  "month": 5,
+                  "coverage": "family"
+                },
+                {
+                  "month": 6,
+                  "coverage": "family"
+                },
+                {
+                  "month": 7,
+                  "coverage": "family"
+                },
+                {
+                  "month": 8,
+                  "coverage": "family"
+                },
+                {
+                  "month": 9,
+                  "coverage": "family"
+                },
+                {
+                  "month": 10,
+                  "coverage": "family"
+                },
+                {
+                  "month": 11,
+                  "coverage": "family"
+                },
+                {
+                  "month": 12,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {}
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8387.5,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 explicit unusable account coverage is not an omitted account statement",
+      "description": "The input contract distinguishes an absent optional account statement from an explicit unusable account {}. Even beside complete person coverage, the latter is an unresolved supplied statement and retains HSA_COVERAGE_FACTS_REQUIRED; it is not silently replaced by the person declaration.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "family"
+                },
+                {
+                  "month": 2,
+                  "coverage": "family"
+                },
+                {
+                  "month": 3,
+                  "coverage": "family"
+                },
+                {
+                  "month": 4,
+                  "coverage": "family"
+                },
+                {
+                  "month": 5,
+                  "coverage": "family"
+                },
+                {
+                  "month": 6,
+                  "coverage": "family"
+                },
+                {
+                  "month": 7,
+                  "coverage": "family"
+                },
+                {
+                  "month": 8,
+                  "coverage": "family"
+                },
+                {
+                  "month": 9,
+                  "coverage": "family"
+                },
+                {
+                  "month": 10,
+                  "coverage": "family"
+                },
+                {
+                  "month": 11,
+                  "coverage": "family"
+                },
+                {
+                  "month": 12,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {}
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COVERAGE_FACTS_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 coherent partial-tier completion applies aggregate Archer reduction before division",
+      "description": "IRC §223(b)(5)(B)(i) subtracts the aggregate Archer amount before division. Both supplied persons establish the aggregate 9000, exceeding the 2026 family limit 8750. Under either stated January eligibility tier completion, the entire family base is exhausted. Both spouses are under 55, so no paragraph 3 amount remains. Statutory maximum and additional contribution are 0; candidate selection and testing remain unchanged.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            },
+            "archerMsaContributions": 9000
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0
+      }
+    },
+    {
+      "name": "2005 coherent competing family deductible variants retain a differing result",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. Before 2007 IRC §223(b)(2) caps the monthly amount by the annual deductible; IRC §223(b)(5)(A) selects the lower of competing family deductibles. Taxpayer family all year has deductible 5000 and spouse complete family schedules state 3000 versus 4000. With agreed taxpayer share 1, those whole completions yield 3000 versus 4000, so capacity remains indeterminate. Exhausting a finite list of complete statements does not license choosing one deductible.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 3000
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 4000
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
+    },
+    {
+      "name": "2026 correlated spouse schedules preserve exactly one shared month",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. The established owner has family January–November and self-only December, giving (11 × 8750 + 4400) / 12 = 8387.50. The spouse supplies two complete alternatives: family in January alone, or family in November alone. Under either coherent schedule, exactly one family month is shared, so Q&A-31 and statutory equal division subtract 8750 / 12 / 2 = 364.5833, yielding 8022.92. The full candidate has just one family month and eleven self-only months, hence 4762.50, and loses in both alternatives. Synthesizing independent January/November choices would invent zero or two shared months and falsely refuse the invariant result. The candidate state, 729.17 divided audit portion, and shared usage remain identical.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  11
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8022.92,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8022.92,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 correlated spouse schedules preserve exactly one shared month with source order reversed",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. The established owner has family January–November and self-only December, giving (11 × 8750 + 4400) / 12 = 8387.50. The spouse supplies two complete alternatives: family in January alone, or family in November alone. Under either coherent schedule, exactly one family month is shared, so Q&A-31 and statutory equal division subtract 8750 / 12 / 2 = 364.5833, yielding 8022.92. The full candidate has just one family month and eleven self-only months, hence 4762.50, and loses in both alternatives. Synthesizing independent January/November choices would invent zero or two shared months and falsely refuse the invariant result. The candidate state, 729.17 divided audit portion, and shared usage remain identical.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  11
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8022.92,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8022.92,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 partial January spouse coverage needs no accountless spouse age for invariant owner result",
+      "description": "Rev. Proc. 2025-19 gives an annual family limit 8750. Taxpayer is under 55 with full-year family coverage; IRC §223(b)(5)(A) cannot increase that tier. Notice 2004-50 Q&A-31 gives sole-eligible months wholly to the taxpayer and the agreed taxpayer share 1 gives all jointly eligible months to that same taxpayer. Both whole-year candidates remain 8750 and no last-month-rule increase exists. Both person records establish omitted Archer amounts as 0. Therefore each coherent spouse completion gives 8750 without assuming a local zero-share exception. The partial statement fixes January eligibility; the missing common tier has exactly self-only and family completions, both recharacterized to family. The divided portion is therefore 8750/12=729.17, not unknown. The accountless spouse is not December-eligible, so an unstated spouse age cannot change the candidate comparison or the under-55 owner amount.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 coherent recovery preserves marginal base-catch-up draws and later account usage",
+      "description": "IRC §223(b)(3) adds 1000 for an owner age 55 or older. The established full-year owner has family January–November and self-only December, so (11 × 8750 + 4400) / 12 + 1000 = 9387.50. The monthly candidate wins under both complete January spouse statements and an agreed whole taxpayer share retains it. A synthetic existing contribution of 500 can occupy base or catch-up: both pre-allocation marginal usages span 0–500. Filling the remaining 8887.50 establishes final base usage 8387.50 and catch-up usage 1000; the additional base draw therefore spans 7887.50–8387.50 and the catch-up draw spans 500–1000. These are complementary marginal ranges, not amounts to sum independently. The second owner account and later refused spouse must see family usage 8387.50 and zero remainder after the cached allocation refreshes the authoritative usage model.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 500
+            }
+          },
+          {
+            "id": "t-second",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 4,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 9387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8887.5,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.0.usedByAccount": null,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.minimum": 7887.5,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.maximum": 8387.5,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.minimum": 500,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.maximum": 1000,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 0,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent partial January coverage with an established deductible",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ],
+              "hdhpAnnualDeductible": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 416.67
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent wholly unknown coverage with an established deductible",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "hdhpAnnualDeductible": 5000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent explicit zero eligible months needs no missing deductible",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": []
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5000,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2005 coherent a competing lower family deductible does not collapse",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A spouse family January completion introduces a competing deductible of 3000, making January worth 3000 rather than 5000; a self-only January plan does not compete. The annual taxpayer amounts are (3000 + 11 × 5000) / 12 = 4833.33 versus 5000, so the result remains indeterminate.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1990,
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ],
+              "hdhpAnnualDeductible": 3000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      }
+    },
+    {
+      "name": "2026 coherent recovery preserves numeric-string person ID representation",
+      "description": "The input contract accepts nonempty string identifiers, including numeric strings. Renaming synthetic taxpayer and spouse IDs to \"1\" and \"2\" cannot change IRC §223 amounts or shared-pool usage. IRC §223(b)(3) adds 1000 for an owner age 55 or older. The established full-year owner has family January–November and self-only December, so (11 × 8750 + 4400) / 12 + 1000 = 9387.50. The monthly candidate wins under both complete January spouse statements and an agreed whole taxpayer share retains it. A synthetic existing contribution of 500 can occupy base or catch-up: both pre-allocation marginal usages span 0–500. Filling the remaining 8887.50 establishes final base usage 8387.50 and catch-up usage 1000; the additional base draw therefore spans 7887.50–8387.50 and the catch-up draw spans 500–1000. These are complementary marginal ranges, not amounts to sum independently. The second owner account and later refused spouse must see family usage 8387.50 and zero remainder after the cached allocation refreshes the authoritative usage model.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "1",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "2",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "1",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 500
+            }
+          },
+          {
+            "id": "t-second",
+            "ownerId": "1",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "2",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "2",
+            "type": "hsa",
+            "priority": 4,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 9387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8887.5,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.0.usedByAccount": null,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.minimum": 7887.5,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.maximum": 8387.5,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.minimum": 500,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.maximum": 1000,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 0,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
       ]
     }
   ]

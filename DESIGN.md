@@ -195,4 +195,37 @@ A release must satisfy:
 8. Manifest and package-content validation.
 9. A clean npm dry-run package listing.
 
-`npm run verify` executes local validation and writes `VALIDATION.md`, `RELEASE_STATUS.md`, and `validation-status.json`.
+`npm run verify` executes the full local gate. `npm run validate:release` regenerates
+`VALIDATION.md`, `RELEASE_STATUS.md`, and `validation-status.json`.
+
+## Coherent HSA coverage completions
+
+HSA recovery evaluates complete spouse schedules through the existing native
+initializer, including Archer reductions, both Notice 2008-52 candidates and
+existing-contribution seeding. It then allocates only the established owner's
+accounts in normal priority order. The source spouse remains indeterminate and
+receives no hypothetical additional allocation.
+
+Recovery requires identical account contribution amounts, shared-limit records,
+last-month candidate selection and testing-period state across all completions.
+Already-nullable audit fields are intersected: a differing figure becomes null.
+Cached outcomes retain the invariant owner capacities and aggregate counted
+contributions after each allocation. The refused spouse's numerical usage model
+must also agree across completions when that spouse has existing contributions.
+Installing those numerical facts and refreshing the ordinary interval model
+keeps later accounts' shared-pool audits current, including marginal draws with
+no scalar value. Source status and diagnostics remain unresolved; candidate
+pool identities are never invented or transplanted.
+
+A complete supplied coverage statement and its deductible are one correlated
+variant. An incomplete statement retains its explicit eligible months. An entirely
+unknown schedule with fixed annual deductible operands, or after their 2006
+repeal, is enumerated by counts of no coverage, self-only and
+family coverage within each January–November class having the same established
+spouse tier. These are all permutation orbits, not sampled cases: a class of n
+months has (n + 1)(n + 2) / 2 representatives. December forms its own class because
+it determines the full-year candidate and testing period. All other current HSA
+operands are annual scalars; FSA interaction facts are annual diagnostics rather
+than monthly eligibility overrides. Any future month-dependent operand must join
+the equivalence-class key. A missing capped-year deductible is continuous and
+therefore remains indeterminate instead of being approximated by a finite sample.
