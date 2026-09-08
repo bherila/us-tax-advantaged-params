@@ -23704,6 +23704,301 @@
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": null
       }
+    },
+    {
+      "name": "2026 correlated spouse schedules preserve exactly one shared month",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. The established owner has family January–November and self-only December, giving (11 × 8750 + 4400) / 12 = 8387.50. The spouse supplies two complete alternatives: family in January alone, or family in November alone. Under either coherent schedule, exactly one family month is shared, so Q&A-31 and statutory equal division subtract 8750 / 12 / 2 = 364.5833, yielding 8022.92. The full candidate has just one family month and eleven self-only months, hence 4762.50, and loses in both alternatives. Synthesizing independent January/November choices would invent zero or two shared months and falsely refuse the invariant result. The candidate state, 729.17 divided audit portion, and shared usage remain identical.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  11
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8022.92,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8022.92,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 correlated spouse schedules preserve exactly one shared month with source order reversed",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. The established owner has family January–November and self-only December, giving (11 × 8750 + 4400) / 12 = 8387.50. The spouse supplies two complete alternatives: family in January alone, or family in November alone. Under either coherent schedule, exactly one family month is shared, so Q&A-31 and statutory equal division subtract 8750 / 12 / 2 = 364.5833, yielding 8022.92. The full candidate has just one family month and eleven self-only months, hence 4762.50, and loses in both alternatives. Synthesizing independent January/November choices would invent zero or two shared months and falsely refuse the invariant result. The candidate state, 729.17 divided audit portion, and shared usage remain identical.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1985
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  11
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8022.92,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8022.92,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.1.status": "indeterminate",
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 partial January spouse coverage needs no accountless spouse age for invariant owner result",
+      "description": "Rev. Proc. 2025-19 gives an annual family limit 8750. Taxpayer is under 55 with full-year family coverage; IRC §223(b)(5)(A) cannot increase that tier. Notice 2004-50 Q&A-31 gives sole-eligible months wholly to the taxpayer and the agreed taxpayer share 1 gives all jointly eligible months to that same taxpayer. Both whole-year candidates remain 8750 and no last-month-rule increase exists. Both person records establish omitted Archer amounts as 0. Therefore each coherent spouse completion gives 8750 without assuming a local zero-share exception. The partial statement fixes January eligibility; the missing common tier has exactly self-only and family completions, both recharacterized to family. The divided portion is therefore 8750/12=729.17, not unknown. The accountless spouse is not December-eligible, so an unstated spouse age cannot change the candidate comparison or the under-55 owner amount.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1990
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "hsaCoverage": {
+              "eligibleMonths": [
+                1
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8750,
+        "accounts.0.hsa.fullContributionCandidateSelected": false,
+        "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
+        "accounts.0.hsa.testingPeriod": null,
+        "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
     }
   ]
 }
