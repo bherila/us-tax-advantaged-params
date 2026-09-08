@@ -9616,6 +9616,18 @@ interface CalculationContext {
    * participant's largest amount comes from another plan, this plan's own
    * records may not absorb more between them than this plan provides.
    */
+  /**
+   * The IRC 457(b)(2) ceiling of one *plan*, keyed by plan group.
+   *
+   * The owner-level base pool above is the IRC 457(e)(15) dollar amount, which
+   * 26 CFR 1.457-5(b) aggregates across every eligible plan. This one is the
+   * other half of 1.457-4(c)(1)(i): the lesser of that amount and 100 percent of
+   * the plan's own includible compensation. It binds only where compensation
+   * does, and it has to be a pool for the same reason the special one does --
+   * a plan may be several records, and a plan whose compensation caps it at
+   * $1,000 does not host $1,000 per record.
+   */
+  section457PlanBasePools: Map<string, LimitPool>;
   section457PlanSpecialCatchUpPools: Map<string, LimitPool>;
   /** Which eligible plan each IRC 457 account belongs to, and that plan's facts. */
   section457PlanFacts: Map<string, Section457PlanFacts>;
@@ -10450,6 +10462,7 @@ function createCalculationContext(
     section457BasePools: new Map(),
     section457CatchUpPools: new Map(),
     section457SpecialCatchUpPools: new Map(),
+    section457PlanBasePools: new Map(),
     section457PlanSpecialCatchUpPools: new Map(),
     section457PlanFacts: new Map(),
     section457CatchUpResolutions: new Map(),
@@ -10730,6 +10743,21 @@ interface Section457CatchUpResolution {
   existingSpecialCatchUp: Money;
   /** Whether any existing catch-up component needs participant-wide reconciliation. */
   existingCatchUpClassificationUnreconciled: boolean;
+  /**
+   * The records of one of this participant's plans contradict each other.
+   *
+   * Carried at the participant level, not left to the plan whose records
+   * disagree, because 26 CFR 1.457-5(a) selects the method once "under all
+   * eligible plans" and 1.457-5(c) sets the amount from whichever plan provides
+   * the largest. A contradiction in one plan therefore reaches every plan: the
+   * fallback figures below still decide `mode` and `headroom`, so an unrelated
+   * plan that would host an IRC 414(v) catch-up under one reading of the
+   * contradictory records and none under the other cannot be reported as
+   * settled.
+   */
+  planFactsConflicted: boolean;
+  /** The records of those plans, so the diagnostic can name what to reconcile. */
+  conflictingPlanMemberIds: readonly string[];
   eligibleAccountIds: ReadonlySet<string>;
 }
 
@@ -10884,7 +10912,7 @@ function resolveSection457PlanFacts(
           `${special.eligible === true}:${money(special.unusedDeferralsFromPriorYears, `${memberIds[0]}.unused457Deferrals`)}`,
       ),
     );
-    if (distinctStatements.size > 1) conflictingFields.push("section457SpecialCatchUp");
+    if (distinctStatements.size > 1) conflictingFields.push("planRules.section457SpecialCatchUp");
 
     // Explicit statements first, so a host plan's figure covers a record that
     // states none. Only where the plan states nothing anywhere does the
@@ -10898,7 +10926,18 @@ function resolveSection457PlanFacts(
     );
     const candidates =
       explicit.size > 0 ? explicit : new Set(members.map((account) => planCompensation(account, person)));
-    if (candidates.size > 1) conflictingFields.push("includibleCompensation457");
+    if (candidates.size > 1) conflictingFields.push("planRules.includibleCompensation457");
+
+    // IRC 414(v)(6)(A)(ii) makes only an eligible *governmental* IRC 457(b) plan
+    // an applicable employer plan, so the status decides whether the age-based
+    // method exists at all -- and a plan is one or the other, never both. It is
+    // settled by the account types rather than by a rule field, which is exactly
+    // why it needs checking here: nothing else stops a nongovernmental record
+    // from joining a governmental plan and changing the participant's method.
+    const governmental = new Set(members.map((account) => ACCOUNT_TRAITS[account.type].governmental457));
+    if (governmental.size > 1) {
+      conflictingFields.push("whether it is an eligible governmental plan, which the account types settle");
+    }
 
     const existingSpecialCatchUp = roundMoney(
       members.reduce(
@@ -10939,9 +10978,24 @@ function resolveSection457PlanFacts(
   return byAccount;
 }
 
+/**
+ * The grouping key for one account, as a length-prefixed tuple.
+ *
+ * Both halves of the encoding are load-bearing. `null` is absent, exactly as it
+ * is for every other identifier field -- `optionalIdentifier` accepts it and
+ * `groupIdForAccount` reads it that way -- so a JSON caller who writes an
+ * explicit null gets their own plan rather than joining a `null` one. And every
+ * identifier field accepts arbitrary non-empty strings, so a delimiter alone
+ * cannot separate the parts: a participant id ending in a delimiter and a group
+ * id beginning with one would otherwise produce the key of a different pair, and
+ * two participants would share a plan ceiling. Length prefixes make the encoding
+ * injective whatever the ids contain.
+ */
 function section457PlanGroupKey(person: NormalizedPerson, account: NormalizedAccount): string {
-  const supplied = account.planRules.section457PlanGroupId;
-  return `${person.id}\u0000${supplied === undefined ? `account:${account.id}` : `plan:${supplied}`}`;
+  const supplied = account.planRules.section457PlanGroupId ?? undefined;
+  const parts =
+    supplied === undefined ? [person.id, "account", account.id] : [person.id, "plan", supplied];
+  return parts.map((part) => `${part.length}:${part}`).join("");
 }
 
 function section457PlanCeilings(
@@ -11032,6 +11086,9 @@ function resolveSection457CatchUpModes(
     for (const [accountId, facts] of resolveSection457PlanFacts(person, owned)) {
       context.section457PlanFacts.set(accountId, facts);
     }
+    const conflictingPlanMemberIds = owned
+      .filter((account) => context.section457PlanFacts.get(account.id)!.conflictingFields.length > 0)
+      .map((account) => account.id);
     if (statutoryBase === null || compensationFraction === null) {
       context.section457CatchUpResolutions.set(person.id, {
         mode: "none",
@@ -11041,6 +11098,8 @@ function resolveSection457CatchUpModes(
         existingAgeCatchUp: 0,
         existingSpecialCatchUp: 0,
         existingCatchUpClassificationUnreconciled: false,
+        planFactsConflicted: conflictingPlanMemberIds.length > 0,
+        conflictingPlanMemberIds,
         eligibleAccountIds: new Set(),
       });
       continue;
@@ -11065,6 +11124,15 @@ function resolveSection457CatchUpModes(
     // plan whose members no catch-up will reach anyway.
     for (const account of owned) {
       const key = context.section457PlanFacts.get(account.id)!.key;
+      context.section457PlanBasePools.set(key, {
+        id: `457b-plan-base:${key}`,
+        legalLimit: "26 CFR 1.457-4(c)(1)(i) plan ceiling on the annual deferral",
+        limit: Math.max(
+          context.section457PlanBasePools.get(key)?.limit ?? 0,
+          ceilings.get(account.id)!.basicPlanCeiling,
+        ),
+        usage: settled(0),
+      });
       context.section457PlanSpecialCatchUpPools.set(key, {
         id: `457b-plan-special-catch-up:${key}`,
         legalLimit: "26 CFR 1.457-4(c)(3)(i) plan ceiling for the last three years before normal retirement age",
@@ -11199,6 +11267,8 @@ function resolveSection457CatchUpModes(
       existingAgeCatchUp,
       existingSpecialCatchUp,
       existingCatchUpClassificationUnreconciled,
+      planFactsConflicted: conflictingPlanMemberIds.length > 0,
+      conflictingPlanMemberIds,
       eligibleAccountIds: new Set(eligible.map((account) => account.id)),
     });
   }
@@ -11342,6 +11412,12 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     const planSpecialPool =
       planFacts === undefined ? undefined : context.section457PlanSpecialCatchUpPools.get(planFacts.key);
     if (planSpecialPool) chargePool(planSpecialPool, existingSpecial);
+    // Seeded with exactly what the owner-level base pool is seeded with, so a
+    // plan of one record measures the same amount against the same ceiling it
+    // did when the ceiling was a subtraction rather than a pool.
+    const planBasePool =
+      planFacts === undefined ? undefined : context.section457PlanBasePools.get(planFacts.key);
+    if (planBasePool) chargePool(planBasePool, base);
   }
 }
 
@@ -17319,14 +17395,30 @@ function appendSection457ExistingCatchUpDiagnostics(
   diagnostics: Diagnostic[],
 ): boolean {
   const diagnosticCountBefore = diagnostics.length;
+  if (facts.conflictingFields.length === 0 && resolution.planFactsConflicted) {
+    // 26 CFR 1.457-5(a) selects the method once for the participant "under all
+    // eligible plans", so a contradiction in one plan is not that plan's alone:
+    // the method this account would use, and whether it has one at all, are
+    // decided from figures the input contradicts. Reporting a settled zero here
+    // would file that contradiction under this account's name.
+    diagnostics.push(
+      diagnostic(
+        "SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS",
+        DiagnosticSeverity.ERROR,
+        `Records ${resolution.conflictingPlanMemberIds.join(", ")} describe one of this participant's other eligible IRC 457(b) plans inconsistently. 26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation plus either the age 50 catch-up or the IRC 457(b)(3) catch-up "taking into account the combined annual deferral for the participant for any taxable year under all eligible plans", and 1.457-5(c) takes the amount from whichever plan provides the largest, so which method applies to this account and how much it is worth are settled by figures the input contradicts. No catch-up is allocated here until those records agree.`,
+        `accounts.${account.id}`,
+        "26 CFR 1.457-5(a); 26 CFR 1.457-5(c)",
+      ),
+    );
+  }
   if (facts.conflictingFields.length > 0) {
     diagnostics.push(
       diagnostic(
         "SECTION_457_PLAN_GROUP_FACTS_CONFLICT",
         DiagnosticSeverity.ERROR,
-        `Accounts ${facts.memberIds.join(", ")} name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but state ${facts.conflictingFields
-          .map((field) => `planRules.${field}`)
-          .join(" and ")} differently. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5) includible compensation and one IRC 457(b)(3) provision, so the records of a single plan cannot disagree about them and no reading of the input settles which is the plan's. Each record's own facts are used for the basic annual limitation and no catch-up is allocated under either method until they agree.`,
+        `Accounts ${facts.memberIds.join(", ")} name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but describe that plan inconsistently: ${facts.conflictingFields.join(
+          " and ",
+        )}. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5) includible compensation and one IRC 457(b)(3) provision, and IRC 414(v)(6)(A)(ii) makes that plan either an eligible governmental plan or not; no reading of the input settles which description is the plan's, and choosing would answer a question only the caller can answer. Each record keeps its own facts for the basic annual limitation, which the plan's records share, and no catch-up is allocated under either method until they agree.`,
         `accounts.${account.id}.planRules.section457PlanGroupId`,
         "26 CFR 1.457-4(c)",
       ),
@@ -18462,6 +18554,7 @@ function allocateSection457(
 
   const resolution = context.section457CatchUpResolutions.get(account.ownerId)!;
   const facts = context.section457PlanFacts.get(account.id)!;
+  const planBasePool = context.section457PlanBasePools.get(facts.key);
   const planSpecialPool = context.section457PlanSpecialCatchUpPools.get(facts.key);
   const ceilings = section457PlanCeilings(
     context.parameters,
@@ -18625,9 +18718,15 @@ function allocateSection457(
     `${account.id}.expectedEmployerContribution`,
   );
   const existingEmployer = roundMoney(annual.employerPreTax + annual.employerRoth);
+  // 26 CFR 1.457-4(c)(1)(i) sets the annual-deferral ceiling for the *plan*, so
+  // where a plan is several records what one of them may add is what the plan has
+  // left, not what this record has left. The pool carries both, and for a plan of
+  // one record its remainder is the subtraction beside it.
+  const planBaseRemaining = planBasePool === undefined ? null : poolRemaining(planBasePool);
   const employerDesired = minMoney(
     nonnegative(expectedEmployer - existingEmployer),
     nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
+    planBaseRemaining,
   );
   // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
   // contributions to the participant's *other* account under the plan, and
@@ -18639,18 +18738,23 @@ function allocateSection457(
     validateEmployerRothAvailability(context, account, traits, diagnostics)
   ) {
     const employerAdded = takeAcrossPools([basePool], employerDesired, sharedLimits);
+    if (planBasePool) chargePool(planBasePool, employerAdded);
     addEmployerContribution(account, traits, annual, additional, employerAdded);
   }
 
   const regularBeforeEmployee = roundMoney(
     baseElectiveDeferrals(annual) + annual.employeeAfterTax + annual.employerPreTax + annual.employerRoth,
   );
-  const regularDesired = nonnegative(appliedHostBaseLimit - regularBeforeEmployee);
+  const regularDesired = minMoney(
+    nonnegative(appliedHostBaseLimit - regularBeforeEmployee),
+    planBasePool === undefined ? null : poolRemaining(planBasePool),
+  );
   const regularAdded = takeAcrossPools(
     plesaPool ? [basePool, plesaPool] : [basePool],
     regularDesired,
     sharedLimits,
   );
+  if (planBasePool) chargePool(planBasePool, regularAdded);
   if (accountUsesRothEmployeeContributions(account, traits)) {
     additional.employeeRothDeferral = regularAdded;
     annual.employeeRothDeferral = roundMoney(annual.employeeRothDeferral + regularAdded);

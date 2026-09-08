@@ -9265,26 +9265,49 @@ final class Engine
      */
     private static function section457PlanGroupFactsConflictDiagnostic(string $accountId, array $facts): array
     {
-        $fields = [];
-        foreach ($facts['conflictingFields'] as $field) {
-            $fields[] = "planRules.{$field}";
-        }
-
         return self::diagnostic(
             'SECTION_457_PLAN_GROUP_FACTS_CONFLICT',
             DiagnosticSeverity::ERROR,
             'Accounts '
                 . implode(', ', $facts['memberIds'])
-                . ' name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but state '
-                . implode(' and ', $fields)
-                . ' differently. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one'
-                . ' IRC 457(e)(5) includible compensation and one IRC 457(b)(3) provision, so the'
-                . " records of a single plan cannot disagree about them and no reading of the input"
-                . " settles which is the plan's. Each record's own facts are used for the basic"
-                . ' annual limitation and no catch-up is allocated under either method until they'
-                . ' agree.',
+                . ' name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but'
+                . ' describe that plan inconsistently: '
+                . implode(' and ', $facts['conflictingFields'])
+                . '. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5)'
+                . ' includible compensation and one IRC 457(b)(3) provision, and IRC 414(v)(6)(A)(ii)'
+                . ' makes that plan either an eligible governmental plan or not; no reading of the'
+                . " input settles which description is the plan's, and choosing would answer a"
+                . " question only the caller can answer. Each record keeps its own facts for the"
+                . " basic annual limitation, which the plan's records share, and no catch-up is"
+                . ' allocated under either method until they agree.',
             "accounts.{$accountId}.planRules.section457PlanGroupId",
             '26 CFR 1.457-4(c)',
+        );
+    }
+
+    /**
+     * A contradiction in one of the participant's other IRC 457 plans.
+     *
+     * @param array<string,mixed> $resolution
+     * @return array<string,mixed>
+     */
+    private static function section457ConflictingPlanFactsDiagnostic(string $accountId, array $resolution): array
+    {
+        return self::diagnostic(
+            'SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS',
+            DiagnosticSeverity::ERROR,
+            'Records '
+                . implode(', ', $resolution['conflictingPlanMemberIds'])
+                . " describe one of this participant's other eligible IRC 457(b) plans"
+                . ' inconsistently. 26 CFR 1.457-5(a) states the individual limitation as the basic'
+                . ' annual limitation plus either the age 50 catch-up or the IRC 457(b)(3) catch-up'
+                . ' "taking into account the combined annual deferral for the participant for any'
+                . ' taxable year under all eligible plans", and 1.457-5(c) takes the amount from'
+                . ' whichever plan provides the largest, so which method applies to this account and'
+                . ' how much it is worth are settled by figures the input contradicts. No catch-up is'
+                . ' allocated here until those records agree.',
+            "accounts.{$accountId}",
+            '26 CFR 1.457-5(a); 26 CFR 1.457-5(c)',
         );
     }
 
@@ -9307,6 +9330,15 @@ final class Engine
         array &$diagnostics,
     ): bool {
         $diagnosticCountBefore = count($diagnostics);
+        if ($facts['conflictingFields'] === [] && !empty($resolution['planFactsConflicted'])) {
+            // 26 CFR 1.457-5(a) selects the method once for the participant "under
+            // all eligible plans", so a contradiction in one plan is not that plan's
+            // alone: the method this account would use, and whether it has one at
+            // all, are decided from figures the input contradicts. Reporting a
+            // settled zero here would file that contradiction under this account's
+            // name.
+            $diagnostics[] = self::section457ConflictingPlanFactsDiagnostic($account['id'], $resolution);
+        }
         if ($facts['conflictingFields'] !== []) {
             $diagnostics[] = self::section457PlanGroupFactsConflictDiagnostic($account['id'], $facts);
         }
@@ -10751,6 +10783,10 @@ final class Engine
             // 26 CFR 1.457-4(c)(3)(i)'s ceiling belongs to the plan, spent by every
             // account that plan comprises; the participant pool above is
             // 1.457-5(c)'s individual limitation. The two bind separately.
+            // 26 CFR 1.457-4(c)(1)(i)'s ceiling on the annual deferral, which is the
+            // plan's: the owner-level base pool is the IRC 457(e)(15) dollar amount
+            // 1.457-5(b) aggregates, this is the 100-percent-of-compensation half.
+            'section457PlanBasePools' => [],
             'section457PlanSpecialCatchUpPools' => [],
             // Which eligible plan each IRC 457 account belongs to, and its facts.
             'section457PlanFacts' => [],
@@ -11095,7 +11131,7 @@ final class Engine
                 $distinctStatements["{$eligible}:{$unused}"] = true;
             }
             if (count($distinctStatements) > 1) {
-                $conflictingFields[] = 'section457SpecialCatchUp';
+                $conflictingFields[] = 'planRules.section457SpecialCatchUp';
             }
 
             // Explicit statements first, so a host plan's figure covers a record
@@ -11122,7 +11158,23 @@ final class Engine
                 $candidates[self::moneyKey($amount)] = $amount;
             }
             if (count($candidates) > 1) {
-                $conflictingFields[] = 'includibleCompensation457';
+                $conflictingFields[] = 'planRules.includibleCompensation457';
+            }
+
+            // IRC 414(v)(6)(A)(ii) makes only an eligible *governmental* IRC 457(b)
+            // plan an applicable employer plan, so the status decides whether the
+            // age-based method exists at all -- and a plan is one or the other,
+            // never both. It is settled by the account types rather than by a rule
+            // field, which is exactly why it needs checking here: nothing else
+            // stops a nongovernmental record from joining a governmental plan and
+            // changing the participant's method.
+            $governmental = [];
+            foreach ($members as $account) {
+                $governmental[!empty(self::traits($account['type'])['governmental457']) ? '1' : '0'] = true;
+            }
+            if (count($governmental) > 1) {
+                $conflictingFields[] = 'whether it is an eligible governmental plan,'
+                    . ' which the account types settle';
             }
 
             $existingSpecialCatchUp = 0.0;
@@ -11164,14 +11216,32 @@ final class Engine
     }
 
     /**
+     * The grouping key for one account, as a length-prefixed tuple.
+     *
+     * Both halves of the encoding are load-bearing. null is absent, exactly as it
+     * is for every other identifier field, so a JSON caller who writes an explicit
+     * null gets their own plan rather than joining a "null" one. And every
+     * identifier field accepts arbitrary non-empty strings, so a delimiter alone
+     * cannot separate the parts: a participant id ending in a delimiter and a
+     * group id beginning with one would otherwise produce the key of a different
+     * pair, and two participants would share a plan ceiling. Length prefixes make
+     * the encoding injective whatever the ids contain.
+     *
      * @param array<string,mixed> $person
      * @param array<string,mixed> $account
      */
     private static function section457PlanGroupKey(array $person, array $account): string
     {
         $supplied = $account['planRules']['section457PlanGroupId'] ?? null;
-        $scope = $supplied === null ? "account:{$account['id']}" : "plan:{$supplied}";
-        return "{$person['id']}\u{0000}{$scope}";
+        $parts = $supplied === null
+            ? [$person['id'], 'account', $account['id']]
+            : [$person['id'], 'plan', $supplied];
+        $key = '';
+        foreach ($parts as $part) {
+            $key .= strlen($part) . ':' . $part;
+        }
+
+        return $key;
     }
 
     /** A stable grouping key for a money amount, so 0 and -0 do not separate. */
@@ -11351,6 +11421,12 @@ final class Engine
             foreach (self::resolveSection457PlanFacts($person, $owned) as $accountId => $facts) {
                 $context['section457PlanFacts'][$accountId] = $facts;
             }
+            $conflictingPlanMemberIds = [];
+            foreach ($owned as $account) {
+                if ($context['section457PlanFacts'][$account['id']]['conflictingFields'] !== []) {
+                    $conflictingPlanMemberIds[] = $account['id'];
+                }
+            }
             if ($statutoryBase === null || $compensationFraction === null) {
                 $context['section457CatchUpResolutions'][$personId] = [
                     'mode' => 'none',
@@ -11360,6 +11436,8 @@ final class Engine
                     'existingAgeCatchUp' => 0.0,
                     'existingSpecialCatchUp' => 0.0,
                     'existingCatchUpClassificationUnreconciled' => false,
+                    'planFactsConflicted' => $conflictingPlanMemberIds !== [],
+                    'conflictingPlanMemberIds' => $conflictingPlanMemberIds,
                     'eligibleAccountIds' => [],
                 ];
                 continue;
@@ -11382,6 +11460,15 @@ final class Engine
             // understates a plan whose members no catch-up will reach anyway.
             foreach ($owned as $account) {
                 $key = $context['section457PlanFacts'][$account['id']]['key'];
+                $context['section457PlanBasePools'][$key] = [
+                    'id' => "457b-plan-base:{$key}",
+                    'legalLimit' => '26 CFR 1.457-4(c)(1)(i) plan ceiling on the annual deferral',
+                    'limit' => max(
+                        $context['section457PlanBasePools'][$key]['limit'] ?? 0.0,
+                        $ceilings[$account['id']]['basicPlanCeiling'],
+                    ),
+                    'usage' => self::settled(0.0),
+                ];
                 $context['section457PlanSpecialCatchUpPools'][$key] = [
                     'id' => "457b-plan-special-catch-up:{$key}",
                     'legalLimit' => '26 CFR 1.457-4(c)(3)(i) plan ceiling for the last three years'
@@ -11548,6 +11635,8 @@ final class Engine
                 'existingAgeCatchUp' => $existingAgeCatchUp,
                 'existingSpecialCatchUp' => $existingSpecialCatchUp,
                 'existingCatchUpClassificationUnreconciled' => $existingCatchUpClassificationUnreconciled,
+                'planFactsConflicted' => $conflictingPlanMemberIds !== [],
+                'conflictingPlanMemberIds' => $conflictingPlanMemberIds,
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -11686,6 +11775,12 @@ final class Engine
             $planKey = $context['section457PlanFacts'][$account['id']]['key'] ?? null;
             if ($planKey !== null && isset($context['section457PlanSpecialCatchUpPools'][$planKey])) {
                 self::chargePool($context['section457PlanSpecialCatchUpPools'][$planKey], $existingSpecial);
+            }
+            // Seeded with exactly what the owner-level base pool is seeded with, so a
+            // plan of one record measures the same amount against the same ceiling it
+            // did when the ceiling was a subtraction rather than a pool.
+            if ($planKey !== null && isset($context['section457PlanBasePools'][$planKey])) {
+                self::chargePool($context['section457PlanBasePools'][$planKey], (float) $base);
             }
         }
     }
@@ -19536,6 +19631,7 @@ final class Engine
         $resolution = $context['section457CatchUpResolutions'][$ownerId];
         $facts = $context['section457PlanFacts'][$account['id']];
         $planPoolKey = $facts['key'];
+        $hasPlanBasePool = isset($context['section457PlanBasePools'][$planPoolKey]);
         $hasPlanSpecialPool = isset($context['section457PlanSpecialCatchUpPools'][$planPoolKey]);
         $ceilings = self::section457PlanCeilings(
             $context['parameters'],
@@ -19721,9 +19817,17 @@ final class Engine
             "{$account['id']}.expectedEmployerContribution",
         );
         $existingEmployer = self::roundMoney($annual['employerPreTax'] + $annual['employerRoth']);
+        // 26 CFR 1.457-4(c)(1)(i) sets the annual-deferral ceiling for the *plan*, so
+        // where a plan is several records what one of them may add is what the plan
+        // has left, not what this record has left. The pool carries both, and for a
+        // plan of one record its remainder is the subtraction beside it.
+        $planBaseRemaining = $hasPlanBasePool
+            ? self::poolRemaining($context['section457PlanBasePools'][$planPoolKey])
+            : null;
         $employerDesired = self::minMoney(
             self::nonnegative($expectedEmployer - $existingEmployer),
             self::nonnegative($appliedHostBaseLimit - $existingRegular),
+            $planBaseRemaining,
         );
         // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
         // contributions to the participant's *other* account under the plan, and
@@ -19740,6 +19844,9 @@ final class Engine
                 $employerDesired,
                 $sharedLimits,
             );
+            if ($hasPlanBasePool) {
+                self::chargePool($context['section457PlanBasePools'][$planPoolKey], $employerAdded);
+            }
             self::addEmployerContribution($account, $traits, $annual, $additional, $employerAdded);
         }
         $regularBeforeEmployee = self::roundMoney(
@@ -19748,13 +19855,21 @@ final class Engine
             + $annual['employerPreTax']
             + $annual['employerRoth'],
         );
-        $regularDesired = self::nonnegative($appliedHostBaseLimit - $regularBeforeEmployee);
+        $regularDesired = self::minMoney(
+            self::nonnegative($appliedHostBaseLimit - $regularBeforeEmployee),
+            $hasPlanBasePool
+                ? self::poolRemaining($context['section457PlanBasePools'][$planPoolKey])
+                : null,
+        );
         $regularAdded = self::takeAcrossPools(
             $context,
             array_merge([['section457BasePools', $ownerId]], $plesaRefs),
             $regularDesired,
             $sharedLimits,
         );
+        if ($hasPlanBasePool) {
+            self::chargePool($context['section457PlanBasePools'][$planPoolKey], $regularAdded);
+        }
         if (self::accountUsesRothEmployeeContributions($account, $traits)) {
             $additional['employeeRothDeferral'] = $regularAdded;
             $annual['employeeRothDeferral'] = self::roundMoney($annual['employeeRothDeferral'] + $regularAdded);
@@ -19799,6 +19914,15 @@ final class Engine
         // so it is not misread as an IRC 457 classification error.
         self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
         $classificationDiagnosticCount = count($diagnostics);
+        if ($facts['conflictingFields'] === [] && !empty($resolution['planFactsConflicted'])) {
+            // 26 CFR 1.457-5(a) selects the method once for the participant "under
+            // all eligible plans", so a contradiction in one plan is not that plan's
+            // alone: the method this account would use, and whether it has one at
+            // all, are decided from figures the input contradicts. Reporting a
+            // settled zero here would file that contradiction under this account's
+            // name.
+            $diagnostics[] = self::section457ConflictingPlanFactsDiagnostic($account['id'], $resolution);
+        }
         if ($facts['conflictingFields'] !== []) {
             $diagnostics[] = self::section457PlanGroupFactsConflictDiagnostic($account['id'], $facts);
         }

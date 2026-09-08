@@ -71,17 +71,29 @@ Monetary outputs are rounded to cents, and allocation is deterministic.
 | §415(c) annual additions | Owner and controlled-employer group | Employee and employer defined-contribution additions, generally excluding catch-up |
 | 403(b) 15-year catch-up | Owner | Shared across eligible 403(b) accounts |
 | 457(b) special catch-up | Owner | Last-three-years special catch-up |
+| 457(b)(2) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(1)(i) ceiling of one eligible plan — the lesser of the §457(e)(15) amount and 100% of that plan's includible compensation |
 | 457(b)(3) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(3)(i) ceiling of one eligible plan, bounding what its records absorb between them |
 
 Plans of the same controlled employer should use the same `annualAdditionsGroupId`. Unrelated employers should normally use different IDs.
 
-The last two are a pair, and the distinction is §1.457-5(c)'s: the owner-level pool is
-the *individual* limitation, the largest special catch-up any one of the participant's
-plans provides; the group-level pool is one *plan's* ceiling. Records sharing a
-`section457PlanGroupId` are one eligible plan — the case that matters is a §402A(f)(1)(C)
-pension-linked emergency savings account and its host — so the plan's §457(b)(3)
-provision and its §457(e)(5) includible compensation are stated once, and its ceiling
-binds those records together. Absent the key each account is its own eligible plan.
+The owner-level and group-level §457 pools are pairs, and the distinction is between the
+statute's two levels. §1.457-5(b) aggregates the annual deferral across every eligible
+plan and §1.457-5(c) gives the participant the largest special catch-up any one plan
+provides — those are the owner pools. §1.457-4(c)(1)(i) and §1.457-4(c)(3)(i) set each
+*plan's* own ceilings — those are the group pools.
+
+Records sharing a `section457PlanGroupId` are one eligible plan — the case that matters is
+a §402A(f)(1)(C) pension-linked emergency savings account and its host — so the plan's
+§457(b)(3) provision and its §457(e)(5) includible compensation are stated once, and both
+of its ceilings bind those records together rather than each. Absent the key each account
+is its own eligible plan.
+
+A group asserts one plan, so three things must agree across its records: the §457(b)(3)
+provision, includible compensation, and whether it is an eligible governmental plan (which
+the account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50
+method). Records that disagree are diagnosed rather than reconciled. Because §1.457-5(a)
+selects the method once for the participant across all plans, a contradiction in one plan
+also leaves the participant's *other* §457 accounts without a settled catch-up.
 
 ## 6. Section 401(a)(17) recognized compensation
 

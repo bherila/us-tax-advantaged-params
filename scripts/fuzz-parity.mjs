@@ -264,7 +264,7 @@ function randomPlanRules(type) {
   // The same identifier shapes as annualAdditionsGroupId, for the same reason:
   // 0, "0" and "" are where JavaScript and PHP most easily disagree, and this
   // key decides which records 26 CFR 1.457-4(c) treats as one eligible plan.
-  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "0", 0, ""]);
+  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "0", 0, "", null]);
   if (chance(0.15)) rules.planDocumentEmployeeDeferralLimit = money();
   if (chance(0.15)) rules.planDocumentAnnualAdditionsLimit = money();
   if (chance(0.4)) rules.permitsRothContributions = chance(0.05) ? junk() : chance(0.7);
@@ -700,7 +700,9 @@ function randomScenario() {
     if (chance(0.4)) {
       const shared = pick(["s1", "s2"]);
       hostRules.section457PlanGroupId = shared;
-      plesaRules.section457PlanGroupId = chance(0.85) ? shared : pick(["s1", "s2", "s3"]);
+      // null included: an explicit null is absent, so it must separate the pair
+      // rather than joining them in a group named for it.
+      plesaRules.section457PlanGroupId = chance(0.85) ? shared : pick(["s1", "s2", "s3", null]);
       if (chance(0.25)) plesaRules.includibleCompensation457 = pick([0, 1000, 24500, 60000, money()]);
     }
     // Sometimes the emergency savings account stands alone, with no host
