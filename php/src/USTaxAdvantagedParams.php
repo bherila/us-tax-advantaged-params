@@ -9582,9 +9582,7 @@ final class Engine
                     - self::baseDeferrals($existing)
                     - self::ageCatchUps($existing)
                     - $existing['special457CatchUp']
-                    - $existing['special457RothCatchUp']
-                    - $existing['employerPreTax']
-                    - $existing['employerRoth'],
+                    - $existing['special457RothCatchUp'],
             ),
             $planCompensationPool === null ? null : self::poolRemaining($planCompensationPool),
         );
@@ -11173,7 +11171,7 @@ final class Engine
                     $special['unusedDeferralsFromPriorYears'] ?? null,
                     "{$memberIds[0]}.unused457Deferrals",
                 );
-                $distinctStatements["{$eligible}:{$unused}"] = true;
+                $distinctStatements[$eligible . ':' . self::moneyKey($unused)] = $special;
             }
             if (count($distinctStatements) > 1) {
                 $conflictingFields[] = 'planRules.section457SpecialCatchUp';
@@ -11217,7 +11215,8 @@ final class Engine
             foreach ($members as $account) {
                 $governmental[!empty(self::traits($account['type'])['governmental457']) ? '1' : '0'] = true;
             }
-            if (count($governmental) > 1) {
+            $governmentalStatusConflicts = count($governmental) > 1;
+            if ($governmentalStatusConflicts) {
                 $conflictingFields[] = 'whether it is an eligible governmental plan,'
                     . ' which the account types settle';
             }
@@ -11256,6 +11255,10 @@ final class Engine
             $existingRegularDeferrals = self::roundMoney($existingRegularDeferrals);
             $resolvedCompensation = array_values($candidates)[0];
             $resolvedSpecial = $statements === [] ? null : $statements[0];
+            $compensationCandidates = array_values($candidates);
+            $specialCandidates = $distinctStatements === []
+                ? [null]
+                : array_values($distinctStatements);
 
             foreach ($members as $account) {
                 $byAccount[$account['id']] = $conflictingFields === []
@@ -11267,6 +11270,10 @@ final class Engine
                         'existingSpecialCatchUp' => $existingSpecialCatchUp,
                         'existingRegularDeferrals' => $existingRegularDeferrals,
                         'conflictingFields' => $conflictingFields,
+                        'compensationCandidates' => $compensationCandidates,
+                        'specialCandidates' => $specialCandidates,
+                        'governmentalStatusConflicts' => $governmentalStatusConflicts,
+                        'groupExistingSpecialCatchUp' => $existingSpecialCatchUp,
                     ]
                     : [
                         'key' => $key,
@@ -11286,6 +11293,10 @@ final class Engine
                                 + $account['existingContributions']['employerRoth'],
                         ),
                         'conflictingFields' => $conflictingFields,
+                        'compensationCandidates' => $compensationCandidates,
+                        'specialCandidates' => $specialCandidates,
+                        'governmentalStatusConflicts' => $governmentalStatusConflicts,
+                        'groupExistingSpecialCatchUp' => $existingSpecialCatchUp,
                     ];
             }
         }
@@ -11322,7 +11333,18 @@ final class Engine
         return $key;
     }
 
-    /** A stable grouping key for a money amount, so 0 and -0 do not separate. */
+    /**
+     * A stable grouping key for a money amount.
+     *
+     * Every grouping key built from a money figure has to go through this.
+     * Interpolating the float instead formats it at PHP's default precision of
+     * 14 significant digits, which collapses 100000000000000 and
+     * 100000000000001 onto one key while TypeScript's exact numeric equality
+     * keeps them apart -- two engines disagreeing about whether the records
+     * describe one plan consistently. number_format prints the double's own
+     * decimal expansion, so it separates whatever TypeScript separates. It also
+     * keeps 0 and -0 together, which is why the addition is there.
+     */
     private static function moneyKey(float $amount): string
     {
         return number_format(self::roundMoney($amount) + 0.0, 2, '.', '');
@@ -11428,6 +11450,114 @@ final class Engine
                 ?? self::planCompensation($account, $person),
             "{$account['id']}.includibleCompensation457",
         );
+    }
+
+    /**
+     * Whether one plan's self-contradiction can change what the *participant's
+     * other* plans are entitled to.
+     *
+     * 26 CFR 1.457-5(a) selects the method once for the participant "under all
+     * eligible plans" and 1.457-5(c) takes the amount from whichever plan
+     * provides the largest, so a contradiction in one plan can decide the method
+     * and the amount everywhere. It does not follow that it always does. The
+     * resolution reads exactly four things off a plan's facts -- the IRC 414(v)
+     * capacity it offers, the largest such capacity the year could give it, its
+     * IRC 457(b)(3) capacity, and whether its existing catch-ups sit outside what
+     * it provides -- and where every reading the input leaves open produces the
+     * same four, the contradiction is real but inert: no other plan's entitlement
+     * depends on which record is right. Reporting it as though it did marks an
+     * unrelated plan indeterminate and allocates it nothing, which is a wrong
+     * answer rather than a cautious one.
+     *
+     * The readings are the Cartesian product of the figures the records actually
+     * state, not an interval: the plan's true includible compensation is one of
+     * the amounts stated for it, and its true IRC 457(b)(3) provision is one of
+     * the provisions stated for it. Governmental status is the exception and is
+     * treated as always load-bearing, because the status is settled by each
+     * record's own account *type*: the reading in which the plan is governmental
+     * is not one this engine can compute a ceiling under for a record whose type
+     * says otherwise.
+     *
+     * Members' own entitlements are not at stake here. Every record of a
+     * contradictory plan is reported indeterminate by
+     * SECTION_457_PLAN_GROUP_FACTS_CONFLICT whatever this returns.
+     *
+     * @param array<string, mixed> $parameters
+     * @param array<string, mixed> $person
+     * @param list<array<string, mixed>> $members
+     * @param array<string, mixed> $facts
+     */
+    private static function section457PlanConflictIsLoadBearing(
+        array $parameters,
+        array $person,
+        array $members,
+        array $facts,
+        float $statutoryBase,
+        float $compensationFraction,
+    ): bool {
+        if (!empty($facts['governmentalStatusConflicts'])) {
+            return true;
+        }
+        $first = null;
+        foreach ($facts['compensationCandidates'] as $includibleCompensation) {
+            foreach ($facts['specialCandidates'] as $special) {
+                $reading = $facts;
+                $reading['includibleCompensation'] = $includibleCompensation;
+                $reading['special'] = $special;
+                $reading['existingSpecialCatchUp'] = $facts['groupExistingSpecialCatchUp'];
+                $age = 0.0;
+                $largestAge = 0.0;
+                $specialCapacity = 0.0;
+                $unreconciled = false;
+                foreach ($members as $member) {
+                    $ceilings = self::section457PlanCeilings(
+                        $parameters,
+                        $person,
+                        $member,
+                        $reading,
+                        $statutoryBase,
+                        $compensationFraction,
+                    );
+                    $age = max($age, $ceilings['ageAdditional']);
+                    $largestAge = max($largestAge, $ceilings['largestPossibleAgeAdditional']);
+                    $specialCapacity = max($specialCapacity, $ceilings['specialAdditional']);
+                    // The IRC 457(b)(3) half of the participant-wide
+                    // reconciliation test, which is the only half a plan's facts
+                    // can move: the age half turns on the record's account type,
+                    // which no reading changes.
+                    $memberExistingSpecial = self::roundMoney(
+                        $member['existingContributions']['special457CatchUp']
+                        + $member['existingContributions']['special457RothCatchUp'],
+                    );
+                    $readingProvidesSpecial = is_array($reading['special'])
+                        && !empty($reading['special']['eligible']);
+                    if (
+                        $memberExistingSpecial > 0.0
+                        && (
+                            !$readingProvidesSpecial
+                            || $reading['existingSpecialCatchUp'] > $ceilings['specialAdditional']
+                        )
+                    ) {
+                        $unreconciled = true;
+                    }
+                }
+                if ($first === null) {
+                    $first = [$age, $largestAge, $specialCapacity, $unreconciled];
+                } elseif (
+                    // Compared as numbers rather than through a composite string
+                    // key, so no float-formatting rule stands between two figures
+                    // and their difference.
+                    $first[0] !== $age
+                    || $first[1] !== $largestAge
+                    || $first[2] !== $specialCapacity
+                    || $first[3] !== $unreconciled
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -11673,6 +11803,45 @@ final class Engine
             $unselectedExistingCatchUp = self::roundMoney(
                 $existingAgeCatchUp + $existingSpecialCatchUp - $selectedExistingCatchUp,
             );
+            // 26 CFR 1.457-5(a) settles the method once for the participant, so a
+            // contradiction about one plan can decide another plan's entitlement --
+            // but only where the readings it leaves open differ in what they give
+            // the participant. Where they do not, the contradiction stays on its own
+            // records: SECTION_457_PLAN_GROUP_FACTS_CONFLICT still reports it on
+            // every one of them, and every other plan is answered from facts it does
+            // not touch.
+            $loadBearingConflictMemberIds = [];
+            $conflictedKeysExamined = [];
+            foreach ($owned as $account) {
+                $accountFacts = $context['section457PlanFacts'][$account['id']];
+                if ($accountFacts['conflictingFields'] === []) {
+                    continue;
+                }
+                if (isset($conflictedKeysExamined[$accountFacts['key']])) {
+                    continue;
+                }
+                $conflictedKeysExamined[$accountFacts['key']] = true;
+                $members = [];
+                foreach ($owned as $candidate) {
+                    if ($context['section457PlanFacts'][$candidate['id']]['key'] === $accountFacts['key']) {
+                        $members[] = $candidate;
+                    }
+                }
+                if (
+                    self::section457PlanConflictIsLoadBearing(
+                        $context['parameters'],
+                        $person,
+                        $members,
+                        $accountFacts,
+                        $statutoryBase,
+                        $compensationFraction,
+                    )
+                ) {
+                    foreach ($accountFacts['memberIds'] as $memberId) {
+                        $loadBearingConflictMemberIds[] = $memberId;
+                    }
+                }
+            }
             $existingCatchUpClassificationUnreconciled = (
                 $mode === 'indeterminate'
                 && $existingAgeCatchUp + $existingSpecialCatchUp > 0.0
@@ -11723,8 +11892,8 @@ final class Engine
                 'existingAgeCatchUp' => $existingAgeCatchUp,
                 'existingSpecialCatchUp' => $existingSpecialCatchUp,
                 'existingCatchUpClassificationUnreconciled' => $existingCatchUpClassificationUnreconciled,
-                'planFactsConflicted' => $conflictingPlanMemberIds !== [],
-                'conflictingPlanMemberIds' => $conflictingPlanMemberIds,
+                'planFactsConflicted' => $loadBearingConflictMemberIds !== [],
+                'conflictingPlanMemberIds' => $loadBearingConflictMemberIds,
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -11870,10 +12039,16 @@ final class Engine
             if ($planKey !== null && isset($context['section457PlanBasePools'][$planKey])) {
                 self::chargePool($context['section457PlanBasePools'][$planKey], (float) $base);
             }
-            // Seeded with exactly what allocateSection457 subtracts from includible
-            // compensation, so a plan of one record has the same room in the pool
-            // that it had in the local subtraction. Employee after-tax amounts are
-            // outside both.
+            // Only the participant's own deferrals. This pool is the salary there
+            // is to reduce, and a nonelective employer contribution reduces no
+            // salary: IRC 415(c)(3)(D), which IRC 457(e)(5) adopts, adds back only
+            // amounts "contributed or deferred by the employer at the election of
+            // the employee", and IRC 414(v)(2)(A)(ii) caps a catch-up at
+            // compensation over "any other elective deferrals", naming elective
+            // deferrals and nothing else. The employer's contribution is charged to
+            // the plan's IRC 457(b)(2) ceiling instead, which is where
+            // 26 CFR 1.457-4(a) counts it. Employee after-tax amounts are outside
+            // both.
             if ($planKey !== null && isset($context['section457PlanCompensationPools'][$planKey])) {
                 self::chargePool(
                     $context['section457PlanCompensationPools'][$planKey],
@@ -11881,9 +12056,7 @@ final class Engine
                         self::baseDeferrals($components)
                         + self::ageCatchUps($components)
                         + $components['special457CatchUp']
-                        + $components['special457RothCatchUp']
-                        + $components['employerPreTax']
-                        + $components['employerRoth'],
+                        + $components['special457RothCatchUp'],
                     ),
                 );
             }
@@ -11915,25 +12088,118 @@ final class Engine
         return is_array($row) ? self::copy($row) : null;
     }
 
-    /**
-     * Mirrors JavaScript Number.prototype.toLocaleString for a money amount.
-     * The default JavaScript formatter carries zero to three fraction digits,
-     * so a sub-cent amount such as 0.003 must survive; rounding to two here
-     * printed it as 0 while the TypeScript engine printed 0.003.
-     */
     /** The tier as it reads in a diagnostic sentence. */
     private static function hsaTierLabel(string $tier): string
     {
         return $tier === 'family' ? 'family' : 'self-only';
     }
 
+    /**
+     * A float as its shortest round-tripping decimal, without an exponent.
+     *
+     * json_encode is PHP's shortest round-trip renderer, which is the same
+     * decimal JavaScript's String() and its formatters start from. It still
+     * uses an exponent for very large and very small magnitudes, and
+     * JavaScript's formatter does not, so the exponent is expanded here.
+     */
+    private static function plainShortestDecimal(float $value): string
+    {
+        $text = (string) json_encode($value);
+        $exponent = strcspn($text, 'eE');
+        if ($exponent === strlen($text)) {
+            return $text;
+        }
+        $power = (int) substr($text, $exponent + 1);
+        $mantissa = substr($text, 0, $exponent);
+        $sign = '';
+        if ($mantissa !== '' && ($mantissa[0] === '-' || $mantissa[0] === '+')) {
+            $sign = $mantissa[0] === '-' ? '-' : '';
+            $mantissa = substr($mantissa, 1);
+        }
+        [$whole, $fraction] = array_pad(explode('.', $mantissa, 2), 2, '');
+        $digits = $whole . $fraction;
+        $point = strlen($whole) + $power;
+        if ($point <= 0) {
+            $digits = str_repeat('0', 1 - $point) . $digits;
+            $point += 1 - $point;
+        }
+        if ($point >= strlen($digits)) {
+            $digits .= str_repeat('0', $point - strlen($digits));
+            return $sign . $digits;
+        }
+
+        return $sign . substr($digits, 0, $point) . '.' . substr($digits, $point);
+    }
+
+    /**
+     * A decimal string rounded to $places fraction digits, half away from zero.
+     *
+     * Decimal rather than binary rounding, because round() would put the value
+     * back on a double and reintroduce the expansion this is avoiding. Half
+     * away from zero is ECMA-402's default rounding mode, halfExpand.
+     */
+    private static function roundDecimalString(string $text, int $places): string
+    {
+        $negative = str_starts_with($text, '-');
+        if ($negative) {
+            $text = substr($text, 1);
+        }
+        [$whole, $fraction] = array_pad(explode('.', $text, 2), 2, '');
+        if (strlen($fraction) <= $places) {
+            $result = $fraction === '' ? $whole : $whole . '.' . $fraction;
+            return $negative ? '-' . $result : $result;
+        }
+        $roundUp = $fraction[$places] >= '5';
+        $digits = $whole . substr($fraction, 0, $places);
+        if ($roundUp) {
+            $index = strlen($digits) - 1;
+            while ($index >= 0) {
+                if ($digits[$index] === '9') {
+                    $digits[$index] = '0';
+                    $index -= 1;
+                    continue;
+                }
+                $digits[$index] = (string) ((int) $digits[$index] + 1);
+                break;
+            }
+            if ($index < 0) {
+                $digits = '1' . $digits;
+            }
+        }
+        $wholeLength = strlen($digits) - $places;
+        $result = $places === 0
+            ? $digits
+            : substr($digits, 0, $wholeLength) . '.' . substr($digits, $wholeLength);
+
+        return $negative ? '-' . $result : $result;
+    }
+
+    /**
+     * Mirrors JavaScript Number.prototype.toLocaleString for a money amount.
+     *
+     * The default JavaScript formatter carries zero to three fraction digits,
+     * so a sub-cent amount such as 0.003 must survive; rounding to two here
+     * printed it as 0 while the TypeScript engine printed 0.003.
+     *
+     * The digits come from the shortest round-trip decimal rather than from
+     * number_format, which renders the double's exact binary expansion. The two
+     * agree until about 1e14 and then stop: the double nearest
+     * 100000000011999.98 expands to ...999.984375, which number_format renders
+     * as ...999.984 while JavaScript renders the ...999.98 it round-trips from.
+     */
     private static function localeNumber(float $value): string
     {
-        $rounded = round($value, 3);
-        if ($rounded === floor($rounded)) {
-            return number_format($rounded, 0);
+        $text = self::roundDecimalString(self::plainShortestDecimal($value), 3);
+        $negative = str_starts_with($text, '-');
+        if ($negative) {
+            $text = substr($text, 1);
         }
-        return rtrim(number_format($rounded, 3), '0');
+        [$whole, $fraction] = array_pad(explode('.', $text, 2), 2, '');
+        $fraction = rtrim($fraction, '0');
+        $grouped = strrev(implode(',', str_split(strrev($whole), 3)));
+        $result = $fraction === '' ? $grouped : $grouped . '.' . $fraction;
+
+        return $negative && (float) $text !== 0.0 ? '-' . $result : $result;
     }
 
     /** Mirrors JavaScript template-literal number interpolation. */
@@ -19956,9 +20222,6 @@ final class Engine
             if ($hasPlanBasePool) {
                 self::chargePool($context['section457PlanBasePools'][$planPoolKey], $employerAdded);
             }
-            if ($hasPlanCompensationPool) {
-                self::chargePool($context['section457PlanCompensationPools'][$planPoolKey], $employerAdded);
-            }
             self::addEmployerContribution($account, $traits, $annual, $additional, $employerAdded);
         }
         $regularBeforeEmployee = self::roundMoney(
@@ -20007,9 +20270,7 @@ final class Engine
                 - self::baseDeferrals($annual)
                 - self::ageCatchUps($annual)
                 - $annual['special457CatchUp']
-                - $annual['special457RothCatchUp']
-                - $annual['employerPreTax']
-                - $annual['employerRoth'],
+                - $annual['special457RothCatchUp'],
             ),
             $hasPlanCompensationPool
                 ? self::poolRemaining($context['section457PlanCompensationPools'][$planPoolKey])

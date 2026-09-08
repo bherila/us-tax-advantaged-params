@@ -73,7 +73,7 @@ Monetary outputs are rounded to cents, and allocation is deterministic.
 | 457(b) special catch-up | Owner | Last-three-years special catch-up |
 | 457(b)(2) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(1)(i) ceiling of one eligible plan — the lesser of the §457(e)(15) amount and 100% of that plan's includible compensation |
 | 457(b)(3) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(3)(i) ceiling of one eligible plan, bounding what its records absorb between them |
-| 457(e)(5) includible compensation | Owner and §457 plan group | The salary a plan's records have between them to reduce — the only bound on a §457(b)(3) catch-up, which replaces the paragraph (2) 100% term rather than reapplying it |
+| 457(e)(5) includible compensation | Owner and §457 plan group | The salary a plan's records have between them to reduce — the only bound on a §457(b)(3) catch-up, which replaces the paragraph (2) 100% term rather than reapplying it. Spent by participant deferrals only |
 
 Plans of the same controlled employer should use the same `annualAdditionsGroupId`. Unrelated employers should normally use different IDs.
 
@@ -93,9 +93,29 @@ A group asserts one plan, so four things must agree across its records: the §45
 provision, includible compensation, whether it is an eligible governmental plan (which the
 account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50 method),
 and the sponsoring `employerId` (which §414(v)(7)(A) reads the wage figure from). Records
-that disagree are diagnosed rather than reconciled. Because §1.457-5(a) selects the method
-once for the participant across all plans, a contradiction in one plan also leaves the
-participant's *other* §457 accounts without a settled catch-up.
+that disagree are diagnosed rather than reconciled.
+
+Because §1.457-5(a) selects the method once for the participant across all plans, a
+contradiction in one plan can also leave the participant's *other* §457 accounts without a
+settled catch-up — but only where it actually decides something. The resolution reads four
+things off a plan's facts: the §414(v) capacity the plan offers, the largest such capacity
+the year could give it, its §457(b)(3) capacity, and whether its existing catch-ups sit
+outside what it provides. Every reading the contradiction leaves open is evaluated, and
+where all of them produce the same four the contradiction stays on its own records: those
+are still indeterminate, and every other plan is answered normally. Two records disagreeing
+about includible compensation at $100,000 and $200,000 contradict each other, but in a year
+whose §457(e)(15) amount is $24,500 both readings give the same ceiling and the same
+catch-up, so nothing else turns on which is right. Governmental status is the exception and
+always propagates: it is settled by each record's own account *type*, so the reading in
+which the plan is governmental is not one a ceiling can be computed under for a record
+whose type says otherwise.
+
+The §457(e)(5) pool is spent by the participant's own deferrals and not by nonelective
+employer contributions. Those are annual deferrals under §1.457-4(a) and are charged to the
+plan's §457(b)(2) ceiling, but they reduce no salary: §457(e)(5) takes includible
+compensation from §415(c)(3), whose subparagraph (D) adds back only amounts deferred "at
+the election of the employee", and §414(v)(2)(A)(ii) caps a catch-up at compensation over
+"any other elective deferrals".
 
 Two things are deliberately **not** group invariants. `planDocumentEmployeeDeferralLimit`
 carries the sponsor's §402A(e)(3)(A)(ii) amount on a PLESA record and a plan-document

@@ -54,9 +54,21 @@ const random = makeRandom(seed);
 const pick = (values) => values[Math.floor(random() * values.length)];
 const chance = (probability) => random() < probability;
 const integer = (low, high) => low + Math.floor(random() * (high - low + 1));
-/** Money-shaped values, biased toward the boundaries where limits bind. */
-const money = () => pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
-  + (chance(0.25) ? integer(0, 999) : 0);
+/**
+ * Money-shaped values, biased toward the boundaries where limits bind, with a
+ * rare excursion past the magnitude at which the two runtimes stop rendering a
+ * float the same way.
+ *
+ * PHP formats a float as text at 14 significant digits by default, so above
+ * about 1e14 two amounts a dollar apart render identically while JavaScript
+ * keeps them apart. Any grouping key, fingerprint or diagnostic string built by
+ * formatting an amount diverges there and nowhere below it, which is why the
+ * ordinary boundary-hugging values could never find it.
+ */
+const money = () => (chance(0.02)
+  ? pick([1e14, 1e14 + 1, 1e15, 1e15 + 0.01, 12345678901234.56, 99999999999999.99])
+  : pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
+    + (chance(0.25) ? integer(0, 999) : 0));
 
 // Both IRC 402A(f)(1) hosts, so the IRC 402A(e)(3)(A) balance rule is
 // differentially fuzzed on each rather than only on the IRC 401(a)/403(b) one.
