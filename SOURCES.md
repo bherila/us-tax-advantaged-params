@@ -167,6 +167,27 @@ Source metadata documents provenance; it is not fetched at runtime. Calculations
 
 ## Health savings account sources (IRC §223)
 
+The HSA usage intervals follow the aggregate structure of
+[IRC §4973(g)](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section4973&num=0&edition=prelim)
+and §223(f)(3), rather than an invented base-first consumption order. For fixed post-reduction
+components `B` and `C`, allowable counted contributions are `A = min(T, B + C)`; the feasible
+base attribution solves `0 <= baseUse <= B` and `0 <= A - baseUse <= C`. Thus it is
+`[max(0, A - C), min(A, B)]`, with the complementary age-55 interval. Unresolved division
+ranges preserve the common share in §223(b)(5)(B)(ii); component extrema cannot be combined
+from contradictory divisions. This changes audit attribution, not statutory construction:
+§223(b)(5)(B)(i) still reduces the family base by aggregate Archer contributions before
+division and excludes the separate §223(b)(3) amount. In capped years the statutory monthly
+amount bounds an unknown deductible from above; exhausting that bound proves zero reduced
+base without supplying or validating the missing deductible. Sources below retain the
+annual amounts and the construction/eligibility distinctions. Section 223(b)(4)(C) reduces
+the beneficiary's individual limitation, unlike the aggregate Archer reduction in (b)(5)(B)(i).
+[Notice 2008-51 Example 5](https://www.irs.gov/irb/2008-25_IRB) permits a 5800 qualified funding
+distribution with family coverage January-May and self-only June-December, even though the
+annual deductible limit is 4108.33. This amount must not reduce the other spouse's allocated
+capacity. The distinct qualification and testing rules in
+[IRC §408(d)(9)](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section408&num=0&edition=prelim)
+remain outside the calculation.
+
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
 cost-of-living notice, so they are cited and verified separately.
 

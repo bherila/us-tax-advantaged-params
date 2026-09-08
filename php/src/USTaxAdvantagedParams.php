@@ -11729,6 +11729,113 @@ final class Engine
         return $taxpayerId !== null && $spouseId !== null ? [$taxpayerId, $spouseId] : null;
     }
 
+    /** Unsigned decimal integer helpers for exact HSA rounding without extensions. */
+    private static function hsaIntegerMultiplySmall(string $value, int $factor): string
+    {
+        if ($factor === 0 || $value === '0') return '0';
+        $carry = 0;
+        $result = '';
+        for ($i = strlen($value) - 1; $i >= 0; --$i) {
+            $digit = (int) $value[$i] * $factor + $carry;
+            $result = (string) ($digit % 10) . $result;
+            $carry = intdiv($digit, 10);
+        }
+        return ($carry > 0 ? (string) $carry : '') . $result;
+    }
+
+    private static function hsaIntegerAdd(string $left, string $right): string
+    {
+        $carry = 0;
+        $result = '';
+        for ($i = strlen($left) - 1, $j = strlen($right) - 1; $i >= 0 || $j >= 0 || $carry; --$i, --$j) {
+            $sum = ($i >= 0 ? (int) $left[$i] : 0) + ($j >= 0 ? (int) $right[$j] : 0) + $carry;
+            $result = (string) ($sum % 10) . $result;
+            $carry = intdiv($sum, 10);
+        }
+        return $result;
+    }
+
+    private static function hsaIntegerSubtract(string $left, string $right): string
+    {
+        $borrow = 0;
+        $result = '';
+        for ($i = strlen($left) - 1, $j = strlen($right) - 1; $i >= 0; --$i, --$j) {
+            $digit = (int) $left[$i] - ($j >= 0 ? (int) $right[$j] : 0) - $borrow;
+            $borrow = $digit < 0 ? 1 : 0;
+            if ($borrow) $digit += 10;
+            $result = (string) $digit . $result;
+        }
+        return ltrim($result, '0') ?: '0';
+    }
+
+    private static function hsaIntegerMultiply(string $left, string $right): string
+    {
+        $result = '0';
+        for ($i = 0; $i < strlen($right); ++$i) {
+            $result = self::hsaIntegerAdd(self::hsaIntegerMultiplySmall($result, 10),
+                self::hsaIntegerMultiplySmall($left, (int) $right[$i]));
+        }
+        return $result;
+    }
+
+    private static function hsaIntegerCompare(string $left, string $right): int
+    {
+        return (strlen($left) <=> strlen($right)) ?: strcmp($left, $right);
+    }
+
+    /** @return array{string,string} Exact nonnegative IEEE-754 fraction. */
+    private static function hsaBinaryFraction(float $value): array
+    {
+        if ($value === 0.0) return ['0', '1'];
+        // Four 16-bit words also keep decoding independent of PHP integer width.
+        $bits = unpack('n4', pack('E', $value));
+        $high = $bits[1] * 65536 + $bits[2];
+        $exponent = ($high >> 20) & 0x7ff;
+        $significand = self::hsaIntegerAdd(
+            self::hsaIntegerMultiplySmall(self::hsaIntegerMultiplySmall((string) ($high & 0xfffff), 65536), 65536),
+            self::hsaIntegerAdd(self::hsaIntegerMultiplySmall((string) $bits[3], 65536), (string) $bits[4]),
+        );
+        if ($exponent !== 0) $significand = self::hsaIntegerAdd($significand, '4503599627370496');
+        $shift = $exponent === 0 ? 1074 : 1075 - $exponent;
+        static $powers = ['1'];
+        for ($i = count($powers); $i <= abs($shift); ++$i) {
+            $powers[] = self::hsaIntegerMultiplySmall($powers[$i - 1], 2);
+        }
+        return $shift >= 0 ? [(string) $significand, $powers[$shift]]
+            : [self::hsaIntegerMultiply((string) $significand, $powers[-$shift]), '1'];
+    }
+
+    /**
+     * Exact final rounding of one HSA monthly composition. Statutory monthly
+     * coefficients are annual cents/12; raw capped-year deductibles retain their
+     * represented precision. The rate and its complement use one exact fraction.
+     */
+    private static function roundHsaDividedMoney(
+        float $shared, float $undivided, float $share,
+        bool $complement = false, bool $statutoryMonthlyAmounts = false,
+    ): float {
+        [$s, $sd] = $statutoryMonthlyAmounts
+            ? [(string) (int) round($shared * 1200), '1200'] : self::hsaBinaryFraction($shared);
+        [$u, $ud] = $statutoryMonthlyAmounts
+            ? [(string) (int) round($undivided * 1200), '1200'] : self::hsaBinaryFraction($undivided);
+        [$r, $rd] = self::hsaBinaryFraction($share);
+        $weight = $complement ? self::hsaIntegerSubtract($rd, $r) : $r;
+        $numerator = self::hsaIntegerAdd(
+            self::hsaIntegerMultiply(self::hsaIntegerMultiply($u, $sd), $rd),
+            self::hsaIntegerMultiply(self::hsaIntegerMultiply($s, $weight), $ud),
+        );
+        $denominator = self::hsaIntegerMultiply(self::hsaIntegerMultiply($ud, $sd), $rd);
+        $centsNumerator = self::hsaIntegerMultiplySmall($numerator, 100);
+        // The floating result supplies only a nearby integer candidate. Exact
+        // comparisons select the quotient and decide the half-cent tie.
+        $cents = (int) floor(($undivided + $shared * ($complement ? 1 - $share : $share)) * 100);
+        while (self::hsaIntegerCompare($centsNumerator, self::hsaIntegerMultiplySmall($denominator, $cents)) < 0) --$cents;
+        while (self::hsaIntegerCompare($centsNumerator, self::hsaIntegerMultiplySmall($denominator, $cents + 1)) >= 0) ++$cents;
+        if (self::hsaIntegerCompare(self::hsaIntegerMultiplySmall($centsNumerator, 2),
+            self::hsaIntegerMultiplySmall($denominator, 2 * $cents + 1)) >= 0) ++$cents;
+        return $cents / 100;
+    }
+
     /**
      * IRC 223(b)(5)(B) takes the Archer MSA reduction out of the IRC 223(b)(1)
      * limitation and then divides what is left, so the reduction comes off the
@@ -12874,9 +12981,6 @@ final class Engine
                     'statutoryMaximum' => 0.0,
                     'detail' => null,
                     'familyPoolKey' => null,
-                    // No IRC 223 year is encoded, so there is no family pool for the
-                    // seeding to reach and nothing to determine a draw against.
-                    'familyPoolUsageDeterminable' => false,
                 ];
             }
             return;
@@ -14584,6 +14688,44 @@ final class Engine
          * limitation of their own, which makes the IRC 223(b)(5) aggregate
          * built from those limitations undeterminable too.
          */
+        // A missing capped-year deductible leaves the statutory monthly amount
+        // as an upper bound. Exhausting the bound proves zero without assuming
+        // that an absent plan fact establishes HDHP eligibility.
+        $deductibleReductionCollapsed = [];
+        $deductibleOnlyDoubt = $familySharingApplies
+            && $parameters['contributionLimitCappedByHdhpAnnualDeductible']
+            && $couple !== null && $householdParagraph1AfterArcher === 0.0;
+        foreach ($couple ?? [] as $id) {
+            if (!isset($context['persons'][$id])) $deductibleOnlyDoubt = false;
+        }
+        foreach ($couplePoolPersons as $id) {
+            $a = $amountsByOwner[$id] ?? null;
+            if ($a === null || !$a['ageKnown'] || $a['candidateSelectionUnestablished']) {
+                $deductibleOnlyDoubt = false; continue;
+            }
+            foreach ($a['diagnostics'] as $entry) {
+                if ($entry['severity'] === DiagnosticSeverity::ERROR
+                    && $entry['code'] !== 'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED') $deductibleOnlyDoubt = false;
+            }
+        }
+        if ($deductibleOnlyDoubt) {
+            foreach ($couplePoolPersons as $id) {
+                $a =& $amountsByOwner[$id];
+                if (count(array_filter($a['diagnostics'], static fn (array $entry): bool =>
+                    $entry['code'] === 'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED')) === 0) { unset($a); continue; }
+                $deductibleReductionCollapsed[$id] = true;
+                $a['indeterminate'] = false;
+                $a['familyPoolAmountIndeterminate'] = false;
+                $a['diagnostics'] = array_values(array_filter($a['diagnostics'], static fn (array $entry): bool =>
+                    $entry['code'] !== 'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED'));
+                $a['diagnostics'][] = self::diagnostic(
+                    'HSA_ARCHER_REDUCTION_COLLAPSES_MISSING_DEDUCTIBLE', DiagnosticSeverity::INFO,
+                    "The established aggregate Archer MSA reduction is at least the upper bound on the couple's unreduced IRC 223(b)(1) limitation. Every possible missing deductible therefore leaves zero base under IRC 223(b)(5)(B)(i). The pre-reduction detail remains unstated; no missing plan is assumed to satisfy IRC 223(c)(2).",
+                    "persons.{$id}", 'IRC 223(b)(2); IRC 223(b)(5)(B)(i)',
+                );
+                unset($a);
+            }
+        }
         $householdPoolAmountIndeterminate = false;
         foreach ($couplePoolPersons as $personId) {
             if (($amountsByOwner[$personId]['familyPoolAmountIndeterminate'] ?? false) === true) {
@@ -15447,19 +15589,25 @@ final class Engine
              * works the same split from the other side. Applying the share to the
              * whole family portion halved months the other spouse had no claim on.
              */
+            $agreement = $context['hsaFamilyLimitDivision'];
+            $exactDivisionRate = $agreement['status'] === 'agreed' && $isSharingMember ? $agreement['taxpayerShare'] : ($share ?? 1.0);
+            $complementDivisionRate = $agreement['status'] === 'agreed' && $isSharingMember
+                && ($context['persons'][$ownerId]['role'] ?? null) === 'spouse';
+            $roundDivided = static fn (float $shared, float $undivided): float => self::roundHsaDividedMoney(
+                $shared, $undivided, $exactDivisionRate, $complementDivisionRate,
+                !$parameters['contributionLimitCappedByHdhpAnnualDeductible'],
+            );
             $divided = static function (
                 float $familyPortion,
                 float $selfPortion,
                 float $undivided,
                 ?float $sharedFamilyPortion = null,
-            ) use ($share): float {
+            ) use ($share, $roundDivided): float {
                 if ($share === null) {
                     return $undivided;
                 }
                 $shared = $sharedFamilyPortion ?? $familyPortion;
-                return self::roundMoney(
-                    $share * $shared + ($familyPortion - $shared) + $selfPortion,
-                );
+                return $roundDivided($shared, ($familyPortion - $shared) + $selfPortion);
             };
 
             /*
@@ -15478,7 +15626,7 @@ final class Engine
                 float $selfPortion,
                 float $undivided,
                 ?float $sharedFamilyPortion = null,
-            ) use ($share, $archerAmount): float {
+            ) use ($share, $archerAmount, $roundDivided): float {
                 if ($share === null) {
                     return self::nonnegative($undivided - $archerAmount);
                 }
@@ -15488,10 +15636,10 @@ final class Engine
                 // apportionment of the IRC 223(b)(5)(B)(i) reduction, because
                 // there is only one kind of month for it to have come out of.
                 if ($shared >= $familyPortion) {
-                    return self::roundMoney($share * $family + $self);
+                    return $roundDivided($family, $self);
                 }
                 if ($shared <= 0.0) {
-                    return self::roundMoney($family + $self);
+                    return $roundDivided(0.0, $family + $self);
                 }
                 // Mixed. $shared is measured before the IRC 223(b)(5)(B)(i)
                 // reduction, so subtracting it from $family states the
@@ -15514,9 +15662,7 @@ final class Engine
                 // which IRC 223(b)(5)(B)(i) reduces the paragraph (1) limitation
                 // "without regard to" entirely.
                 $survivingShared = min($shared, $family);
-                return self::roundMoney(
-                    $share * $survivingShared + ($family - $survivingShared) + $self,
-                );
+                return $roundDivided($survivingShared, ($family - $survivingShared) + $self);
             };
             $baseLimitAfterArcher = $indeterminate
                 ? null
@@ -15820,7 +15966,7 @@ final class Engine
                 }
             }
 
-            if (!$indeterminate && $archerAmount > 0) {
+            if (!$indeterminate && $archerAmount > 0 && !isset($deductibleReductionCollapsed[$ownerId])) {
                 $paidFormatted = self::localeNumber($archerAmount);
                 $takenFormatted = $archerMsaLimitReduction === null
                     ? null
@@ -16020,7 +16166,7 @@ final class Engine
              * share of them. The mixed-months case beside it does not, for the
              * reason sharedFamilyContributionLimit gives below.
              */
-            $hsaDetailUnestablished = $amounts['candidateSelectionUnestablished']
+            $hsaDetailUnestablished = isset($deductibleReductionCollapsed[$ownerId]) || $amounts['candidateSelectionUnestablished']
                 || ($isSharingMember && $archerAcrossUndividedSpouses);
 
             // Only ambiguity in the applied mixed schedule affects this field.
@@ -16126,6 +16272,11 @@ final class Engine
                 'testingPeriod' => $testingPeriod,
             ];
 
+            [$usageFamily, $usageSelf] = self::archerReducedPortions(
+                $amounts['familyPortionApplied'], $amounts['selfPortionApplied'], $archerAmount,
+            );
+            $usageShared = min($amounts['familySharedPortionApplied'], $usageFamily);
+            $usageSole = $usageFamily - $usageShared;
             $context['hsaPlans'][$ownerId] = [
                 'status' => $planStatus,
                 'diagnostics' => $diagnostics,
@@ -16134,98 +16285,148 @@ final class Engine
                     : self::roundMoney($baseLimit + $catchUpApplied),
                 'detail' => $hsaDetailUnestablished ? null : $detail,
                 'familyPoolKey' => $isSharingMember ? $familyPoolKey : null,
-                'familyPoolUsageDeterminable' => $amounts['ageKnown']
-                    && (float) $amounts['catchUpApplied'] === 0.0
-                    && $archerAmount === 0.0
-                    && $fundingAmount === 0.0,
+                'countedContributions' => 0.0,
             ];
+            if (!$indeterminate && $baseLimit !== null) {
+                $context['hsaPlans'][$ownerId]['usageCapacity'] = [
+                    'baseAtZero' => $baseLimit, 'baseAtOne' => $baseLimit,
+                    'catchUp' => $catchUpApplied, 'funding' => 0.0,
+                ];
+            } elseif (!$amounts['indeterminate'] && $amounts['ageKnown'] && !$householdPoolAmountIndeterminate
+                && !$archerAcrossMixedFamilyMonths && !$archerAcrossUndividedSpouses
+                && count(array_filter($diagnostics, static fn (array $entry): bool =>
+                    $entry['severity'] === DiagnosticSeverity::ERROR
+                    && $entry['code'] !== 'HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE')) === 0) {
+                $taxpayer = ($context['persons'][$ownerId]['role'] ?? null) === 'taxpayer';
+                $context['hsaPlans'][$ownerId]['usageCapacity'] = [
+                    'baseAtZero' => ($taxpayer ? 0.0 : $usageShared) + $usageSole + $usageSelf,
+                    'baseAtOne' => ($taxpayer ? $usageShared : 0.0) + $usageSole + $usageSelf,
+                    'sharedBase' => $usageShared, 'soleBase' => $usageSole, 'selfBase' => $usageSelf, 'taxpayer' => $taxpayer,
+                    'statutoryMonthlyAmounts' => !$parameters['contributionLimitCappedByHdhpAnnualDeductible'],
+                    'catchUp' => $catchUpAfterArcher, 'funding' => $fundingAmount,
+                ];
+            }
         }
 
-        // Existing contributions consume the base limit first and then the IRC
-        // 223(b)(3) increase, which is the only ordering that never reports capacity
-        // the statute does not allow.
-        //
+        // IRC 223 and 4973 compare the owner's aggregate contributions with one
+        // limitation; neither provision traces their base/catch-up attribution.
         foreach ($hsaAccounts as $account) {
-            $existing = self::roundMoney(
-                $account['existingContributions']['hsaDeductible']
+            $ownerId = $account['ownerId'];
+            $context['hsaPlans'][$ownerId]['countedContributions'] = self::roundMoney(
+                ($context['hsaPlans'][$ownerId]['countedContributions'] ?? 0.0)
+                + $account['existingContributions']['hsaDeductible']
                 + $account['existingContributions']['hsaEmployerOrCafeteria'],
             );
-            if ($existing <= 0) {
-                continue;
-            }
-            $ownerId = (string) $account['ownerId'];
-            if (
-                !isset($context['hsaBasePools'][$ownerId])
-                || !isset($context['hsaCatchUpPools'][$ownerId])
-            ) {
-                continue;
-            }
-            $poolKeyEarly = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
-            /*
-             * An owner whose own IRC 223(b)(1) limitation is undeterminable still has
-             * a couple-wide IRC 223(b)(5) ceiling where only the (B)(ii) division is
-             * unknown, and the pool reports it. What it may not do is publish a draw
-             * against that ceiling it cannot compute.
-             *
-             * Existing contributions consume the paragraph (1) limitation first and
-             * reach the paragraph (3) additional amount only once it is exhausted, so
-             * wherever a paragraph (3) amount exists the draw turns on the size of
-             * this owner's paragraph (1) share -- the very thing the unresolved IRC
-             * 223(b)(5)(B)(ii) division leaves unknown. familyPoolUsageDeterminable
-             * therefore requires no paragraph (3) amount at all and no IRC 223(b)(4)
-             * reduction, those coming off the paragraph (1) share first and turning on
-             * the same unknown.
-             *
-             * Both bounds were tried and both misreported. Charging everything paid in
-             * accused a 56-year-old who contributed 9750 for 2026 -- 8750 under the
-             * 1/0 division IRC 223(b)(5)(B)(ii) permits, plus their own 1000 -- of
-             * exceeding an 8750 pool. Charging everything less the largest possible
-             * paragraph (3) amount then reported a pool as wholly untouched when a
-             * 9500 qualified HSA funding distribution had left at most 250 of room. A
-             * bound is not a usage, and publishing one as though it were is what
-             * produced both.
-             */
-            if ($context['hsaBasePools'][$ownerId]['limit'] === null) {
-                if ($poolKeyEarly !== null && isset($context['hsaFamilyPools'][$poolKeyEarly])) {
-                    if (($context['hsaPlans'][$ownerId]['familyPoolUsageDeterminable'] ?? false) === true) {
-                        // Nothing can absorb a spill, so the whole contribution came
-                        // out of the couple's limitation whichever way the division
-                        // falls.
-                        self::chargePool($context['hsaFamilyPools'][$poolKeyEarly], (float) ($existing));
-                    } else {
-                        // The contribution is known and the pool's ceiling is
-                        // known; what is unknown is how much of it this pool
-                        // bore. Before, that was a flag saying "not a figure";
-                        // it is the same statement as an interval spanning
-                        // everything still open, and now it says how much is at
-                        // stake rather than only that something is.
-                        $familyPoolEarly =& $context['hsaFamilyPools'][$poolKeyEarly];
-                        $familyPoolEarly['usage'] = [
-                            'minimum' => (float) $familyPoolEarly['usage']['minimum'],
-                            'maximum' => self::roundMoney(
-                                $familyPoolEarly['limit'] === null
-                                    ? (float) $familyPoolEarly['usage']['minimum'] + $existing
-                                    : max(
-                                        (float) $familyPoolEarly['limit'],
-                                        (float) $familyPoolEarly['usage']['minimum'],
-                                    ),
-                            ),
-                        ];
-                        unset($familyPoolEarly);
-                    }
-                }
-                continue;
-            }
-            $basePool =& $context['hsaBasePools'][$ownerId];
-            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['usage']['maximum']));
-            self::chargePool($basePool, (float) ($toBase));
-            unset($basePool);
-            self::chargePool($context['hsaCatchUpPools'][$ownerId], (float) ($existing - $toBase));
-            $poolKey = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
-            if ($poolKey !== null && isset($context['hsaFamilyPools'][$poolKey])) {
-                self::chargePool($context['hsaFamilyPools'][$poolKey], (float) ($toBase));
+        }
+        foreach ($context['hsaPlans'] as &$plan) $plan['existingCountedContributions'] = $plan['countedContributions'] ?? 0.0;
+        unset($plan);
+        self::refreshHsaUsage($context);
+    }
+
+    /** Marginal feasible usages conditional on one coherent couple-wide division. */
+    private static function hsaUsageAtShare(array $plan, float $share): ?array
+    {
+        $total = $plan['countedContributions'] ?? 0.0;
+        if ($total === 0.0) return ['base' => self::settled(0.0), 'catchUp' => self::settled(0.0), 'requiredBase' => 0.0];
+        $capacity = $plan['usageCapacity'] ?? null;
+        if ($capacity === null) return null;
+        $raw = !isset($capacity['sharedBase']) ? $capacity['baseAtZero'] : self::roundHsaDividedMoney(
+            $capacity['sharedBase'], $capacity['soleBase'] + $capacity['selfBase'], $share,
+            !$capacity['taxpayer'], $capacity['statutoryMonthlyAmounts'],
+        );
+        $base = self::nonnegative($raw - $capacity['funding']);
+        $catchUp = self::nonnegative($capacity['catchUp'] - self::nonnegative($capacity['funding'] - $raw));
+        $allowed = min($total, $base + $catchUp);
+        return [
+            'requiredBase' => self::nonnegative(self::roundMoney($total - $catchUp)),
+            'base' => ['minimum' => self::nonnegative(self::roundMoney($allowed - $catchUp)),
+                'maximum' => self::roundMoney(min($allowed, $base))],
+            'catchUp' => ['minimum' => self::nonnegative(self::roundMoney($allowed - $base)),
+                'maximum' => self::roundMoney(min($allowed, $catchUp))],
+        ];
+    }
+
+    /** Evaluate all piecewise-linear bends with one shared taxpayer-division variable. */
+    private static function refreshHsaUsage(array &$context): void
+    {
+        $shares = [0.0, 1.0];
+        foreach ($context['hsaPlans'] as $plan) {
+            $c = $plan['usageCapacity'] ?? null;
+            if ($c === null || $c['baseAtZero'] === $c['baseAtOne']) continue;
+            $total = $plan['countedContributions'] ?? 0.0;
+            foreach ([0.0, $c['funding'], $c['funding'] - $c['catchUp'],
+                $c['funding'] + $total, $c['funding'] + $total - $c['catchUp']] as $raw) {
+                $share = ($raw - $c['baseAtZero']) / ($c['baseAtOne'] - $c['baseAtZero']);
+                if ($share > 0.0 && $share < 1.0) $shares[] = $share;
             }
         }
+        // Equal and opposite shared-month coefficients repeat their rounding
+        // pattern in a one-cent component period inside each analytic segment.
+        $bends = array_values(array_unique($shares, SORT_REGULAR)); sort($bends, SORT_NUMERIC);
+        foreach ($context['hsaPlans'] as $plan) {
+            $c = $plan['usageCapacity'] ?? null;
+            if (empty($c['sharedBase'])) continue;
+            $slope = $c['taxpayer'] ? $c['sharedBase'] : -$c['sharedBase'];
+            for ($i = 0; $i + 1 < count($bends); $i++) {
+                $left = $bends[$i]; $right = $bends[$i + 1];
+                foreach ([$left, ($left + $right) / 2.0, $right] as $anchor) {
+                    $raw = $c['baseAtZero'] + $anchor * $slope;
+                    foreach ([-1, 0, 1] as $offset) {
+                        $crossing = ((floor($raw * 100) + $offset + 0.5) / 100.0 - $c['baseAtZero']) / $slope;
+                        foreach ([-1e-12, 0.0, 1e-12] as $delta) {
+                            $share = $crossing + $delta;
+                            if ($share > $left && $share < $right) $shares[] = $share;
+                        }
+                    }
+                }
+            }
+        }
+        $install = static function (array &$pool, array $values): void {
+            $pool['usageUnknown'] = in_array(null, $values, true);
+            $pool['usage'] = $pool['usageUnknown'] ? self::settled(0.0) : [
+                'minimum' => min(array_column($values, 'minimum')),
+                'maximum' => max(array_column($values, 'maximum')),
+            ];
+        };
+        foreach ($context['hsaPlans'] as $ownerId => $plan) {
+            $usages = array_map(static fn (float $share): ?array => self::hsaUsageAtShare($plan, $share), $shares);
+            if (isset($context['hsaBasePools'][$ownerId])) {
+                $install($context['hsaBasePools'][$ownerId], array_map(static fn (?array $usage): ?array => $usage['base'] ?? null, $usages));
+            }
+            if (isset($context['hsaCatchUpPools'][$ownerId])) {
+                $install($context['hsaCatchUpPools'][$ownerId], array_map(static fn (?array $usage): ?array => $usage['catchUp'] ?? null, $usages));
+            }
+        }
+        foreach ($context['hsaFamilyPools'] as $key => &$pool) {
+            $plans = array_filter($context['hsaPlans'], static fn (array $plan): bool => $plan['familyPoolKey'] === $key);
+            foreach ($plans as $ownerId => $plan) {
+                $necessary = []; $unknown = false;
+                foreach ($shares as $share) {
+                    $sum = 0.0;
+                    foreach ($plans as $otherId => $other) {
+                        if ($otherId === $ownerId) continue;
+                        $usage = self::hsaUsageAtShare($other, $share);
+                        if ($usage === null || $usage['requiredBase'] === null) { $unknown = true; break; }
+                        $sum += $usage['requiredBase'];
+                    }
+                    $necessary[] = self::roundMoney($sum);
+                }
+                $context['hsaPlans'][$ownerId]['familyBaseRoom'] = $pool['limit'] === null || $unknown ? null
+                    : self::nonnegative(self::roundMoney($pool['limit'] - max($necessary)));
+            }
+            $values = [];
+            foreach ($shares as $share) {
+                $minimum = 0.0; $maximum = 0.0; $unknown = false;
+                foreach ($plans as $plan) {
+                    $usage = self::hsaUsageAtShare($plan, $share);
+                    if ($usage === null) { $unknown = true; break; }
+                    $minimum += $usage['base']['minimum']; $maximum += $usage['base']['maximum'];
+                }
+                $values[] = $unknown ? null : ['minimum' => min($pool['limit'] ?? INF, self::roundMoney($minimum)), 'maximum' => min($pool['limit'] ?? INF, self::roundMoney($maximum))];
+            }
+            $install($pool, $values);
+        }
+        unset($pool);
     }
 
     /** @param array<string,mixed> $context
@@ -16245,6 +16446,29 @@ final class Engine
         $familyPoolKey = $plan['familyPoolKey'];
         $hasFamily = $familyPoolKey !== null && isset($context['hsaFamilyPools'][$familyPoolKey]);
 
+        $allocationStatus = self::accountStatusFromDiagnostics($plan['status'], $diagnostics);
+        $existingExcess = $plan['statutoryMaximum'] === null ? 0.0
+            : self::nonnegative(self::roundMoney(($plan['existingCountedContributions'] ?? 0.0) - $plan['statutoryMaximum']));
+        if ($existingExcess > 0.0) $diagnostics[] = self::diagnostic(
+            'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT', DiagnosticSeverity::ERROR,
+            "Existing contributions across this owner's HSAs exceed the combined IRC 223(b) limitation by $" . self::localeNumber($existingExcess) . '. Component usage excludes the aggregate excess rather than assigning it to base or catch-up.',
+            "accounts.{$account['id']}.existingContributions", 'IRC 223(b); IRC 4973(g)',
+        );
+        if ($hasFamily && $context['hsaFamilyPools'][$familyPoolKey]['limit'] !== null) {
+            $minimumBasePaid = 0.0; $bounded = true;
+            foreach ($context['hsaPlans'] as $member) {
+                if ($member['familyPoolKey'] !== $familyPoolKey) continue;
+                if (!isset($member['usageCapacity'])) { $bounded = false; break; }
+                $minimumBasePaid += self::nonnegative(($member['existingCountedContributions'] ?? 0.0) - $member['usageCapacity']['catchUp']);
+            }
+            $familyExcess = self::nonnegative(self::roundMoney($minimumBasePaid - $context['hsaFamilyPools'][$familyPoolKey]['limit']));
+            if ($bounded && $familyExcess > 0.0) $diagnostics[] = self::diagnostic(
+                'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT', DiagnosticSeverity::ERROR,
+                "Existing contributions across the spouses' HSAs require at least $" . self::localeNumber($familyExcess) . ' more base capacity than the shared family limitation after allowing each owner their separate age-55 amount. This aggregate excess does not depend on their division.',
+                "accounts.{$account['id']}.existingContributions", 'IRC 223(b)(3); IRC 223(b)(5); IRC 4973(g)',
+            );
+        }
+
         if ($plan['status'] === CalculationStatus::UNAVAILABLE->value || !$hasBase || !$hasCatchUp) {
             $outcome = [
                 'status' => CalculationStatus::UNAVAILABLE->value,
@@ -16259,7 +16483,13 @@ final class Engine
             return $outcome;
         }
 
-        if ($plan['status'] === CalculationStatus::INDETERMINATE->value) {
+        $rawFamilyGuardUnknown = $hasFamily && ($plan['familyBaseRoom'] ?? null) === null;
+        if ($rawFamilyGuardUnknown && $plan['status'] !== CalculationStatus::INDETERMINATE->value) $diagnostics[] = self::diagnostic(
+            'HSA_HOUSEHOLD_CONTRIBUTION_FACTS_INDETERMINATE', DiagnosticSeverity::ERROR,
+            "The spouse's supplied HSA contributions require an established age-55 capacity to determine their necessary draw on the household base. Supply the spouse's age and coherent coverage facts; an unstated catch-up amount cannot free household contribution room.",
+            "accounts.{$account['id']}", 'IRC 223(b)(3); IRC 223(b)(4)(C); IRC 223(b)(5)',
+        );
+        if ($plan['status'] === CalculationStatus::INDETERMINATE->value || $rawFamilyGuardUnknown) {
             self::reportPoolWithoutConsuming($context['hsaBasePools'][$ownerId], $sharedLimits);
             if ($hasFamily) {
                 self::reportPoolWithoutConsuming($context['hsaFamilyPools'][$familyPoolKey], $sharedLimits);
@@ -16278,23 +16508,32 @@ final class Engine
             return $outcome;
         }
 
-        $refs = [['hsaBasePools', $ownerId]];
-        if ($hasFamily) {
-            $refs[] = ['hsaFamilyPools', $familyPoolKey];
-        }
-        $remaining = [];
-        foreach ($refs as [$category, $key]) {
-            $remaining[] = self::poolRemaining($context[$category][$key]);
-        }
-        $baseAmount = self::takeAcrossPools($context, $refs, self::minMoney(...$remaining), $sharedLimits);
-        $catchUpPool =& $context['hsaCatchUpPools'][$ownerId];
-        $catchUpAmount = self::takeFromPool(
-            $catchUpPool,
-            self::poolRemaining($catchUpPool) ?? 0.0,
-            $sharedLimits,
-        );
-        unset($catchUpPool);
-        $total = self::roundMoney($baseAmount + $catchUpAmount);
+        // Allocate against the correlated owner total, then recompute audit margins.
+        $beforeBase = $context['hsaBasePools'][$ownerId]['usage'];
+        $beforeCatchUp = $context['hsaCatchUpPools'][$ownerId]['usage'];
+        $beforeFamily = $hasFamily ? $context['hsaFamilyPools'][$familyPoolKey]['usage'] : null;
+        $ownerRoom = self::nonnegative(self::roundMoney(($plan['statutoryMaximum'] ?? 0.0)
+            - ($plan['countedContributions'] ?? 0.0)));
+        // Preserve the household guard while respecting complementary base/catch-up attribution.
+        $total = $hasFamily ? min($ownerRoom, self::nonnegative(self::roundMoney(
+            ($plan['familyBaseRoom'] ?? 0.0) + ($context['hsaCatchUpPools'][$ownerId]['limit'] ?? 0.0)
+            - ($plan['countedContributions'] ?? 0.0),
+        ))) : $ownerRoom;
+        $context['hsaPlans'][$ownerId]['countedContributions'] = self::roundMoney(($plan['countedContributions'] ?? 0.0) + $total);
+        self::refreshHsaUsage($context);
+        $report = static function (array $pool, array $before, array $componentBefore, array $componentAfter) use ($total, &$sharedLimits): void {
+            $draw = [
+                'minimum' => self::nonnegative(self::roundMoney($componentAfter['minimum'] - $componentBefore['maximum'])),
+                'maximum' => min($total, self::nonnegative(self::roundMoney($componentAfter['maximum'] - $componentBefore['minimum']))),
+            ];
+            $use = self::sharedLimitUse($pool, $before, self::intervalIsSettled($draw) ? $draw['minimum'] : null);
+            if (!self::intervalIsSettled($draw)) $use['possibleUsedByAccount'] = $draw;
+            $sharedLimits[] = $use;
+        };
+        $afterBase = $context['hsaBasePools'][$ownerId]['usage'];
+        $report($context['hsaBasePools'][$ownerId], $beforeBase, $beforeBase, $afterBase);
+        if ($hasFamily) $report($context['hsaFamilyPools'][$familyPoolKey], $beforeFamily, $beforeBase, $afterBase);
+        $report($context['hsaCatchUpPools'][$ownerId], $beforeCatchUp, $beforeCatchUp, $context['hsaCatchUpPools'][$ownerId]['usage']);
 
         // IRC 106(d) employer and cafeteria-plan contributions are excluded from
         // income rather than deducted, and IRC 223(b)(4)(B) makes them reduce the
@@ -16313,7 +16552,7 @@ final class Engine
         $annual['hsaDeductible'] = self::roundMoney($annual['hsaDeductible'] + $toDeductible);
 
         $outcome = [
-            'status' => self::accountStatusFromDiagnostics($plan['status'], $diagnostics),
+            'status' => $allocationStatus,
             'statutoryMaximum' => $plan['statutoryMaximum'],
             'annualComponents' => $annual,
             'additionalComponents' => $additional,
@@ -16378,6 +16617,10 @@ final class Engine
      */
     private static function sharedLimitUse(array $pool, array $usageBefore, ?float $taken): array
     {
+        if (!empty($pool['usageUnknown'])) return [
+            'id' => $pool['id'], 'legalLimit' => $pool['legalLimit'], 'limit' => $pool['limit'],
+            'usedBeforeAccount' => null, 'usedByAccount' => $taken === 0.0 ? 0.0 : null, 'remainingAfterAccount' => null,
+        ];
         $settledUsage = self::poolUsageSettled($pool);
         $remaining = self::poolRemainingInterval($pool);
         $settledBefore = self::intervalIsSettled($usageBefore);
@@ -16561,7 +16804,7 @@ final class Engine
         $sharedLimits[] = self::sharedLimitUse(
             $pool,
             $pool['usage'],
-            self::poolUsageSettled($pool) ? 0.0 : null,
+            empty($pool['usageUnknown']) && self::poolUsageSettled($pool) ? 0.0 : null,
         );
     }
 
