@@ -8524,7 +8524,7 @@
     },
     {
       "name": "2005 a spouse's conflicting self-only deductibles reach the household ceiling in a capped year",
-      "description": "Notice 2004-50 Q&A-31 applies the lowest-family-deductible comparison only to competing family plans. The taxpayer actually holds family coverage with deductible 5000, while both complete spouse statements say self-only coverage. The spouse's 2000 or 3000 self-only deductible therefore does not compete: IRC §223(b)(5)(A) recharacterizes the spouse to the taxpayer's family limitation of min(5250,5000)=5000. Both are eligible all year, so equal division gives 2500 to the taxpayer in either completion; no last-month rule exists before 2007. The old fixture incorrectly treated the unresolved self-only deductible as a changing family ceiling. The spouse's own contradictory statements remain refused.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. Notice 2004-50 Q&A-31 applies the lowest-family-deductible comparison only to competing family plans. The taxpayer actually holds family coverage with deductible 5000, while both complete spouse statements say self-only coverage. The spouse's 2000 or 3000 self-only deductible therefore does not compete: IRC §223(b)(5)(A) recharacterizes the spouse to the taxpayer's family limitation of min(5250,5000)=5000. Both are eligible all year, so equal division gives 2500 to the taxpayer in either completion; no last-month rule exists before 2007. The old fixture incorrectly treated the unresolved self-only deductible as a changing family ceiling. The spouse's own contradictory statements remain refused.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -23249,7 +23249,7 @@
     },
     {
       "name": "2005 unknown capped-year spouse facts remain conservative",
-      "description": "IRC §223(b)(2) before 2007 reads the spouse family deductible; a missing continuous deductible has no finite universal completion and remains indeterminate.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. IRC §223(b)(2) before 2007 reads the spouse family deductible; a missing continuous deductible has no finite universal completion and remains indeterminate.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -23641,7 +23641,7 @@
     },
     {
       "name": "2005 coherent competing family deductible variants retain a differing result",
-      "description": "Before 2007 IRC §223(b)(2) caps the monthly amount by the annual deductible; IRC §223(b)(5)(A) selects the lower of competing family deductibles. Taxpayer family all year has deductible 5000 and spouse complete family schedules state 3000 versus 4000. With agreed taxpayer share 1, those whole completions yield 3000 versus 4000, so capacity remains indeterminate. Exhausting a finite list of complete statements does not license choosing one deductible.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. Before 2007 IRC §223(b)(2) caps the monthly amount by the annual deductible; IRC §223(b)(5)(A) selects the lower of competing family deductibles. Taxpayer family all year has deductible 5000 and spouse complete family schedules state 3000 versus 4000. With agreed taxpayer share 1, those whole completions yield 3000 versus 4000, so capacity remains indeterminate. Exhausting a finite list of complete statements does not license choosing one deductible.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -24202,7 +24202,7 @@
     },
     {
       "name": "2005 coherent partial January coverage with an established deductible",
-      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -24256,7 +24256,7 @@
     },
     {
       "name": "2005 coherent wholly unknown coverage with an established deductible",
-      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -24307,7 +24307,7 @@
     },
     {
       "name": "2005 coherent explicit zero eligible months needs no missing deductible",
-      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A fixed spouse deductible of 5000 cannot lower that amount, and an explicit empty eligible-month list introduces no competing plan and needs no deductible. Sole-eligible months belong wholly to the taxpayer under Q&A-31; shared months are also wholly allocated to that taxpayer by agreement. Thus 5000 is invariant. January-only eligibility divides 5000 / 12 = 416.67; wholly unknown eligibility leaves the divided audit portion null; no eligible months fixes it at zero. No last-month rule exists before 2007.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
@@ -24358,7 +24358,7 @@
     },
     {
       "name": "2005 coherent a competing lower family deductible does not collapse",
-      "description": "For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A spouse family January completion introduces a competing deductible of 3000, making January worth 3000 rather than 5000; a self-only January plan does not compete. The annual taxpayer amounts are (3000 + 11 × 5000) / 12 = 4833.33 versus 5000, so the result remains indeterminate.",
+      "description": "Rev. Proc. 2004-71 §3.22 states the 2005 family monthly limit as one twelfth of the lesser of the annual deductible or 5250. For 2005 the family dollar limit is 5250. IRC §223(b)(2) caps the taxpayer family monthly amount by the supplied annual deductible 5000, giving a full-year limitation of 5000. The agreed taxpayer share is one. Each wholly completed spouse schedule must also pass the IRC §223(b)(5)(A) lowest-family-deductible rule before division. A spouse family January completion introduces a competing deductible of 3000, making January worth 3000 rather than 5000; a self-only January plan does not compete. The annual taxpayer amounts are (3000 + 11 × 5000) / 12 = 4833.33 versus 5000, so the result remains indeterminate.",
       "input": {
         "taxYear": 2005,
         "filingStatus": "MFJ",
