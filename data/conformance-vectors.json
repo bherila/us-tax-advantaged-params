@@ -23214,7 +23214,7 @@
     },
     {
       "name": "2026 absent spouse person still withholds the unestablished Archer operand",
-      "description": "The absent spouse person does not establish the Archer operand; no coverage completion is allowed to invent that person.",
+      "description": "Rev. Proc. 2025-19 sets the 2026 family HSA amount at 8750. IRC §223(b)(5)(B)(i) reduces the married couple’s family limitation by both spouses’ aggregate Archer MSA contributions before the division in §223(b)(5)(B)(ii). The taxpayer is under 55, has family coverage for the entire year, and is assigned the whole agreed share. Holding the other facts fixed, a spouse Archer amount of 0 leaves 8750, while a synthetic spouse Archer amount of 1000 leaves 7750. Because the spouse person is absent, the input does not establish that operand; completing coverage cannot establish it. The asserted indeterminate status and null statutory maximum report these differing possible statutory amounts rather than assuming the absent spouse contributed zero.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
