@@ -16541,6 +16541,7 @@ final class Engine
             };
             $ownedAccounts = array_values(array_filter($sorted, static fn (array $account): bool => $account['ownerId'] === $ownerId && self::traits($account['type'])['family'] === 'hsa'));
             $reference = null;
+            $referenceModels = [];
             $invariant = true;
             $nullableAudit = ['proratedContributionLimit', 'contributionLimitWithoutLastMonthRule', 'familyLimitShare', 'sharedFamilyContributionLimit', 'dividedFamilyContributionLimit'];
             foreach ($completions() as $coverage) {
@@ -16554,12 +16555,33 @@ final class Engine
                 foreach (['hsaBasePools', 'hsaCatchUpPools', 'hsaFamilyPools', 'hsaPlans', 'hsaResolvedOutcomes'] as $key) $variant[$key] = [];
                 self::initializeHsaPools($variant, $variantAccounts);
                 $outcomes = [];
-                foreach ($ownedAccounts as $account) $outcomes[] = self::allocateHsa($variant, $account);
+                $models = [];
+                foreach ($ownedAccounts as $account) {
+                    $outcomes[] = self::allocateHsa($variant, $account);
+                    $snapshot = [];
+                    foreach ($variant['hsaPlans'] as $id => $plan) {
+                        if ($id !== $ownerId && ($id !== $spouseId || (($plan['existingCountedContributions'] ?? 0) <= 0 && ($variant['persons'][$id]['qualifiedHsaFundingDistributions'] ?? 0) <= 0))) continue;
+                        $snapshot[] = [
+                            'ownerId' => $id, 'countedContributions' => $plan['countedContributions'] ?? 0,
+                            'existingCountedContributions' => $plan['existingCountedContributions'] ?? 0,
+                            'familyPoolKey' => $plan['familyPoolKey'], 'usageCapacity' => $plan['usageCapacity'] ?? null,
+                        ];
+                    }
+                    usort($snapshot, static fn (array $a, array $b): int => strcmp($a['ownerId'], $b['ownerId']));
+                    $models[] = $snapshot;
+                }
+                foreach ($models as $model) {
+                    foreach ($model as $plan) {
+                        if ($plan['usageCapacity'] === null || $plan['familyPoolKey'] !== ($context['hsaPlans'][$plan['ownerId']]['familyPoolKey'] ?? null)) { $invariant = false; break 2; }
+                    }
+                }
+                if (!$invariant) break;
                 foreach ($outcomes as $outcome) {
                     if ($outcome['status'] === CalculationStatus::INDETERMINATE->value || ($outcome['hsaDetail'] ?? null) === null) { $invariant = false; break; }
                 }
                 if (!$invariant) break;
-                if ($reference === null) { $reference = $outcomes; continue; }
+                if ($reference === null) { $reference = $outcomes; $referenceModels = $models; continue; }
+                if (json_encode($models) !== json_encode($referenceModels)) { $invariant = false; break; }
                 foreach ($outcomes as $i => $current) {
                     $expected = $reference[$i];
                     $projection = static function (array $outcome): array { unset($outcome['diagnostics'], $outcome['hsaDetail']); return $outcome; };
@@ -16581,7 +16603,7 @@ final class Engine
                     "All coherent completions of the spouse's unresolved coverage give this account the same contribution amounts, shared-limit usage, and last-month-rule candidate and testing-period state. Varying nullable audit fields are withheld; the spouse's own coverage remains unresolved.",
                     "persons.{$spouseId}.hsaCoverage", 'IRC 223(b); Notice 2008-52; Notice 2004-50 Q&A-31',
                 );
-                $context['hsaResolvedOutcomes'][$ownedAccounts[$i]['id']] = $outcome;
+                $context['hsaResolvedOutcomes'][$ownedAccounts[$i]['id']] = ['outcome' => $outcome, 'usagePlans' => $referenceModels[$i]];
             }
         }
     }
@@ -16590,21 +16612,24 @@ final class Engine
     {
         if (isset($context['hsaResolvedOutcomes'][$account['id']])) {
             $recovered = $context['hsaResolvedOutcomes'][$account['id']];
-            // Later refused accounts must see the already allocated family usage.
-            foreach ($recovered['sharedLimits'] as $shared) {
-                if ($shared['usedByAccount'] === null) continue;
+            // Keep the model authoritative; refresh recomputes marginal intervals.
+            foreach ($recovered['usagePlans'] as $model) {
+                $id = $model['ownerId'];
+                $context['hsaPlans'][$id]['countedContributions'] = $model['countedContributions'];
+                $context['hsaPlans'][$id]['existingCountedContributions'] = $model['existingCountedContributions'];
+                $context['hsaPlans'][$id]['usageCapacity'] = $model['usageCapacity'];
+            }
+            foreach ($recovered['outcome']['sharedLimits'] as $shared) {
                 foreach (['hsaBasePools', 'hsaCatchUpPools', 'hsaFamilyPools'] as $poolKey) {
                     foreach ($context[$poolKey] as $id => $pool) {
-                        if ($pool['id'] !== $shared['id']) continue;
-                        $context[$poolKey][$id]['limit'] = $shared['limit'];
-                        $before = $shared['usedBeforeAccount'] === null ? ($shared['possibleUsedBeforeAccount'] ?? null) : ['minimum' => $shared['usedBeforeAccount'], 'maximum' => $shared['usedBeforeAccount']];
-                        if ($before !== null) $context[$poolKey][$id]['usage'] = ['minimum' => self::roundMoney($before['minimum'] + $shared['usedByAccount']), 'maximum' => self::roundMoney($before['maximum'] + $shared['usedByAccount'])];
+                        if ($pool['id'] === $shared['id']) $context[$poolKey][$id]['limit'] = $shared['limit'];
                     }
                 }
             }
-            return $recovered;
+            self::refreshHsaUsage($context);
+            return $recovered['outcome'];
         }
-        $ownerId = (string) $account['ownerId'];
+        $ownerId = $account['ownerId'];
         $plan = $context['hsaPlans'][$ownerId];
         $annual = $account['existingContributions'];
         $additional = self::zeroComponents();

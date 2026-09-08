@@ -22925,7 +22925,7 @@
     },
     {
       "name": "2026 recovered owner allocation advances family usage before refused spouse readback",
-      "description": "Rev. Proc. 2025-19 sets family 8750 and self-only 4400. Taxpayer family January-November and self-only December gives (11×8750+4400)/12=8387.50 under IRC §223(b)(1). The spouse statements are each one complete January-only schedule, family or self-only. The full-contribution candidate is at most (8750+11×4400)/12=4762.50; the couple comparison therefore retains the monthly candidate on either reading. An agreed taxpayer share 1 leaves 8387.50; candidateSelected is false and attributable/testing amounts are 0/null. The conflicted spouse is still refused. No monthly combination outside the two supplied schedules is synthesized. The synthetic 1200 already contributed by the under 55 spouse consumes the family pool before allocation under either completion. The invariant 8387.50 household ceiling leaves 7187.50 for the taxpayer; after that allocation the refused spouse must report family usage 8387.50 and remaining 0 rather than phantom available room.",
+      "description": "Rev. Proc. 2025-19 gives family 8750 and self-only 4400. Family January–November and self-only December yields (11 × 8750 + 4400) / 12 = 8387.50; the agreed taxpayer whole share retains that ceiling under either January-only spouse schedule. The under-55 spouse has an agreed zero share but a synthetic existing contribution of 1200. Its allowable component usage is zero; its actual contribution nevertheless reserves 1200 under the household guard, leaving 7187.50 for the taxpayer. After that allocation, the refused spouse must report legal family usage 7187.50 and legal remainder 1200, rather than the unspent original pool. That remainder is reserved against the spouse actual excess, not additional capacity granted to either owner.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -23050,8 +23050,8 @@
         "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
         "accounts.0.hsa.testingPeriod": null,
         "accounts.1.status": "indeterminate",
-        "accounts.1.sharedLimits.1.usedBeforeAccount": 8387.5,
-        "accounts.1.sharedLimits.1.remainingAfterAccount": 0
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 7187.5,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 1200
       },
       "expectDiagnosticCodes": [
         "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
@@ -23995,6 +23995,206 @@
         "accounts.0.hsa.amountAttributableToLastMonthRule": 0,
         "accounts.0.hsa.testingPeriod": null,
         "accounts.0.hsa.dividedFamilyContributionLimit": 729.17
+      },
+      "expectDiagnosticCodes": [
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
+      ]
+    },
+    {
+      "name": "2026 coherent recovery preserves marginal base-catch-up draws and later account usage",
+      "description": "IRC §223(b)(3) adds 1000 for an owner age 55 or older. The established full-year owner has family January–November and self-only December, so (11 × 8750 + 4400) / 12 + 1000 = 9387.50. The monthly candidate wins under both complete January spouse statements and an agreed whole taxpayer share retains it. A synthetic existing contribution of 500 can occupy base or catch-up: both pre-allocation marginal usages span 0–500. Filling the remaining 8887.50 establishes final base usage 8387.50 and catch-up usage 1000; the additional base draw therefore spans 7887.50–8387.50 and the catch-up draw spans 500–1000. These are complementary marginal ranges, not amounts to sum independently. The second owner account and later refused spouse must see family usage 8387.50 and zero remainder after the cached allocation refreshes the authoritative usage model.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1985
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 500
+            }
+          },
+          {
+            "id": "t-second",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 2,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-family-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 3,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-self-jan",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 4,
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        }
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 9387.5,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 8887.5,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.0.usedByAccount": null,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.minimum": 7887.5,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.maximum": 8387.5,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.minimum": 500,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.maximum": 1000,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.1.sharedLimits.1.remainingAfterAccount": 0,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.sharedLimits.1.usedBeforeAccount": 8387.5,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": 0
       },
       "expectDiagnosticCodes": [
         "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"

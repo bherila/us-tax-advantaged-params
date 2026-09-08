@@ -9591,7 +9591,7 @@ interface CalculationContext {
   hsaCatchUpPools: Map<string, LimitPool>;
   hsaFamilyPools: Map<string, LimitPool>;
   hsaPlans: Map<string, HsaOwnerPlan>;
-  hsaResolvedOutcomes?: Map<string, AllocationOutcome>;
+  hsaResolvedOutcomes?: Map<string, { outcome: AllocationOutcome; usagePlans: HsaCoherentUsagePlan[] }>;
   healthFsaPools: Map<string, LimitPool>;
   healthFsaPlans: Map<string, HealthFsaAccountPlan>;
   dependentCarePools: Map<string, LimitPool>;
@@ -15396,6 +15396,14 @@ function refreshHsaUsage(context: CalculationContext): void {
   }
 }
 
+interface HsaCoherentUsagePlan {
+  ownerId: string;
+  countedContributions: Money;
+  existingCountedContributions: Money;
+  familyPoolKey: string | null;
+  usageCapacity: HsaOwnerPlan["usageCapacity"];
+}
+
 /** One coherent schedule, including its annual deductible, never a set of monthly votes. */
 function hsaCompletionStatements(context: CalculationContext, accounts: NormalizedAccount[], personId: string): HsaCoverageVariant[] {
   const statements: HsaCoverageVariant[] = [];
@@ -15500,6 +15508,7 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
     }
     const ownedAccounts = sorted.filter((account) => account.ownerId === ownerId && ACCOUNT_TRAITS[account.type].family === "hsa");
     let reference: AllocationOutcome[] | null = null;
+    let referenceModels: HsaCoherentUsagePlan[][] = [];
     let invariant = true;
     const nullableAudit = new Set(["proratedContributionLimit", "contributionLimitWithoutLastMonthRule", "familyLimitShare", "sharedFamilyContributionLimit", "dividedFamilyContributionLimit"]);
     for (const coverage of completions()) {
@@ -15513,9 +15522,29 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
         hsaResolvedOutcomes: undefined,
       };
       initializeHsaPools(variant, variantAccounts);
-      const outcomes = ownedAccounts.map((account) => allocateHsa(variant, account));
+      const outcomes: AllocationOutcome[] = [];
+      const models: HsaCoherentUsagePlan[][] = [];
+      for (const account of ownedAccounts) {
+        outcomes.push(allocateHsa(variant, account));
+        // A later refresh rebuilds usage from these facts, so output equality
+        // alone is insufficient. The refused source needs a model only when
+        // its counted contributions or qualified funding distribution are positive.
+        models.push([...variant.hsaPlans].filter(([id, plan]) =>
+          id === ownerId || (id === spouseId && ((plan.existingCountedContributions ?? 0) > 0 ||
+            (variant.persons.get(id)?.qualifiedHsaFundingDistributions ?? 0) > 0)),
+        ).map(([id, plan]) => ({
+          ownerId: id, countedContributions: plan.countedContributions ?? 0,
+          existingCountedContributions: plan.existingCountedContributions ?? 0,
+          familyPoolKey: plan.familyPoolKey,
+          usageCapacity: plan.usageCapacity === undefined ? undefined : { ...plan.usageCapacity },
+        })).sort((a, b) => a.ownerId < b.ownerId ? -1 : a.ownerId > b.ownerId ? 1 : 0));
+      }
+      if (models.some((model) => model.some((plan) =>
+        plan.usageCapacity === undefined || plan.familyPoolKey !== context.hsaPlans.get(plan.ownerId)?.familyPoolKey,
+      ))) { invariant = false; break; }
       if (outcomes.some((outcome) => outcome.status === CalculationStatus.INDETERMINATE || outcome.hsaDetail == null)) { invariant = false; break; }
-      if (reference === null) { reference = outcomes; continue; }
+      if (reference === null) { reference = outcomes; referenceModels = models; continue; }
+      if (JSON.stringify(models) !== JSON.stringify(referenceModels)) { invariant = false; break; }
       for (let i = 0; i < outcomes.length; i++) {
         const current = outcomes[i];
         const expected = reference[i];
@@ -15545,7 +15574,7 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
         "All coherent completions of the spouse's unresolved coverage give this account the same contribution amounts, shared-limit usage, and last-month-rule candidate and testing-period state. Varying nullable audit fields are withheld; the spouse's own coverage remains unresolved.",
         `persons.${spouseId}.hsaCoverage`, "IRC 223(b); Notice 2008-52; Notice 2004-50 Q&A-31",
       ));
-      context.hsaResolvedOutcomes.set(ownedAccounts[i].id, reference[i]);
+      context.hsaResolvedOutcomes.set(ownedAccounts[i].id, { outcome: reference[i], usagePlans: referenceModels[i] });
     }
   }
 }
@@ -15553,17 +15582,22 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
 function allocateHsa(context: CalculationContext, account: NormalizedAccount): AllocationOutcome {
   const recovered = context.hsaResolvedOutcomes?.get(account.id);
   if (recovered) {
-    // The refused spouse may be reported later. Advance the shared live audit
-    // from the invariant completed outcomes, so it cannot show phantom room.
-    for (const shared of recovered.sharedLimits) {
-      const pools = [...context.hsaBasePools.values(), ...context.hsaCatchUpPools.values(), ...context.hsaFamilyPools.values()];
-      const pool = pools.find((entry) => entry.id === shared.id);
-      if (!pool || shared.usedByAccount === null) continue;
-      pool.limit = shared.limit;
-      const before = shared.usedBeforeAccount === null ? shared.possibleUsedBeforeAccount : { minimum: shared.usedBeforeAccount, maximum: shared.usedBeforeAccount };
-      if (before) pool.usage = { minimum: roundMoney(before.minimum + shared.usedByAccount), maximum: roundMoney(before.maximum + shared.usedByAccount) };
+    // Refresh derives intervals from counted totals and capacities. Restore the
+    // invariant numerical model, not scalar pool usages that refresh would erase.
+    // The source spouse's unresolved status and diagnostics are untouched.
+    for (const model of recovered.usagePlans) {
+      const plan = context.hsaPlans.get(model.ownerId)!;
+      plan.countedContributions = model.countedContributions;
+      plan.existingCountedContributions = model.existingCountedContributions;
+      plan.usageCapacity = model.usageCapacity === undefined ? undefined : { ...model.usageCapacity };
     }
-    return recovered;
+    const pools = [...context.hsaBasePools.values(), ...context.hsaCatchUpPools.values(), ...context.hsaFamilyPools.values()];
+    for (const shared of recovered.outcome.sharedLimits) {
+      const pool = pools.find((entry) => entry.id === shared.id);
+      if (pool) pool.limit = shared.limit;
+    }
+    refreshHsaUsage(context);
+    return recovered.outcome;
   }
   const plan = context.hsaPlans.get(account.ownerId)!;
   const annual = cloneComponentsFromComponents(account.existingContributions);

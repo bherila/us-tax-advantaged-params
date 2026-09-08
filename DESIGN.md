@@ -208,8 +208,13 @@ receives no hypothetical additional allocation.
 Recovery requires identical account contribution amounts, shared-limit records,
 last-month candidate selection and testing-period state across all completions.
 Already-nullable audit fields are intersected: a differing figure becomes null.
-Cached outcomes advance the live shared-pool audit before later refused accounts
-are reported; candidate pool identities are never invented or transplanted.
+Cached outcomes retain the invariant owner capacities and aggregate counted
+contributions after each allocation. The refused spouse's numerical usage model
+must also agree across completions when that spouse has counted contributions or a qualified funding distribution.
+Installing those numerical facts and refreshing the ordinary interval model
+keeps later accounts' shared-pool audits current, including marginal draws with
+no scalar value. Source status and diagnostics remain unresolved; candidate
+pool identities are never invented or transplanted.
 
 A complete supplied coverage statement and its deductible are one correlated
 variant. An incomplete statement retains its explicit eligible months. An entirely
