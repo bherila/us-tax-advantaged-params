@@ -24602,6 +24602,463 @@
       "expectDiagnosticCodes": [
         "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
       ]
+    },
+    {
+      "name": "2026 a plan group carries a host IRC 457(b) plan's IRC 457(b)(3) provision to its emergency savings record",
+      "description": "IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account as a designated Roth account within an applicable retirement plan, and IRC 402A(f)(1)(C) makes an eligible governmental IRC 457(b) plan one of the three hosts, so such an account is an account inside a plan rather than an eligible plan of its own: it has no plan document, no normal retirement age and no IRC 457(b)(3) provision except its host's. planRules.section457PlanGroupId is how the caller states that two records are that one plan. 26 CFR 1.457-5(c) counts the special catch-up \"only to the extent that an annual deferral is made for a participant under an eligible plan as a result of plan provisions permitted under Sec. 1.457-4(c)(3)\", so whether the emergency savings record may hold one turns on whether the plan it belongs to provides it, and here the host's provision is the plan's. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). The host supplies U = $8,000, so the plan's special catch-up above the basic ceiling is min($24,500, $8,000) = $8,000 and its statutory maximum is B + $8,000 = $32,500. The emergency savings record already holds $1,000 of IRC 457(b)(3) catch-up, which the plan's own provision supports, so 1.457-5(c) recognises it and no diagnostic is raised. 26 CFR 1.457-5(a) then allows the basic annual limitation plus one catch-up method and 1.457-5(b) applies that on an aggregate basis, so the host takes the whole $24,500 basic limitation and $8,000 - $1,000 = $7,000 of catch-up, reported as special457CatchUp because a governmental IRC 457(b) account that is not a designated Roth account is pre-tax. The emergency savings record's own statutory maximum is the IRC 402A(e)(3)(A) balance cap of $2,600 above the $1,000 it holds, or $3,600.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457PlanGroupId": "plan-w"
+            },
+            "existingContributions": {
+              "special457RothCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 32500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 7000,
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 3600,
+        "accounts.1.contributionComponents.special457RothCatchUp": 1000
+      }
+    },
+    {
+      "name": "2026 without a plan group an emergency savings record is its own plan and provides no IRC 457(b)(3) catch-up",
+      "description": "The counterpart of the plan-group case, holding every other fact fixed: absent planRules.section457PlanGroupId each AccountInput is one eligible plan, which is the contract that held before the key existed. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). The host supplies U = $8,000 and its own statutory maximum is therefore B + min($24,500, $8,000) = $32,500, but the emergency savings record now states no IRC 457(b)(3) provision of its own, and 26 CFR 1.457-5(c) counts the special catch-up only as a result of \"plan provisions permitted under Sec. 1.457-4(c)(3)\". The $1,000 it holds is therefore recognised under no plan and SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN reports it; the component is preserved rather than reclassified, because which limitation it was made under is a fact only the caller has. That unreconciled classification is a participant-wide fact under 1.457-5(b), so no further catch-up is allocated on the host either and it stops at the $24,500 basic annual limitation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0
+            },
+            "existingContributions": {
+              "special457RothCatchUp": 1000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 32500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.special457RothCatchUp": 1000,
+        "accounts.1.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN"
+      }
+    },
+    {
+      "name": "2026 one plan's IRC 457(b)(3) ceiling bounds what its two records absorb between them",
+      "description": "IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account as a designated Roth account within an applicable retirement plan, and IRC 402A(f)(1)(C) makes an eligible governmental IRC 457(b) plan one of the three hosts, so such an account is an account inside a plan rather than an eligible plan of its own: it has no plan document, no normal retirement age and no IRC 457(b)(3) provision except its host's. planRules.section457PlanGroupId is how the caller states that two records are that one plan. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). The participant has two plans. Plan W is stated as two records, a host and its emergency savings account, sharing one group id and supplying U = $3,000, so its 26 CFR 1.457-4(c)(3)(i) ceiling is B + min($24,500, $3,000) = $27,500 and it provides $3,000 above the basic limitation. Plan Y supplies U = $8,000 and provides $8,000. 26 CFR 1.457-5(c) applies the individual limitation \"using the catch-up amount under whichever plan has the largest catch-up amount applicable to the participant\", so the participant is entitled to $8,000. That entitlement does not enlarge Plan W: 1.457-5(c) recognises the amount only as a result of the provisions of the plan the deferral is made under, and Plan W's provisions produce $3,000 however many records describe it. Plan W's host takes the whole $24,500 basic annual limitation, which 1.457-5(b) aggregates across the participant's plans, and $3,000 of catch-up; its emergency savings record can then add nothing, because the plan's own ceiling is spent even though the participant's $8,000 and the record's own $2,600 IRC 402A(e)(3)(A) room are not. The remaining $8,000 - $3,000 = $5,000 of the participant's entitlement is available to Plan Y, which provides it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457PlanGroupId": "plan-w"
+            }
+          },
+          {
+            "id": "y",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "f",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 27500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 3000,
+        "accounts.1.status": "determinate",
+        "accounts.1.statutoryMaximumAnnualContribution": 2600,
+        "accounts.1.maximumAnnualContributionBasedOnInputs": 0,
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.2.status": "determinate",
+        "accounts.2.statutoryMaximumAnnualContribution": 32500,
+        "accounts.2.contributionComponents.special457CatchUp": 5000
+      }
+    },
+    {
+      "name": "2026 the same two records without a plan group are two plans with two ceilings",
+      "description": "The counterpart of the plan-group ceiling case: the same three records, but the host and the emergency savings account no longer name one plan, and each therefore states its own IRC 457(b)(3) provision of U = $3,000. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). Each is then an eligible plan providing $3,000 above the basic limitation, and 26 CFR 1.457-5(c) lets each host its own amount: the host takes the $24,500 basic annual limitation and $3,000 of catch-up, and the emergency savings record takes a further $2,600, which is all its IRC 402A(e)(3)(A) balance cap allows of its own $3,000. Plan Y, which provides the participant's largest amount at $8,000, is left $8,000 - $3,000 - $2,600 = $2,400. The participant's aggregate catch-up is $8,000 under 1.457-5(a) either way; what the group id changes is how much of it one plan's records may hold.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          },
+          {
+            "id": "y",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "f",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 3000,
+        "accounts.1.status": "determinate",
+        "accounts.1.contributionComponents.special457RothCatchUp": 2600,
+        "accounts.2.status": "determinate",
+        "accounts.2.contributionComponents.special457CatchUp": 2400
+      }
+    },
+    {
+      "name": "2026 records of one IRC 457 plan group stating different IRC 457(b)(3) provisions are diagnosed",
+      "description": "IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account as a designated Roth account within an applicable retirement plan, and IRC 402A(f)(1)(C) makes an eligible governmental IRC 457(b) plan one of the three hosts, so such an account is an account inside a plan rather than an eligible plan of its own: it has no plan document, no normal retirement age and no IRC 457(b)(3) provision except its host's. planRules.section457PlanGroupId is how the caller states that two records are that one plan. Two records naming one plan state that plan's IRC 457(b)(3) provision differently, one at U = $3,000 and the other at U = $8,000. 26 CFR 1.457-4(c)(3)(i) gives a plan one ceiling, so the provision is a single fact about a single plan document and no reading of the input settles which figure is the plan's; choosing one would answer a question only the caller can answer. SECTION_457_PLAN_GROUP_FACTS_CONFLICT reports the contradiction on each record and no catch-up is allocated under either method. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). The basic annual limitation is unaffected, because 26 CFR 1.457-4(c)(1)(i) builds it from the dollar amount and includible compensation alone, on which the records agree: the host still takes the whole $24,500.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.special457RothCatchUp": 0,
+        "accounts.1.diagnostics.1.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT"
+      }
+    },
+    {
+      "name": "2026 records of one IRC 457 plan group stating different includible compensation are diagnosed",
+      "description": "IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account as a designated Roth account within an applicable retirement plan, and IRC 402A(f)(1)(C) makes an eligible governmental IRC 457(b) plan one of the three hosts, so such an account is an account inside a plan rather than an eligible plan of its own: it has no plan document, no normal retirement age and no IRC 457(b)(3) provision except its host's. planRules.section457PlanGroupId is how the caller states that two records are that one plan. The two records name one plan but state IRC 457(e)(5) includible compensation differently, at $400,000 and $12,000. That is not a second fact the group merely happens to carry: 26 CFR 1.457-4(c)(3)(ii)(A) builds the special ceiling on \"the plan ceiling established for purposes of paragraph (2) for the taxable year\", which 1.457-4(c)(1)(i) bounds by includible compensation, so one plan with two compensation figures would have two ceilings and would not be one plan. IRC 457(e)(5) defines includible compensation as compensation from the employer includible in gross income, one figure for one employer's plan, so the contradiction is in the input rather than in the law. SECTION_457_PLAN_GROUP_FACTS_CONFLICT reports it on each record and no catch-up is allocated. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). Each record falls back to its own facts for the basic annual limitation, so the host still takes min($24,500, $400,000) = $24,500.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "includibleCompensation457": 12000,
+              "section457PlanGroupId": "plan-w"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.special457CatchUp": 0,
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.diagnostics.1.code": "SECTION_457_PLAN_GROUP_FACTS_CONFLICT"
+      }
+    },
+    {
+      "name": "2026 existing IRC 457(b)(3) catch-up across one plan group above that plan's own amount is rejected",
+      "description": "IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account as a designated Roth account within an applicable retirement plan, and IRC 402A(f)(1)(C) makes an eligible governmental IRC 457(b) plan one of the three hosts, so such an account is an account inside a plan rather than an eligible plan of its own: it has no plan document, no normal retirement age and no IRC 457(b)(3) provision except its host's. planRules.section457PlanGroupId is how the caller states that two records are that one plan. IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, the IRC 414(v)(2)(E) ages 60 through 63 amount as $11,250, and the IRC 402A(e)(3)(A)(i) pension-linked emergency savings amount as increased from $2,500 to $2,600. The participant turns 36 in 2026, so IRC 414(v)(5)(A) makes no age-based catch-up available at any plan and 26 CFR 1.457-4(c)(2)(ii) selects the IRC 457(b)(3) method wherever a plan provides one. Includible compensation is $400,000 everywhere, so with D the dollar amount, C includible compensation and U the prior years' underutilized limitation, 26 CFR 1.457-4(c)(1)(i) gives a basic plan ceiling B = min(D, C) = $24,500, IRC 457(b)(3) and 26 CFR 1.457-4(c)(3)(i)-(ii)(A) give a special plan ceiling S = min(2D, B + U), and the special catch-up above the basic ceiling is S - B = min(2D - B, U) = min($24,500, U). Plan W is two records supplying U = $3,000, so 26 CFR 1.457-4(c)(3)(i) gives it $3,000 above the basic annual limitation; Plan Y supplies U = $8,000, so 1.457-5(c) sets the participant's entitlement at $8,000. The two records of Plan W already hold $2,000 each. Neither figure exceeds $3,000 on its own, and their $4,000 total is inside the participant's $8,000 and under the method 1.457-4(c)(2)(ii) selects, so no participant-level test under 1.457-5(a) or 1.457-5(b) finds it. It is nonetheless $1,000 more than the plan whose provisions produced it permits, because 1.457-4(c)(3)(i)'s ceiling is the plan's and the two records are one plan. SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT reports it on each record holding an amount, the supplied components are preserved, and the unreconciled classification is participant-wide under 1.457-5(b), so Plan Y allocates no catch-up either.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-w",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 2000
+            }
+          },
+          {
+            "id": "wp",
+            "ownerId": "t",
+            "type": "governmental_457b_pension_linked_emergency_savings",
+            "employerId": "e",
+            "planRules": {
+              "pensionLinkedEmergencySavingsParticipantContributionBalance": 0,
+              "section457PlanGroupId": "plan-w"
+            },
+            "existingContributions": {
+              "special457RothCatchUp": 2000
+            }
+          },
+          {
+            "id": "y",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "f",
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 8000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": 27500,
+        "accounts.0.contributionComponents.special457CatchUp": 2000,
+        "accounts.0.diagnostics.0.code": "SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.special457RothCatchUp": 2000,
+        "accounts.1.diagnostics.1.code": "SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT",
+        "accounts.2.status": "indeterminate",
+        "accounts.2.contributionComponents.special457CatchUp": 0,
+        "accounts.2.diagnostics.0.code": "SECTION_457_CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_CONTRIBUTIONS"
+      }
+    },
+    {
+      "name": "a non-string IRC 457 plan group id is rejected rather than coerced",
+      "description": "planRules.section457PlanGroupId is an identifier field, and the input contract for identifier fields is that they are non-empty strings when supplied, with undefined and null both meaning absent. A number is rejected rather than coerced for the reason employerId and annualAdditionsGroupId are: JavaScript and PHP disagree about 0, \"0\" and \"\", so a coerced key could group two records in one engine and separate them in the other, and this key decides which records 26 CFR 1.457-4(c) treats as one plan. No calculation is attempted.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 400000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "w",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": 0
+            }
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_SECTION_457_PLAN_GROUP_ID"
+      }
     }
   ]
 }

@@ -270,6 +270,7 @@ code and the same message for the same bad input.
 | `INVALID_CONTRIBUTION_PREFERENCE` | A `contributionPreference` outside `account_type`, `pretax_first`, `roth_first` (a *valid* preference that a pension-linked emergency savings account cannot honour is reported as a diagnostic, not rejected — see [Pension-linked emergency savings accounts](#pension-linked-emergency-savings-accounts-irc-402ae)) |
 | `INVALID_EMPLOYER_CONTRIBUTION_TAX_TREATMENT` | An `employerContributionTaxTreatment` outside `pretax`, `roth` |
 | `INVALID_SIMPLE_EMPLOYER_CONTRIBUTION_METHOD` | A `simpleEmployerContributionMethod` outside `match_3_percent`, `nonelective_2_percent`, `custom` |
+| `INVALID_EMPLOYER_ID` / `INVALID_ANNUAL_ADDITIONS_GROUP_ID` / `INVALID_SECTION_457_PLAN_GROUP_ID` | An identifier field holding something other than a non-empty string |
 | `INVALID_MONEY` / `INVALID_RATE` | A negative or non-finite amount, or a rate outside 0 through 1 |
 | `INVALID_BOOLEAN` | A flag field holding something other than `true` or `false` |
 
@@ -352,8 +353,11 @@ on the host**, so the third is a distinct account type:
 | Governmental §457(b) — §402A(f)(1)(C) | `governmental_457b_pension_linked_emergency_savings` | §457(e)(15) | **No** |
 
 For the first two, model the account inside the plan with the same
-`annualAdditionsGroupId` as the plan's other accounts. The third shares no pool
-with them: §402(g)(3) enumerates elective deferrals exhaustively and lists no
+`annualAdditionsGroupId` as the plan's other accounts. For the third, use the same
+`section457PlanGroupId` as its host §457(b) account, so that one record's §457(b)(3)
+provision and includible compensation cover both — see
+[One eligible plan, several records](#one-eligible-plan-several-records). The third
+shares no §415(c) pool with them: §402(g)(3) enumerates elective deferrals exhaustively and lists no
 §457(b) deferral, so its contributions run against the §457(e)(15) applicable
 dollar amount through §457(b)(2)(A); and §415(a)(1)–(2) enumerates the plans the
 annual-additions limit reaches without naming §457(b), so it joins no
@@ -1175,11 +1179,17 @@ Statutory pools are keyed to match the statute rather than to the taxpayer unifo
 - **§415(c) annual additions** apply **per employer**, so unrelated employers carry
   independent limits. Set `annualAdditionsGroupId` on the plan rules to aggregate plans
   of a controlled or affiliated service group under §414(b)/(c)/(m)/(o) and §415(h).
-- **Identifier fields** — `employerId` and `annualAdditionsGroupId` — must be non-empty
-  strings when supplied; `undefined` and `null` both mean absent. A number or an empty
-  string is rejected with `INVALID_EMPLOYER_ID` / `INVALID_ANNUAL_ADDITIONS_GROUP_ID`
-  rather than coerced, because JavaScript and PHP disagree about `0`, `"0"` and `""`,
-  and `employerId` selects the wage figure the §414(v)(7)(A) test reads.
+- **§457(b) plan ceilings** apply **per eligible plan**. One `AccountInput` is one plan
+  unless accounts share a `section457PlanGroupId` — see
+  [One eligible plan, several records](#one-eligible-plan-several-records).
+- **Identifier fields** — `employerId`, `annualAdditionsGroupId` and
+  `section457PlanGroupId` — must be non-empty strings when supplied; `undefined` and
+  `null` both mean absent. A number or an empty string is rejected with
+  `INVALID_EMPLOYER_ID` / `INVALID_ANNUAL_ADDITIONS_GROUP_ID` /
+  `INVALID_SECTION_457_PLAN_GROUP_ID` rather than coerced, because JavaScript and PHP
+  disagree about `0`, `"0"` and `""`, `employerId` selects the wage figure the
+  §414(v)(7)(A) test reads, and `section457PlanGroupId` decides which records are one
+  eligible plan.
 - **§414(v)(7)(A)** Roth catch-up classification tests prior-year FICA wages from the
   **sponsoring employer**, supplied through `priorYearFicaWages(employerId, amount)`.
   The figure is required only where the test can change the answer. §414(v)(7)(A) does
@@ -1405,13 +1415,58 @@ answer.
 | Selected-method total above the participant's amount | `SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT` (error). §1.457-5(b) determines deferrals "on an aggregate basis" across every employer's plans, so two accounts each within their own ceiling can still exceed the one amount the participant is entitled to |
 | Age-based catch-up on a plan that cannot host one | `SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN` (error). §414(v)(6)(A)(ii) makes only an eligible **governmental** §457(b) plan an applicable employer plan |
 | Special catch-up on a plan providing none | `SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN` (error). §1.457-5(c) counts it only as a result of plan provisions permitted under §1.457-4(c)(3) |
-| Special catch-up above that plan's own amount | `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT` (error), even where the participant is entitled to more elsewhere |
+| Special catch-up above that plan's own amount | `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT` (error), even where the participant is entitled to more elsewhere. Measured on the plan, so two records of one plan each within their own share still trip it together |
+| Records of one plan disagreeing about that plan | `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` (error) on every record in the group |
 
-**One `AccountInput` is one eligible plan** for all of the above. That matters
-for a §457(b)-hosted PLESA, which is an account *inside* a host plan rather than
-a plan of its own: a host plan's `section457SpecialCatchUp` facts must be stated
-on the PLESA record too for that record to draw the amount. Issue #53 tracks the
-plan-group key that would let one statement cover both records.
+### One eligible plan, several records
+
+§1.457-4(c) sets a ceiling for each *plan*; an `AccountInput` is an account. The
+two coincide for every §457 account type here but one. §402A(e)(1)(A)(i) creates a
+pension-linked emergency savings account as a designated Roth account *within* an
+applicable retirement plan, and §402A(f)(1)(C) makes an eligible governmental
+§457(b) plan one of its three hosts — so a §457(b)-hosted PLESA and its host are
+two records of a single plan, with one plan document, one normal retirement age
+and one §457(b)(3) provision.
+
+Give both records the same `planRules.section457PlanGroupId` to say so:
+
+```ts
+scenario
+  .account("host", "taxpayer", AccountType.GOVERNMENTAL_457B, (account) => {
+    account
+      .includible457Compensation(400_000)
+      .section457PlanGroup("plan-w") // one eligible plan…
+      .special457CatchUp({ eligible: true, unusedDeferralsFromPriorYears: 8_000 });
+  })
+  .account(
+    "savings",
+    "taxpayer",
+    AccountType.GOVERNMENTAL_457B_PENSION_LINKED_EMERGENCY_SAVINGS,
+    (account) => {
+      account
+        .section457PlanGroup("plan-w") // …stated as two records
+        .pensionLinkedEmergencySavingsBalance(0);
+    },
+  );
+```
+
+Within a group:
+
+- the plan's `section457SpecialCatchUp` and `includibleCompensation457` are stated
+  **once** and cover every record — §1.457-5(c) recognises the special catch-up as a
+  result of *the plan's* provisions, so a provision on the host is the PLESA's too;
+- the plan's §1.457-4(c)(3)(i) ceiling bounds what its records absorb **between
+  them**, not one at a time. Where the participant's largest amount comes from
+  another plan, this plan's records may still take no more than this plan provides;
+- records that state a fact about the plan differently raise
+  `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` on each of them and allocate no catch-up
+  under either method. One plan has one ceiling, so nothing in the input settles
+  which figure is the plan's; each record keeps its own facts for the basic annual
+  limitation.
+
+**Absent the key, one `AccountInput` is one eligible plan**, which is the older
+contract and remains the default: a host plan's `section457SpecialCatchUp` facts
+must then be repeated on the PLESA record for that record to draw the amount.
 
 Account order therefore decides only *where* interchangeable capacity lands,
 never which statutory method applies, what each plan's own ceiling is, or what

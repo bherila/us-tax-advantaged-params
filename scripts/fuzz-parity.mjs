@@ -261,6 +261,10 @@ function randomPlanRules(type) {
   if (chance(0.8)) rules.planCompensation = money();
   if (chance(0.2)) rules.includibleCompensation457 = money();
   if (chance(0.2)) rules.annualAdditionsGroupId = pick(["g1", "g2", "0", 0, ""]);
+  // The same identifier shapes as annualAdditionsGroupId, for the same reason:
+  // 0, "0" and "" are where JavaScript and PHP most easily disagree, and this
+  // key decides which records 26 CFR 1.457-4(c) treats as one eligible plan.
+  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "0", 0, ""]);
   if (chance(0.15)) rules.planDocumentEmployeeDeferralLimit = money();
   if (chance(0.15)) rules.planDocumentAnnualAdditionsLimit = money();
   if (chance(0.4)) rules.permitsRothContributions = chance(0.05) ? junk() : chance(0.7);
@@ -674,8 +678,30 @@ function randomScenario() {
     // question off for a year in which it applies.
     if (section457Host && chance(0.35)) {
       const special = { eligible: chance(0.8), unusedDeferralsFromPriorYears: pick([0, 500, 5000, 20000, money()]) };
-      if (chance(0.5)) plesaRules.section457SpecialCatchUp = special;
-      else hostRules.section457SpecialCatchUp = special;
+      // Both records sometimes, so a plan group whose members state the
+      // provision differently -- the contradiction #53 diagnoses -- is reached
+      // as often as the agreeing one.
+      if (chance(0.25)) {
+        hostRules.section457SpecialCatchUp = special;
+        plesaRules.section457SpecialCatchUp = chance(0.5)
+          ? special
+          : { eligible: chance(0.8), unusedDeferralsFromPriorYears: pick([0, 500, 5000, 20000, money()]) };
+      } else if (chance(0.5)) {
+        plesaRules.section457SpecialCatchUp = special;
+      } else {
+        hostRules.section457SpecialCatchUp = special;
+      }
+    }
+    // IRC 402A(f)(1)(C) puts a pension-linked emergency savings account inside a
+    // host IRC 457(b) plan, so this pair is the shape planRules.section457PlanGroupId
+    // exists for. Generated as one plan, as two, and as a contradictory pair --
+    // the last also reaching the includible-compensation half of the conflict,
+    // since the host constrains that field whenever section457Host holds.
+    if (chance(0.4)) {
+      const shared = pick(["s1", "s2"]);
+      hostRules.section457PlanGroupId = shared;
+      plesaRules.section457PlanGroupId = chance(0.85) ? shared : pick(["s1", "s2", "s3"]);
+      if (chance(0.25)) plesaRules.includibleCompensation457 = pick([0, 1000, 24500, 60000, money()]);
     }
     // Sometimes the emergency savings account stands alone, with no host
     // account sharing the participant's base pool. That is the shape where the
