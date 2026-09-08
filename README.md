@@ -1469,10 +1469,12 @@ Within a group:
   the host record has deferred is not available to the PLESA record. This is the
   only bound on a §457(b)(3) catch-up — that provision *replaces* the paragraph (2)
   ceiling rather than reapplying its 100%-of-compensation term — so without it two
-  records of one plan could reduce the same salary twice;
+  records of one plan could reduce the same salary twice. Existing participant
+  deferrals above that salary raise
+  `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION` on affected records;
 - records that describe the plan inconsistently raise
   `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` on each of them and allocate no catch-up
-  under either method. Three things must agree, because a group asserts one plan:
+  under either method. Four things must agree, because a group asserts one plan:
   `section457SpecialCatchUp`, `includibleCompensation457`, whether the plan is an
   eligible **governmental** plan (settled by the account types, and decisive under
   §414(v)(6)(A)(ii) for whether the age 50 method exists at all), and the
@@ -1485,6 +1487,11 @@ Within a group:
   catch-up would differ according to which contradictory record is right is
   reported indeterminate with
   `SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS` rather than settled.
+  Sponsor conflicts can also leave existing pre-tax catch-up attribution unresolved
+  even when the method is unchanged. The engine reserves possible ordinary usage
+  against both participant and plan ceilings. It allocates only guaranteed room
+  and reports `SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED` where the plan-base
+  uncertainty changes an account's capacity.
 
 **Absent the key, one `AccountInput` is one eligible plan**, which is the older
 contract and remains the default: a host plan's `section457SpecialCatchUp` facts

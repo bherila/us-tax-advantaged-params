@@ -110,6 +110,20 @@ always propagates: it is settled by each record's own account *type*, so the rea
 which the plan is governmental is not one a ceiling can be computed under for a record
 whose type says otherwise.
 
+Method selection and existing-contribution attribution are separate dependencies.
+Sponsor disagreements can leave the method unchanged while changing whether an
+existing pre-tax age catch-up qualifies under §414(v)(7)(A). Attribution evaluates
+the supplied sponsor alternatives, widens both the participant and plan base
+pools for possible ordinary treatment, and preserves the correlated catch-up
+uncertainty. Plan allocations use the guaranteed endpoint of those intervals;
+where the interval can change an account's allocation, its result is indeterminate.
+Sponsors that all give the same wage treatment do not create this uncertainty.
+
+The plan retains an immutable total of existing salary deferrals. That total is
+checked against plan compensation, independently of its base and special ceilings,
+so splitting an already excessive salary deferral among records cannot hide it.
+The check runs on both the normal allocation path and the PLESA early-return path.
+
 The §457(e)(5) pool is spent by the participant's own deferrals and not by nonelective
 employer contributions. Those are annual deferrals under §1.457-4(a) and are charged to the
 plan's §457(b)(2) ceiling, but they reduce no salary: §457(e)(5) takes includible

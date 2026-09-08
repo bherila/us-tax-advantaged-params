@@ -453,3 +453,19 @@ For each new tax year:
 ## Legal-change policy
 
 A statutory or regulatory change that affects algorithmic behavior requires more than a data-row update. It should include a primary authority, a design note covering aggregation/effective date/transition relief/plan dependencies, native tests in both languages, shared conformance vectors, full-output parity, and migration notes when serialized contracts change.
+
+### Grouped §457 plan resources and unresolved catch-ups
+
+IRC §414(v)(3)(A) relieves qualifying catch-ups from §457(b)(2), while
+§414(v)(7)(A) conditions that treatment on Roth contributions above the sponsor
+wage threshold. Consequently, unresolved treatment affects the plan's basic
+ceiling as well as the participant aggregate; inconsistent sponsor facts must be
+considered when attributing existing contributions. IRC §457(e)(5), through
+§415(c)(3)(D), also distinguishes employee salary deferrals from nonelective
+employer deposits: separate base and special ceilings do not permit salary to be
+deferred twice across records of one plan. The plan retains aggregate existing
+salary usage for this check.
+
+Primary text: [IRC §414](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section414&num=0&edition=prelim),
+[IRC §457](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section457&num=0&edition=prelim),
+and [IRC §415](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section415&num=0&edition=prelim).

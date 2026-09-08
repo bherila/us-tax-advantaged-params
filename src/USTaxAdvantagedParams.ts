@@ -10781,6 +10781,7 @@ interface Section457Plan {
   facts: Map<string, Section457PlanFacts>;
   ceilings: Map<string, Section457PlanCeilings>;
   capacity: { age: Money; largestAge: Money; special: Money };
+  existingSalaryDeferrals: Money;
   basePool?: LimitPool;
   compensationPool?: LimitPool;
   specialPool?: LimitPool;
@@ -10799,12 +10800,14 @@ function buildSection457Plans(
     if (plan === undefined) {
       plan = {
         key: facts.key, members: [], facts: new Map(), ceilings: new Map(),
-        capacity: { age: 0, largestAge: 0, special: 0 },
+        capacity: { age: 0, largestAge: 0, special: 0 }, existingSalaryDeferrals: 0,
       };
       plans.set(facts.key, plan);
       context.section457Plans.set(facts.key, plan);
     }
     plan.members.push(account);
+    plan.existingSalaryDeferrals = roundMoney(plan.existingSalaryDeferrals
+      + section457SalaryDeferrals(account.existingContributions));
     plan.facts.set(account.id, facts);
     context.section457AccountPlans.set(account.id, plan);
   }
@@ -10854,11 +10857,37 @@ function chargeSection457Plan(plan: Section457Plan, components: ContributionComp
     + components.employerPreTax + components.employerRoth);
   const special = roundMoney(components.special457CatchUp + components.special457RothCatchUp);
   // IRC 415(c)(3)(D) / 457(e)(5): nonelective employer deposits reduce no salary.
-  const salary = roundMoney(baseElectiveDeferrals(components) + ageCatchUpDeferrals(components)
-    + components.special457CatchUp + components.special457RothCatchUp);
+  const salary = section457SalaryDeferrals(components);
   if (plan.basePool) chargePool(plan.basePool, base);
   if (plan.compensationPool) chargePool(plan.compensationPool, salary);
   if (plan.specialPool) chargePool(plan.specialPool, special);
+}
+
+function section457SalaryDeferrals(components: ContributionComponents): Money {
+  return roundMoney(baseElectiveDeferrals(components) + ageCatchUpDeferrals(components)
+    + components.special457CatchUp + components.special457RothCatchUp);
+}
+
+/**
+ * A plan's conflicting sponsors can disagree on whether a recorded pre-tax
+ * catch-up is valid. Evaluate every supplied sponsor for resource attribution;
+ * retain the original account facts for diagnostics, never choose a sponsor.
+ */
+function unresolvedExistingPreTaxCatchUp(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+): ReturnType<typeof highWageInvalidExistingPreTaxCatchUp> {
+  const own = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+  if (own !== null) return own;
+  const plan = context.section457AccountPlans.get(account.id);
+  if (plan === undefined || !plan.facts.get(account.id)!.conflictingFields.includes("employerId")) return null;
+  for (const member of plan.members) {
+    if (member.employerId === undefined) continue;
+    const reading = highWageInvalidExistingPreTaxCatchUp(context, { ...account, employerId: member.employerId }, traits);
+    if (reading !== null) return reading;
+  }
+  return null;
 }
 
 /** Newly allocated amounts use the same component classification as existing ones. */
@@ -11542,7 +11571,7 @@ function seedUnresolvedCatchUpAttribution(
 ): void {
   for (const account of accounts) {
     const traits = ACCOUNT_TRAITS[account.type];
-    const invalid = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+    const invalid = unresolvedExistingPreTaxCatchUp(context, account, traits);
     if (invalid === null) continue;
     const section457 = catchUpPoolFamily(traits) === "section457";
     // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1) contribution
@@ -11566,6 +11595,7 @@ function seedUnresolvedCatchUpAttribution(
           ? context.section457BasePools.get(account.ownerId)
           : context.elective402gPools.get(account.ownerId),
         traits.uses415c ? context.annualAdditionsPools.get(groupIdForAccount(account)) : undefined,
+        section457 ? context.section457AccountPlans.get(account.id)?.basePool : undefined,
       ],
       invalid.existing,
       `existing-pre-tax-catch-up:${account.id}`,
@@ -17465,7 +17495,7 @@ function appendSiblingCatchUpPoolBlockDiagnostic(
       other.id !== account.id &&
       other.ownerId === account.ownerId &&
       catchUpPoolFamily(ACCOUNT_TRAITS[other.type]) === family &&
-      highWageInvalidExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
+      unresolvedExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
   );
   if (blockedBy === undefined) return false;
 
@@ -17781,6 +17811,18 @@ function appendSection457ExistingCatchUpDiagnostics(
     );
   }
 
+  const plan = context.section457AccountPlans.get(account.id)!;
+  if (section457SalaryDeferrals(account.existingContributions) > 0
+    && plan.compensationPool?.limit != null
+    && plan.existingSalaryDeferrals > plan.compensationPool.limit) {
+    diagnostics.push(diagnostic(
+      "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION",
+      DiagnosticSeverity.ERROR,
+      `Existing participant salary deferrals total $${plan.existingSalaryDeferrals.toLocaleString()} across records ${facts.memberIds.join(", ")}, above this plan's $${plan.compensationPool.limit.toLocaleString()} of IRC 457(e)(5) includible compensation. Separate base and catch-up ceilings do not supply additional salary. Reconcile the existing contributions or the plan compensation.`,
+      `accounts.${account.id}.existingContributions`,
+      "IRC 457(e)(5); IRC 415(c)(3)(D)",
+    ));
+  }
   return diagnostics.length > diagnosticCountBefore;
 }
 
@@ -18924,7 +18966,7 @@ function allocateSection457(
    */
   const unresolvedOrdinaryExposure = traits.isPlesa
     ? 0
-    : (highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
+    : (unresolvedExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
   const appliedHostBaseLimit = traits.isPlesa
     ? statutoryHostBaseLimit
     : nonnegative(
@@ -18971,7 +19013,24 @@ function allocateSection457(
   // where a plan is several records what one of them may add is what the plan has
   // left, not what this record has left. The pool carries both, and for a plan of
   // one record its remainder is the subtraction beside it.
-  const planBaseRemaining = planBasePool === undefined ? null : poolRemaining(planBasePool);
+  const planBaseRemaining = planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null;
+  const planBaseInterval = planBasePool === undefined ? null : poolRemainingInterval(planBasePool);
+  const ordinaryDemand = minMoney(
+    nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
+    poolRemainingInterval(basePool)?.minimum,
+    plesaPool === null ? null : poolRemainingInterval(plesaPool)?.minimum,
+  );
+  if (planBaseInterval !== null
+    && minMoney(ordinaryDemand, planBaseInterval.maximum) > minMoney(ordinaryDemand, planBaseInterval.minimum)) {
+    diagnostics.push(diagnostic(
+      "SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED",
+      DiagnosticSeverity.ERROR,
+      "An existing pre-tax catch-up under this plan may instead consume its basic ceiling. Only ordinary deferrals that fit under every reading are allocated; reconcile the existing catch-up to establish the remaining plan capacity.",
+      `accounts.${account.id}`,
+      "IRC 414(v)(3)(A); IRC 414(v)(7)(A); IRC 457(b)(2)",
+    ));
+    reportPoolWithoutConsuming(planBasePool!, sharedLimits);
+  }
   const employerDesired = minMoney(
     nonnegative(expectedEmployer - existingEmployer),
     nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
@@ -18996,7 +19055,7 @@ function allocateSection457(
   );
   const regularDesired = minMoney(
     nonnegative(appliedHostBaseLimit - regularBeforeEmployee),
-    planBasePool === undefined ? null : poolRemaining(planBasePool),
+    planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null,
   );
   const regularAdded = takeAcrossPools(
     plesaPool ? [basePool, plesaPool] : [basePool],

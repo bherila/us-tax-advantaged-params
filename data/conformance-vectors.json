@@ -25843,7 +25843,7 @@
     },
     {
       "name": "2026 a diagnostic renders a very large amount the same way in both engines",
-      "description": "IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500. The participant turns 36 in 2026, so IRC 414(v)(5)(A) offers no age-based catch-up, no record states an IRC 457(b)(3) provision, and 26 CFR 1.457-4(c)(1)(i) gives a plan ceiling of min($24,500, $400,000) = $24,500. The supplied existing deferral of $99,999,999,999,999.98 stands above it, so the account is indeterminate and SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM reports both figures. This vector pins the rendered message rather than only the code, because that is where the two engines can part: a diagnostic amount is a number formatted into a sentence, JavaScript formats from the double's shortest round-tripping decimal, and PHP's number_format renders the exact binary expansion instead -- which for the double nearest this amount is $99,999,999,999,999.984. The figures either side of the boundary are synthetic and chosen for the boundary; nothing about the ceiling depends on them.",
+      "description": "IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500. The participant turns 36 in 2026, so IRC 414(v)(5)(A) offers no age-based catch-up, no record states an IRC 457(b)(3) provision, and 26 CFR 1.457-4(c)(1)(i) gives a plan ceiling of min($24,500, $400,000) = $24,500. The supplied existing deferral of $99,999,999,999,999.98 stands above it, so the account is indeterminate and SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM reports both figures. This vector pins the rendered message rather than only the code, because that is where the two engines can part: a diagnostic amount is a number formatted into a sentence, JavaScript formats from the double's shortest round-tripping decimal, and PHP's number_format renders the exact binary expansion instead -- which for the double nearest this amount is $99,999,999,999,999.984. The figures either side of the boundary are synthetic and chosen for the boundary; nothing about the ceiling depends on them. Its existing employee deferral also exceeds the stated 400000 of plan compensation under IRC 457(e)(5), so the plan-compensation diagnostic precedes the account-maximum diagnostic.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "S",
@@ -25874,8 +25874,317 @@
       "expect": {
         "accounts.0.status": "indeterminate",
         "accounts.0.statutoryMaximumAnnualContribution": 24500,
-        "accounts.0.diagnostics.0.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
-        "accounts.0.diagnostics.0.message": "The annual amount $99,999,999,999,999.98 exceeds the calculated account ceiling of $24,500. Shared-limit records should also be reviewed for excess contributions across accounts."
+        "accounts.0.diagnostics.1.code": "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_ACCOUNT_MAXIMUM",
+        "accounts.0.diagnostics.1.message": "The annual amount $99,999,999,999,999.98 exceeds the calculated account ceiling of $24,500. Shared-limit records should also be reviewed for excess contributions across accounts.",
+        "accounts.0.diagnostics.0.code": "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION"
+      }
+    },
+    {
+      "name": "2026 conflicting IRC 457 sponsors leave existing age catch-up attribution unresolved",
+      "description": "IRC 414(v)(7)(A) tests wages from the employer sponsoring the plan. Notice 2025-67 sets the 2026 threshold at 150000 and age catch-up at 8000. The same plan names sponsors with synthetic wages 50000 and 250000, so its 8000 pre-tax age catch-up is permitted under the low-wage reading but not under the high-wage reading. IRC 414(v)(3)(A) relieves a valid catch-up from 457(b)(2); an invalid one can consume ordinary headroom instead, pending reconciliation. Under 26 CFR 1.457-5(b), the outside plan shares participant capacity. Its additional base headroom is therefore only 24500 - 8000 = 16500 under every reading, and its remaining age catch-up ranges from 0 to 8000. It must be indeterminate, with no additional age catch-up asserted from that unsettled range. Contradictory grouped records remain indeterminate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 250000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "outside",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "outside",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "outside",
+              "includibleCompensation457": 120000
+            }
+          },
+          {
+            "id": "low-record",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "low",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 120000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          },
+          {
+            "id": "high-record",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 120000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 16500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0
+      }
+    },
+    {
+      "name": "2026 unresolved IRC 457 age catch-up reserves the shared plan base ceiling",
+      "description": "26 CFR 1.457-4(c)(1)(i) gives the grouped plan a min(24500,12000) = 12000 basic ceiling. IRC 414(v)(7)(A) and the 150000 wage threshold in Notice 2025-67 invalidate the supplied 4000 pre-tax age catch-up at synthetic sponsor wages of 250000. Under IRC 414(v)(3)(A), losing catch-up treatment restores exposure to 457(b)(2), at the plan as well as participant level. The sibling may therefore allocate only 12000 - 4000 = 8000 ordinary deferrals under every unresolved reading. The original component remains 4000 rather than being silently reclassified. The unresolved plan-base range also makes the sibling indeterminate, diagnosed as SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED rather than treating guaranteed capacity as a settled maximum.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 250000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 12000
+            }
+          },
+          {
+            "id": "existing",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 12000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 8000,
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 4000,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED"
+      }
+    },
+    {
+      "name": "2026 existing salary deferrals cannot overdraw one IRC 457 plan across records",
+      "description": "IRC 457(e)(5) adopts IRC 415(c)(3) includible compensation and 415(c)(3)(D) adds back employee-elected deferrals. The plan states synthetic compensation of 1200, while its two records already contain 600 ordinary plus 600 special salary deferral each, totaling 2400. Ordinary usage equals the 1200 basic ceiling and special usage 1200 is below min(2*24500 - 1200,6000) = 6000 under 26 CFR 1.457-4(c)(3)(i), but those separate ceilings do not create another 1200 of salary. Both records must be indeterminate for the aggregate salary overdraw; their supplied components remain unchanged at 600 each.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 250000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "low",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 1200,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 6000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxDeferral": 600,
+              "special457CatchUp": 600
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "low",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 1200
+            },
+            "existingContributions": {
+              "employeePreTaxDeferral": 600,
+              "special457CatchUp": 600
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 600,
+        "accounts.0.contributionComponents.special457CatchUp": 600,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 600,
+        "accounts.1.contributionComponents.special457CatchUp": 600
+      }
+    },
+    {
+      "name": "2026 unresolved IRC 457 age catch-up also reserves plan base room from new employer deposits",
+      "description": "26 CFR 1.457-4(c)(1)(i) gives the grouped plan a min(24500,12000) = 12000 basic ceiling. IRC 414(v)(7)(A) and the 150000 wage threshold in Notice 2025-67 invalidate the supplied 4000 pre-tax age catch-up at synthetic sponsor wages of 250000. Under IRC 414(v)(3)(A), losing catch-up treatment restores exposure to 457(b)(2), at the plan as well as participant level. The sibling may therefore allocate only 12000 - 4000 = 8000 ordinary deferrals under every unresolved reading. The original component remains 4000 rather than being silently reclassified. The unresolved plan-base range also makes the sibling indeterminate, diagnosed as SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED rather than treating guaranteed capacity as a settled maximum. Here the sibling requests a 12000 employer deposit. Employer deposits count under the same 457(b)(2) ceiling, so only 8000 can be allocated and no room remains for ordinary employee deferrals.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 250000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 12000,
+              "expectedEmployerContribution": 12000
+            }
+          },
+          {
+            "id": "existing",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 12000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.1.contributionComponents.employeePreTaxCatchUp": 4000,
+        "accounts.0.status": "indeterminate",
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED",
+        "accounts.0.contributionComponents.employerPreTax": 8000
+      }
+    },
+    {
+      "name": "2026 conflicting IRC 457 sponsors with equal wage treatment do not unsettle another plan",
+      "description": "IRC 414(v)(7)(A) and Notice 2025-67 apply the Roth mandate only above 150000 of prior-year sponsor wages. The grouped plan names sponsors with synthetic wages 50000 and 60000, both below it. Its 8000 pre-tax age catch-up consumes the same 8000 participant catch-up limit under either sponsor reading, leaving zero age catch-up and the full 24500 ordinary limit for the outside plan under 26 CFR 1.457-5(b). The group remains contradictory, but the outside plan is determinate because its capacity does not depend on which sponsor is correct.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 60000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "outside",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "outside",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "outside",
+              "includibleCompensation457": 120000
+            }
+          },
+          {
+            "id": "low-record",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "low",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 120000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 8000
+            }
+          },
+          {
+            "id": "high-record",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "group",
+              "includibleCompensation457": 120000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 0
       }
     }
   ]
