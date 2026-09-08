@@ -1198,7 +1198,7 @@ OBRA '93 §13212(d)(3) preserves the higher pre-OBRA ceiling for an eligible par
 
 Set `planRules.grandfatheredGovernmentalCompensationLimit` to claim it. The one flag asserts both halves of the rule — that the plan qualifies and that this participant is an "eligible participant" under the pre-1994 participation test — because both are plan-document and service facts outside this package's scope.
 
-For a tax year with no published figure the ordinary limit applies and a `GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED` warning is emitted. The IRS first published the amount for tax year 1998, so 1994 through 1997 carry `null` rather than an extrapolation.
+For a post-1993 tax year with no published figure, contribution capacity is `indeterminate` with a `GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED` diagnostic. The statutory maximum and excess contribution are `null`; existing contributions are preserved and no additional contributions are allocated. An affected shared §415(c) pool also has an unknown limit, so companion accounts cannot inherit an ordinary-limit fallback. Before 1994 the relief does not apply and the ordinary limit remains operative. The IRS first published the amount for tax year 1998, so 1994 through 1997 carry `null` rather than an extrapolation.
 
 The compensation ceiling is **not** imposed as an extra dollar cap that prematurely stops an employee’s otherwise valid §402(g) elective deferral. Employee deferrals remain subject to actual compensation, §402(g), catch-up rules, shared pools, and plan terms.
 

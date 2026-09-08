@@ -10059,30 +10059,21 @@ function planCompensation(account: NormalizedAccount, person: NormalizedPerson):
  * IRS has published one, but says so from the statute rather than from the
  * accident that the series has never crossed.
  *
- * A year with no published grandfathered figure falls back to the ordinary
- * limit rather than going unlimited: the relief is measured by an amount that
- * primary authority does not supply before 1998, and an unbounded compensation
- * would overstate every figure derived from it.
- */
-/**
- * The relief OBRA '93 sec. 13212(d)(3) grants is measured by an amount, and for
- * 1994 through 1997 no primary authority states it: the IRS first published the
- * figure in Notice 97-58, for tax year 1998. Falling back to the ordinary limit
- * is the conservative reading, but it silently withholds relief the caller
- * asserted, so it is said out loud rather than left to be inferred from a total.
+ * Unpublished post-1993 relief is unknown; allocation is withheld before
+ * this provisional compensation value can become an account ceiling.
  */
 function grandfatheredGovernmentalLimitDiagnostics(
   context: CalculationContext,
   account: NormalizedAccount,
 ): Diagnostic[] {
   if (account.planRules.grandfatheredGovernmentalCompensationLimit !== true) return [];
-  if (context.parameters.annualCompensation401a17 === null) return [];
+  if (context.taxYear < 1994) return [];
   if (context.parameters.annualCompensation401a17GrandfatheredGovernmental !== null) return [];
   return [
     diagnostic(
       "GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED",
-      DiagnosticSeverity.WARNING,
-      `OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for ${context.taxYear} — the first it published was for tax year 1998, in Notice 97-58. The ordinary IRC 401(a)(17) limit was applied instead, which may understate the compensation this plan may take into account.`,
+      DiagnosticSeverity.ERROR,
+      `OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for ${context.taxYear} — the first it published was for tax year 1998, in Notice 97-58. The applicable compensation ceiling is unknown, so contribution capacity is indeterminate rather than calculated using the ordinary limit.`,
       `accounts.${account.id}.planRules.grandfatheredGovernmentalCompensationLimit`,
       "OBRA '93 sec. 13212(d)(3)",
     ),
@@ -10506,6 +10497,7 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
 
   for (const [groupId, members] of groupAccounts) {
     let recognizedCompensation = 0;
+    let compensationIndeterminate = false;
     let existing = 0;
     for (const account of members) {
       const person = context.persons.get(account.ownerId)!;
@@ -10514,6 +10506,7 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
       // participant in a particular plan and the accounts aggregated here need
       // not all be that plan. Where they share one limit this is the previous
       // order exactly, min being monotone: max_i min(c_i, L) = min(max_i c_i, L).
+      compensationIndeterminate ||= grandfatheredGovernmentalLimitDiagnostics(context, account).length > 0;
       const limit = compensationLimit401a17(context, account);
       const compensation = planCompensation(account, person);
       recognizedCompensation = Math.max(
@@ -10524,6 +10517,7 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
     }
     let limit: Money | null = null;
     if (
+      !compensationIndeterminate &&
       context.parameters.annualAdditions415c !== null &&
       context.parameters.annualAdditionsCompensationFraction !== null
     ) {
@@ -15312,6 +15306,18 @@ function allocateAccount(context: CalculationContext, account: NormalizedAccount
       );
     }
     return emptyOutcome(account, CalculationStatus.UNAVAILABLE, 0, diagnostics);
+  }
+
+  // OBRA relief with an unencoded amount cannot become an ordinary-limit
+  // ceiling. This applies to SIMPLE employer formulas as well as §415(c) plans.
+  if (["qualified_elective", "annual_additions_only", "sep", "simple"].includes(traits.family)) {
+    const diagnostics = grandfatheredGovernmentalLimitDiagnostics(context, account);
+    if (diagnostics.length > 0) {
+      const outcome = emptyOutcome(account, CalculationStatus.INDETERMINATE, null, diagnostics);
+      const group = context.annualAdditionsPools.get(groupIdForAccount(account));
+      if (group) reportPoolWithoutConsuming(group, outcome.sharedLimits);
+      return outcome;
+    }
   }
 
   switch (traits.family) {

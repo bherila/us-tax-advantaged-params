@@ -10278,12 +10278,7 @@ final class Engine
     }
 
     /**
-     * The relief OBRA '93 sec. 13212(d)(3) grants is measured by an amount, and
-     * for 1994 through 1997 no primary authority states it: the IRS first
-     * published the figure in Notice 97-58, for tax year 1998. Falling back to
-     * the ordinary limit is the conservative reading, but it silently withholds
-     * relief the caller asserted, so it is said out loud rather than left to be
-     * inferred from a total.
+     * Missing post-1993 grandfathered compensation prevents a definite maximum.
      *
      * @param array<string,mixed> $context
      * @param array<string,mixed> $account
@@ -10294,7 +10289,7 @@ final class Engine
         if (($account['planRules']['grandfatheredGovernmentalCompensationLimit'] ?? null) !== true) {
             return [];
         }
-        if ($context['parameters']['annualCompensation401a17'] === null) {
+        if ($context['taxYear'] < 1994) {
             return [];
         }
         if ($context['parameters']['annualCompensation401a17GrandfatheredGovernmental'] !== null) {
@@ -10303,8 +10298,8 @@ final class Engine
         return [
             self::diagnostic(
                 'GRANDFATHERED_GOVERNMENTAL_COMPENSATION_LIMIT_NOT_PUBLISHED',
-                DiagnosticSeverity::WARNING,
-                "OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for {$context['taxYear']} — the first it published was for tax year 1998, in Notice 97-58. The ordinary IRC 401(a)(17) limit was applied instead, which may understate the compensation this plan may take into account.",
+                DiagnosticSeverity::ERROR,
+                "OBRA '93 section 13212(d)(3) preserves a higher IRC 401(a)(17) compensation limit for an eligible participant in certain governmental plans, but the IRS published no figure for {$context['taxYear']} — the first it published was for tax year 1998, in Notice 97-58. The applicable compensation ceiling is unknown, so contribution capacity is indeterminate rather than calculated using the ordinary limit.",
                 "accounts.{$account['id']}.planRules.grandfatheredGovernmentalCompensationLimit",
                 "OBRA '93 sec. 13212(d)(3)",
             ),
@@ -10324,10 +10319,8 @@ final class Engine
      * year the IRS has published one, but says so from the statute rather than
      * from the accident that the series has never crossed.
      *
-     * A year with no published grandfathered figure falls back to the ordinary
-     * limit rather than going unlimited: the relief is measured by an amount
-     * that primary authority does not supply before 1998, and an unbounded
-     * compensation would overstate every figure derived from it.
+     * Unpublished post-1993 relief is unknown; allocation is withheld before
+     * this provisional compensation value can become an account ceiling.
      *
      * @param array<string,mixed> $context
      * @param array<string,mixed> $account
@@ -10886,6 +10879,7 @@ final class Engine
         }
         foreach ($groups as $groupId => $members) {
             $recognizedCompensation = 0.0;
+            $compensationIndeterminate = false;
             $existing = 0.0;
             foreach ($members as $account) {
                 $person = $context['persons'][$account['ownerId']];
@@ -10895,6 +10889,7 @@ final class Engine
                 // aggregated here need not all be that plan. Where they share one
                 // limit this is the previous order exactly, min being monotone:
                 // max_i min(c_i, L) = min(max_i c_i, L).
+                $compensationIndeterminate = $compensationIndeterminate || self::grandfatheredGovernmentalLimitDiagnostics($context, $account) !== [];
                 $memberLimit = self::compensationLimit401a17($context, $account);
                 $memberCompensation = self::planCompensation($account, $person);
                 $recognizedCompensation = max(
@@ -10907,7 +10902,8 @@ final class Engine
             }
             $limit = null;
             if (
-                $context['parameters']['annualAdditions415c'] !== null
+                !$compensationIndeterminate
+                && $context['parameters']['annualAdditions415c'] !== null
                 && $context['parameters']['annualAdditionsCompensationFraction'] !== null
             ) {
                 $limit = self::minMoney(
@@ -16417,6 +16413,19 @@ final class Engine
             }
             return self::emptyOutcome($account, CalculationStatus::UNAVAILABLE->value, 0.0, $diagnostics);
         }
+        // Withhold unknown OBRA relief in SIMPLE formulas and §415(c) plans.
+        if (in_array($traits['family'], ['qualified_elective', 'annual_additions_only', 'sep', 'simple'], true)) {
+            $diagnostics = self::grandfatheredGovernmentalLimitDiagnostics($context, $account);
+            if ($diagnostics !== []) {
+                $outcome = self::emptyOutcome($account, CalculationStatus::INDETERMINATE->value, null, $diagnostics);
+                $groupId = self::groupIdForAccount($account);
+                if (isset($context['annualAdditionsPools'][$groupId])) {
+                    self::reportPoolWithoutConsuming($context['annualAdditionsPools'][$groupId], $outcome['sharedLimits']);
+                }
+                return $outcome;
+            }
+        }
+
         return match ($traits['family']) {
             'regular_traditional_ira' => self::allocateTraditionalIra($context, $account),
             'regular_roth_ira' => self::allocateRothIra($context, $account),
