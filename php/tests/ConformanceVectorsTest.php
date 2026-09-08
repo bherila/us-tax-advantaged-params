@@ -40,7 +40,7 @@ foreach ($decoded['vectors'] as $vector) {
     try {
         if (isset($vector['expectError'])) {
             try {
-                U::calculate($vector['input']);
+                (($vector['operation'] ?? null) === 'payrollTax' ? U::calculatePayrollTax($vector['input']) : U::calculate($vector['input']));
                 throw new RuntimeException("{$vector['name']}: expected error {$vector['expectError']['code']} was not thrown");
             } catch (USTaxAdvantagedParams\ParameterException $error) {
                 if ($error->errorCode !== $vector['expectError']['code']) {
@@ -52,7 +52,7 @@ foreach ($decoded['vectors'] as $vector) {
             fwrite(STDOUT, "ok - {$vector['name']}\n");
             continue;
         }
-        $result = U::calculate($vector['input']);
+        $result = (($vector['operation'] ?? null) === 'payrollTax' ? U::calculatePayrollTax($vector['input']) : U::calculate($vector['input']));
         foreach ($vector['expect'] ?? [] as $resultPath => $expected) {
             assertConformanceEqual(
                 $expected,

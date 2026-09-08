@@ -99,7 +99,27 @@ function requirePositiveAmount(value, label) {
 const parameters = await parseCanonicalJson(parameterPath, "data/retirement-parameters.json");
 const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
+const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
+
+if (payroll) {
+  walk(payroll, "payroll");
+  const years = validateYearSpan(payroll, "data/payroll-tax-parameters.json");
+  validateSources(payroll.sources, "data/payroll-tax-parameters.json");
+  if (payroll.supportedTaxYears?.minimum !== 1991) fail("Payroll historical floor must remain 1991 without a separate expansion.");
+  for (const year of years ?? []) {
+    const row = payroll.years?.[String(year)];
+    if (row?.taxYear !== year) fail(`Payroll row ${year} has mismatched taxYear.`);
+    if (typeof row?.source !== "string" || row.source.trim() === "") fail(`Payroll row ${year} needs provenance.`);
+    for (const field of ["contributionAndBenefitBase", "hospitalInsuranceWageBase", "oasdiRateEmployeePercent", "oasdiRateEmployerPercent", "hiRateEmployeePercent", "hiRateEmployerPercent", "secaOasdiRatePercent", "secaHiRatePercent", "netEarningsOasdiRateBasisPercent", "netEarningsHiRateBasisPercent", "netEarningsDeductionFraction", "selfEmploymentMinimumNetEarnings", "secaOasdiDeductionFraction", "secaHiDeductionFraction", "additionalMedicareRatePercent", "additionalMedicareJointThreshold", "additionalMedicareOtherThreshold", "additionalMedicareSeparateThresholdFraction", "additionalMedicareWithholdingThreshold"]) {
+      const value = row?.[field];
+      const nullable = (field === "hospitalInsuranceWageBase" && year >= 1994) || (field.startsWith("additionalMedicare") && year < 2013);
+      if (nullable ? value !== null : typeof value !== "number" || !Number.isFinite(value) || value <= 0) fail(`Payroll ${year}.${field} has an invalid amount or effective-year state.`);
+      if (typeof value === "number" && !field.endsWith("Percent") && !field.endsWith("Fraction") && !Number.isInteger(value)) fail(`Payroll ${year}.${field} must be published whole dollars.`);
+      if (typeof value === "number" && ((field.endsWith("Percent") && value > 100) || (field.endsWith("Fraction") && value > 1))) fail(`Payroll ${year}.${field} exceeds its unit range.`);
+    }
+  }
+}
 
 if (parameters) {
   walk(parameters, "parameters");
@@ -373,11 +393,12 @@ if (conformance) {
           }
         }
       }
+      if (vector.operation !== undefined && vector.operation !== "payrollTax") fail(`${prefix}.operation is unknown.`);
       if (!hasExpectError) {
         const year = vector?.input?.taxYear;
         const minimum = parameters?.supportedTaxYears?.minimum;
         const maximum = parameters?.supportedTaxYears?.maximum;
-        if (!Number.isInteger(year) || (Number.isInteger(minimum) && (year < minimum || year > maximum))) {
+        if (!Number.isInteger(year) || (vector.operation !== "payrollTax" && Number.isInteger(minimum) && (year < minimum || year > maximum))) {
           fail(`${prefix}.input.taxYear is outside the supported range.`);
         }
       }
@@ -402,6 +423,7 @@ console.log(
   `Canonical data validation passed: ${Object.keys(parameters.years).length} contiguous retirement tax years, ` +
     `${Object.keys(hsa.years).length} contiguous HSA tax years, ` +
     `${Object.keys(fsa.years).length} contiguous FSA tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length} sources, ` +
+    `${Object.keys(payroll.years).length} contiguous payroll tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );

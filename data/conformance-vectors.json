@@ -24602,6 +24602,1567 @@
       "expectDiagnosticCodes": [
         "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"
       ]
+    },
+    {
+      "name": "Payroll: below base",
+      "description": "2026 SSA determination sets base 184500. IRC 3101(a)/3111(a): min(10000,184500)*6.2%=620 on each side. IRC 3101(b)(1)/3111(b): uncapped 10000*1.45%=145 on each side. Explicit complete inputs determine the result.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "determinate",
+        "totals.employeeSocialSecurity": 620,
+        "totals.employerSocialSecurity": 620,
+        "totals.employeeMedicare": 145,
+        "totals.employerMedicare": 145
+      }
+    },
+    {
+      "name": "Payroll: at base",
+      "description": "2026 SSA determination sets base 184500. IRC 3101(a)/3111(a): min(184500,184500)*6.2%=11439 on each side. IRC 3101(b)(1)/3111(b): uncapped 184500*1.45%=2675.25 on each side. Explicit complete inputs determine the result.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 184500,
+                "medicareWages": 184500
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "determinate",
+        "totals.employeeSocialSecurity": 11439,
+        "totals.employerSocialSecurity": 11439,
+        "totals.employeeMedicare": 2675.25,
+        "totals.employerMedicare": 2675.25
+      }
+    },
+    {
+      "name": "Payroll: above base",
+      "description": "2026 SSA determination sets base 184500. IRC 3101(a)/3111(a): min(200000,184500)*6.2%=11439 on each side. IRC 3101(b)(1)/3111(b): uncapped 200000*1.45%=2900 on each side. Explicit complete inputs determine the result.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "determinate",
+        "totals.employeeSocialSecurity": 11439,
+        "totals.employerSocialSecurity": 11439,
+        "totals.employeeMedicare": 2900,
+        "totals.employerMedicare": 2900
+      }
+    },
+    {
+      "name": "Payroll: 1991 Medicare cap transition",
+      "description": "Circular E 1991 states SS base 53400 and HI base 125000. At 200000 wages, SS=min(200000,53400)*6.2%=3310.80; each HI side=125000*1.45%=1812.50. Null is the documented uncapped state.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1991,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "parameters.hospitalInsuranceWageBase": 125000,
+        "totals.employeeSocialSecurity": 3310.8,
+        "totals.employeeMedicare": 1812.5,
+        "totals.employerMedicare": 1812.5
+      }
+    },
+    {
+      "name": "Payroll: 1992 Medicare cap transition",
+      "description": "Circular E 1992 states SS base 55500 and HI base 130200. At 200000 wages, SS=min(200000,55500)*6.2%=3441.00; each HI side=130200*1.45%=1887.90. Null is the documented uncapped state.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1992,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "parameters.hospitalInsuranceWageBase": 130200,
+        "totals.employeeSocialSecurity": 3441,
+        "totals.employeeMedicare": 1887.9,
+        "totals.employerMedicare": 1887.9
+      }
+    },
+    {
+      "name": "Payroll: 1993 Medicare cap transition",
+      "description": "Circular E 1993 states SS base 57600 and HI base 135000. At 200000 wages, SS=min(200000,57600)*6.2%=3571.20; each HI side=135000*1.45%=1957.50. Null is the documented uncapped state.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1993,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "parameters.hospitalInsuranceWageBase": 135000,
+        "totals.employeeSocialSecurity": 3571.2,
+        "totals.employeeMedicare": 1957.5,
+        "totals.employerMedicare": 1957.5
+      }
+    },
+    {
+      "name": "Payroll: 1994 Medicare cap transition",
+      "description": "Circular E 1994 states SS base 60600 and elimination of the HI cap effective January 1, 1994. At 200000 wages, SS=min(200000,60600)*6.2%=3757.20; each HI side=200000*1.45%=2900.00. Null is the documented uncapped state.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1994,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "parameters.hospitalInsuranceWageBase": null,
+        "totals.employeeSocialSecurity": 3757.2,
+        "totals.employeeMedicare": 2900,
+        "totals.employerMedicare": 2900
+      }
+    },
+    {
+      "name": "Payroll: 2010 holiday and additional Medicare transition",
+      "description": "Annual SSA base 106800; PL 111-312 section 601 and PL 112-96 section 1001 reduce employee OASDI only in 2011/2012: 106800*6.2%=6621.60, employer 106800*6.2%=6621.60. IRC 3101(b)(2) and 3102(f) begin in 2013: (300000-200000)*0.9%=900 thereafter, zero before.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2010,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 300000,
+                "medicareWages": 300000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 6621.6,
+        "totals.employerSocialSecurity": 6621.6,
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: 2011 holiday and additional Medicare transition",
+      "description": "Annual SSA base 106800; PL 111-312 section 601 and PL 112-96 section 1001 reduce employee OASDI only in 2011/2012: 106800*4.2%=4485.60, employer 106800*6.2%=6621.60. IRC 3101(b)(2) and 3102(f) begin in 2013: (300000-200000)*0.9%=900 thereafter, zero before.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2011,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 300000,
+                "medicareWages": 300000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 4485.6,
+        "totals.employerSocialSecurity": 6621.6,
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: 2012 holiday and additional Medicare transition",
+      "description": "Annual SSA base 110100; PL 111-312 section 601 and PL 112-96 section 1001 reduce employee OASDI only in 2011/2012: 110100*4.2%=4624.20, employer 110100*6.2%=6826.20. IRC 3101(b)(2) and 3102(f) begin in 2013: (300000-200000)*0.9%=900 thereafter, zero before.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 300000,
+                "medicareWages": 300000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 4624.2,
+        "totals.employerSocialSecurity": 6826.2,
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: 2013 holiday and additional Medicare transition",
+      "description": "Annual SSA base 113700; PL 111-312 section 601 and PL 112-96 section 1001 reduce employee OASDI only in 2011/2012: 113700*6.2%=7049.40, employer 113700*6.2%=7049.40. IRC 3101(b)(2) and 3102(f) begin in 2013: (300000-200000)*0.9%=900 thereafter, zero before.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2013,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 300000,
+                "medicareWages": 300000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 7049.4,
+        "totals.employerSocialSecurity": 7049.4,
+        "totals.additionalMedicareLiability": 900,
+        "totals.additionalMedicareWithholding": 900
+      }
+    },
+    {
+      "name": "Payroll: MFJ additional Medicare threshold plus 0",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For MFJ, (250000-250000)*0.9%=0. IRC 3102(f) separately withholds max(0,250000-200000)*0.9%=450; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 250000,
+                "medicareWages": 250000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          },
+          {
+            "id": "s",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 450
+      }
+    },
+    {
+      "name": "Payroll: MFJ additional Medicare threshold plus 1000",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For MFJ, (251000-250000)*0.9%=9. IRC 3102(f) separately withholds max(0,251000-200000)*0.9%=459; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 251000,
+                "medicareWages": 251000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          },
+          {
+            "id": "s",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 9,
+        "totals.additionalMedicareWithholding": 459
+      }
+    },
+    {
+      "name": "Payroll: MFS additional Medicare threshold plus 0",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For MFS, (125000-125000)*0.9%=0. IRC 3102(f) separately withholds max(0,125000-200000)*0.9%=0; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 125000,
+                "medicareWages": 125000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: MFS additional Medicare threshold plus 1000",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For MFS, (126000-125000)*0.9%=9. IRC 3102(f) separately withholds max(0,126000-200000)*0.9%=0; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 126000,
+                "medicareWages": 126000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 9,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: single additional Medicare threshold plus 0",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For single, (200000-200000)*0.9%=0. IRC 3102(f) separately withholds max(0,200000-200000)*0.9%=0; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: single additional Medicare threshold plus 1000",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For single, (201000-200000)*0.9%=9. IRC 3102(f) separately withholds max(0,201000-200000)*0.9%=9; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 201000,
+                "medicareWages": 201000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 9,
+        "totals.additionalMedicareWithholding": 9
+      }
+    },
+    {
+      "name": "Payroll: HOH additional Medicare threshold plus 0",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For HOH, (200000-200000)*0.9%=0. IRC 3102(f) separately withholds max(0,200000-200000)*0.9%=0; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "HOH",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: HOH additional Medicare threshold plus 1000",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For HOH, (201000-200000)*0.9%=9. IRC 3102(f) separately withholds max(0,201000-200000)*0.9%=9; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "HOH",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 201000,
+                "medicareWages": 201000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 9,
+        "totals.additionalMedicareWithholding": 9
+      }
+    },
+    {
+      "name": "Payroll: QSS additional Medicare threshold plus 0",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For QSS, (200000-200000)*0.9%=0. IRC 3102(f) separately withholds max(0,200000-200000)*0.9%=0; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "QSS",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: QSS additional Medicare threshold plus 1000",
+      "description": "IRC 3101(b)(2): joint threshold 250000, MFS half of joint=125000, all others 200000. For QSS, (201000-200000)*0.9%=9. IRC 3102(f) separately withholds max(0,201000-200000)*0.9%=9; a zero-wage spouse completes a joint return.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "QSS",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 201000,
+                "medicareWages": 201000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 9,
+        "totals.additionalMedicareWithholding": 9
+      }
+    },
+    {
+      "name": "Payroll: MFJ overwithholding",
+      "description": "IRC 3101(b)(2) joint wages 220000 below250000 produce zero liability; IRC3102(f) employer withholds(220000-200000)*.009=180. The second spouse has zero wages.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 220000,
+                "medicareWages": 220000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          },
+          {
+            "id": "s",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 0,
+        "totals.additionalMedicareWithholding": 180
+      }
+    },
+    {
+      "name": "Payroll: MFS underwithholding",
+      "description": "IRC3101(b)(2)(B) threshold250000/2=125000: (150000-125000)*.009=225. IRC3102(f)150000 below200000 gives zero withholding.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 150000,
+                "medicareWages": 150000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.additionalMedicareLiability": 225,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: wages consume OASDI base and Medicare threshold before SE",
+      "description": "IRC1402(a)(12):20000*(1-(.124+.029)/2)=18470. IRC1402(b)(1):190000 wages already exhaust184500 SS base so SS SE tax=0. IRC1401(b)(1):18470*.029=535.63. IRC1401(b)(2): wages first leave200000-190000=10000; (18470-10000)*.009=76.23, wages themselves below threshold give0. IRC164(f):535.63/2=267.815 rounds267.82 excluding additional Medicare.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 190000,
+                "medicareWages": 190000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 20000
+          }
+        ]
+      },
+      "expect": {
+        "persons.0.adjustedNetEarnings": 18470,
+        "totals.selfEmploymentSocialSecurity": 0,
+        "totals.selfEmploymentMedicare": 535.63,
+        "totals.additionalMedicareWageLiability": 0,
+        "totals.additionalMedicareSelfEmploymentLiability": 76.23,
+        "totals.selfEmploymentTaxDeduction": 267.82
+      }
+    },
+    {
+      "name": "Payroll: below400",
+      "description": "IRC1402(a)(12) factor1-(.124+.029)/2=.9235 applied to max(0,433.12) and rounded to cents gives399.99. IRC1402(b)(2) excludes amounts below400. Taxable amount therefore 0; 12.4% SS=0, 2.9% HI=0 after cent rounding, and IRC164(f) half their sum=0.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 433.12
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 399.99,
+        "totals.selfEmploymentSocialSecurity": 0,
+        "totals.selfEmploymentMedicare": 0,
+        "totals.selfEmploymentTaxDeduction": 0
+      }
+    },
+    {
+      "name": "Payroll: exact400",
+      "description": "IRC1402(a)(12) factor1-(.124+.029)/2=.9235 applied to max(0,433.13) and rounded to cents gives400. IRC1402(b)(2) excludes amounts below400. Taxable amount therefore 400; 12.4% SS=49.6, 2.9% HI=11.6 after cent rounding, and IRC164(f) half their sum=30.6.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 433.13
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 400,
+        "totals.selfEmploymentSocialSecurity": 49.6,
+        "totals.selfEmploymentMedicare": 11.6,
+        "totals.selfEmploymentTaxDeduction": 30.6
+      }
+    },
+    {
+      "name": "Payroll: above400",
+      "description": "IRC1402(a)(12) factor1-(.124+.029)/2=.9235 applied to max(0,434) and rounded to cents gives400.8. IRC1402(b)(2) excludes amounts below400. Taxable amount therefore 400.8; 12.4% SS=49.7, 2.9% HI=11.62 after cent rounding, and IRC164(f) half their sum=30.66.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 434
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 400.8,
+        "totals.selfEmploymentSocialSecurity": 49.7,
+        "totals.selfEmploymentMedicare": 11.62,
+        "totals.selfEmploymentTaxDeduction": 30.66
+      }
+    },
+    {
+      "name": "Payroll: loss",
+      "description": "IRC1402(a)(12) factor1-(.124+.029)/2=.9235 applied to max(0,-1000) and rounded to cents gives0. IRC1402(b)(2) excludes amounts below400. Taxable amount therefore 0; 12.4% SS=0, 2.9% HI=0 after cent rounding, and IRC164(f) half their sum=0.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": -1000
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 0,
+        "totals.selfEmploymentSocialSecurity": 0,
+        "totals.selfEmploymentMedicare": 0,
+        "totals.selfEmploymentTaxDeduction": 0
+      }
+    },
+    {
+      "name": "Payroll: 164f excludes additional SE Medicare",
+      "description": "IRC1402(a)(12):300000*.9235=277050. IRC1401:SS184500*.124=22878; HI277050*.029=8034.45; additional(277050-200000)*.009=693.45. IRC164(f) expressly excludes the additional component: (22878+8034.45)/2=15456.225 rounds15456.23.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 300000
+          }
+        ]
+      },
+      "expect": {
+        "persons.0.adjustedNetEarnings": 277050,
+        "totals.selfEmploymentSocialSecurity": 22878,
+        "totals.selfEmploymentMedicare": 8034.45,
+        "totals.additionalMedicareSelfEmploymentLiability": 693.45,
+        "totals.selfEmploymentTaxDeduction": 15456.23
+      }
+    },
+    {
+      "name": "Payroll: 2011 SE holiday preserves adjustment and special deduction",
+      "description": "PL111-312 section601 as extended by PL112-96 section1001: adjustment uses unreduced rates,10000*(1-(.124+.029)/2)=9235. Holiday SS=9235*.104=960.44; HI9235*.029=267.815 rounds267.82. Special deduction .596*960.44+.5*267.82=706.33224 rounds706.33, not half of total SE tax.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2011,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 10000
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 9235,
+        "totals.selfEmploymentSocialSecurity": 960.44,
+        "totals.selfEmploymentMedicare": 267.82,
+        "totals.selfEmploymentTaxDeduction": 706.33
+      }
+    },
+    {
+      "name": "Payroll: 2012 SE holiday preserves adjustment and special deduction",
+      "description": "PL111-312 section601 as extended by PL112-96 section1001: adjustment uses unreduced rates,10000*(1-(.124+.029)/2)=9235. Holiday SS=9235*.104=960.44; HI9235*.029=267.815 rounds267.82. Special deduction .596*960.44+.5*267.82=706.33224 rounds706.33, not half of total SE tax.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2012,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 10000
+          }
+        ]
+      },
+      "expect": {
+        "netEarningsFactor": 0.9235,
+        "persons.0.adjustedNetEarnings": 9235,
+        "totals.selfEmploymentSocialSecurity": 960.44,
+        "totals.selfEmploymentMedicare": 267.82,
+        "totals.selfEmploymentTaxDeduction": 706.33
+      }
+    },
+    {
+      "name": "Payroll: multiple employers retain separate employer caps",
+      "description": "IRC3101/6413(c) employee net liability caps wages per individual at184500:11439. IRC3111/3121(a)(1) caps each employer separately:2*184500*.062=22878. Two200000 wages aggregate to400000 for3101(b)(2):200000*.009=1800; neither employer exceeds3102(f)200000, withholding0.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "a",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              },
+              {
+                "employerId": "b",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 11439,
+        "totals.employerSocialSecurity": 22878,
+        "totals.additionalMedicareLiability": 1800,
+        "totals.additionalMedicareWithholding": 0
+      }
+    },
+    {
+      "name": "Payroll: spouses have independent OASDI caps",
+      "description": "IRC3101(a) and3121(a)(1) give each spouse separate184500 base:2*184500*.062=22878. IRC3101(b)(2) combines joint Medicare wages:(400000-250000)*.009=1350.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          },
+          {
+            "id": "s",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 22878,
+        "totals.additionalMedicareLiability": 1350
+      }
+    },
+    {
+      "name": "Payroll: 1990 unavailable parameters",
+      "description": "The evidence-backed table starts1991 and ends2026. Input contract for1990: return null parameters and totals with indeterminate status and PAYROLL_PARAMETERS_UNAVAILABLE; no interpolation or projection is authorized.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1990,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "indeterminate",
+        "parameters": null,
+        "totals": null
+      },
+      "expectDiagnosticCodes": [
+        "PAYROLL_PARAMETERS_UNAVAILABLE"
+      ]
+    },
+    {
+      "name": "Payroll: 2027 unavailable parameters",
+      "description": "The evidence-backed table starts1991 and ends2026. Input contract for2027: return null parameters and totals with indeterminate status and PAYROLL_PARAMETERS_UNAVAILABLE; no interpolation or projection is authorized.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "indeterminate",
+        "parameters": null,
+        "totals": null
+      },
+      "expectDiagnosticCodes": [
+        "PAYROLL_PARAMETERS_UNAVAILABLE"
+      ]
+    },
+    {
+      "name": "Payroll: missing filing status",
+      "description": "Return-level liability requires caller filing status; absent status cannot select the IRC3101(b)(2) threshold. Contract returns indeterminate totals and PAYROLL_FILING_STATUS_REQUIRED.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "indeterminate",
+        "totals": null
+      },
+      "expectDiagnosticCodes": [
+        "PAYROLL_FILING_STATUS_REQUIRED"
+      ]
+    },
+    {
+      "name": "Payroll: missing spouse",
+      "description": "Joint liability under IRC3101(b)(2) requires both spouses; one person cannot establish household wages. Contract returns indeterminate plus PAYROLL_RETURN_PERSONS_REQUIRED.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "indeterminate",
+        "totals": null
+      },
+      "expectDiagnosticCodes": [
+        "PAYROLL_RETURN_PERSONS_REQUIRED"
+      ]
+    },
+    {
+      "name": "Payroll: duplicate person",
+      "description": "Input contract requires unique person IDs, explicit nonnegative numeric wage measures, and finite numeric earnings. The malformed duplicate person input must throw INVALID_PAYROLL_INPUT.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          },
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_INPUT"
+      }
+    },
+    {
+      "name": "Payroll: negative wages",
+      "description": "Input contract requires unique person IDs, explicit nonnegative numeric wage measures, and finite numeric earnings. The malformed negative wages input must throw INVALID_PAYROLL_INPUT.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": -1,
+                "medicareWages": -1
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_INPUT"
+      }
+    },
+    {
+      "name": "Payroll: string earnings",
+      "description": "Input contract requires unique person IDs, explicit nonnegative numeric wage measures, and finite numeric earnings. The malformed string earnings input must throw INVALID_PAYROLL_INPUT.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": "1000"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_INPUT"
+      }
+    },
+    {
+      "name": "Payroll: missing wage measure",
+      "description": "Input contract requires unique person IDs, explicit nonnegative numeric wage measures, and finite numeric earnings. The malformed missing wage measure input must throw INVALID_PAYROLL_INPUT.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "medicareWages": 1000
+              }
+            ]
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_INPUT"
+      }
+    },
+    {
+      "name": "Payroll: integration health_fsa",
+      "description": "Equal10000 compensation and1000 plan-limited salary reduction. IRC125(a) or402(e)(3) excludes1000 from section61/FormW2box1, the existing output contract additionally reports the402(g) reduction as federalAgiReduction1000 and the cafeteria exclusion as0. IRC3121(a)(5)(G) excludes the healthFSA salary reduction while3121(v)(1) includes the402(g) deferral. Thus FICA reduction=1000; below the2026 SS base, employee/employer savings=1000*(.062+.0145)=76.5. Baseline employee/employer tax10000*.0765=765; after=688.5.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose",
+                "planDocumentLimit": 1000
+              }
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ],
+              "netEarningsBeforeAdjustment": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 1000,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 0,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 1000,
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.after.totals.employeeTotalLiability": 688.5,
+        "federalTaxEffects.payrollTax.savings.employeeTotalLiability": 76.5,
+        "federalTaxEffects.payrollTax.savings.employerTotal": 76.5
+      }
+    },
+    {
+      "name": "Payroll: integration traditional_401k",
+      "description": "Equal10000 compensation and1000 plan-limited salary reduction. IRC125(a) or402(e)(3) excludes1000 from section61/FormW2box1, the existing output contract additionally reports the402(g) reduction as federalAgiReduction1000 and the cafeteria exclusion as0. IRC3121(a)(5)(G) excludes the healthFSA salary reduction while3121(v)(1) includes the402(g) deferral. Thus FICA reduction=0; below the2026 SS base, employee/employer savings=0*(.062+.0145)=0. Baseline employee/employer tax10000*.0765=765; after=765.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "traditional_401k",
+            "planRules": {
+              "planDocumentEmployeeDeferralLimit": 1000
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ],
+              "netEarningsBeforeAdjustment": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.federalTaxEffects.formW2Box1WageReduction": 1000,
+        "accounts.0.federalTaxEffects.federalAgiReduction": 1000,
+        "accounts.0.federalTaxEffects.ficaWageReduction": 0,
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.after.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.savings.employeeTotalLiability": 0,
+        "federalTaxEffects.payrollTax.savings.employerTotal": 0
+      }
+    },
+    {
+      "name": "Payroll: corrected 2018 determination",
+      "description": "SSA correction 82 FR59937 (December15,2017), superseding82 FR50113, sets2018 base128400, replacing128700. At200000 wages IRC3101(a)/3111(a) impose128400*.062=7960.80 on each side; the superseded value would overstate each by18.60.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2018,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "parameters.contributionAndBenefitBase": 128400,
+        "totals.employeeSocialSecurity": 7960.8,
+        "totals.employerSocialSecurity": 7960.8
+      }
+    },
+    {
+      "name": "Payroll: unmatched employer",
+      "description": "The existing IRC125 plan permits1000 salary reduction, but the opt-in payroll facts unmatched employer cannot establish both wage measures before that exclusion. The contract must return indeterminate payroll effects with no after result or savings and PAYROLL_EXCLUSION_WAGES_REQUIRED.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose",
+                "planDocumentLimit": 1000
+              }
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "other",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ],
+              "netEarningsBeforeAdjustment": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "indeterminate",
+        "federalTaxEffects.payrollTax.after": null,
+        "federalTaxEffects.payrollTax.savings": null,
+        "federalTaxEffects.payrollTax.diagnostics.0.code": "PAYROLL_EXCLUSION_WAGES_REQUIRED"
+      }
+    },
+    {
+      "name": "Payroll: insufficient wages",
+      "description": "The existing IRC125 plan permits1000 salary reduction, but the opt-in payroll facts insufficient wages cannot establish both wage measures before that exclusion. The contract must return indeterminate payroll effects with no after result or savings and PAYROLL_EXCLUSION_WAGES_REQUIRED.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose",
+                "planDocumentLimit": 1000
+              }
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 500,
+                  "medicareWages": 500
+                }
+              ],
+              "netEarningsBeforeAdjustment": 0
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "indeterminate",
+        "federalTaxEffects.payrollTax.after": null,
+        "federalTaxEffects.payrollTax.savings": null,
+        "federalTaxEffects.payrollTax.diagnostics.0.code": "PAYROLL_EXCLUSION_WAGES_REQUIRED"
+      }
+    },
+    {
+      "name": "Payroll: wage exclusion opens SECA base",
+      "description": "IRC125 excludes1000 from184500 wages. Baseline2026 wages exhaust184500 SS base. IRC1402(a)(12):10000*.9235=9235 SE earnings. After exclusion,1402(b)(1) leaves1000 SS base, adding124 SE tax and62 deductible tax under164(f). Employee and employer save1000*.062+1000*.0145=76.50 each. SE total savings=-124; deduction savings=-62.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 184500
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "health_fsa",
+            "planRules": {
+              "healthFsa": {
+                "purpose": "limited_purpose",
+                "planDocumentLimit": 1000
+              }
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 184500,
+                  "medicareWages": 184500
+                }
+              ],
+              "netEarningsBeforeAdjustment": 10000
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.savings.employeeTotalLiability": 76.5,
+        "federalTaxEffects.payrollTax.savings.employerTotal": 76.5,
+        "federalTaxEffects.payrollTax.savings.selfEmploymentTotalLiability": -124,
+        "federalTaxEffects.payrollTax.savings.selfEmploymentTaxDeduction": -62
+      }
+    },
+    {
+      "name": "Payroll: historical HI wages consume SE base",
+      "description": "1993 CircularE states HI cap135000 and SS57600. IRC1402(b)(1) and former1402(k) count wages first:130000 wages exhaustSS, leave5000 HI base.10000*.9235=9235 SE earnings, so SS tax0 and HImin(9235,5000)*.029=145. IRC164(f) deduction145/2=72.50.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 1993,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 130000,
+                "medicareWages": 130000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 10000
+          }
+        ]
+      },
+      "expect": {
+        "totals.selfEmploymentSocialSecurity": 0,
+        "totals.selfEmploymentMedicare": 145,
+        "totals.selfEmploymentTaxDeduction": 72.5
+      }
+    },
+    {
+      "name": "Payroll: explicit empty wage list",
+      "description": "The input contract accepts either explicit empty collection as no wages in both native runtimes. IRC1401 taxes no earnings: omitted SE earnings default0; employee, employer, and SECA totals all0. This is separate from missing wage information, which is rejected.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": []
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeTotalLiability": 0,
+        "totals.employerTotal": 0,
+        "totals.selfEmploymentTotalLiability": 0
+      }
+    },
+    {
+      "name": "Payroll: explicit empty wage map",
+      "description": "The input contract accepts either explicit empty collection as no wages in both native runtimes. IRC1401 taxes no earnings: omitted SE earnings default0; employee, employer, and SECA totals all0. This is separate from missing wage information, which is rejected.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": {}
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeTotalLiability": 0,
+        "totals.employerTotal": 0,
+        "totals.selfEmploymentTotalLiability": 0
+      }
+    },
+    {
+      "name": "Payroll: null scenario payroll input",
+      "description": "An opted-in payroll calculation requires an explicit persons collection. Null cannot establish any persons or wage facts and must throw INVALID_PAYROLL_INPUT.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": null
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_INPUT"
+      }
     }
   ]
 }

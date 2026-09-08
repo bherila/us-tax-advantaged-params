@@ -5,6 +5,7 @@ import USTaxAdvantagedParams from "../src/USTaxAdvantagedParams.js";
 
 interface ConformanceVector {
   name: string;
+  operation?: "payrollTax";
   input: Parameters<typeof USTaxAdvantagedParams.calculate>[0];
   expect?: Record<string, unknown>;
   expectDiagnosticCodes?: string[];
@@ -33,17 +34,20 @@ function readPath(value: unknown, path: string): unknown {
 }
 
 for (const vector of conformance.vectors) {
+  const calculate = () => vector.operation === "payrollTax"
+    ? USTaxAdvantagedParams.calculatePayrollTax(vector.input as unknown as Parameters<typeof USTaxAdvantagedParams.calculatePayrollTax>[0])
+    : USTaxAdvantagedParams.calculate(vector.input);
   test(`conformance: ${vector.name}`, () => {
     if (vector.expectError) {
       assert.throws(
-        () => USTaxAdvantagedParams.calculate(vector.input),
+        calculate,
         (error: unknown) =>
           (error as { code?: string } | null)?.code === vector.expectError!.code,
         `${vector.name}: expected error ${vector.expectError.code}`,
       );
       return;
     }
-    const result = USTaxAdvantagedParams.calculate(vector.input);
+    const result = calculate();
     for (const [path, expected] of Object.entries(vector.expect ?? {})) {
       assert.deepEqual(readPath(result, path), expected, `${vector.name}: ${path}`);
     }

@@ -886,3 +886,17 @@ test("an agreed whole share with both person records retains paragraph-5 Archer 
     }
   }
 });
+
+test("payroll parameter and scenario builder snapshots are detached", () => {
+  assert.deepEqual(U.supportedPayrollTaxYears(), { minimum: 1991, maximum: 2026 });
+  const row = U.payrollParametersForYear(2026)!;
+  row.contributionAndBenefitBase = 1;
+  assert.equal(U.payrollParametersForYear(2026)!.contributionAndBenefitBase, 184500);
+  assert.equal(U.payrollParametersForYear(1990), null);
+  const persons = [{ id: "t", wages: [{ employerId: "e", socialSecurityWages: 10000, medicareWages: 10000 }] }];
+  const builder = U.forTaxYear(2026).payrollTax(persons);
+  persons[0]!.wages[0]!.medicareWages = 0;
+  const wages = builder.toInput().payrollTax!.persons[0]!.wages;
+  assert.ok(Array.isArray(wages));
+  assert.equal(wages[0]!.medicareWages, 10000);
+});

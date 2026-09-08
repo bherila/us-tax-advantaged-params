@@ -1,0 +1,647 @@
+<html>
+<head>
+<title>Federal Register, Volume 65 Issue 206 (Tuesday, October 24, 2000)</title>
+</head>
+<body><pre>
+[Federal Register Volume 65, Number 206 (Tuesday, October 24, 2000)]
+[Notices]
+[Pages 63663-63668]
+From the Federal Register Online via the Government Publishing Office [<a href="http://www.gpo.gov">www.gpo.gov</a>]
+[FR Doc No: 00-27249]
+
+
+=======================================================================
+-----------------------------------------------------------------------
+
+SOCIAL SECURITY ADMINISTRATION
+
+Office of the Commissioner
+
+
+Cost-of-Living Increase and Other Determinations for the Year 
+2001
+
+AGENCY: Social Security Administration.
+
+ACTION: Notice.
+
+-----------------------------------------------------------------------
+
+SUMMARY: The Commissioner has determined--
+    (1) A 3.5 percent cost-of-living increase in Social Security 
+benefits under title II of the Social Security Act (the Act), effective 
+for December 2000;
+    (2) An increase in the Federal Supplemental Security Income (SSI) 
+monthly benefit amounts under title XVI of the Act for 2001 to $530 for 
+an eligible individual, $796 for an eligible individual with an 
+eligible spouse, and $266 for an essential person;
+    (3) The national average wage index for 1999 to be $30,469.84;
+    (4) The Old-Age, Survivors, and Disability Insurance (OASDI) 
+contribution and benefit base to be $80,400 for remuneration paid in 
+2001 and self-employment income earned in taxable years beginning in 
+2001;
+    (5) For beneficiaries under age 65, the monthly exempt amount under 
+the Social Security retirement earnings test for taxable years ending 
+in calendar year 2001 to be $890;
+    (6) The dollar amounts (``bend points'') used in the benefit 
+formula for workers who become eligible for benefits in 2001 to be $561 
+and $3,381;
+    (7) The dollar amounts (``bend points'') used in the formula for 
+computing maximum family benefits for workers who become eligible for 
+benefits in 2001 to be $717, $1,034, and $1,349;
+    (8) The amount of earnings a person must have to be credited with a 
+quarter of coverage in 2001 to be $830;
+    (9) The ``old-law'' contribution and benefit base to be $59,700 for 
+2001;
+    (10) The monthly amount of substantial gainful activity applicable 
+to statutorily blind individuals in 2001 to be $1,240;
+    (11) Coverage thresholds for 2001 to be $1,300 for domestic workers 
+and $1,100 for election workers; and
+    (12) The OASDI fund ratio to be 215.4 percent for 2000.
+
+FOR FURTHER INFORMATION CONTACT: Jeffrey L. Kunkel, Office of the Chief 
+Actuary, Social Security Administration, 6401 Security Boulevard, 
+Baltimore, MD 21235, (410) 965-3013. For information on eligibility or 
+claiming benefits, call 1-800-772-1213. Information relating to this 
+announcement is available on the Internet at
+<a href="http://www.ssa.gov/OACT/COLA/index.html">http://www.ssa.gov/OACT/COLA/index.html</a>.
+
+SUPPLEMENTARY INFORMATION: In accordance with the Act, the Commissioner 
+must publish within 45 days after the close of the third calendar 
+quarter of 2000 the benefit increase percentage and the revised table 
+of ``special minimum'' benefits (section 215(i)(2)(D)). Also, the 
+Commissioner must publish on or before November 1 the national average 
+wage index for 1999 (section 215(a)(1)(D)), the OASDI fund ratio for 
+2000 (section 215(i)(2)(C)(ii)), the OASDI contribution and benefit 
+base for 2001 (section 230(a)), the amount of earnings required to be 
+credited with a quarter of coverage in 2001 (section 213(d)(2)), the 
+monthly exempt amounts under the Social Security retirement earnings 
+test for 2001 (section 203(f)(8)(A)), the formula for computing a 
+primary insurance amount for workers who first become eligible for 
+benefits or die in 2001 (section 215(a)(1)(D)), and the formula for 
+computing the maximum amount of benefits payable to the family of a 
+worker who first becomes eligible for old-age benefits or dies in 2001 
+(section 203(a)(2)(C)).
+
+Cost-of-Living Increases
+
+    General. The cost-of-living increase is 3.5 percent for benefits 
+under titles II and XVI of the Act. Under title II, OASDI benefits will 
+increase by 3.5 percent beginning with December 2000 benefits, payable 
+in January 2001. This increase is based on the authority contained in 
+section 215(i) of the Act (42 U.S.C. 415(i)).
+    Under title XVI, Federal SSI payment levels will also increase by 
+3.5 percent effective for payments made for the month of January 2001 
+but paid on December 29, 2000. This is based on the authority contained 
+in section 1617 of the Act (42 U.S.C. 1382f).
+    Automatic Benefit Increase Computation. Under section 215(i) of the 
+Act, the third calendar quarter of 2000 is a cost-of-living computation
+
+[[Page 63664]]
+
+quarter for all the purposes of the Act. The Commissioner is, 
+therefore, required to increase benefits, effective with December 2000, 
+for individuals entitled under section 227 or 228 of the Act, to 
+increase primary insurance amounts of all other individuals entitled 
+under title II of the Act, and to increase maximum benefits payable to 
+a family. For December 2000, the benefit increase is the percentage 
+increase in the Consumer Price Index for Urban Wage Earners and 
+Clerical Workers from the third quarter of 1999 through the third 
+quarter of 2000.
+    Section 215(i)(1) of the Act provides that the Consumer Price Index 
+for a cost-of-living computation quarter shall be the arithmetic mean 
+of this index for the 3 months in that quarter. We round the arithmetic 
+mean, if necessary, to the nearest 0.1. The Department of Labor's 
+Consumer Price Index for Urban Wage Earners and Clerical Workers for 
+each month in the quarter ending September 30, 1999, is: for July 1999, 
+163.3; for August 1999, 163.8; and for September 1999, 164.7. The 
+arithmetic mean for this calendar quarter is 163.9. The corresponding 
+Consumer Price Index for each month in the quarter ending September 30, 
+2000, is: for July 2000, 169.4; for August 2000, 169.3; and for 
+September 2000, 170.4. The arithmetic mean for this calendar quarter is 
+169.7. Thus, because the Consumer Price Index for the calendar quarter 
+ending September 30, 2000, exceeds that for the calendar quarter ending 
+September 30, 1999 by 3.5 percent, a cost-of-living benefit increase of 
+3.5 percent is effective for benefits under title II of the Act 
+beginning December 2000.
+    Title II Benefit Amounts. In accordance with section 215(i) of the 
+Act, in the case of workers and family members for whom eligibility for 
+benefits (i.e., the worker's attainment of age 62, or disability or 
+death before age 62) occurred before 2001, benefits will increase by 
+3.5 percent beginning with benefits for December 2000 which are payable 
+in January 2001. In the case of first eligibility after 2000, the 3.5 
+percent increase will not apply.
+    For eligibility after 1978, benefits are generally determined by a 
+benefit formula provided by the Social Security Amendments of 1977 
+(Pub. L. 95-216), as described later in this notice.
+    For eligibility before 1979, we determine benefits by means of a 
+benefit table. You may obtain a copy of this table by writing to: 
+Social Security Administration, Office of Public Inquiries, 4100 Annex, 
+Baltimore, MD 21235. The table is also available on the Internet at 
+address
+
+<a href="http://www.ssa.gov/OACT/ProgData/tableForm.html">http://www.ssa.gov/OACT/ProgData/tableForm.html</a>.
+    Section 215(i)(2)(D) of the Act requires that, when the 
+Commissioner determines an automatic increase in Social Security 
+benefits, the Commissioner shall publish in the Federal Register a 
+revision of the range of the primary insurance amounts and 
+corresponding maximum family benefits based on the dollar amount and 
+other provisions described in section 215(a)(1)(C)(i). We refer to 
+these benefits as ``special minimum'' benefits. These benefits are 
+payable to certain individuals with long periods of relatively low 
+earnings. To qualify for such benefits, an individual must have at 
+least 11 ``years of coverage.'' To earn a year of coverage for purposes 
+of the special minimum, a person must earn at least a certain 
+proportion (25 percent for years before 1991, and 15 percent for years 
+after 1990) of the ``old-law'' contribution and benefit base. In 
+accordance with section 215(a)(1)(C)(i), the table below shows the 
+revised range of primary insurance amounts and corresponding maximum 
+family benefit amounts after the 3.5 percent benefit increase.
+
+  Special Minimum Primary Insurance Amounts and Maximum Family Benefits
+                        Payable for December 2000
+------------------------------------------------------------------------
+                                                  Primary      Maximum
+          Number of years of coverage            insurance      family
+                                                   amount      benefit
+------------------------------------------------------------------------
+11............................................       $29.40       $44.70
+12............................................        59.40        89.80
+13............................................        89.70       134.90
+14............................................       119.50       179.80
+15............................................       149.50       224.50
+16............................................       179.60       270.20
+17............................................       209.70       315.40
+18............................................       239.90       360.30
+19............................................       269.90       405.50
+20............................................       299.80       450.50
+21............................................       330.20       495.90
+22............................................       360.00       540.80
+23............................................       390.40       586.60
+24............................................       420.50       631.50
+25............................................       450.50       676.10
+26............................................       480.80       722.10
+27............................................       510.70       766.90
+28............................................       540.70       811.80
+29............................................       570.80       857.10
+30............................................       600.90       902.00
+------------------------------------------------------------------------
+
+    Title XVI Benefit Amounts. In accordance with section 1617 of the 
+Act, Federal SSI benefit amounts for the aged, blind, and disabled will 
+increase by 3.5 percent effective January 2001. For 2000, we derived 
+the monthly benefit amounts for an eligible individual, an eligible 
+individual with an eligible spouse, and for an essential person--$512, 
+$769, and $257, respectively--from corresponding yearly unrounded 
+Federal SSI benefit amounts of $6,154.26, $9,230.35, and $3,084.18. For 
+2001, these yearly unrounded amounts increase by 3.5 percent to 
+$6,369.66, $9,553.41, and $3,192.13, respectively. Each of these 
+resulting amounts must be rounded, when not a multiple of $12, to the 
+next lower multiple of $12. Accordingly, the corresponding annual 
+amounts, effective for 2001, are $6,360, $9,552, and $3,192. Dividing 
+the yearly amounts by 12 gives the corresponding monthly amounts for 
+2001--$530, $796, and $266, respectively. We reduce the monthly amount 
+by subtracting monthly countable income. In the case of an eligible 
+individual with an eligible spouse, we equally divide the amount 
+payable between the two spouses.
+    Fee for Services Performed as a Representative Payee. Sections 
+205(j)(4)(A)(i) and 1631(a)(2)(D)(i) of the Act permit a qualified 
+organization to collect from an individual a monthly fee for expenses 
+incurred in providing services performed as such individual's 
+representative payee. Currently the fee is limited to the lesser of: 
+(1) 10 percent of the monthly benefit involved; or (2) $ 28 per month 
+($54 per month in any case in which the individual is entitled to 
+disability benefits and the Commissioner has determined that payment to 
+the representative payee would serve the interest of the individual 
+because the individual has an alcoholism or drug addiction condition 
+and is incapable of managing such benefits). The dollar fee limits are 
+subject to increase by the automatic cost-of-living increase, with the 
+resulting amounts rounded to the nearest whole dollar amount. Thus we 
+will increase the current amounts by 3.5 percent to $29 and $56 for 
+2001.
+
+National Average Wage Index for 1999
+
+    General. Under various provisions of the Act several amounts 
+increase automatically with annual increases in the national average 
+wage index. The amounts are: (1) The OASDI contribution and benefit 
+base; (2) the retirement test exempt amounts; (3) the dollar amounts, 
+or ``bend points,'' in the primary insurance amount and maximum family 
+benefit formulas; (4) the amount of earnings required for a worker to 
+be credited with a quarter of coverage; (5) the ``old-law'' 
+contribution and benefit base (as determined under section 230 of the 
+Act as in effect before the 1977 amendments); (6) the substantial 
+gainful activity amount applicable to statutorily blind individuals; 
+and (7) the coverage
+
+[[Page 63665]]
+
+threshold for election officials and election workers. Also, section 
+3121(x) of the Internal Revenue Code requires that the domestic 
+employee coverage threshold be based on changes in the national average 
+wage index.
+    Computation. The determination of the national average wage index 
+for calendar year 1999 is based on the 1998 national average wage index 
+of $28,861.44 announced in the Federal Register on October 25, 1999 (64 
+FR 57506), along with the percentage increase in average wages from 
+1998 to 1999 measured by annual wage data tabulated by the Social 
+Security Administration (SSA). The wage data tabulated by SSA include 
+contributions to deferred compensation plans, as required by section 
+209(k) of the Act. The average amounts of wages calculated directly 
+from these data were $27,686.75 and $29,229.69 for 1998 and 1999, 
+respectively. To determine the national average wage index for 1999 at 
+a level that is consistent with the national average wage indexing 
+series for 1951 through 1977 (published December 29, 1978, at 43 FR 
+61016), we multiply the 1998 national average wage index of $28,861.44 
+by the percentage increase in average wages from 1998 to 1999 (based on 
+SSA-tabulated wage data) as follows (with the result rounded to the 
+nearest cent):
+    Amount. The national average wage index for 1999 is $28,861.44 
+times $29,229.69 divided by $27,686.75, which equals $30,469.84. 
+Therefore, the national average wage index for calendar year 1999 is 
+$30,469.84.
+
+OASDI Contribution and Benefit Base
+
+    General. The OASDI contribution and benefit base is $80,400 for 
+remuneration paid in 2001 and self-employment income earned in taxable 
+years beginning in 2001.
+    The OASDI contribution and benefit base serves two purposes:
+    (a) It is the maximum annual amount of earnings on which OASDI 
+taxes are paid. The OASDI tax rate for remuneration paid in 2001 is 6.2 
+percent for employees and employers, each. The OASDI tax rate for self-
+employment income earned in taxable years beginning in 2001 is 12.4 
+percent. (The Hospital Insurance tax is due on remuneration, without 
+limitation, paid in 2001, at the rate of 1.45 percent for employees and 
+employers, each, and on self-employment income earned in taxable years 
+beginning in 2001, at the rate of 2.9 percent.)
+    (b) It is the maximum annual amount used in determining a person's 
+OASDI benefits.
+    Computation. Section 230(b) of the Act provides the formula used to 
+determine the OASDI contribution and benefit base. Under the formula, 
+the base for 2001 shall be the larger of: (1) The 1994 base of $60,600 
+multiplied by the ratio of the national average wage index for 1999 to 
+that for 1992; or (2) the current base ($76,200). If the resulting 
+amount is not a multiple of $300, it shall be rounded to the nearest 
+multiple of $300.
+    Amount. The ratio of the national average wage index for 1999, 
+$30,469.84 as determined above, compared to that for 1992, $22,935.42, 
+is 1.3285059. Multiplying the 1994 OASDI contribution and benefit base 
+amount of $60,600 by the ratio of 1.3285059 produces the amount of 
+$80,507.46 which rounds to $80,400. Because $80,400 exceeds the current 
+base amount of $76,200, the OASDI contribution and benefit base is 
+$80,400 for 2001.
+
+Retirement Earnings Test Exempt Amounts
+
+    General. We withhold Social Security benefits when a beneficiary 
+under the normal retirement age (NRA) has earnings in excess of the 
+applicable retirement earnings test exempt amount. (NRA is the age at 
+which the benefit, before rounding, is equal to the worker's primary 
+insurance amount. The NRA is age 65 for those born before 1938, and it 
+will gradually increase to age 67.) For 2001, NRA is age 65. From 1978 
+through 1999, when the retirement earnings test applied to individuals 
+beyond the NRA, higher exempt amounts applied to beneficiaries aged 65 
+to 69 compared to those under age 65. Under Pub. L. 106-182, the 
+``Senior Citizens'' Freedom to Work Act of 2000,'' which ended the 
+retirement earnings test for beneficiaries who have attained NRA, these 
+higher exempt amounts still apply in the year in which a person attains 
+his/her NRA, but only for months prior to such attainment. Section 
+203(f)(8)(B) of the Act, as amended by section 102 of Pub. L. 104-121, 
+provides formulas for determining the monthly exempt amounts. The 
+amendment set the higher annual exempt amount to $25,000 for 2001 and 
+$30,000 for 2002. After 2002, the higher exempt amount will increase 
+under the applicable formula. The corresponding monthly exempt amounts 
+are exactly one-twelfth of the annual amounts.
+    For beneficiaries attaining NRA in the year, we withhold $1 in 
+benefits for every $3 of earnings in excess of the annual exempt amount 
+for months prior to such attainment. For all other beneficiaries under 
+NRA, we withhold $1 in benefits for every $2 of earnings in excess of 
+the annual exempt amount.
+    Computation. Under the formula applicable to beneficiaries under 
+the NRA, the monthly exempt amount for 2001 shall be the larger of: (1) 
+The 1994 monthly exempt amount multiplied by the ratio of the national 
+average wage index for 1999 to that for 1992; or (2) the 2000 monthly 
+exempt amount ($840). If the resulting amount is not a multiple of $10, 
+it shall be rounded to the nearest multiple of $10.
+    Exempt Amount for Beneficiaries Under NRA. The ratio of the 
+national average wage index for 1999, $30,469.84, compared to that for 
+1992, $22,935.42, is 1.3285059. Multiplying the 1994 retirement 
+earnings test monthly exempt amount of $670 by the ratio 1.3285059 
+produces the amount of $890.10. We round this to $890. Because $890 is 
+larger than the corresponding current exempt amount of $840, the 
+retirement earnings test monthly exempt amount for beneficiaries under 
+NRA is $890 for 2001. The corresponding retirement earnings test annual 
+exempt amount for these beneficiaries is $10,680.
+
+Computing Benefits After 1978
+
+    General. The Social Security Amendments of 1977 provided a method 
+for computing benefits which generally applies when a worker first 
+becomes eligible for benefits after 1978. This method uses the worker's 
+``average indexed monthly earnings'' to compute the primary insurance 
+amount. We adjust the computation formula each year to reflect changes 
+in general wage levels, as measured by the national average wage index.
+    We also adjust, or ``index,'' a worker's earnings to reflect the 
+change in general wage levels that occurred during the worker's years 
+of employment. Such indexation ensures that a worker's future benefits 
+reflect the general rise in the standard of living that occurs during 
+his or her working lifetime. To compute the average indexed monthly 
+earnings, we first determine the needed number of years of earnings. 
+Then we select that number of years with the highest indexed earnings, 
+add the indexed earnings, and divide the total amount by the total 
+number of months in those years. We then round the resulting average 
+amount down to the next lower dollar amount. The result is the average 
+indexed monthly earnings.
+    For example, to compute the average indexed monthly earnings for a 
+worker attaining age 62, becoming disabled before age 62, or dying 
+before attaining age 62, in 2001, we divide the national average wage 
+index for 1999,
+
+[[Page 63666]]
+
+$30,469.84, by the national average wage index for each year prior to 
+1999 in which the worker had earnings. Then we multiply the actual 
+wages and self-employment income, as defined in section 211(b) of the 
+Act and credited for each year, by the corresponding ratio to obtain 
+the worker's indexed earnings for each year before 1999. We consider 
+any earnings in 1999 or later at face value, without indexing. We then 
+compute the average indexed monthly earnings for determining the 
+worker's primary insurance amount for 2001.
+    Computing the Primary Insurance Amount. The primary insurance 
+amount is the sum of three separate percentages of portions of the 
+average indexed monthly earnings. In 1979 (the first year the formula 
+was in effect), these portions were the first $180, the amount between 
+$180 and $1,085, and the amount over $1,085. We call the dollar amounts 
+in the formula governing the portions of the average indexed monthly 
+earnings the ``bend points'' of the formula. Thus, the bend points for 
+1979 were $180 and $1,085.
+    To obtain the bend points for 2001, we multiply the corresponding 
+1979 bend-point amounts by the ratio between the national average wage 
+index for 1999, $30,469.84, and for 1977, $9,779.44. We then round 
+these results to the nearest dollar. For 2001, the ratio is 3.1157040. 
+Multiplying the 1979 amounts of $180 and $1,085 by 3.1157040 produces 
+the amounts of $560.83 and $3,380.54. We round these to $561 and 
+$3,381. Accordingly, the portions of the average indexed monthly 
+earnings to be used in 2001 are the first $561, the amount between $561 
+and $3,381, and the amount over $3,381.
+    Consequently, for individuals who first become eligible for old-age 
+insurance benefits or disability insurance benefits in 2001, or who die 
+in 2001 before becoming eligible for benefits, their primary insurance 
+amount will be the sum of:
+    (a) 90 percent of the first $561 of their average indexed monthly 
+earnings, plus
+    (b) 32 percent of their average indexed monthly earnings over $561 
+and through $3,381, plus
+    (c) 15 percent of their average indexed monthly earnings over 
+$3,381.
+    We round this amount to the next lower multiple of $.10 if it is 
+not already a multiple of $.10. This formula and the rounding 
+adjustment described above are contained in section 215(a) of the Act 
+(42 U.S.C. 415(a)).
+
+Maximum Benefits Payable to a Family
+
+    General. The 1977 amendments continued the long established policy 
+of limiting the total monthly benefits that a worker's family may 
+receive based on his or her primary insurance amount. Those amendments 
+also continued the then existing relationship between maximum family 
+benefits and primary insurance amounts but did change the method of 
+computing the maximum amount of benefits that may be paid to a worker's 
+family. The Social Security Disability Amendments of 1980 (Pub. L. 96-
+265) established a formula for computing the maximum benefits payable 
+to the family of a disabled worker. This formula applies to the family 
+benefits of workers who first become entitled to disability insurance 
+benefits after June 30, 1980, and who first become eligible for these 
+benefits after 1978. For disabled workers initially entitled to 
+disability benefits before July 1980, or whose disability began before 
+1979, we compute the family maximum payable the same as the old-age and 
+survivor family maximum.
+    Computing the Old-Age and Survivor Family Maximum. The formula used 
+to compute the family maximum is similar to that used to compute the 
+primary insurance amount. It involves computing the sum of four 
+separate percentages of portions of the worker's primary insurance 
+amount. In 1979, these portions were the first $230, the amount between 
+$230 and $332, the amount between $332 and $433, and the amount over 
+$433. We refer to such dollar amounts in the formula as the ``bend 
+points'' of the family-maximum formula.
+    To obtain the bend points for 2001, we multiply the corresponding 
+1979 bend-point amounts by the ratio between the national average wage 
+index for 1999, $30,469.84, and the average for 1977, $9,779.44. Then 
+we round this amount to the nearest dollar. For 2001, the ratio is 
+3.1157040. Multiplying the amounts of $230, $332, and $433 by 3.1157040 
+produces the amounts of $716.61, $1,034.41, and $1,349.10. We round 
+these amounts to $717, $1,034, and $1,349. Accordingly, the portions of 
+the primary insurance amounts to be used in 2001 are the first $717, 
+the amount between $717 and $1,034, the amount between $1,034 and 
+$1,349, and the amount over $1,349.
+    Consequently, for the family of a worker who becomes age 62 or dies 
+in 2001 before age 62, we will compute the total amount of benefits 
+payable to them so that it does not exceed:
+    (a) 150 percent of the first $717 of the worker's primary insurance 
+amount, plus
+    (b) 272 percent of the worker's primary insurance amount over $717 
+through $ 1,034, plus
+    (c) 134 percent of the worker's primary insurance amount over 
+$1,034 through $ 1,349, plus
+    (d) 175 percent of the worker's primary insurance amount over 
+$1,349.
+    We then round this amount to the next lower multiple of $.10 if it 
+is not already a multiple of $.10. This formula and the rounding 
+adjustment described above are contained in section 203(a) of the Act 
+(42 U.S.C. 403(a)).
+
+Quarter of Coverage Amount
+
+    General. The amount of earnings required for a quarter of coverage 
+in 2001 is $830. A quarter of coverage is the basic unit for 
+determining whether a worker is insured under the Social Security 
+program. For years before 1978, we generally credited an individual 
+with a quarter of coverage for each quarter in which wages of $50 or 
+more were paid, or with 4 quarters of coverage for every taxable year 
+in which $400 or more of self-employment income was earned. Beginning 
+in 1978, employers generally report wages on an annual basis instead of 
+a quarterly basis. With the change to annual reporting, section 352(b) 
+of the Social Security Amendments of 1977 amended section 213(d) of the 
+Act to provide that a quarter of coverage would be credited for each 
+$250 of an individual's total wages and self-employment income for 
+calendar year 1978, up to a maximum of 4 quarters of coverage for the 
+year.
+    Computation. Under the prescribed formula, the quarter of coverage 
+amount for 2001 shall be the larger of: (1) The 1978 amount of $250 
+multiplied by the ratio of the national average wage index for 1999 to 
+that for 1976; or (2) the current amount of $780. Section 213(d) 
+further provides that if the resulting amount is not a multiple of $10, 
+it shall be rounded to the nearest multiple of $10.
+    Quarter of Coverage Amount. The ratio of the national average wage 
+index for 1999, $ 30,469.84, compared to that for 1976, $9,226.48, is 
+3.3024339. Multiplying the 1978 quarter of coverage amount of $250 by 
+the ratio of 3.3024339 produces the amount of $825.61, which must then 
+be rounded to $830. Because $830 exceeds the current amount of $780, 
+the quarter of coverage amount is $830 for 2001.
+
+``Old-Law'' Contribution and Benefit Base
+
+    General. The ``old-law'' contribution and benefit base for 2001 is 
+$59,700. This is the base that would have been effective under the Act 
+without the enactment of the 1977 amendments. We compute the base under 
+section 230(b)
+
+[[Page 63667]]
+
+of the Act as it read prior to the 1977 amendments.
+    The ``old-law'' contribution and benefit base is used by:
+    (a) the Railroad Retirement program to determine certain tax 
+liabilities and tier II benefits payable under that program to 
+supplement the tier I payments which correspond to basic Social 
+Security benefits,
+    (b) the Pension Benefit Guaranty Corporation to determine the 
+maximum amount of pension guaranteed under the Employee Retirement 
+Income Security Act (as stated in section 230(d) of the Social Security 
+Act),
+    (c) Social Security to determine a year of coverage in computing 
+the special minimum benefit, as described earlier, and
+    (d) Social Security to determine a year of coverage (acquired 
+whenever earnings equal or exceed 25 percent of the ``old-law'' base 
+for this purpose only) in computing benefits for persons who are also 
+eligible to receive pensions based on employment not covered under 
+section 210 of the Act.
+    Computation. The ``old-law'' contribution and benefit base shall be 
+the larger of: (1) The 1994 ``old-law'' base ($45,000) multiplied by 
+the ratio of the national average wage index for 1999 to that for 1992; 
+or (2) the current ``old-law'' base ($56,700). If the resulting amount 
+is not a multiple of $300, it shall be rounded to the nearest multiple 
+of $300.
+    Amount. The ratio of the national average wage index for 1999, 
+$30,469.84, compared to that for 1992, $22,935.42, is 1.3285059. 
+Multiplying the 1994 ``old-law'' contribution and benefit base amount 
+of $45,000 by the ratio of 1.3285059 produces the amount of $59,782.76. 
+We round this amount to $59,700. Because $59,700 exceeds the current 
+amount of $56,700, the ``old-law'' contribution and benefit base is 
+$59,700 for 2001.
+
+Substantial Gainful Activity Amounts
+
+    General. A finding of disability under titles II and XVI of the Act 
+requires that a person be unable to engage in substantial gainful 
+activity (SGA). A person who is earning more than a certain monthly 
+amount (net of impairment-related work expenses) is ordinarily 
+considered to be engaging in SGA. The amount of monthly earnings 
+considered as SGA depends on the nature of a person's disability. 
+Section 223(d)(4)(A) of the Act specifies a higher SGA amount for 
+statutorily blind individuals while Federal regulations specify a lower 
+SGA amount (currently $700 per month) for non-blind individuals. At 
+this time, only the SGA amount for statutorily blind individuals 
+increases in accordance with increases in the national average wage 
+index. Later this year, however, we will issue a Final Rule in the 
+Federal Register announcing a wage-indexed SGA amount applicable to 
+non-blind disabled beneficiaries for 2001.
+    Computation. The monthly SGA amount for statutorily blind 
+individuals for 2001 shall be the larger of: (1) Such amount for 1994 
+multiplied by the ratio of the national average wage index for 1999 to 
+that for 1992; or (2) such amount for 2000. If the resulting amount is 
+not a multiple of $10, it shall be rounded to the nearest multiple of 
+$10.
+    SGA Amount for Statutorily Blind Individuals. The ratio of the 
+national average wage index for 1999, $30,469.84, compared to that for 
+1992, $22,935.42, is 1.3285059. Multiplying the 1994 monthly SGA amount 
+for statutorily blind individuals of $930 by the ratio of 1.3285059 
+produces the amount of $1,235.51. We then round this amount to $1,240. 
+Because $ 1,240 is larger than the current amount of $1,170, the 
+monthly SGA amount for statutorily blind individuals is $1,240 for 
+2001.
+
+Domestic Employee Coverage Threshold
+
+    General. Section 2 of the ``Social Security Domestic Employment 
+Reform Act of 1994'' (Pub. L. 103-387) increased the threshold for 
+coverage of a domestic employee's wages paid per employer from $50 per 
+calendar quarter to $1,000 per annum in calendar year 1994. The statute 
+held the coverage threshold at the $1,000 level for 1995 and then 
+increased the threshold in $100 increments for years after 1995. 
+Section 3121(x) of the Internal Revenue Code provides the formula for 
+increasing the threshold.
+    Computation. Under the formula, the domestic employee coverage 
+threshold amount for 2001 shall be equal to the 1995 amount of $1,000 
+multiplied by the ratio of the national average wage index for 1999 to 
+that for 1993. If the resulting amount is not a multiple of $100, it 
+shall be rounded to the next lower multiple of $100.
+    Domestic Employee Coverage Threshold Amount. The ratio of the 
+national average wage index for 1999, $30,469.84, compared to that for 
+1993, $23,132.67, is 1.3171778. Multiplying the 1995 domestic employee 
+coverage threshold amount of $1,000 by the ratio of 1.3171778 produces 
+the amount of $1,317.18, which must then be rounded to $1,300. 
+Accordingly, the domestic employee coverage threshold amount is $1,300 
+for 2001.
+
+Election Worker Coverage Threshold
+
+    General. Section 303(b) of Pub. L. 103-296, the ``Social Security 
+Independence and Program Improvements Act of 1994,'' increased from 
+$100 a year to $1,000 a year the amount an election official or 
+election worker must be paid for the earnings to be covered under 
+Social Security or Medicare, effective January 1, 1995. Beginning in 
+the year 2000, the coverage threshold increases automatically with 
+increases in the national average wage index.
+    Computation. Under the formula, the election worker coverage 
+threshold amount for 2001 shall be equal to the 1999 amount of $1,000 
+multiplied by the ratio of the national average wage index for 1999 to 
+that for 1997. If the amount so determined is not a multiple of $100, 
+it shall be rounded to the nearest multiple of $100.
+    Election Worker Coverage Threshold Amount. The ratio of the 
+national average wage index for 1999, $30,469.84, compared to that for 
+1997, $27,426.00, is 1.1109837. Multiplying the 1999 election worker 
+coverage threshold amount of $1,000 by the ratio of 1.1109837 produces 
+the amount of $1,110.98, which we then round to $1,100. Accordingly, 
+the election worker coverage threshold amount is $1,100 for 2001.
+
+OASDI Fund Ratio
+
+    General. In addition to providing an annual automatic cost-of-
+living increase in OASDI benefits, section 215(i) of the Act also 
+includes a ``stabilizer'' provision that can limit such benefit 
+increase under certain circumstances. If the combined assets of the 
+OASI and DI Trust Funds, as a percentage of annual expenditures, are 
+below a specified threshold, the automatic benefit increase is equal to 
+the lesser of: (1) The increase in the national average wage index; or 
+(2) the increase in prices. The threshold specified for the OASDI fund 
+ratio is 20.0 percent for benefit increases for December of 1989 and 
+later. The law also provides for subsequent ``catch-up'' benefit 
+increases for beneficiaries whose previous benefit increases were 
+affected by this provision. ``Catch-up'' benefit increases can occur 
+only when trust fund assets exceed 32.0 percent of annual expenditures.
+    Computation. Section 215(i) specifies the computation and 
+application of the OASDI fund ratio. The OASDI fund ratio for 2000 is 
+the ratio of the combined assets of the OASI and DI Trust Funds at the 
+beginning of 2000 to the estimated expenditures of the OASI and DI 
+Trust Funds during 2000,
+
+[[Page 63668]]
+
+excluding transfer payments between the OASI and DI Trust Funds, and 
+reducing any transfers to the Railroad Retirement Account by any 
+transfers from that account into either trust fund.
+    Ratio. The combined assets of the OASI and DI Trust Funds at the 
+beginning of 2000 equaled $896,133 million, and we estimate the 
+expenditures in 2000 to be $416,120 million. Thus, the OASDI fund ratio 
+for 2000 is 215.4 percent, which exceeds the applicable threshold of 
+20.0 percent. Therefore, the stabilizer provision does not affect the 
+benefit increase for December 2000. Although the OASDI fund ratio 
+exceeds the 32.0-percent threshold for potential ``catch-up'' benefit 
+increases, the stabilizer provision has not reduced any past benefit 
+increase. Thus, no ``catch-up'' benefit increase is required.
+
+(Catalog of Federal Domestic Assistance: Program Nos. 96.001 Social 
+Security-Disability Insurance; 96.002 Social Security-Retirement 
+Insurance; 96.004 Social Security-Survivors Insurance; 96.006 
+Supplemental Security Income)
+
+    Dated: October 18, 2000.
+Kenneth S. Apfel,
+Commissioner of Social Security.
+[FR Doc. 00-27249 Filed 10-23-00; 8:45 am]
+BILLING CODE 4191-02-P
+
+
+</pre></body>
+</html>
