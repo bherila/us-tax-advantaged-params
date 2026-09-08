@@ -13483,6 +13483,7 @@ final class Engine
             $deemedCandidateIds[$personId] = true;
         }
         foreach (array_keys($deemedCandidateIds) as $personId) {
+            $personId = (string) $personId;
             $ownMonths = $facts[$personId]['resolvedMonths'] ?? null;
             if ($ownMonths !== null) {
                 // December's tier is read after the recharacterization above,
@@ -16570,6 +16571,7 @@ final class Engine
                     $outcomes[] = self::allocateHsa($variant, $account);
                     $snapshot = [];
                     foreach ($variant['hsaPlans'] as $id => $plan) {
+                        $id = (string) $id;
                         if ($id !== $ownerId && ($id !== $spouseId || ($plan['existingCountedContributions'] ?? 0) <= 0)) continue;
                         $snapshot[] = [
                             'ownerId' => $id, 'countedContributions' => $plan['countedContributions'] ?? 0,
@@ -16639,7 +16641,7 @@ final class Engine
             self::refreshHsaUsage($context);
             return $recovered['outcome'];
         }
-        $ownerId = $account['ownerId'];
+        $ownerId = (string) $account['ownerId'];
         $plan = $context['hsaPlans'][$ownerId];
         $annual = $account['existingContributions'];
         $additional = self::zeroComponents();

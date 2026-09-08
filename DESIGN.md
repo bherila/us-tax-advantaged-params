@@ -195,7 +195,8 @@ A release must satisfy:
 8. Manifest and package-content validation.
 9. A clean npm dry-run package listing.
 
-`npm run verify` executes local validation and writes `VALIDATION.md`, `RELEASE_STATUS.md`, and `validation-status.json`.
+`npm run verify` executes the full local gate. `npm run validate:release` regenerates
+`VALIDATION.md`, `RELEASE_STATUS.md`, and `validation-status.json`.
 
 ## Coherent HSA coverage completions
 

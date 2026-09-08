@@ -882,8 +882,9 @@ remainders and lose the correlation between them.
 An unknown division is evaluated with one common taxpayer-share variable for both spouses.
 The family range combines feasible usages under the **same division**. Missing coverage,
 unknown age and unresolved Archer placement remain unknown when no feasible capacity model is
-established; reporting then supplies nulls without invented endpoints. Coverage-completion
-handling remains deferred to [#68](https://github.com/bherila/us-tax-advantaged-params/issues/68).
+established; reporting then supplies nulls without invented endpoints. Coherent coverage
+completions recover only invariant contribution amounts, candidate state and shared-limit
+usage, as described above; varying nullable audit fields remain null.
 
 Component usage excludes aggregate excess rather than assigning it to an invented component.
 `SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT` separately diagnoses known excess across
