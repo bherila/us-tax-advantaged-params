@@ -957,10 +957,26 @@ export interface SharedLimitUse {
    * fields are the named usage, so a consumer that reads them must not be handed
    * a zero the engine never computed; the null is the third state, not a
    * sentinel to be reverse-engineered from a missing remainder.
+   *
+   * `usedByAccount` is the exception and is null far less often, because it is
+   * this account's own settled draw rather than the pool's history: an account
+   * may take a determinate amount out of a pool whose total usage stays a range.
    */
   usedBeforeAccount: Money | null;
   usedByAccount: Money | null;
   remainingAfterAccount: Money | null;
+  /**
+   * Present exactly where the scalar beside it is null for want of a settled
+   * usage -- not where the ceiling itself is unknown, which leaves nothing to
+   * bound. The range is closed and inclusive, and its endpoints are reachable:
+   * some completion of the supplied facts produces each.
+   *
+   * Endpoints from different pools may be summed only at the minimum. Two pools
+   * widened by the same unresolved amount reach their maxima under opposite
+   * readings, so adding those reports headroom no set of facts provides.
+   */
+  possibleUsedBeforeAccount?: MoneyInterval;
+  possibleRemainingAfterAccount?: MoneyInterval;
 }
 
 export interface AccountCalculationResult {
@@ -9025,6 +9041,28 @@ function trimmedIdentifier(value: unknown): string | null {
 }
 
 /**
+ * Optional identifier fields must be non-empty strings, for the same reason flag
+ * fields must be actual booleans: JavaScript and PHP disagree about `"0"`, about
+ * `0`, and about `""`, so a coerced identifier makes the answer depend on the
+ * runtime rather than on the input.
+ *
+ * `employerId` is the one that costs money. It selects the prior-year FICA wage
+ * figure for the IRC 414(v)(7)(A) test, so a value one runtime reads as present
+ * and the other as absent is the difference between a classified catch-up and an
+ * indeterminate account. A numeric `0` did exactly that. Absent stays absent --
+ * `undefined` and `null` both mean the caller supplied nothing -- but anything
+ * else present must be a usable identifier rather than something to be coerced
+ * into one.
+ */
+function optionalIdentifier(value: unknown, path: string, code: string): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string" || value === "") {
+    throw new ParameterError(code, `${path} must be a non-empty string when supplied.`);
+  }
+  return value;
+}
+
+/**
  * Flag fields must be actual booleans. JavaScript and PHP disagree about the
  * truthiness of `"0"` and of an empty array, so coercing one would make the
  * answer depend on the runtime rather than on the input.
@@ -9435,23 +9473,78 @@ interface NormalizedAccount extends Omit<AccountInput, "type" | "planRules" | "e
   inputIndex: number;
 }
 
+/**
+ * A known quantity whose exact value is not settled, given as the closed range
+ * of values the supplied facts leave open. A settled quantity is the degenerate
+ * interval whose endpoints are equal, so one type covers both states and no
+ * caller has to ask which one it is holding.
+ */
+export interface MoneyInterval {
+  minimum: Money;
+  maximum: Money;
+}
+
+/** The degenerate interval: a quantity that is not in doubt. */
+function settled(amount: Money): MoneyInterval {
+  return { minimum: amount, maximum: amount };
+}
+
+function intervalIsSettled(interval: MoneyInterval): boolean {
+  return interval.minimum === interval.maximum;
+}
+
+/**
+ * One side of one unresolved classification. `ordinary` is the completion in
+ * which the amount is an ordinary elective deferral consuming the limits IRC
+ * 414(v)(3)(A)(i) would otherwise relieve; `catch_up` is the completion in which
+ * it was the valid IRC 414(v)(1) contribution it was recorded as.
+ */
+interface UncertaintyBranch {
+  id: string;
+  branch: "ordinary" | "catch_up";
+}
+
 interface LimitPool {
   id: string;
   legalLimit: string;
   limit: Money | null;
-  used: Money;
   /**
-   * The pool's ceiling is known but how much of it is already spent is not, so
-   * `used` is not a figure anyone may rely on and no remainder is reported.
+   * How much of the ceiling is already spent, as a range rather than a figure.
    *
-   * This is a third state, distinct from a null `limit`. A null limit says the
-   * statute's ceiling could not be determined; this says the ceiling is a
-   * number while the draw against it turns on facts the caller did not supply.
-   * Reporting a remainder either way asserts headroom the record does not
-   * establish -- too much of it, or too little, depending on which way the
-   * missing fact resolves.
+   * Both endpoints move together for an ordinary charge, because an amount
+   * whose attribution is not in doubt is spent under every reading of the
+   * facts. The endpoints separate only where a known amount's *assignment* is
+   * unresolved -- the IRC 223(b)(5) division between the paragraph (1)
+   * limitation and the paragraph (3) additional amount, or an existing
+   * contribution IRC 414(v)(7)(A) may or may not have condemned as a catch-up.
+   * In that state `minimum` is what the pool has certainly spent and `maximum`
+   * what it may have spent, and the difference is exactly the amount in doubt.
+   *
+   * This replaces a `used` figure beside a `usageIndeterminate` flag. The flag
+   * was the fully open case of this interval and nothing else, and having only
+   * a flag forced every partially-known usage into one of the two bounds --
+   * which is what published a pool as wholly untouched when at most 250 of room
+   * remained, and accused a 56-year-old of exceeding a pool they were within.
+   * A bound is not a usage. The interval says so in the type.
    */
-  usageIndeterminate?: boolean;
+  usage: MoneyInterval;
+  /**
+   * Which unresolved facts widened `usage`, and on which side of each.
+   *
+   * A key alone is not enough once more than two pools are involved. One
+   * condemned catch-up widens the IRC 414(v) pool on the reading that it *was*
+   * a valid catch-up, and widens the IRC 402(g) and IRC 415(c) pools on the
+   * reading that it was not -- IRC 414(v)(3)(A)(i) relieves a paragraph (1)
+   * contribution from "sections 401(a)(30), 402(h), 403(b), 408, 415(c), and
+   * 457(b)(2)" together, so those relieved limits all lose the relief at once.
+   * Their maxima therefore co-occur with each other and not with the catch-up
+   * pool's, which a bare shared key could not express.
+   *
+   * So: maxima may be summed across pools that share no `id`, and across pools
+   * sharing an `id` only where they also share a `branch`. Minima may always be
+   * summed.
+   */
+  uncertainties?: UncertaintyBranch[];
 }
 
 interface IraOwnerPool extends LimitPool {
@@ -9681,10 +9774,16 @@ function normalizeAccounts(
     requireInputObject(input.existingContributions, `accounts[${index}].existingContributions`);
     const planRules = input.planRules ?? {};
     validatePlanRules(planRules, `accounts[${index}].planRules`);
+    const employerId = optionalIdentifier(
+      input.employerId,
+      `accounts[${index}].employerId`,
+      "INVALID_EMPLOYER_ID",
+    );
     return {
       ...input,
       id,
       ownerId,
+      employerId,
       type: parseAccountType(input.type, input.type !== undefined),
       priority: input.priority ?? 100,
       planRules,
@@ -9695,6 +9794,11 @@ function normalizeAccounts(
 }
 
 function validatePlanRules(rules: PlanRulesInput, path: string): void {
+  optionalIdentifier(
+    rules.annualAdditionsGroupId,
+    `${path}.annualAdditionsGroupId`,
+    "INVALID_ANNUAL_ADDITIONS_GROUP_ID",
+  );
   money(rules.planCompensation, `${path}.planCompensation`);
   money(rules.includibleCompensation457, `${path}.includibleCompensation457`);
   money(rules.planDocumentEmployeeDeferralLimit, `${path}.planDocumentEmployeeDeferralLimit`);
@@ -10318,6 +10422,10 @@ function createCalculationContext(
   initializeElectiveDeferralPools(context, accounts);
   initializeAnnualAdditionsPools(context, accounts);
   initializeSection457Pools(context, accounts);
+  // After both catch-up families have their pools, because the IRC 414(v)(6)(C)
+  // exception this reads is settled by resolveSection457CatchUpModes inside
+  // initializeSection457Pools.
+  seedUnresolvedCatchUpAttribution(context, accounts);
   // Health FSA facts are read by the IRC 223 interaction, so the arrangements
   // must be resolved before the health savings accounts that consult them.
   initializeHealthFsaPools(context, accounts);
@@ -10354,7 +10462,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: "ira-household",
       legalLimit: "IRC 219(c) joint-return compensation limit",
       limit: roundMoney(householdLimit),
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10372,7 +10480,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
         limit: statutory === null
           ? null
           : minMoney(statutory, ownCompensation * parameters.ira.compensationFraction),
-        used: 0,
+        usage: settled(0),
       });
     }
 
@@ -10392,7 +10500,7 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: `ira-owner:${person.id}`,
       legalLimit: "IRC 219(b) aggregate traditional and Roth IRA contribution limit",
       limit: personalLimit,
-      used: 0,
+      usage: settled(0),
       blocked: false,
       compensationPoolId,
     });
@@ -10418,14 +10526,14 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
       id: `roth-ira-eligibility:${person.id}`,
       legalLimit: "IRC 408A(c)(3) direct Roth IRA MAGI limit",
       limit: rothEligibilityLimit,
-      used: 0,
+      usage: settled(0),
     });
 
     context.iraDeductionPools.set(person.id, {
       id: `traditional-ira-deduction:${person.id}`,
       legalLimit: "IRC 219(g) traditional IRA deduction limit",
       limit: traditionalIraDeductionLimit(context, person, personalLimit),
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10435,13 +10543,13 @@ function initializeIraPools(context: CalculationContext, accounts: NormalizedAcc
     const existing = regularIraContributionAmount(account.existingContributions);
     const ownerPool = context.iraOwnerPools.get(account.ownerId);
     if (!ownerPool) continue;
-    ownerPool.used = roundMoney(ownerPool.used + existing);
+    chargePool(ownerPool, existing);
     const compensationPool = context.iraCompensationPools.get(ownerPool.compensationPoolId);
-    if (compensationPool) compensationPool.used = roundMoney(compensationPool.used + existing);
+    if (compensationPool) chargePool(compensationPool, existing);
     const rothPool = context.iraRothEligibilityPools.get(account.ownerId);
-    if (rothPool) rothPool.used = roundMoney(rothPool.used + account.existingContributions.rothIra);
+    if (rothPool) chargePool(rothPool, account.existingContributions.rothIra);
     const deductionPool = context.iraDeductionPools.get(account.ownerId);
-    if (deductionPool) deductionPool.used = roundMoney(deductionPool.used + account.existingContributions.deductibleIra);
+    if (deductionPool) chargePool(deductionPool, account.existingContributions.deductibleIra);
   }
 }
 
@@ -10451,19 +10559,19 @@ function initializeElectiveDeferralPools(context: CalculationContext, accounts: 
       id: `402g:${person.id}`,
       legalLimit: "IRC 402(g) aggregate elective-deferral limit",
       limit: context.parameters.electiveDeferral402g,
-      used: 0,
+      usage: settled(0),
     });
     context.catchUpPools.set(person.id, {
       id: `414v:${person.id}`,
       legalLimit: "IRC 414(v) aggregate age-based catch-up limit",
       limit: ownerGeneralCatchUpLimit(context.parameters, person),
-      used: 0,
+      usage: settled(0),
     });
     context.special403bCatchUpPools.set(person.id, {
       id: `402g7:${person.id}`,
       legalLimit: "IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit",
       limit: context.parameters.special403b15YearCatchUp.annualLimit,
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10472,14 +10580,12 @@ function initializeElectiveDeferralPools(context: CalculationContext, accounts: 
     if (!traits.shares402g) continue;
     const basePool = context.elective402gPools.get(account.ownerId);
     const catchUpPool = context.catchUpPools.get(account.ownerId);
-    if (basePool) basePool.used = roundMoney(basePool.used + baseElectiveDeferrals(account.existingContributions));
-    if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + ageCatchUpDeferrals(account.existingContributions));
+    if (basePool) chargePool(basePool, baseElectiveDeferrals(account.existingContributions));
+    if (catchUpPool) chargePool(catchUpPool, ageCatchUpDeferrals(account.existingContributions));
     if (traits.is403b) {
       const special403bPool = context.special403bCatchUpPools.get(account.ownerId);
       if (special403bPool) {
-        special403bPool.used = roundMoney(
-          special403bPool.used + account.existingContributions.special403bCatchUp,
-        );
+        chargePool(special403bPool, account.existingContributions.special403bCatchUp);
       }
     }
   }
@@ -10530,7 +10636,7 @@ function initializeAnnualAdditionsPools(context: CalculationContext, accounts: N
       id: `415c:${groupId}`,
       legalLimit: "IRC 415(c) annual-additions limit",
       limit,
-      used: existing,
+      usage: settled(existing),
       compensation: roundMoney(recognizedCompensation),
     });
   }
@@ -10868,6 +10974,74 @@ function resolveSection457CatchUpModes(
   }
 }
 
+/**
+ * Widen the pools an IRC 414(v)(7)(A)-condemned existing catch-up may have
+ * consumed, from the figure the seeding assumed to the range the facts leave.
+ *
+ * The seeding charged the amount to the catch-up pool, which is where it belongs
+ * if it was a valid IRC 414(v)(1) additional elective deferral. IRC 414(v)(7)(A)
+ * says it was not: above the wage threshold paragraph (1) applies "only if" the
+ * additional elective deferrals are designated Roth contributions, and this one
+ * is pre-tax. So the seeding's assumption is exactly the thing in doubt.
+ *
+ * The alternative is not "nothing". IRC 414(v)(3)(A)(i) disregards a catch-up
+ * for the IRC 402(g) limit, but only a contribution "made under paragraph (1)";
+ * once paragraph (7)(A) prevents that treatment the amount is an ordinary
+ * elective deferral and IRC 401(a)(30) and IRC 402(g) reach it again. Notice
+ * 2023-62 confirms the relief survives SECURE 2.0 section 603(b)(1)'s striking
+ * of IRC 402(g)(1)(C) -- "the elimination of section 402(g)(1)(C) ... does not
+ * change this result for taxable years beginning after December 31, 2023" -- so
+ * validity is what decides which limitation the amount draws on, and an amount
+ * of unresolved validity cannot be charged to either as settled.
+ *
+ * Hence a range in each, not a withdrawal from one. The catch-up pool has
+ * certainly spent the amount only if the contribution was valid, so its minimum
+ * gives it up; the base pool has spent it only if the contribution was not, so
+ * its maximum takes it on. Both carry the same uncertainty key, because the
+ * reading that charges one is the reading that spares the other and their maxima
+ * never both hold.
+ *
+ * Correcting or recharacterizing the amount is a third completion, and it is
+ * inside these bounds rather than beside them: a corrected amount consumes
+ * neither limitation, which is each pool's minimum.
+ */
+function seedUnresolvedCatchUpAttribution(
+  context: CalculationContext,
+  accounts: NormalizedAccount[],
+): void {
+  for (const account of accounts) {
+    const traits = ACCOUNT_TRAITS[account.type];
+    const invalid = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+    if (invalid === null) continue;
+    const section457 = catchUpPoolFamily(traits) === "section457";
+    // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1) contribution
+    // from, so far as this account reaches one. The relief is a single sentence
+    // covering "sections 401(a)(30), 402(h), 403(b), 408, 415(c), and
+    // 457(b)(2)", and IRC 414(v)(7)(A) withdraws the whole of it at once, so a
+    // condemned amount comes back under all of them together. Widening only the
+    // elective-deferral limit left the IRC 415(c) group settled and let an
+    // employer contribution take room the amount may already occupy.
+    //
+    // Clause (ii) is why IRC 415(c) is here and not only clause (i): a valid
+    // catch-up is also not "taken into account in applying such limitations to
+    // other contributions", so its condemnation changes the room left for the
+    // employer's, not merely for its own.
+    attributeToEitherPool(
+      section457
+        ? context.section457CatchUpPools.get(account.ownerId)
+        : context.catchUpPools.get(account.ownerId),
+      [
+        section457
+          ? context.section457BasePools.get(account.ownerId)
+          : context.elective402gPools.get(account.ownerId),
+        traits.uses415c ? context.annualAdditionsPools.get(groupIdForAccount(account)) : undefined,
+      ],
+      invalid.existing,
+      `existing-pre-tax-catch-up:${account.id}`,
+    );
+  }
+}
+
 function initializeSection457Pools(context: CalculationContext, accounts: NormalizedAccount[]): void {
   resolveSection457CatchUpModes(context, accounts);
   for (const person of context.persons.values()) {
@@ -10875,7 +11049,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       id: `457b:${person.id}`,
       legalLimit: "IRC 457(b) aggregate annual deferral limit (separate from IRC 402(g))",
       limit: context.parameters.section457b.baseDeferralLimit,
-      used: 0,
+      usage: settled(0),
     });
     context.section457CatchUpPools.set(person.id, {
       id: `457b-catch-up:${person.id}`,
@@ -10889,7 +11063,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       // unbounded annual figure instead let two plans whose compensation each
       // bound them separately add up past the individual limitation.
       limit: context.section457CatchUpResolutions.get(person.id)?.ageAmount ?? 0,
-      used: 0,
+      usage: settled(0),
     });
     context.section457SpecialCatchUpPools.set(person.id, {
       id: `457b-special-catch-up:${person.id}`,
@@ -10900,7 +11074,7 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
       // amount applicable to the participant". A pool limited to the statutory
       // base instead let two plans' separate amounts add.
       limit: context.section457CatchUpResolutions.get(person.id)?.specialAmount ?? 0,
-      used: 0,
+      usage: settled(0),
     });
   }
 
@@ -10920,16 +11094,18 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     const catchUp = ageCatchUpDeferrals(account.existingContributions);
     const basePool = context.section457BasePools.get(account.ownerId);
     const catchUpPool = context.section457CatchUpPools.get(account.ownerId);
-    if (basePool) basePool.used = roundMoney(basePool.used + base);
-    if (catchUpPool) catchUpPool.used = roundMoney(catchUpPool.used + catchUp);
+    if (basePool) chargePool(basePool, base);
+    if (catchUpPool) chargePool(catchUpPool, catchUp);
     const specialPool = context.section457SpecialCatchUpPools.get(account.ownerId);
     if (specialPool) {
       // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
       // catch-up does not change which statutory limitation it was made under.
-      specialPool.used = roundMoney(
-        specialPool.used +
+      chargePool(
+        specialPool,
+        roundMoney(
           account.existingContributions.special457CatchUp +
-          account.existingContributions.special457RothCatchUp,
+            account.existingContributions.special457RothCatchUp,
+        ),
       );
     }
   }
@@ -11285,11 +11461,11 @@ function initializeHealthFsaPools(context: CalculationContext, accounts: Normali
         // over elections under a different plan of the same group, so it caps
         // the account rather than the pool.
         limit: statutoryMaximum === null ? null : salaryReductionLimit,
-        used: 0,
+        usage: settled(0),
       };
       context.healthFsaPools.set(poolKey, pool);
     }
-    pool.used = roundMoney(pool.used + flexCreditCounted + elected);
+    chargePool(pool, flexCreditCounted + elected);
 
     context.healthFsaPlans.set(account.id, {
       status: accountStatusFromDiagnostics(status, diagnostics),
@@ -11601,7 +11777,7 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
         id: `irc-129:${poolKey}`,
         legalLimit: "IRC 129(a)(2)(A) dependent care assistance exclusion, per return",
         limit: statutoryExclusion,
-        used: 0,
+        usage: settled(0),
       });
     }
 
@@ -11665,12 +11841,12 @@ function initializeDependentCarePools(context: CalculationContext, accounts: Nor
     // account alone: the IRC 129(b)(1) ceiling is the return's for the year.
     const ceiling = minMoney(
       householdRemaining,
-      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+      ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.usage.maximum))]),
       ...(plan.planDocumentLimit === null ? [] : [plan.planDocumentLimit]),
     );
     const excludable = minMoney(elected, ceiling);
     const includible = roundMoney(elected - excludable);
-    pool.used = roundMoney(pool.used + excludable);
+    chargePool(pool, excludable);
     plan.detail.excludableAmount = excludable;
     plan.detail.includibleInIncome = includible;
     if (includible > 0) {
@@ -11731,7 +11907,7 @@ function allocateDependentCareFsa(
   const earnedIncomeCeiling =
     plan.poolKey === null ? null : (context.dependentCareEarnedIncomeCeilings.get(plan.poolKey) ?? null);
   const ownCeilings = [
-    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.used))]),
+    ...(earnedIncomeCeiling === null ? [] : [nonnegative(roundMoney(earnedIncomeCeiling - pool.usage.maximum))]),
     ...(plan.planDocumentLimit === null ? [] : [nonnegative(roundMoney(plan.planDocumentLimit - alreadyExcluded))]),
   ];
   let additionalExcludable: Money;
@@ -14404,7 +14580,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         limit: householdPoolAmountIndeterminate
           ? null
           : householdParagraph1AfterArcher === null ? null : roundMoney(householdParagraph1AfterArcher),
-        used: 0,
+        usage: settled(0),
       });
     }
   }
@@ -14632,7 +14808,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       id: `hsa223b1:${ownerId}`,
       legalLimit: "IRC 223(b)(1) annual HSA contribution limit",
       limit: baseLimit,
-      used: 0,
+      usage: settled(0),
     });
     // Paragraph (5) cannot consume paragraph (3). A known schedule and age
     // retain that separate amount when only the Archer base allocation is open.
@@ -14644,7 +14820,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       id: `hsa223b3:${ownerId}`,
       legalLimit: "IRC 223(b)(3) age 55 additional contribution amount",
       limit: catchUpAmountEstablished ? catchUpApplied : null,
-      used: 0,
+      usage: settled(0),
     });
 
     if (!indeterminate && catchUpApplied > 0 && couple !== null) {
@@ -15067,17 +15243,29 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         if (context.hsaPlans.get(account.ownerId)?.familyPoolUsageDeterminable === true) {
           // Nothing can absorb a spill, so the whole contribution came out of
           // the couple's limitation whichever way the division falls.
-          familyPool.used = roundMoney(familyPool.used + existing);
+          chargePool(familyPool, existing);
         } else {
-          familyPool.usageIndeterminate = true;
+          // The contribution is known and the pool's ceiling is known; what is
+          // unknown is how much of it this pool bore. Before, that was a flag
+          // saying "not a figure"; it is the same statement as an interval
+          // spanning everything still open, and now it says how much is at
+          // stake rather than only that something is.
+          familyPool.usage = {
+            minimum: familyPool.usage.minimum,
+            maximum: roundMoney(
+              familyPool.limit === null
+                ? familyPool.usage.minimum + existing
+                : Math.max(familyPool.limit, familyPool.usage.minimum),
+            ),
+          };
         }
       }
       continue;
     }
-    const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.used));
-    basePool.used = roundMoney(basePool.used + toBase);
-    catchUpPool.used = roundMoney(catchUpPool.used + existing - toBase);
-    if (familyPool) familyPool.used = roundMoney(familyPool.used + toBase);
+    const toBase = minMoney(existing, nonnegative(basePool.limit - basePool.usage.maximum));
+    chargePool(basePool, toBase);
+    chargePool(catchUpPool, existing - toBase);
+    if (familyPool) chargePool(familyPool, toBase);
   }
 }
 
@@ -15163,50 +15351,157 @@ function regularIraContributionAmount(components: ContributionComponents): Money
   );
 }
 
-function poolRemaining(pool: LimitPool): Money | null {
-  if (pool.limit === null || pool.usageIndeterminate === true) return null;
-  return nonnegative(pool.limit - pool.used);
+/**
+ * Spend a settled amount. Both endpoints move, because an amount whose
+ * attribution is not in doubt is spent under every reading of the facts: it
+ * narrows nothing and widens nothing.
+ */
+function chargePool(pool: LimitPool, amount: Money): void {
+  pool.usage = {
+    minimum: roundMoney(pool.usage.minimum + amount),
+    maximum: roundMoney(pool.usage.maximum + amount),
+  };
 }
 
+/**
+ * Record that a known amount's home is unresolved between two pools.
+ *
+ * `chargedTo` is where the amount currently sits and `alternative` is where it
+ * belongs under the other reading. The amount is not moved and not withdrawn:
+ * its lower bound leaves the pool that holds it and its upper bound arrives at
+ * the pool that may have to. Afterwards `chargedTo` may have spent it and
+ * `alternative` may have spent it, and exactly one of those is true in any
+ * completion of the facts -- which is what `groupId` records, so that the two
+ * maxima are never later added together as though both could hold at once.
+ */
+function attributeToEitherPool(
+  chargedTo: LimitPool | undefined,
+  relieved: Array<LimitPool | undefined>,
+  amount: Money,
+  groupId: string,
+): void {
+  if (amount <= 0) return;
+  // Once, however many limits the other reading engages. The amount left one
+  // pool because it might not have been a catch-up; it does not leave twice
+  // because IRC 414(v)(3)(A)(i) names several limits in the same breath.
+  if (chargedTo) {
+    chargedTo.usage = {
+      minimum: nonnegative(roundMoney(chargedTo.usage.minimum - amount)),
+      maximum: chargedTo.usage.maximum,
+    };
+    chargedTo.uncertainties = [
+      ...(chargedTo.uncertainties ?? []),
+      { id: groupId, branch: "catch_up" },
+    ];
+  }
+  for (const pool of relieved) {
+    if (pool === undefined) continue;
+    pool.usage = {
+      minimum: pool.usage.minimum,
+      maximum: roundMoney(pool.usage.maximum + amount),
+    };
+    pool.uncertainties = [...(pool.uncertainties ?? []), { id: groupId, branch: "ordinary" }];
+  }
+}
+
+/** Whether the pool's usage is settled, which is to say its interval is a point. */
+function poolUsageSettled(pool: LimitPool): boolean {
+  return intervalIsSettled(pool.usage);
+}
+
+/**
+ * What is left, as a range. The endpoints invert: the *most* the pool may have
+ * spent leaves the *least* room, so `remaining.minimum` pairs with
+ * `usage.maximum`. `remaining.minimum` is therefore the room that exists under
+ * every reading of the facts -- the only room an allocation may rely on.
+ */
+function poolRemainingInterval(pool: LimitPool): MoneyInterval | null {
+  if (pool.limit === null) return null;
+  return {
+    minimum: nonnegative(roundMoney(pool.limit - pool.usage.maximum)),
+    maximum: nonnegative(roundMoney(pool.limit - pool.usage.minimum)),
+  };
+}
+
+/**
+ * The remainder as a figure, which exists only where the usage is settled. An
+ * unsettled pool has a range and no single remainder, and reporting either
+ * endpoint as one asserts headroom the record does not establish -- too much of
+ * it or too little, depending on which way the missing fact resolves.
+ */
+function poolRemaining(pool: LimitPool): Money | null {
+  if (pool.limit === null || !poolUsageSettled(pool)) return null;
+  return nonnegative(pool.limit - pool.usage.maximum);
+}
+
+/**
+ * Take what the pool certainly has room for.
+ *
+ * An unsettled pool is not an empty one. Where the usage is a range, the room
+ * that exists under *every* reading of the facts is the remainder measured from
+ * the largest possible usage, and an allocation of that much is correct however
+ * the doubt resolves -- so it is allocated, and the account keeps a determinate
+ * answer it is entitled to. Refusing it because some *other* capacity is
+ * uncertain withholds a number the record supports; taking more than it because
+ * the ceiling might allow more asserts one the record does not.
+ *
+ * The pool's own usage stays a range afterwards, widened by nothing: a settled
+ * draw moves both endpoints. Only its history is unresolved, and this account's
+ * contribution to that history is not.
+ */
 function takeFromPool(pool: LimitPool, requested: Money, sharedLimits: SharedLimitUse[]): Money {
-  const usedBefore = pool.used;
-  if (pool.limit === null || pool.usageIndeterminate === true) {
+  const usageBefore = pool.usage;
+  const settledBefore = poolUsageSettled(pool);
+  if (pool.limit === null) {
     sharedLimits.push({
       id: pool.id,
       legalLimit: pool.legalLimit,
-      // The ceiling is still reported where it is known. Only the draw against
-      // it is withheld, which is the whole distinction the flag exists to draw.
-      limit: pool.limit,
-      // A null limit leaves the draw perfectly knowable; only the third state
-      // withholds it.
-      usedBeforeAccount: pool.usageIndeterminate === true ? null : usedBefore,
-      usedByAccount: pool.usageIndeterminate === true ? null : 0,
+      // A null limit leaves nothing to bound: there is no ceiling to measure a
+      // range against, so no interval is offered beside the nulls either.
+      limit: null,
+      usedBeforeAccount: settledBefore ? usageBefore.minimum : null,
+      usedByAccount: settledBefore ? 0 : null,
       remainingAfterAccount: null,
+      ...(settledBefore ? {} : { possibleUsedBeforeAccount: usageBefore }),
     });
     return 0;
   }
-  const taken = minMoney(requested, nonnegative(pool.limit - pool.used));
-  pool.used = roundMoney(pool.used + taken);
-  sharedLimits.push({
-    id: pool.id,
-    legalLimit: pool.legalLimit,
-    limit: pool.limit,
-    usedBeforeAccount: usedBefore,
-    usedByAccount: taken,
-    remainingAfterAccount: nonnegative(pool.limit - pool.used),
-  });
+  const guaranteed = poolRemainingInterval(pool)!.minimum;
+  const taken = minMoney(requested, guaranteed);
+  chargePool(pool, taken);
+  sharedLimits.push(
+    sharedLimitUse(pool, usageBefore, taken),
+  );
   return taken;
 }
 
-function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUse[]): void {
-  sharedLimits.push({
+/**
+ * One report of a pool as this account left it. Scalars where the usage is
+ * settled, ranges where it is not, and never both -- a consumer reading
+ * `remainingAfterAccount` must not be handed an endpoint dressed as a figure.
+ */
+function sharedLimitUse(pool: LimitPool, usageBefore: MoneyInterval, taken: Money | null): SharedLimitUse {
+  const settledUsage = poolUsageSettled(pool);
+  const remaining = poolRemainingInterval(pool);
+  return {
     id: pool.id,
     legalLimit: pool.legalLimit,
     limit: pool.limit,
-    usedBeforeAccount: pool.usageIndeterminate === true ? null : pool.used,
-    usedByAccount: pool.usageIndeterminate === true ? null : 0,
-    remainingAfterAccount: poolRemaining(pool),
-  });
+    usedBeforeAccount: intervalIsSettled(usageBefore) ? usageBefore.minimum : null,
+    usedByAccount: taken,
+    remainingAfterAccount: settledUsage && remaining !== null ? remaining.minimum : null,
+    ...(intervalIsSettled(usageBefore) ? {} : { possibleUsedBeforeAccount: usageBefore }),
+    ...(settledUsage || remaining === null ? {} : { possibleRemainingAfterAccount: remaining }),
+  };
+}
+
+function reportPoolWithoutConsuming(pool: LimitPool, sharedLimits: SharedLimitUse[]): void {
+  // No draw was computed here, which is not the same as a computed draw of
+  // zero. Where the usage is unsettled all three usage fields go together and
+  // say nothing: a numeric zero in one of them would read as a draw the engine
+  // declined to make. `takeFromPool` reports a real zero, because there the
+  // guaranteed room was measured and found to be nil.
+  sharedLimits.push(sharedLimitUse(pool, pool.usage, poolUsageSettled(pool) ? 0 : null));
 }
 
 function accountStatusFromDiagnostics(
@@ -15230,37 +15525,29 @@ function takeAcrossPools(
   requested: Money,
   sharedLimits: SharedLimitUse[],
 ): Money {
-  if (pools.some((pool) => pool.limit === null || pool.usageIndeterminate === true)) {
+  // A null ceiling still stops everything: there is no room to be sure of when
+  // the limit itself could not be determined. An unsettled *usage* does not,
+  // because its guaranteed remainder is a number.
+  if (pools.some((pool) => pool.limit === null)) {
     for (const pool of pools) reportPoolWithoutConsuming(pool, sharedLimits);
     return 0;
   }
-  const taken = minMoney(requested, ...pools.map((pool) => poolRemaining(pool)));
+  const taken = minMoney(
+    requested,
+    ...pools.map((pool) => poolRemainingInterval(pool)!.minimum),
+  );
   for (const pool of pools) {
-    const usedBefore = pool.used;
-    pool.used = roundMoney(pool.used + taken);
-    sharedLimits.push({
-      id: pool.id,
-      legalLimit: pool.legalLimit,
-      limit: pool.limit,
-      usedBeforeAccount: usedBefore,
-      usedByAccount: taken,
-      remainingAfterAccount: poolRemaining(pool),
-    });
+    const usageBefore = pool.usage;
+    chargePool(pool, taken);
+    sharedLimits.push(sharedLimitUse(pool, usageBefore, taken));
   }
   return taken;
 }
 
 function consumeExactFromPool(pool: LimitPool, amount: Money, sharedLimits: SharedLimitUse[]): void {
-  const usedBefore = pool.used;
-  pool.used = roundMoney(pool.used + amount);
-  sharedLimits.push({
-    id: pool.id,
-    legalLimit: pool.legalLimit,
-    limit: pool.limit,
-    usedBeforeAccount: usedBefore,
-    usedByAccount: amount,
-    remainingAfterAccount: poolRemaining(pool),
-  });
+  const usageBefore = pool.usage;
+  chargePool(pool, amount);
+  sharedLimits.push(sharedLimitUse(pool, usageBefore, amount));
 }
 
 function emptyOutcome(
@@ -15739,7 +16026,7 @@ function pensionLinkedEmergencySavingsPool(
     id: `plesa402Ae3:${account.id}`,
     legalLimit: "IRC 402A(e)(3)(A) participant-contribution balance cap",
     limit: caps.effectiveCap,
-    used: caps.balance,
+    usage: settled(caps.balance),
   };
 }
 
@@ -15798,14 +16085,123 @@ function special403bCatchUpLimit(parameters: YearParameters, account: Normalized
 
 type CatchUpTaxTreatment = "pretax" | "roth" | "unavailable" | "unknown";
 
+/**
+ * How a catch-up on this account is taxed, and whether one may be allocated at
+ * all, with the two IRC 414(v)(7)(A) questions asked in the order that keeps each
+ * from swallowing the other.
+ *
+ * An amount already recorded on *this* account is settled first: it is not a
+ * catch-up the engine is classifying but a completed contribution the supplied
+ * wages condemn, so nothing later in the function can change the answer.
+ *
+ * A *sibling* account's unreconciled amount is asked last, and only where it
+ * could change something. It is a claim about capacity rather than about tax
+ * character, so it cannot displace this account's own classification: an account
+ * that still needs its own employer's wages must be told so in the same pass,
+ * rather than discovering it on a second round trip after the sibling is fixed.
+ * And it is irrelevant to an account that could not take a catch-up anyway --
+ * one whose plan offers no Roth catch-up above the threshold, or which the year
+ * gives no catch-up amount at all -- where reporting it would turn a knowable
+ * determinate answer into an unknown for a reason that does not reach it.
+ */
 function catchUpTaxTreatment(
   context: CalculationContext,
   account: NormalizedAccount,
   traits: AccountTraits,
   diagnostics: Diagnostic[],
-  reportSuccessfulRothAllocation = true,
-): CatchUpTaxTreatment {
+  availableCatchUp: Money | null = null,
+): CatchUpClassification {
+  const blocked: CatchUpClassification = {
+    treatment: "unknown",
+    reportsHighWageRothAllocation: false,
+  };
+  if (appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics)) {
+    return blocked;
+  }
+  // Classified with its success diagnostic withheld, because both the capacity
+  // gate and the sibling block below can still take the allocation away. An
+  // account must not report both that its catch-up was allocated as Roth and
+  // that no catch-up was allocated.
+  //
+  // This runs whatever room is left. Classification is not only a choice between
+  // Roth and pre-tax for an amount about to be allocated: where the account
+  // carries an existing pre-tax IRC 414(v) catch-up, it is also what adjudicates
+  // that completed contribution, and the prior-year wages stay load-bearing for
+  // it after the room for a new one is gone.
+  const classification = classifyCatchUpTaxTreatment(context, account, traits, diagnostics);
+  // "unavailable" means the plan offers no Roth catch-up above the threshold, so
+  // this account has no capacity for the pool doubt to reach. Everything else --
+  // including a treatment still unknown for want of this account's own wages --
+  // keeps the block, so a caller is told about both in one pass rather than
+  // finding the second after fixing the first.
+  if (classification.treatment === "unavailable") return classification;
+
+  // What remains below is about allocating new catch-up, so neither is asked of
+  // an account with no room to allocate into. `availableCatchUp` is the amount
+  // that would be taken if the classification allowed it, already bounded by the
+  // plan limit, the existing components and remaining compensation; `null` means
+  // the caller established there was some before calling, which is what the two
+  // IRC 457 sites do.
+  //
+  // The nominal plan catch-up limit is not that test. An account whose base
+  // deferral consumed its compensation still has a positive plan limit, and
+  // reporting the sibling-pool doubt against it made the account indeterminate
+  // without changing a number -- reconciling the sibling cannot create
+  // compensation here. This is the principle the age diagnostic above already
+  // follows, and the one that makes both IRC 457 sites ask for a treatment only
+  // where catch-up room survives.
+  if (availableCatchUp !== null && availableCatchUp <= 0) return classification;
+
+  // Appends where the doubt can still change this account's answer, and does not
+  // take the allocation away when it does. The guaranteed room is drawn either
+  // way -- `takeFromPool` will not exceed it -- so returning `blocked` here would
+  // withhold capacity that exists under every reading of the facts on the ground
+  // that some further capacity does not. The ERROR is what makes the account
+  // indeterminate; the amount it can be sure of is still allocated.
+  appendSiblingCatchUpPoolBlockDiagnostic(context, account, traits, availableCatchUp, diagnostics);
+  return classification;
+}
+
+/**
+ * The IRC 414(v)(7)(A) classification, and whether taking it would be worth
+ * announcing. The two are separate because the announcement is only correct once
+ * nothing further can withdraw the allocation, and the sibling-pool block still
+ * can.
+ */
+interface CatchUpClassification {
+  treatment: CatchUpTaxTreatment;
+  /** The high-wage path forced Roth treatment and the plan offers it. */
+  reportsHighWageRothAllocation: boolean;
+}
+
+function appendHighWageRothCatchUpAllocatedDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  diagnostics: Diagnostic[],
+): void {
+  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold!;
+  diagnostics.push(
+    diagnostic(
+      "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
+      DiagnosticSeverity.INFO,
+      `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
+      `accounts.${account.id}`,
+      "IRC 414(v)(7)",
+    ),
+  );
+}
+
+function classifyCatchUpTaxTreatment(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  diagnostics: Diagnostic[],
+): CatchUpClassification {
   const person = context.persons.get(account.ownerId)!;
+  const settled = (treatment: CatchUpTaxTreatment): CatchUpClassification => ({
+    treatment,
+    reportsHighWageRothAllocation: false,
+  });
   const defaultTreatment = accountUsesRothEmployeeContributions(account, traits) ? "roth" : "pretax";
   const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
   if (
@@ -15858,10 +16254,10 @@ function catchUpTaxTreatment(
       account.existingContributions.employeePreTaxCatchUp === 0) ||
     accountPlanCatchUpLimit(context, account, traits) === 0
   ) {
-    return defaultTreatment;
+    return settled(defaultTreatment);
   }
-  if (account.planRules.isSelfEmployedOwner) return defaultTreatment;
-  if (!account.employerId) {
+  if (account.planRules.isSelfEmployedOwner) return settled(defaultTreatment);
+  if (account.employerId === undefined) {
     diagnostics.push(
       diagnostic(
         "EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST",
@@ -15870,7 +16266,7 @@ function catchUpTaxTreatment(
         `accounts.${account.id}.employerId`,
       ),
     );
-    return "unknown";
+    return settled("unknown");
   }
   const wages = person.priorYearFicaWagesByEmployer[account.employerId];
   if (wages === undefined) {
@@ -15882,9 +16278,9 @@ function catchUpTaxTreatment(
         `persons.${person.id}.priorYearFicaWagesByEmployer.${account.employerId}`,
       ),
     );
-    return "unknown";
+    return settled("unknown");
   }
-  if (wages <= threshold) return defaultTreatment;
+  if (wages <= threshold) return settled(defaultTreatment);
 
   if (!accountPermitsRothCatchUp(account, traits)) {
     diagnostics.push(
@@ -15896,20 +16292,289 @@ function catchUpTaxTreatment(
         "IRC 414(v)(7)",
       ),
     );
-    return "unavailable";
+    return settled("unavailable");
   }
-  if (reportSuccessfulRothAllocation) {
+  return { treatment: "roth", reportsHighWageRothAllocation: true };
+}
+
+/**
+ * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+ * prior-year wages say was not permitted, and says whether it found one.
+ *
+ * Where those wages from the employer sponsoring the plan exceed the
+ * IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the additional
+ * elective deferrals are designated Roth contributions. A pre-tax amount already
+ * recorded on the account is therefore not an additional elective deferral the
+ * paragraph permits -- and unlike the classification question the wage figure
+ * usually answers, nothing here is missing. The supplied facts say directly that
+ * the contribution was not one IRC 414(v) allows.
+ *
+ * Retaining it and reporting a determinate result put an exclusion from gross
+ * income into federalTaxEffects that the statute does not allow, which is a wrong
+ * number rather than an absent warning. The component is still carried for audit,
+ * and no further catch-up is allocated until the caller reconciles the
+ * classification: whether the amount counts against the IRC 414(v)(2)(B) limit at
+ * all is exactly what is in doubt, so the room left above it is not something to
+ * state. That is the treatment 26 CFR 1.457-5 already receives here for its own
+ * mutually exclusive methods.
+ *
+ * The amount is not reclassified as Roth. The caller stated a statutory
+ * provenance through the component key, and inventing a different one would
+ * answer a question about a completed contribution that only the caller and the
+ * plan can answer.
+ *
+ * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3) special
+ * catch-ups are each their own provision rather than an IRC 414(v)(1) additional
+ * elective deferral, so IRC 414(v)(7)(A) does not reach them.
+ *
+ * The guards mirror catchUpTaxTreatment's, because the provision reaches the same
+ * accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP plan,
+ * a self-employed owner with no IRC 3121 wages from a sponsoring employer, and a
+ * plan offering no catch-up at all are all outside it.
+ *
+ * It is called from two places and pushes at most once. catchUpTaxTreatment
+ * reaches it on every account whose catch-up it classifies, which is where the
+ * blocking behaviour comes from; allocateSection457 reaches it directly because
+ * it consults catchUpTaxTreatment only when catch-up room survives, and an
+ * existing amount that fills the pool leaves none. The same shape is why #56 made
+ * the IRC 457 classification checks independent of remaining room.
+ */
+/**
+ * Which IRC 414(v) catch-up pool an account draws, for the purpose of deciding how
+ * far an unreconciled contribution reaches.
+ *
+ * A qualified plan and an IRC 403(b) share one participant-wide IRC 414(v) pool
+ * here; an eligible deferred compensation plan has its own, because IRC 457(b)(3)
+ * and the IRC 457(e)(15) ceiling stand apart from IRC 402(g)(1). An amount whose
+ * classification is unresolved therefore casts doubt over the pool it was drawn
+ * from and no further: whether a pre-tax catch-up in a IRC 401(k) was permitted
+ * says nothing about the capacity of a governmental IRC 457(b).
+ */
+function catchUpPoolFamily(traits: AccountTraits): "section457" | "qualified" {
+  return traits.family === "section457" ? "section457" : "qualified";
+}
+
+/**
+ * The facts an existing pre-tax IRC 414(v) catch-up needs for IRC 414(v)(7)(A) to
+ * condemn it, or null where the provision does not reach this account.
+ *
+ * Where the participant's prior-year wages from the employer sponsoring the plan
+ * exceed the IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the
+ * additional elective deferrals are designated Roth contributions. A pre-tax
+ * amount already recorded is therefore not an additional elective deferral the
+ * paragraph permits -- and unlike the classification question the wage figure
+ * usually answers, nothing here is missing. The supplied facts say directly that
+ * the contribution was not one IRC 414(v) allows.
+ *
+ * The guards mirror catchUpTaxTreatment's, because the provision reaches the same
+ * accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP plan,
+ * a self-employed owner with no IRC 3121 wages from a sponsoring employer, and a
+ * plan offering no catch-up at all are all outside it.
+ *
+ * The employer identifier is tested against absence rather than falsiness. An
+ * identifier of "0" is one the input contract accepts, and reading it as missing
+ * would make this engine disagree with its twin on an accepted input.
+ */
+function highWageInvalidExistingPreTaxCatchUp(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+): { existing: Money; wages: Money; threshold: Money; employerId: string } | null {
+  const existing = account.existingContributions.employeePreTaxCatchUp;
+  if (existing <= 0) return null;
+  const threshold = context.parameters.rothCatchUpPriorYearFicaWageThreshold;
+  // IRC 414(v)(7)(C) disapplies subparagraph (A) for an applicable employer plan
+  // described in IRC 414(v)(6)(A)(iv), which is "an arrangement meeting the
+  // requirements of section 408(k) or (p)" -- a SEP or SARSEP, and a SIMPLE IRA.
+  // It is not IRC 401(k)(11): a SIMPLE 401(k) is an employees' trust described in
+  // IRC 401(a) and so falls under IRC 414(v)(6)(A)(i), which subparagraph (C)
+  // does not reach. That is why the test is the account's family rather than its
+  // isSimple trait, which simple401kTraits keeps while deliberately setting the
+  // family to qualified_elective.
+  if (threshold === null || traits.family === "simple" || traits.isSarsep) return null;
+  // IRC 414(v)(6)(C): "This subsection shall not apply to a participant for any
+  // year for which a higher limitation applies to the participant under section
+  // 457(b)(3)." It disapplies the whole of IRC 414(v), paragraph (7) included, so
+  // where the participant-wide resolution selected the special method there is no
+  // IRC 414(v)(7)(A) question to ask about this account's existing component --
+  // the amount was not an IRC 414(v)(1) additional elective deferral in the first
+  // place.
+  //
+  // The statute says "to a participant", not "to that plan", and read alone it
+  // would strip the age-based catch-up from every plan of a participant who used
+  // the IRC 457(b)(3) catch-up -- including an unrelated IRC 401(k). It does not.
+  // 26 CFR 1.414(v)-1(a)(3) supplies the scope: "**In the case of an applicable
+  // employer plan that is a section 457 eligible governmental plan**, the catch-up
+  // contributions permitted under this section shall not apply to a catch-up
+  // eligible participant for any taxable year for which a higher limitation
+  // applies to such participant under section 457(b)(3)." 1.414(v)-1(e)(3)
+  // confirms it from the other side: a plan does not fail universal availability
+  // "merely because another applicable employer plan that is a section 457
+  // eligible governmental plan does not provide for catch-up contributions to the
+  // extent set forth in section 414(v)(6)(C)" -- which only has work to do if the
+  // other plans keep theirs. Hence the family test here rather than a
+  // participant-wide one. It is already reported under
+  // SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD, which is the right
+  // diagnostic; adding the wage one asserted a statutory test that does not reach
+  // the year. Returning null here also keeps the account out of the sibling-pool
+  // block, because an amount IRC 414(v) never reached cannot have been charged
+  // against an IRC 414(v)(2)(B) limit.
+  if (
+    traits.family === "section457" &&
+    context.section457CatchUpResolutions.get(account.ownerId)?.mode === "special"
+  ) {
+    return null;
+  }
+  if (account.planRules.isSelfEmployedOwner) return null;
+  if (accountPlanCatchUpLimit(context, account, traits) === 0) return null;
+  const employerId = account.employerId;
+  if (employerId === undefined) return null;
+  const person = context.persons.get(account.ownerId)!;
+  const wages = person.priorYearFicaWagesByEmployer[employerId];
+  if (wages === undefined || wages <= threshold) return null;
+  return { existing, wages, threshold, employerId };
+}
+
+/**
+ * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+ * prior-year wages say was not permitted, and says whether catch-up allocation is
+ * blocked for this account.
+ *
+ * Retaining such an amount and reporting a determinate result put an exclusion
+ * from gross income into federalTaxEffects that the statute does not allow, which
+ * is a wrong number rather than an absent warning. The component is still carried
+ * for audit, and no further catch-up is allocated until the caller reconciles the
+ * classification: whether the amount counts against the IRC 414(v)(2)(B) limit at
+ * all is exactly what is in doubt, so the room left above it is not something to
+ * state. That is the treatment 26 CFR 1.457-5 already receives here for its own
+ * mutually exclusive methods.
+ *
+ * The amount is not reclassified as Roth. The caller stated a statutory
+ * provenance through the component key, and inventing a different one would
+ * answer a question about a completed contribution that only the caller and the
+ * plan can answer.
+ *
+ * The doubt is pool-wide rather than account-wide, and that is the point of the
+ * second branch. The IRC 414(v) limit is the participant's, not the plan's, and an
+ * unreconciled amount has already been charged against it as though it were a
+ * valid catch-up. A sibling account drawing the same pool would otherwise be
+ * offered the residue -- a $3,000 amount in doubt leaving an apparent $5,000 for
+ * the next account -- which states a remaining capacity that is only correct if
+ * the contribution in doubt was valid. The block does not cross into the other
+ * pool: see catchUpPoolFamily.
+ *
+ * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3) special
+ * catch-ups are each their own provision rather than an IRC 414(v)(1) additional
+ * elective deferral, so IRC 414(v)(7)(A) does not reach them.
+ *
+ * It is called from several places and pushes at most once per account.
+ * catchUpTaxTreatment reaches it on every account whose catch-up it classifies,
+ * which is where the blocking return is consumed; the IRC 457 and pension-linked
+ * emergency savings allocators reach it directly, because each can return before
+ * consulting catchUpTaxTreatment -- the former when no catch-up room survives, the
+ * latter when the IRC 402A(e)(3)(A) balance is not supplied. The same shape is why
+ * #56 made the IRC 457 classification checks independent of remaining room.
+ */
+function appendHighWageExistingPreTaxCatchUpDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  diagnostics: Diagnostic[],
+): boolean {
+  const own = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+  if (own === null) return false;
+  const code = "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD";
+  if (!diagnostics.some((entry) => entry.code === code)) {
     diagnostics.push(
       diagnostic(
-        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH",
-        DiagnosticSeverity.INFO,
-        `Prior-year FICA wages exceeded $${threshold.toLocaleString()}, so the age-based catch-up is allocated as Roth.`,
-        `accounts.${account.id}`,
-        "IRC 414(v)(7)",
+        code,
+        DiagnosticSeverity.ERROR,
+        `Existing contributions record $${own.existing.toLocaleString()} of pre-tax age-based catch-up, but prior-year FICA wages from employer ${own.employerId} of $${own.wages.toLocaleString()} exceed the $${own.threshold.toLocaleString()} IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals are designated Roth contributions, so a pre-tax amount is not one this participant was permitted to make. The amount is reported as supplied and is not reclassified; no further catch-up is allocated until the classification is reconciled.`,
+        `accounts.${account.id}.existingContributions.employeePreTaxCatchUp`,
+        "IRC 414(v)(7)(A)",
       ),
     );
   }
-  return "roth";
+  return true;
+}
+
+/**
+ * Reports that another of the participant's plans holds an unreconciled pre-tax
+ * catch-up whose resolution would change how much this account may still take.
+ *
+ * The IRC 414(v)(2)(B) limit is the participant's rather than the plan's, and an
+ * unreconciled amount has already been charged against it as though it were a
+ * valid catch-up. The residue a sibling account appears to have is therefore only
+ * real if the contribution in doubt was valid -- a $3,000 amount in doubt leaving
+ * an apparent $5,000, where the true figure is $5,000 or $8,000 according to an
+ * answer nobody has yet given.
+ *
+ * But that is a reason to withhold the *disputed* part of the capacity, not all
+ * of it, and the interval says which part is which. Where this account's demand
+ * fits inside the room the pool has under every reading -- 4,000 against a
+ * residue of 5,000 or 8,000 -- the answer is the same whichever way the doubt
+ * resolves, and reporting it as indeterminate withholds a figure the record
+ * fully supports. The test is therefore whether the doubt can move *this*
+ * account's draw:
+ *
+ *     guaranteed = min(demand, remaining.minimum)
+ *     possible   = min(demand, remaining.maximum)
+ *
+ * and only `possible > guaranteed` is a doubt worth reporting. A settled pool
+ * never passes it, which is what separates a limit a valid contribution has
+ * definitively exhausted -- remaining [0, 0], nothing more to be had by anyone,
+ * so no wage fact can change the answer -- from one whose apparent exhaustion
+ * rests on the amount in question, remaining [0, 8000], where it still can.
+ *
+ * A null demand means the caller established there was some without saying how
+ * much, which the two IRC 457 sites do; an unbounded demand takes the whole
+ * residue, so the test reduces to whether the pool is unsettled at all.
+ *
+ * The doubt reaches the pool the amount was drawn from and no further; see
+ * catchUpPoolFamily.
+ */
+function appendSiblingCatchUpPoolBlockDiagnostic(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+  availableCatchUp: Money | null,
+  diagnostics: Diagnostic[],
+): boolean {
+  const family = catchUpPoolFamily(traits);
+  const pool =
+    family === "section457"
+      ? context.section457CatchUpPools.get(account.ownerId)
+      : context.catchUpPools.get(account.ownerId);
+  if (pool === undefined || poolUsageSettled(pool)) return false;
+  const remaining = poolRemainingInterval(pool);
+  if (remaining === null) return false;
+  const guaranteedDraw =
+    availableCatchUp === null ? remaining.minimum : minMoney(availableCatchUp, remaining.minimum);
+  const possibleDraw =
+    availableCatchUp === null ? remaining.maximum : minMoney(availableCatchUp, remaining.maximum);
+  if (possibleDraw <= guaranteedDraw) return false;
+  const blockedBy = [...context.accountsById.values()].find(
+    (other) =>
+      other.id !== account.id &&
+      other.ownerId === account.ownerId &&
+      catchUpPoolFamily(ACCOUNT_TRAITS[other.type]) === family &&
+      highWageInvalidExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
+  );
+  if (blockedBy === undefined) return false;
+
+  const code = "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP";
+  if (!diagnostics.some((entry) => entry.code === code)) {
+    diagnostics.push(
+      diagnostic(
+        code,
+        DiagnosticSeverity.ERROR,
+        `$${roundMoney(possibleDraw - guaranteedDraw).toLocaleString()} of further catch-up capacity is unresolved because account ${blockedBy.id} records a pre-tax age-based catch-up that IRC 414(v)(7)(A) did not permit for this participant. The $${guaranteedDraw.toLocaleString()} this account can take under either reading has been allocated; the remainder turns on whether that contribution was valid. The amount a participant may exclude as a catch-up is theirs for the taxable year rather than each plan's: IRC 402(g)(1)(C) capped what an eligible participant's gross income could exclude "without regard to the treatment of the elective deferrals by an applicable employer plan under section 414(v)", and Notice 2023-62 preserves that result after SECURE 2.0 section 603(b)(1) struck the subparagraph. So the doubt follows the participant and crosses employers, and the amount in question has already been charged against that one limit as though it were valid. Reconcile the catch-up components on account ${blockedBy.id} to establish the rest.`,
+        `accounts.${account.id}`,
+        "IRC 414(v)(7)(A); IRC 402(g)(1)(C) as preserved by Notice 2023-62",
+      ),
+    );
+  }
+  return true;
 }
 
 /**
@@ -16264,6 +16929,26 @@ function allocateBaseAndCatchUp(
   }
 
   const existingBaseForAccount = baseElectiveDeferrals(account.existingContributions);
+  /**
+   * The account's own condemned catch-up, which its plan-imposed limits may
+   * already have borne.
+   *
+   * 26 CFR 1.414(v)-1(d)(1) determines catch-up contributions by reference to
+   * the applicable limits, plan-imposed ones included, so an amount that *is* a
+   * catch-up sits outside the plan's own deferral ceiling and outside the
+   * annual-additions ceiling the plan may set. IRC 414(v)(7)(A) leaves this
+   * amount's status unresolved, so both readings have to be survivable: on the
+   * reading that it was never a valid catch-up it is an ordinary elective
+   * deferral occupying that plan room like any other.
+   *
+   * Only the guaranteed room is offered, which is the room left on the reading
+   * that consumes more. The shared IRC 415(c) group needs no equivalent here --
+   * it is a pool, and its interval already stops `takeAcrossPools` at the
+   * guaranteed remainder -- but a plan-document ceiling is an account-local
+   * scalar with no pool behind it, so the subtraction has to be explicit.
+   */
+  const unresolvedOrdinaryExposure =
+    highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0;
   // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than clause
   // (i), and it is supplied through this same field. But clause (ii) caps the
   // account *balance*, exactly as clause (i) does, and the account-local pool
@@ -16284,10 +16969,11 @@ function allocateBaseAndCatchUp(
     ? employeePlanLimit
     : nonnegative(
         money(account.planRules.planDocumentAnnualAdditionsLimit, `${account.id}.planDocumentAnnualAdditionsLimit`) -
-          annualAdditionsAmount(account.existingContributions),
+          annualAdditionsAmount(account.existingContributions) -
+          unresolvedOrdinaryExposure,
       );
   const desiredBase = minMoney(
-    nonnegative(employeePlanLimit - existingBaseForAccount),
+    nonnegative(employeePlanLimit - existingBaseForAccount - unresolvedOrdinaryExposure),
     accountAnnualRemainingBefore,
   );
   // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
@@ -16323,7 +17009,7 @@ function allocateBaseAndCatchUp(
       ? Number.MAX_SAFE_INTEGER
       : nonnegative(
           money(account.planRules.planDocumentAnnualAdditionsLimit, `${account.id}.planDocumentAnnualAdditionsLimit`) -
-            annualAdditionsAmount(annual),
+            annualAdditionsAmount(annual) - unresolvedOrdinaryExposure,
         );
     const desiredSpecial = minMoney(
       nonnegative(specialLimit - existingSpecial),
@@ -16364,11 +17050,25 @@ function allocateBaseAndCatchUp(
   );
   let catchUpAdded = 0;
   const catchUpPools: LimitPool[] = plesaPool ? [catchUpPool, plesaPool] : [catchUpPool];
-  const treatment = catchUpTaxTreatment(context, account, traits, diagnostics);
+  // `desiredCatchUp` is passed so the classification is not asked -- and the
+  // sibling-pool doubt not reported -- against room this account does not have.
+  // The two IRC 457 sites reach their own treatment only where room survives,
+  // which is the same gate stated a different way.
+  const classification = catchUpTaxTreatment(context, account, traits, diagnostics, desiredCatchUp);
+  const treatment = classification.treatment;
   if (treatment === "unknown") {
     reportPoolWithoutConsuming(catchUpPool, sharedLimits);
   } else if (treatment !== "unavailable" && desiredCatchUp > 0) {
     catchUpAdded = takeAcrossPools(catchUpPools, desiredCatchUp, sharedLimits);
+    // Announced only now. `desiredCatchUp` is bounded by the plan limit, the
+    // existing components and remaining compensation, but not by the owner's
+    // shared IRC 414(v) pool, so it stays positive on an account that another
+    // plan has already exhausted the pool for. Saying the catch-up "is allocated
+    // as Roth" before takeAcrossPools returns is how an account came to report
+    // that alongside an employeeRothCatchUp of zero.
+    if (catchUpAdded > 0 && classification.reportsHighWageRothAllocation) {
+      appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
+    }
     if (treatment === "roth") {
       additional.employeeRothCatchUp = catchUpAdded;
       annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + catchUpAdded);
@@ -16654,6 +17354,14 @@ function allocateQualifiedElective(
     // caller did not answer, and would answer it with the one value that yields
     // the largest ceiling the statute allows.
     if (balance == null) {
+      // Reached before the return below for the same reason the IRC 457 host
+      // reaches it: this path never consults catchUpTaxTreatment, so an existing
+      // pre-tax catch-up that IRC 414(v)(7)(A) did not permit would otherwise go
+      // unreported while its component and its pre-tax effect stayed in the
+      // result. The missing balance and the invalid classification are two
+      // separate things the caller has to fix, and naming only one of them sends
+      // them back for the other.
+      appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
       diagnostics.push(
         diagnostic(
           "PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED",
@@ -16744,7 +17452,12 @@ function allocateQualifiedElective(
     );
   }
 
-  const accountRemainingBeforeEmployer = nonnegative(accountAnnualLimit - annualAdditionsAmount(annual));
+  // Every later addition must preserve the same ordinary-deferral completion
+  // reserved before the base draw; the larger IRC 415(c) pool cannot enforce
+  // this account's lower plan-document ceiling.
+  const unresolvedOrdinaryExposure =
+    highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0;
+  const accountRemainingBeforeEmployer = nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure);
   const employerTaxTreatmentAvailable =
     employerDesired === 0 || validateEmployerRothAvailability(context, account, traits, diagnostics);
   const employerAdded = employerKnown && employerTaxTreatmentAvailable
@@ -16758,7 +17471,7 @@ function allocateQualifiedElective(
   if (!deferralOnly && account.planRules.permitsAfterTaxEmployeeContributions) {
     const afterTaxCapacity = minMoney(
       poolRemaining(annualGroup),
-      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
+      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure),
       deferral.compensationRemaining,
     );
     if (afterTaxCapacity > 0) {
@@ -16772,7 +17485,7 @@ function allocateQualifiedElective(
   if (!deferralOnly && !employerKnown && !account.planRules.permitsAfterTaxEmployeeContributions) {
     planTermDependentCapacity = minMoney(
       poolRemaining(annualGroup),
-      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
+      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure),
     );
     if (planTermDependentCapacity > 0) {
       diagnostics.push(
@@ -17152,6 +17865,7 @@ function allocateSection457(
         "IRC 402A(e)(3)(A)",
       ),
     );
+    appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
     const existingCatchUpClassificationInvalid = appendSection457ExistingCatchUpDiagnostics(
       context,
       account,
@@ -17207,11 +17921,36 @@ function allocateSection457(
   // an annual deferral limit would charge this year's contributions against it
   // once through the pool's balance and again through the limit, which is what
   // the qualified-plan host does not do either.
+  /**
+   * The account's own condemned catch-up, which its employer-provided limit may
+   * already have borne on the reading that it was never a catch-up.
+   *
+   * 26 CFR 1.414(v)-1(b)(1) identifies catch-up contributions against the
+   * applicable limits, and 1.414(v)-1(b)(2) makes an employer-provided limit
+   * contained in the plan one of them, so an amount that *is* a catch-up sits
+   * outside the plan's own deferral ceiling and one that is not does not.
+   *
+   * The participant-wide IRC 457 pool cannot substitute for this. Its interval
+   * stops a draw at the room guaranteed across the participant's plans, which
+   * on these facts is 21500 -- far above a plan document's 10000 -- so the pool
+   * never binds and the account-local ceiling is the only thing standing
+   * between the condemned amount and a 13000 total against a 10000 limit.
+   *
+   * Subtracted from the applied ceiling rather than from `regularDesired`, so
+   * the employer draw above is bounded by the same figure. The allocator takes
+   * employer amounts before employee deferrals, and a subtraction applied only
+   * to the later one would let the earlier one spend the disputed room.
+   */
+  const unresolvedOrdinaryExposure = traits.isPlesa
+    ? 0
+    : (highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
   const appliedHostBaseLimit = traits.isPlesa
     ? statutoryHostBaseLimit
-    : minMoney(
-        statutoryHostBaseLimit,
-        account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryHostBaseLimit,
+    : nonnegative(
+        minMoney(
+          statutoryHostBaseLimit,
+          account.planRules.planDocumentEmployeeDeferralLimit ?? statutoryHostBaseLimit,
+        ) - unresolvedOrdinaryExposure,
       );
   // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
   // the room is an account-local pool that this account's base deferral and its
@@ -17312,6 +18051,10 @@ function allocateSection457(
   // nothing. Where one fails the components are kept for audit, the account is
   // reported indeterminate and no further catch-up is allocated — reclassifying a
   // supplied component would answer a question only the caller can answer.
+  // Reached directly rather than through catchUpTaxTreatment: allocateSection457
+  // consults that only where catch-up room survives, and an existing amount
+  // filling the IRC 414(v) pool leaves none.
+  appendHighWageExistingPreTaxCatchUpDiagnostic(context, account, traits, diagnostics);
   const existingCatchUpClassificationInvalid = appendSection457ExistingCatchUpDiagnostics(
     context,
     account,
@@ -17337,19 +18080,44 @@ function allocateSection457(
     resolution.mode === "special"
       ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
       : Infinity;
-  const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+  // What decides whether the classification is worth asking for: the most this
+  // account could take if every open question resolved in its favour.
+  //
+  // This deliberately reads the pool's *maximum* remaining rather than its
+  // settled remainder, and the difference is the whole point. An unreconciled
+  // catch-up on another of the participant's IRC 457 plans no longer fills the
+  // pool -- it widens it -- so consulting the pool here no longer mistakes
+  // "someone may have spent this" for "this is spent", which is what previously
+  // forced the test to ignore the pool altogether and ask for a wage
+  // classification the answer could not depend on.
+  //
+  // So the two exhaustions separate. A valid contribution that consumed the
+  // limit leaves remaining [0, 0]: no reconciliation can restore anything, no
+  // wage fact can change this account's zero, and asking for one would make an
+  // account indeterminate for want of a fact that cannot matter. An
+  // unreconciled one leaves remaining [0, 8000]: the maximum is positive, the
+  // classification is still load-bearing, and the sibling block below is
+  // reachable.
+  const poolCatchUpPossible = poolRemainingInterval(catchUpPool)?.maximum ?? Infinity;
+  const ownCatchUpRoomWithoutPool = mayDrawCatchUp
     ? minMoney(
-        poolRemaining(catchUpPool),
         compensationRemaining,
         accountSpecialRemaining,
         plesaPool ? poolRemaining(plesaPool) : Infinity,
+        poolCatchUpPossible,
       )
+    : 0;
+  // The capacity actually reported, which is the room guaranteed under every
+  // reading rather than the room that might exist. `takeFromPool` will not
+  // exceed it either.
+  const monetaryCatchUpCapacityWithoutClassificationBlock = mayDrawCatchUp
+    ? minMoney(poolRemainingInterval(catchUpPool)?.minimum ?? null, ownCatchUpRoomWithoutPool)
     : 0;
   const ageCatchUpTreatmentBeforeClassificationBlock =
     resolution.mode === "age" &&
     !existingCatchUpClassificationInvalid &&
-    monetaryCatchUpCapacityWithoutClassificationBlock > 0
-      ? catchUpTaxTreatment(context, account, traits, diagnostics, false)
+    ownCatchUpRoomWithoutPool > 0
+      ? catchUpTaxTreatment(context, account, traits, diagnostics, ownCatchUpRoomWithoutPool).treatment
       : null;
   const catchUpCapacityWithoutClassificationBlock =
     ageCatchUpTreatmentBeforeClassificationBlock === "unknown" ||
@@ -17434,7 +18202,8 @@ function allocateSection457(
       );
     }
   } else if (resolution.mode === "age" && catchUpPotential > 0) {
-    const treatment = catchUpTaxTreatment(context, account, traits, diagnostics);
+    const classification = catchUpTaxTreatment(context, account, traits, diagnostics, catchUpPotential);
+    const treatment = classification.treatment;
     if (treatment === "unknown") {
       reportPoolWithoutConsuming(ageCatchUpPool, sharedLimits);
     } else if (treatment !== "unavailable") {
@@ -17443,6 +18212,9 @@ function allocateSection457(
         catchUpPotential,
         sharedLimits,
       );
+      if (ageAdded > 0 && classification.reportsHighWageRothAllocation) {
+        appendHighWageRothCatchUpAllocatedDiagnostic(context, account, diagnostics);
+      }
       if (treatment === "roth") {
         additional.employeeRothCatchUp = ageAdded;
         annual.employeeRothCatchUp = roundMoney(annual.employeeRothCatchUp + ageAdded);

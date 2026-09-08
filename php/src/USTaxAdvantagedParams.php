@@ -8712,6 +8712,38 @@ final class Engine
     }
 
     /**
+     * Optional identifier fields must be non-empty strings, for the same reason flag
+     * fields must be actual booleans: JavaScript and PHP disagree about "0", about 0,
+     * and about "", so a coerced identifier makes the answer depend on the runtime
+     * rather than on the input.
+     *
+     * employerId is the one that costs money. It selects the prior-year FICA wage
+     * figure for the IRC 414(v)(7)(A) test, so a value one runtime reads as present
+     * and the other as absent is the difference between a classified catch-up and an
+     * indeterminate account. A numeric 0 did exactly that. Absent stays absent --
+     * a missing key and null both mean the caller supplied nothing -- but anything
+     * else present must be a usable identifier rather than something to be coerced
+     * into one.
+     *
+     * @param array<string,mixed> $container
+     */
+    private static function optionalIdentifier(
+        array $container,
+        string $key,
+        string $path,
+        string $code,
+    ): ?string {
+        if (!array_key_exists($key, $container) || $container[$key] === null) {
+            return null;
+        }
+        $value = $container[$key];
+        if (!is_string($value) || $value === '') {
+            throw new ParameterException($code, "{$path} must be a non-empty string when supplied.");
+        }
+        return $value;
+    }
+
+    /**
      * Flag fields must be actual booleans. JavaScript and PHP disagree about the
      * truthiness of "0" and of an empty array, so coercing one would make the
      * answer depend on the runtime rather than on the input.
@@ -9811,9 +9843,20 @@ final class Engine
             self::requireInputObject($input, 'existingContributions', "accounts[{$index}].existingContributions");
             $planRules = is_array($input['planRules'] ?? null) ? $input['planRules'] : [];
             self::validatePlanRules($planRules, "accounts[{$index}].planRules");
+            $employerId = self::optionalIdentifier(
+                $input,
+                'employerId',
+                "accounts[{$index}].employerId",
+                'INVALID_EMPLOYER_ID',
+            );
             $normalized = $input;
             $normalized['id'] = $id;
             $normalized['ownerId'] = $ownerId;
+            if ($employerId === null) {
+                unset($normalized['employerId']);
+            } else {
+                $normalized['employerId'] = $employerId;
+            }
             $normalized['type'] = self::parseAccountType(
                 $input['type'] ?? null,
                 array_key_exists('type', $input),
@@ -9832,6 +9875,12 @@ final class Engine
     /** @param array<string,mixed> $rules */
     private static function validatePlanRules(array $rules, string $path): void
     {
+        self::optionalIdentifier(
+            $rules,
+            'annualAdditionsGroupId',
+            "{$path}.annualAdditionsGroupId",
+            'INVALID_ANNUAL_ADDITIONS_GROUP_ID',
+        );
         foreach (
             [
                 'planCompensation',
@@ -10658,6 +10707,10 @@ final class Engine
         self::initializeElectiveDeferralPools($context, $accounts);
         self::initializeAnnualAdditionsPools($context, $accounts);
         self::initializeSection457Pools($context, $accounts);
+        // After both catch-up families have their pools, because the IRC
+        // 414(v)(6)(C) exception this reads is settled by
+        // resolveSection457CatchUpModes inside initializeSection457Pools.
+        self::seedUnresolvedCatchUpAttribution($context, $accounts);
         // Health FSA facts are read by the IRC 223 interaction, so the
         // arrangements must be resolved before the health savings accounts that
         // consult them.
@@ -10704,7 +10757,7 @@ final class Engine
                 'id' => 'ira-household',
                 'legalLimit' => 'IRC 219(c) joint-return compensation limit',
                 'limit' => self::roundMoney($householdLimit),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
 
@@ -10721,7 +10774,7 @@ final class Engine
                     'limit' => $statutory === null
                         ? null
                         : self::minMoney($statutory, $ownCompensation * (float) $parameters['ira']['compensationFraction']),
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
             $personalLimit = $statutory;
@@ -10750,7 +10803,7 @@ final class Engine
                 'id' => "ira-owner:{$person['id']}",
                 'legalLimit' => 'IRC 219(b) aggregate traditional and Roth IRA contribution limit',
                 'limit' => $personalLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
                 'blocked' => false,
                 'compensationPoolId' => $compensationPoolId,
             ];
@@ -10776,13 +10829,13 @@ final class Engine
                 'id' => "roth-ira-eligibility:{$person['id']}",
                 'legalLimit' => 'IRC 408A(c)(3) direct Roth IRA MAGI limit',
                 'limit' => $rothEligibilityLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['iraDeductionPools'][$person['id']] = [
                 'id' => "traditional-ira-deduction:{$person['id']}",
                 'legalLimit' => 'IRC 219(g) traditional IRA deduction limit',
                 'limit' => self::traditionalIraDeductionLimit($context, $person, $personalLimit),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
 
@@ -10796,18 +10849,16 @@ final class Engine
                 continue;
             }
             $ownerPool =& $context['iraOwnerPools'][$account['ownerId']];
-            $ownerPool['used'] = self::roundMoney($ownerPool['used'] + $existing);
+            self::chargePool($ownerPool, (float) ($existing));
             $compensationPoolId = $ownerPool['compensationPoolId'];
-            $context['iraCompensationPools'][$compensationPoolId]['used'] = self::roundMoney(
-                $context['iraCompensationPools'][$compensationPoolId]['used'] + $existing,
+            self::chargePool($context['iraCompensationPools'][$compensationPoolId], (float) ($existing));
+            self::chargePool(
+                $context['iraRothEligibilityPools'][$account['ownerId']],
+                (float) $account['existingContributions']['rothIra'],
             );
-            $context['iraRothEligibilityPools'][$account['ownerId']]['used'] = self::roundMoney(
-                $context['iraRothEligibilityPools'][$account['ownerId']]['used']
-                + $account['existingContributions']['rothIra'],
-            );
-            $context['iraDeductionPools'][$account['ownerId']]['used'] = self::roundMoney(
-                $context['iraDeductionPools'][$account['ownerId']]['used']
-                + $account['existingContributions']['deductibleIra'],
+            self::chargePool(
+                $context['iraDeductionPools'][$account['ownerId']],
+                (float) $account['existingContributions']['deductibleIra'],
             );
             unset($ownerPool);
         }
@@ -10826,19 +10877,19 @@ final class Engine
                 'limit' => $context['parameters']['electiveDeferral402g'] === null
                     ? null
                     : (float) $context['parameters']['electiveDeferral402g'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['catchUpPools'][$id] = [
                 'id' => "414v:{$id}",
                 'legalLimit' => 'IRC 414(v) aggregate age-based catch-up limit',
                 'limit' => self::ownerGeneralCatchUpLimit($context['parameters'], $person),
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['special403bCatchUpPools'][$id] = [
                 'id' => "402g7:{$id}",
                 'legalLimit' => 'IRC 402(g)(7) aggregate 403(b) 15-year catch-up limit',
                 'limit' => (float) $context['parameters']['special403b15YearCatchUp']['annualLimit'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
         foreach ($accounts as $account) {
@@ -10847,19 +10898,10 @@ final class Engine
                 continue;
             }
             $ownerId = $account['ownerId'];
-            $context['elective402gPools'][$ownerId]['used'] = self::roundMoney(
-                $context['elective402gPools'][$ownerId]['used']
-                + self::baseDeferrals($account['existingContributions']),
-            );
-            $context['catchUpPools'][$ownerId]['used'] = self::roundMoney(
-                $context['catchUpPools'][$ownerId]['used']
-                + self::ageCatchUps($account['existingContributions']),
-            );
+            self::chargePool($context['elective402gPools'][$ownerId], (float) (self::baseDeferrals($account['existingContributions'])));
+            self::chargePool($context['catchUpPools'][$ownerId], (float) (self::ageCatchUps($account['existingContributions'])));
             if (!empty($traits['is403b'])) {
-                $context['special403bCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                    $context['special403bCatchUpPools'][$ownerId]['used']
-                    + $account['existingContributions']['special403bCatchUp'],
-                );
+                self::chargePool($context['special403bCatchUpPools'][$ownerId], (float) ($account['existingContributions']['special403bCatchUp']));
             }
         }
     }
@@ -10915,7 +10957,7 @@ final class Engine
                 'id' => "415c:{$groupId}",
                 'legalLimit' => 'IRC 415(c) annual-additions limit',
                 'limit' => $limit,
-                'used' => $existing,
+                'usage' => self::settled($existing),
                 'compensation' => self::roundMoney($recognizedCompensation),
             ];
         }
@@ -11269,6 +11311,67 @@ final class Engine
         }
     }
 
+    /**
+     * Widen the pools an IRC 414(v)(7)(A)-condemned existing catch-up may have
+     * consumed, from the figure the seeding assumed to the range the facts leave.
+     *
+     * The seeding charged the amount to the catch-up pool, which is where it
+     * belongs if it was a valid IRC 414(v)(1) additional elective deferral. IRC
+     * 414(v)(7)(A) says it was not, so that assumption is exactly the thing in
+     * doubt. The alternative is not "nothing": IRC 414(v)(3)(A)(i) disregards a
+     * catch-up for the IRC 402(g) limit only for a contribution "made under
+     * paragraph (1)", so once paragraph (7)(A) prevents that treatment the
+     * amount is an ordinary elective deferral and IRC 401(a)(30) and IRC 402(g)
+     * reach it again. Notice 2023-62 confirms the relief survives SECURE 2.0
+     * section 603(b)(1)'s striking of IRC 402(g)(1)(C).
+     *
+     * Hence a range in each. The catch-up pool has certainly spent the amount
+     * only if the contribution was valid, so its minimum gives it up; the base
+     * pool has spent it only if the contribution was not, so its maximum takes
+     * it on. Correcting or recharacterizing is a third completion and lies
+     * inside these bounds -- a corrected amount consumes neither limitation,
+     * which is each pool's minimum.
+     *
+     * @param list<array<string,mixed>> $accounts
+     */
+    private static function seedUnresolvedCatchUpAttribution(array &$context, array $accounts): void
+    {
+        foreach ($accounts as $account) {
+            $traits = self::traits($account['type']);
+            $invalid = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+            if ($invalid === null) {
+                continue;
+            }
+            $ownerId = $account['ownerId'];
+            $section457 = self::catchUpPoolFamily($traits) === 'section457';
+            $chargedKey = $section457 ? 'section457CatchUpPools' : 'catchUpPools';
+            $alternativeKey = $section457 ? 'section457BasePools' : 'elective402gPools';
+            $charged =& $context[$chargedKey][$ownerId];
+            // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1)
+            // contribution from, so far as this account reaches one: the relief
+            // is a single sentence covering "sections 401(a)(30), 402(h),
+            // 403(b), 408, 415(c), and 457(b)(2)", and IRC 414(v)(7)(A)
+            // withdraws the whole of it at once. Clause (ii) is why IRC 415(c)
+            // belongs here and not only clause (i): a valid catch-up is also not
+            // "taken into account in applying such limitations to other
+            // contributions", so its condemnation changes the room left for the
+            // employer's, not merely for its own.
+            $relieved = [];
+            $relieved[] =& $context[$alternativeKey][$ownerId];
+            $annualGroupId = self::groupIdForAccount($account);
+            if (($traits['uses415c'] ?? false) && isset($context['annualAdditionsPools'][$annualGroupId])) {
+                $relieved[] =& $context['annualAdditionsPools'][$annualGroupId];
+            }
+            self::attributeToEitherPool(
+                $charged,
+                $relieved,
+                (float) $invalid['existing'],
+                'existing-pre-tax-catch-up:' . $account['id'],
+            );
+            unset($charged, $relieved);
+        }
+    }
+
     private static function initializeSection457Pools(array &$context, array $accounts): void
     {
         self::resolveSection457CatchUpModes($context, $accounts);
@@ -11280,7 +11383,7 @@ final class Engine
                 'limit' => $context['parameters']['section457b']['baseDeferralLimit'] === null
                     ? null
                     : (float) $context['parameters']['section457b']['baseDeferralLimit'],
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['section457CatchUpPools'][$id] = [
                 'id' => "457b-catch-up:{$id}",
@@ -11294,7 +11397,7 @@ final class Engine
                 // the unbounded annual figure instead let two plans whose compensation
                 // each bound them separately add up past the individual limitation.
                 'limit' => $context['section457CatchUpResolutions'][$id]['ageAmount'] ?? 0.0,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             $context['section457SpecialCatchUpPools'][$id] = [
                 'id' => "457b-special-catch-up:{$id}",
@@ -11303,7 +11406,7 @@ final class Engine
                 // the sum of what they all provide: 26 CFR 1.457-5(c). A pool limited
                 // to the statutory base instead let two plans' separate amounts add.
                 'limit' => $context['section457CatchUpResolutions'][$id]['specialAmount'] ?? 0.0,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
         }
         foreach ($accounts as $account) {
@@ -11326,19 +11429,14 @@ final class Engine
                 + $components['employerRoth'],
             );
             $ownerId = $account['ownerId'];
-            $context['section457BasePools'][$ownerId]['used'] = self::roundMoney(
-                $context['section457BasePools'][$ownerId]['used'] + $base,
-            );
-            $context['section457CatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                $context['section457CatchUpPools'][$ownerId]['used'] + self::ageCatchUps($components),
-            );
-            $context['section457SpecialCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of
-                // a catch-up does not change which statutory limitation it was made
-                // under.
-                $context['section457SpecialCatchUpPools'][$ownerId]['used']
-                    + $components['special457CatchUp']
-                    + $components['special457RothCatchUp'],
+            self::chargePool($context['section457BasePools'][$ownerId], (float) ($base));
+            self::chargePool($context['section457CatchUpPools'][$ownerId], (float) (self::ageCatchUps($components)));
+            // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of
+            // a catch-up does not change which statutory limitation it was made
+            // under.
+            self::chargePool(
+                $context['section457SpecialCatchUpPools'][$ownerId],
+                (float) ($components['special457CatchUp'] + $components['special457RothCatchUp']),
             );
         }
     }
@@ -12074,12 +12172,10 @@ final class Engine
                     // under a different plan of the same group, so it caps the
                     // account rather than the pool.
                     'limit' => $statutoryMaximum === null ? null : $salaryReductionLimit,
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
-            $context['healthFsaPools'][$poolKey]['used'] = self::roundMoney(
-                (float) $context['healthFsaPools'][$poolKey]['used'] + $flexCreditCounted + $elected,
-            );
+            self::chargePool($context['healthFsaPools'][$poolKey], (float) ($flexCreditCounted + $elected));
 
             $context['healthFsaPlans'][(string) $account['id']] = [
                 'status' => self::accountStatusFromDiagnostics($status, $diagnostics),
@@ -12440,7 +12536,7 @@ final class Engine
                     'id' => "irc-129:{$poolKey}",
                     'legalLimit' => 'IRC 129(a)(2)(A) dependent care assistance exclusion, per return',
                     'limit' => $statutoryExclusion,
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
 
@@ -12519,7 +12615,7 @@ final class Engine
             $ceilingCandidates = [$householdRemaining];
             if ($earnedIncomeCeiling !== null) {
                 $ceilingCandidates[] = self::nonnegative(self::roundMoney(
-                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['used'],
+                    (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$plan['poolKey']]['usage']['maximum'],
                 ));
             }
             if (($plan['planDocumentLimit'] ?? null) !== null) {
@@ -12528,9 +12624,7 @@ final class Engine
             $ceiling = self::minMoney(...$ceilingCandidates);
             $excludable = self::minMoney($elected, $ceiling);
             $includible = self::roundMoney($elected - $excludable);
-            $context['dependentCarePools'][$plan['poolKey']]['used'] = self::roundMoney(
-                (float) $context['dependentCarePools'][$plan['poolKey']]['used'] + $excludable,
-            );
+            self::chargePool($context['dependentCarePools'][$plan['poolKey']], (float) $excludable);
             $context['dependentCarePlans'][$accountId]['detail']['excludableAmount'] = $excludable;
             $context['dependentCarePlans'][$accountId]['detail']['includibleInIncome'] = $includible;
             if ($includible > 0) {
@@ -12610,7 +12704,7 @@ final class Engine
         $ownCeilings = [];
         if ($earnedIncomeCeiling !== null) {
             $ownCeilings[] = self::nonnegative(self::roundMoney(
-                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['used'],
+                (float) $earnedIncomeCeiling - (float) $context['dependentCarePools'][$poolKey]['usage']['maximum'],
             ));
         }
         if (($plan['planDocumentLimit'] ?? null) !== null) {
@@ -15313,7 +15407,7 @@ final class Engine
                     'limit' => $householdPoolAmountIndeterminate
                         ? null
                         : ($householdParagraph1AfterArcher === null ? null : self::roundMoney($householdParagraph1AfterArcher)),
-                    'used' => 0.0,
+                    'usage' => self::settled(0.0),
                 ];
             }
         }
@@ -15563,7 +15657,7 @@ final class Engine
                 'id' => "hsa223b1:{$ownerId}",
                 'legalLimit' => 'IRC 223(b)(1) annual HSA contribution limit',
                 'limit' => $baseLimit,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
             // Paragraph (5) cannot consume the separately established paragraph (3) amount.
             $catchUpAmountEstablished = !$indeterminate || ($isSharingMember &&
@@ -15574,7 +15668,7 @@ final class Engine
                 'id' => "hsa223b3:{$ownerId}",
                 'legalLimit' => 'IRC 223(b)(3) age 55 additional contribution amount',
                 'limit' => $catchUpAmountEstablished ? $catchUpApplied : null,
-                'used' => 0.0,
+                'usage' => self::settled(0.0),
             ];
 
             if (!$indeterminate && $catchUpApplied > 0 && $couple !== null) {
@@ -16097,27 +16191,39 @@ final class Engine
                         // Nothing can absorb a spill, so the whole contribution came
                         // out of the couple's limitation whichever way the division
                         // falls.
-                        $context['hsaFamilyPools'][$poolKeyEarly]['used'] = self::roundMoney(
-                            (float) $context['hsaFamilyPools'][$poolKeyEarly]['used'] + $existing,
-                        );
+                        self::chargePool($context['hsaFamilyPools'][$poolKeyEarly], (float) ($existing));
                     } else {
-                        $context['hsaFamilyPools'][$poolKeyEarly]['usageIndeterminate'] = true;
+                        // The contribution is known and the pool's ceiling is
+                        // known; what is unknown is how much of it this pool
+                        // bore. Before, that was a flag saying "not a figure";
+                        // it is the same statement as an interval spanning
+                        // everything still open, and now it says how much is at
+                        // stake rather than only that something is.
+                        $familyPoolEarly =& $context['hsaFamilyPools'][$poolKeyEarly];
+                        $familyPoolEarly['usage'] = [
+                            'minimum' => (float) $familyPoolEarly['usage']['minimum'],
+                            'maximum' => self::roundMoney(
+                                $familyPoolEarly['limit'] === null
+                                    ? (float) $familyPoolEarly['usage']['minimum'] + $existing
+                                    : max(
+                                        (float) $familyPoolEarly['limit'],
+                                        (float) $familyPoolEarly['usage']['minimum'],
+                                    ),
+                            ),
+                        ];
+                        unset($familyPoolEarly);
                     }
                 }
                 continue;
             }
             $basePool =& $context['hsaBasePools'][$ownerId];
-            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['used']));
-            $basePool['used'] = self::roundMoney((float) $basePool['used'] + $toBase);
+            $toBase = self::minMoney($existing, self::nonnegative((float) $basePool['limit'] - (float) $basePool['usage']['maximum']));
+            self::chargePool($basePool, (float) ($toBase));
             unset($basePool);
-            $context['hsaCatchUpPools'][$ownerId]['used'] = self::roundMoney(
-                (float) $context['hsaCatchUpPools'][$ownerId]['used'] + $existing - $toBase,
-            );
+            self::chargePool($context['hsaCatchUpPools'][$ownerId], (float) ($existing - $toBase));
             $poolKey = $context['hsaPlans'][$ownerId]['familyPoolKey'] ?? null;
             if ($poolKey !== null && isset($context['hsaFamilyPools'][$poolKey])) {
-                $context['hsaFamilyPools'][$poolKey]['used'] = self::roundMoney(
-                    (float) $context['hsaFamilyPools'][$poolKey]['used'] + $toBase,
-                );
+                self::chargePool($context['hsaFamilyPools'][$poolKey], (float) ($toBase));
             }
         }
     }
@@ -16230,47 +16336,215 @@ final class Engine
         );
     }
 
-    /** @param array<string,mixed> $pool */
-    private static function poolRemaining(array $pool): ?float
+    /**
+     * The degenerate interval: a quantity that is not in doubt.
+     *
+     * @return array{minimum: float, maximum: float}
+     */
+    private static function settled(float $amount): array
     {
-        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
+        return ['minimum' => $amount, 'maximum' => $amount];
+    }
+
+    /** @param array{minimum: float, maximum: float} $interval */
+    private static function intervalIsSettled(array $interval): bool
+    {
+        return $interval['minimum'] === $interval['maximum'];
+    }
+
+    /**
+     * Spend a settled amount. Both endpoints move, because an amount whose
+     * attribution is not in doubt is spent under every reading of the facts: it
+     * narrows nothing and widens nothing.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function chargePool(array &$pool, float $amount): void
+    {
+        $pool['usage'] = [
+            'minimum' => self::roundMoney((float) $pool['usage']['minimum'] + $amount),
+            'maximum' => self::roundMoney((float) $pool['usage']['maximum'] + $amount),
+        ];
+    }
+
+    /**
+     * One report of a pool as this account left it. Scalars where the usage is
+     * settled, ranges where it is not, and never both -- a consumer reading
+     * 'remainingAfterAccount' must not be handed an endpoint dressed as a figure.
+     *
+     * @param array<string,mixed> $pool
+     * @param array{minimum: float, maximum: float} $usageBefore
+     * @return array<string,mixed>
+     */
+    private static function sharedLimitUse(array $pool, array $usageBefore, ?float $taken): array
+    {
+        $settledUsage = self::poolUsageSettled($pool);
+        $remaining = self::poolRemainingInterval($pool);
+        $settledBefore = self::intervalIsSettled($usageBefore);
+        $use = [
+            'id' => $pool['id'],
+            'legalLimit' => $pool['legalLimit'],
+            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
+            'usedBeforeAccount' => $settledBefore ? (float) $usageBefore['minimum'] : null,
+            'usedByAccount' => $taken,
+            'remainingAfterAccount' => $settledUsage && $remaining !== null
+                ? (float) $remaining['minimum']
+                : null,
+        ];
+        if (!$settledBefore) {
+            $use['possibleUsedBeforeAccount'] = $usageBefore;
+        }
+        if (!$settledUsage && $remaining !== null) {
+            $use['possibleRemainingAfterAccount'] = $remaining;
+        }
+
+        return $use;
+    }
+
+    /**
+     * Record that a known amount's home is unresolved between two pools.
+     *
+     * The amount is not moved and not withdrawn: its lower bound leaves the pool
+     * that holds it and its upper bound arrives at the pool that may have to.
+     * Afterwards each may have spent it, and exactly one of those is true in any
+     * completion of the facts -- which is what $groupId records, so the two
+     * maxima are never later added together as though both could hold at once.
+     *
+     * @param array<string,mixed>|null $chargedTo
+     * @param array<string,mixed>|null $alternative
+     */
+    private static function attributeToEitherPool(
+        ?array &$chargedTo,
+        array &$relieved,
+        float $amount,
+        string $groupId,
+    ): void {
+        if ($amount <= 0.0) {
+            return;
+        }
+        // Once, however many limits the other reading engages. The amount left
+        // one pool because it might not have been a catch-up; it does not leave
+        // twice because IRC 414(v)(3)(A)(i) names several limits in one breath.
+        if ($chargedTo !== null) {
+            $chargedTo['usage'] = [
+                'minimum' => self::nonnegative(
+                    self::roundMoney((float) $chargedTo['usage']['minimum'] - $amount),
+                ),
+                'maximum' => (float) $chargedTo['usage']['maximum'],
+            ];
+            $chargedTo['uncertainties'] = [
+                ...($chargedTo['uncertainties'] ?? []),
+                ['id' => $groupId, 'branch' => 'catch_up'],
+            ];
+        }
+        foreach ($relieved as &$pool) {
+            if ($pool === null) {
+                continue;
+            }
+            $pool['usage'] = [
+                'minimum' => (float) $pool['usage']['minimum'],
+                'maximum' => self::roundMoney((float) $pool['usage']['maximum'] + $amount),
+            ];
+            $pool['uncertainties'] = [
+                ...($pool['uncertainties'] ?? []),
+                ['id' => $groupId, 'branch' => 'ordinary'],
+            ];
+        }
+        unset($pool);
+    }
+
+    /**
+     * Whether the pool's usage is settled, which is to say its interval is a point.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function poolUsageSettled(array $pool): bool
+    {
+        return self::intervalIsSettled($pool['usage']);
+    }
+
+    /**
+     * What is left, as a range. The endpoints invert: the *most* the pool may
+     * have spent leaves the *least* room, so 'minimum' pairs with the usage
+     * 'maximum'. That minimum is the room that exists under every reading of the
+     * facts -- the only room an allocation may rely on.
+     *
+     * @param array<string,mixed> $pool
+     * @return array{minimum: float, maximum: float}|null
+     */
+    private static function poolRemainingInterval(array $pool): ?array
+    {
+        if ($pool['limit'] === null) {
             return null;
         }
-        return self::nonnegative((float) $pool['limit'] - (float) $pool['used']);
+        return [
+            'minimum' => self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']),
+            'maximum' => self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['minimum']),
+        ];
+    }
+
+    /**
+     * The remainder as a figure, which exists only where the usage is settled.
+     * An unsettled pool has a range and no single remainder, and reporting
+     * either endpoint as one asserts headroom the record does not establish --
+     * too much of it or too little, depending on which way the missing fact
+     * resolves.
+     *
+     * @param array<string,mixed> $pool
+     */
+    private static function poolRemaining(array $pool): ?float
+    {
+        if ($pool['limit'] === null || !self::poolUsageSettled($pool)) {
+            return null;
+        }
+        return self::nonnegative((float) $pool['limit'] - (float) $pool['usage']['maximum']);
     }
 
     /** @param array<string,mixed> $pool
      *  @param list<array<string,mixed>> $sharedLimits
      */
+    /**
+     * Take what the pool certainly has room for.
+     *
+     * An unsettled pool is not an empty one. Where the usage is a range, the
+     * room that exists under *every* reading of the facts is the remainder
+     * measured from the largest possible usage, and an allocation of that much
+     * is correct however the doubt resolves -- so it is allocated, and the
+     * account keeps a determinate answer it is entitled to. Refusing it because
+     * some *other* capacity is uncertain withholds a number the record
+     * supports; taking more than it because the ceiling might allow more
+     * asserts one the record does not.
+     *
+     * @param array<string,mixed> $pool
+     * @param list<array<string,mixed>> $sharedLimits
+     */
     private static function takeFromPool(array &$pool, float $requested, array &$sharedLimits): float
     {
-        $usedBefore = (float) $pool['used'];
-        if ($pool['limit'] === null || ($pool['usageIndeterminate'] ?? false) === true) {
-            $sharedLimits[] = [
+        $usageBefore = $pool['usage'];
+        $settledBefore = self::poolUsageSettled($pool);
+        if ($pool['limit'] === null) {
+            // A null limit leaves nothing to bound: there is no ceiling to
+            // measure a range against, so no interval is offered beside the
+            // nulls either.
+            $use = [
                 'id' => $pool['id'],
                 'legalLimit' => $pool['legalLimit'],
-                // The ceiling is still reported where it is known. Only the draw
-                // against it is withheld, which is the whole distinction the flag
-                // exists to draw.
-                'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-                // A null limit leaves the draw perfectly knowable; only the third
-                // state withholds it.
-                'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : $usedBefore,
-                'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
+                'limit' => null,
+                'usedBeforeAccount' => $settledBefore ? (float) $usageBefore['minimum'] : null,
+                'usedByAccount' => $settledBefore ? 0.0 : null,
                 'remainingAfterAccount' => null,
             ];
+            if (!$settledBefore) {
+                $use['possibleUsedBeforeAccount'] = $usageBefore;
+            }
+            $sharedLimits[] = $use;
             return 0.0;
         }
-        $taken = self::minMoney($requested, self::nonnegative((float) $pool['limit'] - (float) $pool['used']));
-        $pool['used'] = self::roundMoney((float) $pool['used'] + $taken);
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => (float) $pool['limit'],
-            'usedBeforeAccount' => $usedBefore,
-            'usedByAccount' => $taken,
-            'remainingAfterAccount' => self::nonnegative((float) $pool['limit'] - (float) $pool['used']),
-        ];
+        $guaranteed = self::poolRemainingInterval($pool)['minimum'];
+        $taken = self::minMoney($requested, $guaranteed);
+        self::chargePool($pool, $taken);
+        $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $taken);
+
         return $taken;
     }
 
@@ -16279,16 +16553,16 @@ final class Engine
      */
     private static function reportPoolWithoutConsuming(array $pool, array &$sharedLimits): void
     {
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => ($pool['usageIndeterminate'] ?? false) === true
-                ? null
-                : (float) $pool['used'],
-            'usedByAccount' => ($pool['usageIndeterminate'] ?? false) === true ? null : 0.0,
-            'remainingAfterAccount' => self::poolRemaining($pool),
-        ];
+        // No draw was computed here, which is not the same as a computed draw
+        // of zero. Where the usage is unsettled all three usage fields go
+        // together and say nothing: a numeric zero in one of them would read as
+        // a draw the engine declined to make. takeFromPool reports a real zero,
+        // because there the guaranteed room was measured and found to be nil.
+        $sharedLimits[] = self::sharedLimitUse(
+            $pool,
+            $pool['usage'],
+            self::poolUsageSettled($pool) ? 0.0 : null,
+        );
     }
 
     /** @param list<array<string,mixed>> $diagnostics */
@@ -16318,11 +16592,11 @@ final class Engine
         float $requested,
         array &$sharedLimits,
     ): float {
+        // A null ceiling still stops everything: there is no room to be sure of
+        // when the limit itself could not be determined. An unsettled *usage*
+        // does not, because its guaranteed remainder is a number.
         foreach ($refs as [$category, $key]) {
-            if (
-                $context[$category][$key]['limit'] === null
-                || ($context[$category][$key]['usageIndeterminate'] ?? false) === true
-            ) {
+            if ($context[$category][$key]['limit'] === null) {
                 foreach ($refs as [$reportCategory, $reportKey]) {
                     self::reportPoolWithoutConsuming($context[$reportCategory][$reportKey], $sharedLimits);
                 }
@@ -16331,21 +16605,14 @@ final class Engine
         }
         $limits = [$requested];
         foreach ($refs as [$category, $key]) {
-            $limits[] = self::poolRemaining($context[$category][$key]);
+            $limits[] = self::poolRemainingInterval($context[$category][$key])['minimum'];
         }
         $taken = self::minMoney(...$limits);
         foreach ($refs as [$category, $key]) {
             $pool =& $context[$category][$key];
-            $usedBefore = (float) $pool['used'];
-            $pool['used'] = self::roundMoney((float) $pool['used'] + $taken);
-            $sharedLimits[] = [
-                'id' => $pool['id'],
-                'legalLimit' => $pool['legalLimit'],
-                'limit' => (float) $pool['limit'],
-                'usedBeforeAccount' => $usedBefore,
-                'usedByAccount' => $taken,
-                'remainingAfterAccount' => self::poolRemaining($pool),
-            ];
+            $usageBefore = $pool['usage'];
+            self::chargePool($pool, $taken);
+            $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $taken);
             unset($pool);
         }
         return $taken;
@@ -16356,16 +16623,9 @@ final class Engine
      */
     private static function consumeExactFromPool(array &$pool, float $amount, array &$sharedLimits): void
     {
-        $usedBefore = (float) $pool['used'];
-        $pool['used'] = self::roundMoney((float) $pool['used'] + $amount);
-        $sharedLimits[] = [
-            'id' => $pool['id'],
-            'legalLimit' => $pool['legalLimit'],
-            'limit' => $pool['limit'] === null ? null : (float) $pool['limit'],
-            'usedBeforeAccount' => $usedBefore,
-            'usedByAccount' => $amount,
-            'remainingAfterAccount' => self::poolRemaining($pool),
-        ];
+        $usageBefore = $pool['usage'];
+        self::chargePool($pool, $amount);
+        $sharedLimits[] = self::sharedLimitUse($pool, $usageBefore, $amount);
     }
 
     /** @param array<string,mixed> $account
@@ -16859,7 +17119,7 @@ final class Engine
             'id' => "plesa402Ae3:{$account['id']}",
             'legalLimit' => 'IRC 402A(e)(3)(A) participant-contribution balance cap',
             'limit' => $caps['effectiveCap'],
-            'used' => $caps['balance'],
+            'usage' => self::settled((float) $caps['balance']),
         ];
     }
 
@@ -16941,14 +17201,136 @@ final class Engine
      *  @param list<array<string,mixed>> $diagnostics
      *  @return 'pretax'|'roth'|'unavailable'|'unknown'
      */
+    /**
+     * How a catch-up on this account is taxed, and whether one may be allocated at
+     * all, with the two IRC 414(v)(7)(A) questions asked in the order that keeps each
+     * from swallowing the other.
+     *
+     * An amount already recorded on *this* account is settled first: it is not a
+     * catch-up the engine is classifying but a completed contribution the supplied
+     * wages condemn, so nothing later can change the answer.
+     *
+     * A *sibling* account's unreconciled amount is asked last, and only where it
+     * could change something. It is a claim about capacity rather than about tax
+     * character, so it cannot displace this account's own classification: an account
+     * that still needs its own employer's wages is told so in the same pass. And it
+     * is irrelevant to an account that could not take a catch-up anyway, where
+     * reporting it would turn a knowable determinate answer into an unknown for a
+     * reason that does not reach it.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
     private static function catchUpTaxTreatment(
         array $context,
         array $account,
         array $traits,
         array &$diagnostics,
-        bool $reportSuccessfulRothAllocation = true,
-    ): string {
+        ?float $availableCatchUp = null,
+    ): array {
+        $blocked = ['treatment' => 'unknown', 'reportsHighWageRothAllocation' => false];
+        if (self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics)) {
+            return $blocked;
+        }
+        // Classified with its success diagnostic withheld, because both the capacity
+        // gate and the sibling block below can still take the allocation away. An
+        // account must not report both that its catch-up was allocated as Roth and
+        // that no catch-up was allocated.
+        //
+        // This runs whatever room is left. Classification is not only a choice between
+        // Roth and pre-tax for an amount about to be allocated: where the account
+        // carries an existing pre-tax IRC 414(v) catch-up, it is also what adjudicates
+        // that completed contribution, and the prior-year wages stay load-bearing for
+        // it after the room for a new one is gone.
+        $classification = self::classifyCatchUpTaxTreatment($context, $account, $traits, $diagnostics);
+        // 'unavailable' means the plan offers no Roth catch-up above the threshold, so
+        // this account has no capacity for the pool doubt to reach. Everything else --
+        // including a treatment still unknown for want of this account's own wages --
+        // keeps the block, so a caller is told about both in one pass rather than
+        // finding the second after fixing the first.
+        if ($classification['treatment'] === 'unavailable') {
+            return $classification;
+        }
+
+        // What remains below is about allocating new catch-up, so neither is asked of
+        // an account with no room to allocate into. $availableCatchUp is the amount
+        // that would be taken if the classification allowed it, already bounded by the
+        // plan limit, the existing components and remaining compensation; null means
+        // the caller established there was some before calling, which is what the two
+        // IRC 457 sites do.
+        //
+        // The nominal plan catch-up limit is not that test. An account whose base
+        // deferral consumed its compensation still has a positive plan limit, and
+        // reporting the sibling-pool doubt against it made the account indeterminate
+        // without changing a number -- reconciling the sibling cannot create
+        // compensation here. This is the principle the age diagnostic already follows,
+        // and the one that makes both IRC 457 sites ask for a treatment only where
+        // catch-up room survives.
+        if ($availableCatchUp !== null && $availableCatchUp <= 0.0) {
+            return $classification;
+        }
+
+        // Appends where the doubt can still change this account's answer, and
+        // does not take the allocation away when it does. The guaranteed room is
+        // drawn either way -- takeFromPool will not exceed it -- so returning
+        // $blocked here would withhold capacity that exists under every reading
+        // of the facts on the ground that some further capacity does not. The
+        // ERROR is what makes the account indeterminate; the amount it can be
+        // sure of is still allocated.
+        self::appendSiblingCatchUpPoolBlockDiagnostic(
+            $context,
+            $account,
+            $traits,
+            $availableCatchUp,
+            $diagnostics,
+        );
+        return $classification;
+    }
+
+    /**
+     * The IRC 414(v)(7)(A) success diagnostic, emitted only once nothing further can
+     * withdraw the allocation. The sibling-pool block still can, which is why the
+     * classification reports whether it would announce rather than announcing.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendHighWageRothCatchUpAllocatedDiagnostic(
+        array $context,
+        array $account,
+        array &$diagnostics,
+    ): void {
+        $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
+        $diagnostics[] = self::diagnostic(
+            'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
+            DiagnosticSeverity::INFO,
+            'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
+                . ', so the age-based catch-up is allocated as Roth.',
+            "accounts.{$account['id']}",
+            'IRC 414(v)(7)',
+        );
+    }
+
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function classifyCatchUpTaxTreatment(
+        array $context,
+        array $account,
+        array $traits,
+        array &$diagnostics,
+    ): array {
         $person = $context['persons'][$account['ownerId']];
+        $settled = static fn (string $treatment): array => [
+            'treatment' => $treatment,
+            'reportsHighWageRothAllocation' => false,
+        ];
         $defaultTreatment = self::accountUsesRothEmployeeContributions($account, $traits) ? 'roth' : 'pretax';
         $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
         if (
@@ -17003,19 +17385,22 @@ final class Engine
                 && (float) ($account['existingContributions']['employeePreTaxCatchUp'] ?? 0.0) === 0.0)
             || self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0
         ) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
         if (!empty($account['planRules']['isSelfEmployedOwner'])) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
-        if (empty($account['employerId'])) {
+        // Tested against absence rather than with empty(), which reads the accepted
+        // identifier "0" as missing while the TypeScript engine does not. The two
+        // engines returned different diagnostic codes for that input before this.
+        if (($account['employerId'] ?? null) === null) {
             $diagnostics[] = self::diagnostic(
                 'EMPLOYER_ID_REQUIRED_FOR_ROTH_CATCH_UP_WAGE_TEST',
                 DiagnosticSeverity::ERROR,
                 'An employerId is required to apply the prior-year FICA-wage test for catch-up contributions.',
                 "accounts.{$account['id']}.employerId",
             );
-            return 'unknown';
+            return $settled('unknown');
         }
         $employerId = (string) $account['employerId'];
         $wages = $person['priorYearFicaWagesByEmployer'][$employerId] ?? null;
@@ -17026,11 +17411,12 @@ final class Engine
                 "Prior-year FICA wages from employer {$employerId} are required to classify catch-up contributions.",
                 "persons.{$person['id']}.priorYearFicaWagesByEmployer.{$employerId}",
             );
-            return 'unknown';
+            return $settled('unknown');
         }
         if ((float) $wages <= (float) $threshold) {
-            return $defaultTreatment;
+            return $settled($defaultTreatment);
         }
+
         if (!self::accountPermitsRothCatchUp($account, $traits)) {
             $diagnostics[] = self::diagnostic(
                 'HIGH_WAGE_CATCH_UP_REQUIRES_ROTH_BUT_PLAN_DOES_NOT_OFFER_IT',
@@ -17040,19 +17426,316 @@ final class Engine
                 "accounts.{$account['id']}.planRules.permitsRothCatchUp",
                 'IRC 414(v)(7)',
             );
-            return 'unavailable';
+            return $settled('unavailable');
         }
-        if ($reportSuccessfulRothAllocation) {
+        return ['treatment' => 'roth', 'reportsHighWageRothAllocation' => true];
+    }
+
+    /**
+     * Which IRC 414(v) catch-up pool an account draws, for the purpose of deciding
+     * how far an unreconciled contribution reaches.
+     *
+     * A qualified plan and an IRC 403(b) share one participant-wide IRC 414(v) pool
+     * here; an eligible deferred compensation plan has its own, because
+     * IRC 457(b)(3) and the IRC 457(e)(15) ceiling stand apart from IRC 402(g)(1).
+     * An amount whose classification is unresolved therefore casts doubt over the
+     * pool it was drawn from and no further: whether a pre-tax catch-up in a
+     * IRC 401(k) was permitted says nothing about the capacity of a governmental
+     * IRC 457(b).
+     *
+     * @param array<string,mixed> $traits
+     */
+    private static function catchUpPoolFamily(array $traits): string
+    {
+        return $traits['family'] === 'section457' ? 'section457' : 'qualified';
+    }
+
+    /**
+     * The facts an existing pre-tax IRC 414(v) catch-up needs for IRC 414(v)(7)(A)
+     * to condemn it, or null where the provision does not reach this account.
+     *
+     * Where the participant's prior-year wages from the employer sponsoring the plan
+     * exceed the IRC 414(v)(7)(A) threshold, IRC 414(v)(1) applies "only if" the
+     * additional elective deferrals are designated Roth contributions. A pre-tax
+     * amount already recorded is therefore not an additional elective deferral the
+     * paragraph permits -- and unlike the classification question the wage figure
+     * usually answers, nothing here is missing. The supplied facts say directly that
+     * the contribution was not one IRC 414(v) allows.
+     *
+     * The guards mirror catchUpTaxTreatment's, because the provision reaches the
+     * same accounts either way: a year with no encoded threshold, a SIMPLE or SARSEP
+     * plan, a self-employed owner with no IRC 3121 wages from a sponsoring employer,
+     * and a plan offering no catch-up at all are all outside it.
+     *
+     * The employer identifier is tested against absence rather than with empty().
+     * An identifier of "0" is one the input contract accepts, and empty() reads it
+     * as missing while the TypeScript engine does not -- which would make the two
+     * engines disagree on an accepted input.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @return array{existing: float, wages: float, threshold: float, employerId: string}|null
+     */
+    private static function highWageInvalidExistingPreTaxCatchUp(
+        array $context,
+        array $account,
+        array $traits,
+    ): ?array {
+        $existing = (float) ($account['existingContributions']['employeePreTaxCatchUp'] ?? 0.0);
+        if ($existing <= 0.0) {
+            return null;
+        }
+        $threshold = $context['parameters']['rothCatchUpPriorYearFicaWageThreshold'];
+        // IRC 414(v)(7)(C) disapplies subparagraph (A) for an applicable employer plan
+        // described in IRC 414(v)(6)(A)(iv), which is "an arrangement meeting the
+        // requirements of section 408(k) or (p)" -- a SEP or SARSEP, and a SIMPLE IRA.
+        // It is not IRC 401(k)(11): a SIMPLE 401(k) is an employees' trust described in
+        // IRC 401(a) and so falls under IRC 414(v)(6)(A)(i), which subparagraph (C)
+        // does not reach. That is why the test is the account's family rather than its
+        // isSimple trait, which simple401kTraits keeps while deliberately setting the
+        // family to qualified_elective.
+        if ($threshold === null || $traits['family'] === 'simple' || !empty($traits['isSarsep'])) {
+            return null;
+        }
+        // IRC 414(v)(6)(C): "This subsection shall not apply to a participant for any
+        // year for which a higher limitation applies to the participant under section
+        // 457(b)(3)." It disapplies the whole of IRC 414(v), paragraph (7) included, so
+        // where the participant-wide resolution selected the special method there is no
+        // IRC 414(v)(7)(A) question to ask about this account's existing component --
+        // the amount was not an IRC 414(v)(1) additional elective deferral in the first
+        // place.
+        //
+        // The statute says "to a participant", not "to that plan", and read alone it
+        // would strip the age-based catch-up from every plan of a participant who used
+        // the IRC 457(b)(3) catch-up -- including an unrelated IRC 401(k). It does not.
+        // 26 CFR 1.414(v)-1(a)(3) supplies the scope: "**In the case of an applicable
+        // employer plan that is a section 457 eligible governmental plan**, the catch-up
+        // contributions permitted under this section shall not apply to a catch-up
+        // eligible participant for any taxable year for which a higher limitation
+        // applies to such participant under section 457(b)(3)." 1.414(v)-1(e)(3)
+        // confirms it from the other side: a plan does not fail universal availability
+        // "merely because another applicable employer plan that is a section 457
+        // eligible governmental plan does not provide for catch-up contributions to the
+        // extent set forth in section 414(v)(6)(C)" -- which only has work to do if the
+        // other plans keep theirs. Hence the family test here rather than a
+        // participant-wide one. It is already reported under
+        // SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD, which is the right
+        // diagnostic; adding the wage one asserted a statutory test that does not reach
+        // the year. Returning null here also keeps the account out of the sibling-pool
+        // block, because an amount IRC 414(v) never reached cannot have been charged
+        // against an IRC 414(v)(2)(B) limit.
+        if (
+            $traits['family'] === 'section457'
+            && (($context['section457CatchUpResolutions'][$account['ownerId']]['mode'] ?? null) === 'special')
+        ) {
+            return null;
+        }
+        if (!empty($account['planRules']['isSelfEmployedOwner'])) {
+            return null;
+        }
+        if (self::accountPlanCatchUpLimit($context, $account, $traits) === 0.0) {
+            return null;
+        }
+        $employerId = $account['employerId'] ?? null;
+        if ($employerId === null) {
+            return null;
+        }
+        $person = $context['persons'][$account['ownerId']];
+        $wages = $person['priorYearFicaWagesByEmployer'][$employerId] ?? null;
+        if ($wages === null || (float) $wages <= (float) $threshold) {
+            return null;
+        }
+        return [
+            'existing' => $existing,
+            'wages' => (float) $wages,
+            'threshold' => (float) $threshold,
+            'employerId' => $employerId,
+        ];
+    }
+
+    /**
+     * Reports an existing pre-tax IRC 414(v) catch-up that the participant's own
+     * prior-year wages say was not permitted, and says whether catch-up allocation
+     * is blocked for this account.
+     *
+     * Retaining such an amount and reporting a determinate result put an exclusion
+     * from gross income into federalTaxEffects that the statute does not allow,
+     * which is a wrong number rather than an absent warning. The component is still
+     * carried for audit, and no further catch-up is allocated until the caller
+     * reconciles the classification: whether the amount counts against the
+     * IRC 414(v)(2)(B) limit at all is exactly what is in doubt, so the room left
+     * above it is not something to state. That is the treatment 26 CFR 1.457-5
+     * already receives here for its own mutually exclusive methods.
+     *
+     * The amount is not reclassified as Roth. The caller stated a statutory
+     * provenance through the component key, and inventing a different one would
+     * answer a question about a completed contribution that only the caller and the
+     * plan can answer.
+     *
+     * The doubt is pool-wide rather than account-wide, and that is the point of the
+     * second branch. The IRC 414(v) limit is the participant's, not the plan's, and
+     * an unreconciled amount has already been charged against it as though it were a
+     * valid catch-up. A sibling account drawing the same pool would otherwise be
+     * offered the residue -- a $3,000 amount in doubt leaving an apparent $5,000 for
+     * the next account -- which states a remaining capacity that is only correct if
+     * the contribution in doubt was valid. The block does not cross into the other
+     * pool: see catchUpPoolFamily.
+     *
+     * Only employeePreTaxCatchUp is read. The IRC 402(g)(7) and IRC 457(b)(3)
+     * special catch-ups are each their own provision rather than an IRC 414(v)(1)
+     * additional elective deferral, so IRC 414(v)(7)(A) does not reach them.
+     *
+     * It is called from several places and pushes at most once per account.
+     * catchUpTaxTreatment reaches it on every account whose catch-up it classifies,
+     * which is where the blocking return is consumed; the IRC 457 and pension-linked
+     * emergency savings allocators reach it directly, because each can return before
+     * consulting catchUpTaxTreatment -- the former when no catch-up room survives,
+     * the latter when the IRC 402A(e)(3)(A) balance is not supplied.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    /**
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendHighWageExistingPreTaxCatchUpDiagnostic(
+        array $context,
+        array $account,
+        array $traits,
+        array &$diagnostics,
+    ): bool {
+        $own = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+        if ($own === null) {
+            return false;
+        }
+        $code = 'EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD';
+        $alreadyReported = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === $code) {
+                $alreadyReported = true;
+                break;
+            }
+        }
+        if (!$alreadyReported) {
             $diagnostics[] = self::diagnostic(
-                'HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH',
-                DiagnosticSeverity::INFO,
-                'Prior-year FICA wages exceeded $' . self::localeNumber((float) $threshold)
-                    . ', so the age-based catch-up is allocated as Roth.',
-                "accounts.{$account['id']}",
-                'IRC 414(v)(7)',
+                $code,
+                DiagnosticSeverity::ERROR,
+                'Existing contributions record $' . self::localeNumber($own['existing'])
+                    . " of pre-tax age-based catch-up, but prior-year FICA wages from employer {$own['employerId']} of \$"
+                    . self::localeNumber($own['wages']) . ' exceed the $' . self::localeNumber($own['threshold'])
+                    . ' IRC 414(v)(7)(A) threshold. IRC 414(v)(1) applies "only if" the additional elective deferrals'
+                    . ' are designated Roth contributions, so a pre-tax amount is not one this participant was'
+                    . ' permitted to make. The amount is reported as supplied and is not reclassified; no further'
+                    . ' catch-up is allocated until the classification is reconciled.',
+                "accounts.{$account['id']}.existingContributions.employeePreTaxCatchUp",
+                'IRC 414(v)(7)(A)',
             );
         }
-        return 'roth';
+        return true;
+    }
+
+    /**
+     * Reports that another of the participant's plans holds an unreconciled pre-tax
+     * catch-up which puts this account's remaining catch-up capacity in doubt.
+     *
+     * The IRC 414(v)(2)(B) limit is the participant's rather than the plan's, and an
+     * unreconciled amount has already been charged against it as though it were a
+     * valid catch-up. The residue a sibling account appears to have is therefore only
+     * real if the contribution in doubt was valid. The doubt reaches the pool the
+     * amount was drawn from and no further; see catchUpPoolFamily.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $account
+     * @param array<string,mixed> $traits
+     * @param list<array<string,mixed>> $diagnostics
+     */
+    private static function appendSiblingCatchUpPoolBlockDiagnostic(
+        array $context,
+        array $account,
+        array $traits,
+        ?float $availableCatchUp,
+        array &$diagnostics,
+    ): bool {
+        $family = self::catchUpPoolFamily($traits);
+        // Whether the doubt can move *this* account's draw:
+        //     guaranteed = min(demand, remaining.minimum)
+        //     possible   = min(demand, remaining.maximum)
+        // and only possible > guaranteed is a doubt worth reporting. A settled
+        // pool never passes it, which separates a limit a valid contribution has
+        // definitively exhausted -- remaining [0, 0], nothing more to be had by
+        // anyone -- from one whose apparent exhaustion rests on the amount in
+        // question, remaining [0, 8000], where a wage fact still can change it.
+        $poolKey = $family === 'section457' ? 'section457CatchUpPools' : 'catchUpPools';
+        $pool = $context[$poolKey][$account['ownerId']] ?? null;
+        if ($pool === null || self::poolUsageSettled($pool)) {
+            return false;
+        }
+        $remaining = self::poolRemainingInterval($pool);
+        if ($remaining === null) {
+            return false;
+        }
+        $guaranteedDraw = $availableCatchUp === null
+            ? (float) $remaining['minimum']
+            : self::minMoney($availableCatchUp, (float) $remaining['minimum']);
+        $possibleDraw = $availableCatchUp === null
+            ? (float) $remaining['maximum']
+            : self::minMoney($availableCatchUp, (float) $remaining['maximum']);
+        if ($possibleDraw <= $guaranteedDraw) {
+            return false;
+        }
+        $blockedBy = null;
+        foreach ($context['accountsById'] as $other) {
+            if ($other['id'] === $account['id'] || $other['ownerId'] !== $account['ownerId']) {
+                continue;
+            }
+            $otherTraits = self::traits($other['type']);
+            if (self::catchUpPoolFamily($otherTraits) !== $family) {
+                continue;
+            }
+            if (self::highWageInvalidExistingPreTaxCatchUp($context, $other, $otherTraits) !== null) {
+                $blockedBy = $other;
+                break;
+            }
+        }
+        if ($blockedBy === null) {
+            return false;
+        }
+        $code = 'CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP';
+        $alreadyReported = false;
+        foreach ($diagnostics as $entry) {
+            if (($entry['code'] ?? null) === $code) {
+                $alreadyReported = true;
+                break;
+            }
+        }
+        if (!$alreadyReported) {
+            $diagnostics[] = self::diagnostic(
+                $code,
+                DiagnosticSeverity::ERROR,
+                '$' . self::localeNumber(self::roundMoney($possibleDraw - $guaranteedDraw))
+                    . " of further catch-up capacity is unresolved because account {$blockedBy['id']} records a"
+                    . ' pre-tax age-based catch-up that IRC 414(v)(7)(A) did not permit for this participant. The $'
+                    . self::localeNumber($guaranteedDraw)
+                    . ' this account can take under either reading has been allocated; the remainder turns on whether'
+                    . ' that contribution was valid. The amount a participant may exclude as a catch-up is theirs for'
+                    . " the taxable year rather than each plan's: IRC 402(g)(1)(C) capped what an eligible"
+                    . ' participant\'s gross income could exclude "without regard to the treatment of the elective'
+                    . ' deferrals by an applicable employer plan under section 414(v)", and Notice 2023-62 preserves'
+                    . ' that result after SECURE 2.0 section 603(b)(1) struck the subparagraph. So the doubt follows'
+                    . ' the participant and crosses employers, and the amount in question has already been charged'
+                    . ' against that one limit as though it were valid. Reconcile the catch-up components on account'
+                    . " {$blockedBy['id']} to establish the rest.",
+                "accounts.{$account['id']}",
+                'IRC 414(v)(7)(A); IRC 402(g)(1)(C) as preserved by Notice 2023-62',
+            );
+        }
+        return true;
     }
 
     /**
@@ -17172,6 +17855,23 @@ final class Engine
             return null;
         }
         $existingBaseForAccount = self::baseDeferrals($account['existingContributions']);
+        /*
+         * The account's own condemned catch-up, which its plan-imposed limits may
+         * already have borne. 26 CFR 1.414(v)-1(d)(1) determines catch-up
+         * contributions by reference to the applicable limits, plan-imposed ones
+         * included, so an amount that *is* a catch-up sits outside the plan's own
+         * deferral ceiling and outside any annual-additions ceiling the plan sets.
+         * IRC 414(v)(7)(A) leaves this amount's status unresolved, so both readings
+         * have to be survivable, and only the guaranteed room is offered.
+         *
+         * The shared IRC 415(c) group needs no equivalent -- it is a pool, and its
+         * interval already stops takeAcrossPools at the guaranteed remainder -- but
+         * a plan-document ceiling is an account-local scalar with no pool behind it.
+         */
+        $unresolvedInvalid = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+        $unresolvedOrdinaryExposure = $unresolvedInvalid === null
+            ? 0.0
+            : (float) $unresolvedInvalid['existing'];
         $employeePlanLimit = self::minMoney(
             $basePlanLimit,
             // IRC 402A(e)(3)(A)(ii) lets the plan sponsor set a lower amount than
@@ -17194,10 +17894,11 @@ final class Engine
                 self::money(
                     $account['planRules']['planDocumentAnnualAdditionsLimit'],
                     "{$account['id']}.planDocumentAnnualAdditionsLimit",
-                ) - self::annualAdditions($account['existingContributions']),
+                ) - self::annualAdditions($account['existingContributions'])
+                    - $unresolvedOrdinaryExposure,
             );
         $desiredBase = self::minMoney(
-            self::nonnegative($employeePlanLimit - $existingBaseForAccount),
+            self::nonnegative($employeePlanLimit - $existingBaseForAccount - $unresolvedOrdinaryExposure),
             $accountAnnualRemainingBefore,
         );
         // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
@@ -17242,7 +17943,7 @@ final class Engine
                     self::money(
                         $account['planRules']['planDocumentAnnualAdditionsLimit'],
                         "{$account['id']}.planDocumentAnnualAdditionsLimit",
-                    ) - self::annualAdditions($annual),
+                    ) - self::annualAdditions($annual) - $unresolvedOrdinaryExposure,
                 );
             $desiredSpecial = self::minMoney(
                 self::nonnegative($specialLimit - $existingSpecial),
@@ -17293,7 +17994,18 @@ final class Engine
         if ($hasPlesaPool) {
             $catchUpRefs[] = ['plesaPools', $account['id']];
         }
-        $treatment = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
+        // $desiredCatchUp is passed so the classification is not asked -- and the
+        // sibling-pool doubt not reported -- against room this account does not have.
+        // The two IRC 457 sites reach their own treatment only where room survives,
+        // which is the same gate stated a different way.
+        $classification = self::catchUpTaxTreatment(
+            $context,
+            $account,
+            $traits,
+            $diagnostics,
+            $desiredCatchUp,
+        );
+        $treatment = $classification['treatment'];
         if ($treatment === 'unknown') {
             self::reportPoolWithoutConsuming($context['catchUpPools'][$ownerId], $sharedLimits);
         } elseif ($treatment !== 'unavailable' && $desiredCatchUp > 0) {
@@ -17303,6 +18015,15 @@ final class Engine
                 $desiredCatchUp,
                 $sharedLimits,
             );
+            // Announced only now. $desiredCatchUp is bounded by the plan limit, the
+            // existing components and remaining compensation, but not by the owner's
+            // shared IRC 414(v) pool, so it stays positive on an account that another
+            // plan has already exhausted the pool for. Saying the catch-up "is allocated
+            // as Roth" before takeAcrossPools returns is how an account came to report
+            // that alongside an employeeRothCatchUp of zero.
+            if ($catchUpAdded > 0 && $classification['reportsHighWageRothAllocation']) {
+                self::appendHighWageRothCatchUpAllocatedDiagnostic($context, $account, $diagnostics);
+            }
             if ($treatment === 'roth') {
                 $additional['employeeRothCatchUp'] = $catchUpAdded;
                 $annual['employeeRothCatchUp'] = self::roundMoney($annual['employeeRothCatchUp'] + $catchUpAdded);
@@ -17609,6 +18330,12 @@ final class Engine
             // caller did not answer, and would answer it with the one value that yields
             // the largest ceiling the statute allows.
             if (($account['planRules']['pensionLinkedEmergencySavingsParticipantContributionBalance'] ?? null) === null) {
+                // Reached before the return below for the same reason the IRC 457 host
+                // reaches it: this path never consults catchUpTaxTreatment, so an
+                // existing pre-tax catch-up that IRC 414(v)(7)(A) did not permit would
+                // otherwise go unreported while its component and its pre-tax effect
+                // stayed in the result.
+                self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
                 $diagnostics[] = self::diagnostic(
                     'PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED',
                     DiagnosticSeverity::ERROR,
@@ -17709,7 +18436,11 @@ final class Engine
                 - $account['existingContributions']['employerRoth'],
             );
         }
-        $accountRemainingBeforeEmployer = self::nonnegative($accountAnnualLimit - self::annualAdditions($annual));
+        // Preserve the ordinary-deferral completion for every later addition
+        // under the account-local plan ceiling, as for the earlier base draw.
+        $unresolvedOrdinaryExposure =
+            self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits)['existing'] ?? 0.0;
+        $accountRemainingBeforeEmployer = self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure);
         $employerAdded = 0.0;
         $employerTaxTreatmentAvailable = $employerDesired === 0.0
             || self::validateEmployerRothAvailability($context, $account, $traits, $diagnostics);
@@ -17730,7 +18461,7 @@ final class Engine
         if (!empty($account['planRules']['permitsAfterTaxEmployeeContributions']) && !$deferralOnly) {
             $afterTaxCapacity = self::minMoney(
                 self::poolRemaining($context['annualAdditionsPools'][$groupId]),
-                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual)),
+                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure),
                 $deferral['compensationRemaining'],
             );
             if ($afterTaxCapacity > 0.0) {
@@ -17752,7 +18483,7 @@ final class Engine
         ) {
             $planTermDependentCapacity = self::minMoney(
                 self::poolRemaining($context['annualAdditionsPools'][$groupId]),
-                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual)),
+                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure),
             );
             if ($planTermDependentCapacity > 0.0) {
                 $diagnostics[] = self::diagnostic(
@@ -18152,6 +18883,7 @@ final class Engine
                 "accounts.{$account['id']}.planRules.pensionLinkedEmergencySavingsParticipantContributionBalance",
                 'IRC 402A(e)(3)(A)',
             );
+            self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
             $existingCatchUpClassificationInvalid = self::appendSection457ExistingCatchUpDiagnostics(
                 $context,
                 $account,
@@ -18206,11 +18938,35 @@ final class Engine
         // an annual deferral limit would charge this year's contributions against it
         // once through the pool's balance and again through the limit, which is what
         // the qualified-plan host does not do either.
+        /*
+         * The account's own condemned catch-up, which its employer-provided limit
+         * may already have borne on the reading that it was never a catch-up.
+         * 26 CFR 1.414(v)-1(b)(2) makes an employer-provided limit contained in the
+         * plan an applicable limit, so an amount that *is* a catch-up sits outside
+         * the plan's own deferral ceiling and one that is not does not.
+         *
+         * The participant-wide IRC 457 pool cannot substitute for this: its interval
+         * stops a draw at the room guaranteed across the participant's plans, which
+         * is far above a plan document's own ceiling, so the pool never binds.
+         *
+         * Subtracted from the applied ceiling rather than from $regularDesired, so
+         * the employer draw below is bounded by the same figure -- employer amounts
+         * are allocated first, and a subtraction applied only to the later employee
+         * draw would let the earlier one spend the disputed room.
+         */
+        $unresolvedInvalid457 = !empty($traits['isPlesa'])
+            ? null
+            : self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
+        $unresolvedOrdinaryExposure = $unresolvedInvalid457 === null
+            ? 0.0
+            : (float) $unresolvedInvalid457['existing'];
         $appliedHostBaseLimit = !empty($traits['isPlesa'])
             ? $statutoryHostBaseLimit
-            : self::minMoney(
-                $statutoryHostBaseLimit,
-                $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
+            : self::nonnegative(
+                self::minMoney(
+                    $statutoryHostBaseLimit,
+                    $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
+                ) - $unresolvedOrdinaryExposure,
             );
         // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so
         // the room is an account-local pool that this account's base deferral and its
@@ -18332,6 +19088,11 @@ final class Engine
         // nothing. Where one fails the components are kept for audit, the account is
         // reported indeterminate and no further catch-up is allocated — reclassifying a
         // supplied component would answer a question only the caller can answer.
+        // Reached directly rather than through catchUpTaxTreatment: allocateSection457
+        // consults that only where catch-up room survives, and an existing amount
+        // filling the IRC 414(v) pool leaves none. It is pushed before the count below
+        // so it is not misread as an IRC 457 classification error.
+        self::appendHighWageExistingPreTaxCatchUpDiagnostic($context, $account, $traits, $diagnostics);
         $classificationDiagnosticCount = count($diagnostics);
         $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
         $accountExistingSpecialCatchUp = self::roundMoney(
@@ -18515,20 +19276,49 @@ final class Engine
         $accountSpecialRemaining = $resolution['mode'] === 'special'
             ? self::nonnegative($ceilings['specialAdditional'] - $accountExistingSpecialCatchUp)
             : INF;
-        $monetaryCatchUpCapacityWithoutClassificationBlock = $mayDrawCatchUp
+        // What decides whether the classification is worth asking for: the most this
+        // account could take if every open question resolved in its favour.
+        //
+        // This deliberately reads the pool's *maximum* remaining rather than its
+        // settled remainder, and the difference is the whole point. An unreconciled
+        // catch-up on another of the participant's IRC 457 plans no longer fills the
+        // pool -- it widens it -- so consulting the pool here no longer mistakes
+        // "someone may have spent this" for "this is spent", which is what previously
+        // forced the test to ignore the pool altogether and ask for a wage
+        // classification the answer could not depend on.
+        //
+        // So the two exhaustions separate. A valid contribution that consumed the
+        // limit leaves remaining [0, 0]: no reconciliation can restore anything and no
+        // wage fact can change this account's zero. An unreconciled one leaves
+        // remaining [0, 8000]: the maximum is positive, the classification is still
+        // load-bearing, and the sibling block below is reachable.
+        $catchUpRemainingInterval = self::poolRemainingInterval($context[$catchUpPoolCategory][$ownerId]);
+        $poolCatchUpPossible = $catchUpRemainingInterval === null
+            ? INF
+            : (float) $catchUpRemainingInterval['maximum'];
+        $ownCatchUpRoomWithoutPool = $mayDrawCatchUp
             ? self::minMoney(
-                self::poolRemaining($context[$catchUpPoolCategory][$ownerId]),
                 $compensationRemaining,
                 $accountSpecialRemaining,
                 $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
+                $poolCatchUpPossible,
+            )
+            : 0.0;
+        // The capacity actually reported, which is the room guaranteed under every
+        // reading rather than the room that might exist. takeFromPool will not exceed
+        // it either.
+        $monetaryCatchUpCapacityWithoutClassificationBlock = $mayDrawCatchUp
+            ? self::minMoney(
+                $catchUpRemainingInterval === null ? null : (float) $catchUpRemainingInterval['minimum'],
+                $ownCatchUpRoomWithoutPool,
             )
             : 0.0;
         $ageCatchUpTreatmentBeforeClassificationBlock = (
             $resolution['mode'] === 'age'
             && !$existingCatchUpClassificationInvalid
-            && $monetaryCatchUpCapacityWithoutClassificationBlock > 0.0
+            && $ownCatchUpRoomWithoutPool > 0.0
         )
-            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, false)
+            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, $ownCatchUpRoomWithoutPool)['treatment']
             : null;
         $catchUpCapacityWithoutClassificationBlock = in_array(
             $ageCatchUpTreatmentBeforeClassificationBlock,
@@ -18618,7 +19408,8 @@ final class Engine
                 );
             }
         } elseif ($resolution['mode'] === 'age' && $catchUpPotential > 0.0) {
-            $treatment = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
+            $classification = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, $catchUpPotential);
+            $treatment = $classification['treatment'];
             if ($treatment === 'unknown') {
                 self::reportPoolWithoutConsuming($context['section457CatchUpPools'][$ownerId], $sharedLimits);
             } elseif ($treatment !== 'unavailable') {
@@ -18628,6 +19419,9 @@ final class Engine
                     $catchUpPotential,
                     $sharedLimits,
                 );
+                if ($ageAdded > 0 && $classification['reportsHighWageRothAllocation']) {
+                    self::appendHighWageRothCatchUpAllocatedDiagnostic($context, $account, $diagnostics);
+                }
                 if ($treatment === 'roth') {
                     $additional['employeeRothCatchUp'] = $ageAdded;
                     $annual['employeeRothCatchUp'] = self::roundMoney($annual['employeeRothCatchUp'] + $ageAdded);
