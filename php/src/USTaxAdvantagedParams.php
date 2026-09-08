@@ -16459,12 +16459,12 @@ final class Engine
             foreach ($context['hsaPlans'] as $member) {
                 if ($member['familyPoolKey'] !== $familyPoolKey) continue;
                 if (!isset($member['usageCapacity'])) { $bounded = false; break; }
-                $minimumBasePaid += ($member['existingCountedContributions'] ?? 0.0) - $member['usageCapacity']['catchUp'];
+                $minimumBasePaid += self::nonnegative(($member['existingCountedContributions'] ?? 0.0) - $member['usageCapacity']['catchUp']);
             }
             $familyExcess = self::nonnegative(self::roundMoney($minimumBasePaid - $context['hsaFamilyPools'][$familyPoolKey]['limit']));
             if ($bounded && $familyExcess > 0.0) $diagnostics[] = self::diagnostic(
                 'SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT', DiagnosticSeverity::ERROR,
-                "Existing contributions across the spouses' HSAs exceed their combined family base and separate age-55 amounts by at least $" . self::localeNumber($familyExcess) . '. This aggregate excess does not depend on their division.',
+                "Existing contributions across the spouses' HSAs require at least $" . self::localeNumber($familyExcess) . ' more base capacity than the shared family limitation after allowing each owner their separate age-55 amount. This aggregate excess does not depend on their division.',
                 "accounts.{$account['id']}.existingContributions", 'IRC 223(b)(3); IRC 223(b)(5); IRC 4973(g)',
             );
         }

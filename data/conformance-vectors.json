@@ -22477,6 +22477,65 @@
         "accounts.1.statutoryMaximumAnnualContribution": 0,
         "accounts.1.maximumAdditionalContributionBasedOnInputs": 0
       }
+    },
+    {
+      "name": "2026 unused spouse HSA catch-up cannot offset another owner aggregate excess",
+      "description": "Rev. Proc. 2025-19 fixes the family base at 8750. IRC 223(b)(3)(B) gives each age-56 eligible spouse a separate 1000 increase, and IRC 223(b)(5)(B) excludes that increase from division. With 10000 ordinary existing contributions, the taxpayer necessarily uses at least max(0,10000-1000)=9000 of family base. The spouse contributed zero and necessarily uses max(0,0-1000)=0, never negative 1000. The unknown division cannot transfer that unused separate increase to the taxpayer, so every division leaves at least 9000+0-8750=250 excess under IRC 4973(g). Both owner ceilings remain unknown, but the aggregate excess diagnostic must be present.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 10000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 0
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
     }
   ]
 }

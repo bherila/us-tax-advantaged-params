@@ -861,8 +861,8 @@ handling remains deferred to [#68](https://github.com/bherila/us-tax-advantaged-
 
 Component usage excludes aggregate excess rather than assigning it to an invented component.
 `SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT` separately diagnoses known excess across
-one owner's HSAs, or contributions above even the couple's family base plus separate age-55
-amounts. Supplied excess remains counted against the household allocation guard pending
+one owner's HSAs, or necessary base usage above the family limit after allowing each owner's
+nontransferable age-55 capacity. Supplied excess remains counted against the household allocation guard pending
 correction, even though it is excluded from allowable component usage. The latter can be known while the division remains unknown.
 
 Qualified HSA funding distributions reduce only their beneficiary's individual ceiling under

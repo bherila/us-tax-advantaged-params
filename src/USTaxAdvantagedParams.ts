@@ -15416,10 +15416,10 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
     const members = [...context.hsaPlans.values()].filter((member) => member.familyPoolKey === plan.familyPoolKey);
     if (members.every((member) => member.usageCapacity !== undefined)) {
       const familyExcess = nonnegative(roundMoney(members.reduce((sum, member) =>
-        sum + (member.existingCountedContributions ?? 0) - member.usageCapacity!.catchUp, 0) - familyPool.limit));
+        sum + nonnegative((member.existingCountedContributions ?? 0) - member.usageCapacity!.catchUp), 0) - familyPool.limit));
       if (familyExcess > 0) diagnostics.push(diagnostic(
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT", DiagnosticSeverity.ERROR,
-        `Existing contributions across the spouses' HSAs exceed their combined family base and separate age-55 amounts by at least $${familyExcess.toLocaleString()}. This aggregate excess does not depend on their division.`,
+        `Existing contributions across the spouses' HSAs require at least $${familyExcess.toLocaleString()} more base capacity than the shared family limitation after allowing each owner their separate age-55 amount. This aggregate excess does not depend on their division.`,
         `accounts.${account.id}.existingContributions`, "IRC 223(b)(3); IRC 223(b)(5); IRC 4973(g)",
       ));
     }
