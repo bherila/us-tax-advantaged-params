@@ -152,6 +152,70 @@ cost-of-living notice, so they are cited and verified separately.
   publishes an annual amount the corpus does not already take from Notice 2004-2; they are held
   for the provenance of these rules.
 
+- **Notice 2004-50, Q&A-32 and Notice 2008-59, Q&A-22** — the two halves of the §223(b)(5)(B)(ii)
+  division, and the reason the division is one couple-level fact rather than a share on each
+  account.
+
+  Q&A-32 fixes the *breadth* of the agreement: "spouses can divide the annual HSA contribution
+  in any way they want, **including allocating nothing to one spouse**." So a share of 0 or 1 is
+  a complete division, not a defective one. That is what the account-level model could not
+  express — a share of 0 on one spouse's account was indistinguishable from a share that had
+  simply not been supplied — and it is why `hsaFamilyLimitDivision` states one taxpayer share on
+  the scenario and gives the spouse the remainder.
+
+  Q&A-22 fixes the *limit* of the agreement: asked whether spouses each eligible for the
+  §223(b)(3) catch-up must contribute it to their own HSA, it answers "Yes. An individual who is
+  eligible to make catch-up contributions may only make such contributions to his or her own
+  HSA." The catch-up is therefore not among the things a division can move, which agrees with
+  §223(b)(5)(B) dividing the limitation determined "without regard to any additional contribution
+  amount under paragraph (3)". A spouse allocated nothing of the family limitation still keeps
+  their own $1,000, and the engine keys the §223(b)(3) pool to the owner for that reason.
+
+  `evidence/hsa-limits/sources/n-08-59.pdf` is committed and hashed alongside `n-04-50.pdf`.
+  Neither publishes an annual amount; both are held for the provenance of these rules.
+
+- **Notice 2008-52** — the §223(b)(8) last-month rule is a *comparison*, not a blend, and the
+  comparison is taken on the couple's combined figures.
+
+  The notice states the rule as a greater-of: a December-eligible individual's maximum
+  contribution for the year is the greater of "(1) The sum of the limits determined separately
+  for each month under § 223(b)(2), based on eligibility and HDHP coverage on the first day of
+  each month, plus catch-up contributions for each month, if applicable ... or (2) The maximum
+  annual HSA contribution under § 223(b)(2)(A) or § 223(b)(2)(B) based on the individual's HDHP
+  coverage (self-only or family) on the first day of the last month of the individual's taxable
+  year, plus catch-up contributions under § 223(b)(3), if applicable." It adds that the rule "may
+  increase, but not decrease, the contribution limit" and "applies without regard to whether the
+  individual was an eligible individual for the entire year, had HDHP coverage for the entire
+  year, or had disqualifying non-HDHP coverage for part of the year."
+
+  Example 3 is what settles the shape of candidate (2), and it rules out the narrower reading
+  this engine first took. §223(b)(8)(A)(ii) imputes December's plan only "during each of the
+  months such individual is treated as an eligible individual solely by reason of clause (i)",
+  which suggests December's tier reaches only the *ineligible* months. In Example 3 that reading
+  is inert: B is an eligible individual in all twelve months of 2008, self-only through October
+  and family from November, so there is no month for clause (ii) to reach and a per-month
+  imputation leaves the schedule untouched at $3,383.34. The notice nonetheless gives B $5,800,
+  "the greater of $5,800 or $3,383.34". Candidate (2) is therefore twelve months at December's
+  tier outright. Example 8 is the same comparison resolved the other way — family coverage
+  through August then self-only, so candidate (2) is $2,900 and the monthly sum of $4,833.33
+  wins — which is how the rule can raise a limit but never lower one.
+
+  Example 14 places the comparison at the couple level: "L and M's combined full contribution
+  limit for 2008 is $5,800. L and M's combined sum of the monthly contribution limits is $483.33
+  ... L and M's combined annual contribution limit under § 223(b)(8) is $5,800, the greater of
+  $5,800 or $483.33." The greater-of is taken on the couple's single limitation and the winner is
+  then divided, not taken on each spouse's own limitation after dividing. That order is what
+  keeps a spouse's December family election from stacking a full-year family candidate on top of
+  the other spouse's undivided self-only months.
+
+  The notice is also the source of the §223(b)(8)(B) inclusion figure: Examples 2, 5, 12 and 14
+  compute it as the amount contributed less the *monthly* candidate, which is why the engine
+  measures the amount attributable to the rule against candidate (1) and reports nothing when
+  candidate (1) is the one that won.
+
+  `evidence/hsa-limits/sources/n-08-52.pdf` is committed and hashed. It publishes no annual
+  amount the corpus does not already take from Rev. Proc. 2007-36.
+
 - **Tax Relief and Health Care Act of 2006** — §303 removed the §223(b)(2) cap that limited
   the monthly contribution to 1/12 of the *lesser* of the plan's annual deductible and the
   dollar amount, and §305 added the §223(b)(8) last-month rule, both effective for taxable

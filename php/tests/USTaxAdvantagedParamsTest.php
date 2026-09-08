@@ -773,7 +773,151 @@ test('the dependent care builder reaches the IRC 129(b) earned income facts', fu
     assertSameValue(4000.0, $dc['federalTaxEffects']['ficaWageReduction']);
 });
 
+
+test('the IRC 223(b)(5)(B)(ii) division diagnostic does not claim a shared limit it is not reporting', function (): void {
+    // Both spouses hold family coverage all year in 2005, when IRC 223(b)(2) still
+    // capped each month by the plan's annual deductible, and the spouse's family
+    // plan states 400 -- below the 2005 family minimum of 2000 (Rev. Proc.
+    // 2004-71). That impeaches the division under Notice 2004-50 Q&A-31 *and*,
+    // because a family plan is a candidate for the IRC 223(b)(5)(A) lowest
+    // deductible, leaves the amount being divided undeterminable too. Both
+    // diagnostics fire, and the division one must not end by saying the shared
+    // limit still reports the limitation when the pool beside it is null.
+    $result = U::calculate([
+        'taxYear' => 2005,
+        'filingStatus' => FilingStatus::MARRIED_FILING_JOINTLY->value,
+        'persons' => [['id' => 't', 'birthYear' => 1970], ['id' => 's', 'birthYear' => 1972]],
+        'accounts' => [
+            ['id' => 'a', 'ownerId' => 't', 'type' => 'hsa', 'planRules' => ['hsa' => [
+                'coverageTier' => 'family', 'hdhpAnnualDeductible' => 5000,
+            ]]],
+            ['id' => 'b', 'ownerId' => 's', 'type' => 'hsa', 'planRules' => ['hsa' => [
+                'coverageTier' => 'family', 'hdhpAnnualDeductible' => 400,
+            ]]],
+        ],
+    ]);
+    $codes = array_column($result['diagnostics'], 'code');
+    if (!in_array('HSA_SHARED_FAMILY_LIMIT_INDETERMINATE', $codes, true)) {
+        failTest('expected HSA_SHARED_FAMILY_LIMIT_INDETERMINATE');
+    }
+    $division = null;
+    foreach ($result['diagnostics'] as $entry) {
+        if ($entry['code'] === 'HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE') {
+            $division = $entry;
+        }
+    }
+    if ($division === null) {
+        failTest('expected the division diagnostic');
+    }
+    $pool = null;
+    foreach ($result['accounts'][0]['sharedLimits'] as $entry) {
+        if ($entry['id'] === 'hsa223b5:t|s') {
+            $pool = $entry;
+        }
+    }
+    assertSameValue(null, $pool['limit']);
+    if (str_contains($division['message'], 'shared limit still reports it')) {
+        failTest('division diagnostic claims a limit that is null: ' . $division['message']);
+    }
+    if (!str_contains($division['message'], 'HSA_SHARED_FAMILY_LIMIT_INDETERMINATE')) {
+        failTest('division diagnostic does not point at the amount diagnostic');
+    }
+});
+
 $failed = 0;
+// Fixed priorities hold allocation order constant; compare all public account fields.
+$normalizationVectors = json_decode(file_get_contents(dirname(__DIR__, 2) . '/data/conformance-vectors.json'), true, 512, JSON_THROW_ON_ERROR)['vectors'];
+foreach ($normalizationVectors as $vector) {
+    if (!str_starts_with($vector['name'], 'HSA owner normalization:') || str_ends_with($vector['name'], ' reversed')) continue;
+    $tests[$vector['name'] . ' is invariant under account permutation'] = static function () use ($vector): void {
+        $input = $vector['input'];
+        $forward = U::calculate($input);
+        $input['accounts'] = array_reverse($input['accounts']);
+        $reverse = U::calculate($input);
+        foreach ($input['accounts'] as $account) {
+            assertSameValue(accountResult($forward, $account['id']), accountResult($reverse, $account['id']));
+        }
+    };
+}
+
+test('nonempty unusable person HSA statements never assert no coverage', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2026 nonempty unusable person HSA coverage is not explicit no coverage') continue;
+        foreach ([['hdhpAnnualDeductible' => 3400], ['eligibleMonths' => [1]]] as $coverage) {
+            $input = $vector['input'];
+            $input['persons'][1]['hsaCoverage'] = $coverage;
+            $row = accountResult(U::calculate($input), 't-hsa');
+            assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+            assertSameValue(CalculationStatus::INDETERMINATE->value, $row['status']);
+            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+            assertTrue(hasDiagnostic($row['diagnostics'], 'HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE'));
+            assertTrue(!hasDiagnostic($row['diagnostics'], 'HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT'));
+        }
+    }
+});
+test('the married capped-year comparison preserves deductible conflict provenance', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2005 supplied conflicting HSA deductibles A first') continue;
+        foreach ([false, true] as $reverse) {
+            $input = $vector['input'];
+            $input['filingStatus'] = FilingStatus::MARRIED_FILING_JOINTLY;
+            $input['persons'][] = ['id' => 's', 'role' => 'spouse', 'birthYear' => 1980];
+            foreach ($input['accounts'] as &$a) $a['planRules']['hsa']['coverageTier'] = 'family';
+            unset($a);
+            $input['accounts'][] = ['id' => 's-hsa', 'ownerId' => 's', 'type' => AccountType::HSA,
+                'priority' => 3, 'planRules' => ['hsa' => ['coverageTier' => 'family', 'hdhpAnnualDeductible' => 4000]]];
+            if ($reverse) $input['accounts'] = array_reverse($input['accounts']);
+            $result = U::calculate($input);
+            foreach ($input['accounts'] as $a) {
+                $row = accountResult($result, $a['id']);
+                assertSameValue(CalculationStatus::INDETERMINATE->value, $row['status']);
+                assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+                assertTrue(!hasDiagnostic($row['diagnostics'], 'HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED'));
+            }
+        }
+    }
+});
+
+test('missing married person records leave the Archer operand unestablished even with a whole share', static function (): void {
+    foreach ([2005, 2026] as $taxYear) {
+        foreach (['MFJ', 'MFS'] as $filingStatus) {
+            foreach (['taxpayer', 'spouse'] as $role) {
+                foreach ([0.25, $role === 'taxpayer' ? 1 : 0] as $taxpayerShare) {
+                    $result = U::calculate(['taxYear' => $taxYear, 'filingStatus' => $filingStatus,
+                        'persons' => [['id' => 'owner', 'role' => $role, 'birthYear' => 1980]],
+                        'accounts' => [['id' => 'a', 'ownerId' => 'owner', 'type' => 'hsa',
+                            'planRules' => ['hsa' => ['coverageTier' => 'family', 'hdhpAnnualDeductible' => 3400]]]],
+                        'hsaFamilyLimitDivision' => ['status' => 'agreed', 'taxpayerShare' => $taxpayerShare]]);
+                    $row = accountResult($result, 'a');
+                    assertSameValue(null, $row['statutoryMaximumAnnualContribution']);
+                    assertSameValue('indeterminate', $row['status']);
+                    assertSameValue(true, hasDiagnostic($row['diagnostics'], 'HSA_SPOUSE_COVERAGE_FACTS_REQUIRED'));
+                }
+            }
+        }
+    }
+});
+
+test('an agreed whole share with both person records retains paragraph-5 Archer ordering for either owner role', static function () use ($normalizationVectors): void {
+    foreach ($normalizationVectors as $vector) {
+        if ($vector['name'] !== '2026 known partner agreed whole preserves the age-55 amount after Archer reduction') continue;
+        foreach (['taxpayer', 'spouse'] as $role) {
+            foreach (['MFJ', 'MFS'] as $filingStatus) {
+                $input = $vector['input'];
+                $input['filingStatus'] = $filingStatus;
+                $input['persons'][0]['role'] = $role;
+                $input['persons'][1]['role'] = $role === 'taxpayer' ? 'spouse' : 'taxpayer';
+                $input['hsaFamilyLimitDivision'] = ['status' => 'agreed', 'taxpayerShare' => $role === 'taxpayer' ? 1 : 0];
+                $row = accountResult(U::calculate($input), 'a');
+                assertSameValue(1000, $row['statutoryMaximumAnnualContribution']);
+                assertSameValue(8750, $row['hsa']['archerMsaLimitReduction']);
+                assertSameValue(true, $row['hsa']['archerMsaReductionPrecedesFamilyDivision']);
+                assertSameValue(1, $row['hsa']['familyLimitShare']);
+            }
+        }
+    }
+});
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {

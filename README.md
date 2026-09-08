@@ -423,9 +423,9 @@ person is an eligible individual under §223(c)(1) — including Medicare entitl
 | §223(b)(2) monthly limitation | The limit is the sum of the monthly amounts divided by 12, so partial-year eligibility prorates by month of coverage |
 | §223(b)(3) age-55 additional amount | Per spouse and **not** shareable; each spouse's catch-up must be contributed to that spouse's own HSA |
 | §223(b)(5) family coverage | Spouses share a single family limit, divided equally or as agreed. Only the family-months portion is divided; self-only months stay with the individual |
-| §223(b)(5)(B)(ii) agreed division | An agreed division must exhaust the limitation. Shares that total more or less than 1 are both reported as errors and return `indeterminate` (see below) |
+| §223(b)(5)(B)(ii) agreed division | One scenario-level `taxpayerShare` gives the taxpayer that share and the spouse its complement, including when either spouse owns no HSA (see below) |
 | §223(b)(5)(A) | If either spouse has family coverage, both are treated as having family coverage for those months — whether or not that spouse owns an HSA (see below) |
-| §223(b)(8) last-month rule | Eligible on December 1 allows the full annual amount, creating a 13-month testing period obligation |
+| §223(b)(8) last-month rule | Applied automatically, never elected. An individual eligible on December 1 takes the **greater of** the month-by-month sum and December's tier for the whole year; where the greater one is the second, the difference carries a 13-month testing-period obligation (see below) |
 | Testing-period failure | The attributable amount is included in income in the following year and carries a 10% additional tax, unless failure is by death or disability |
 | Pre-2007 years | §223(b)(2) capped the monthly limitation at 1/12 of the *lesser* of the plan's annual deductible and the dollar amount, until the Tax Relief and Health Care Act of 2006 §303 removed it |
 | §106(d) employer contributions | Excluded from income rather than deducted, reducing W-2 box 1 and FICA wages and reducing the §223(b)(4)(B) deduction |
@@ -460,9 +460,31 @@ owns an HSA, `planRules.hsa` already carries these facts; supplying both is allo
 must be identical, and a contradiction returns
 `HSA_PERSON_AND_ACCOUNT_COVERAGE_FACTS_CONFLICT`.
 
-**Supplying the key at all declares the fact known.** An empty object —
+**An empty object explicitly states no coverage.** The shape
 `{ id: "s", hsaCoverage: {} }`, or `.noHsaCoverage()` on the builder — records that the
-spouse held no high deductible health plan coverage in any month.
+spouse held no high deductible health plan coverage in any month. A nonempty object
+without a usable tier/month schedule leaves coverage unknown, even if a deductible is supplied.
+
+**An accountless spouse's coverage is read like anyone else's.** Whose coverage
+builds the limitation and where the money may be put are separate questions:
+§223(c)(1) does not mention accounts, and Notice 2008-52 Example 14 takes the
+§223(b)(8) greater-of on the couple's *combined* figures. So a spouse who states
+coverage on `persons[].hsaCoverage` takes part in that comparison and in the
+§223(b)(5)(B)(ii) division whether or not they own an HSA. Adding an HSA to a
+spouse whose coverage facts are unchanged never changes the other spouse's limit.
+
+The `hsa223b5` shared pool is narrower, and deliberately: it is a capacity guard
+for the represented HSA accounts, not a complete calculation of every accountless
+spouse's personal allowance. An accountless spouse's own capacity reaches no
+account in the scenario, so it stays out of the guard — except where an Archer
+aggregate can consume it, since §223(b)(5)(B)(i) subtracts that aggregate once
+from the family-month union plus undivided self-only portions and it has to come
+out of the whole household's capacity. A known household residue does not
+establish which spouse's undivided months absorbed it; those owner limits remain
+indeterminate. A separately established age-55 amount remains outside that
+reduction. Where the spouses paid into an Archer MSA and an accountless spouse's
+coverage statement is nonempty but unusable, the household amount itself is
+withheld rather than computed as though that spouse had no capacity.
 
 ### Archer MSA contributions: `persons[].archerMsaContributions`
 
@@ -498,7 +520,10 @@ reduction that would have consumed it under §223(b)(4)(A).
 
 Each account's `hsa` detail reports `archerMsaContributionsApplied`,
 `archerMsaReductionPrecedesFamilyDivision`, and `archerMsaLimitReduction`, and an
-`HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied.
+`HSA_ARCHER_MSA_CONTRIBUTIONS_REDUCE_LIMIT` diagnostic names the paragraph that applied. For a
+married couple whose division was never settled, `archerMsaLimitReduction` is `null` and the
+diagnostic states the reduction at couple level instead — see
+[A share nobody established is not a zero](#a-share-nobody-established-is-not-a-zero).
 
 ### Qualified HSA funding distributions: `persons[].qualifiedHsaFundingDistributions`
 
@@ -543,33 +568,266 @@ account's `hsa` detail reports `qualifiedHsaFundingDistributionsApplied` and
 `HSA_QUALIFIED_HSA_FUNDING_DISTRIBUTION_REDUCES_LIMIT` diagnostic states which ordering
 applied.
 
-### Agreed divisions must exhaust the family limitation
+### The last-month rule is a greater-of, not an election
 
-`planRules.hsa.familyLimitShare` records a §223(b)(5)(B)(ii) agreement to divide the single
-family limitation other than equally. Supply it on **every** spouse who owns an HSA, and
-make the shares total exactly 1 — the statute divides the limitation "unless they agree on a
-different division", and an allocation that leaves part of it belonging to neither spouse is
-not a division.
+**Breaking change in 0.5.0.** §223(b)(8) is applied automatically to anyone eligible in
+December. There is no input for switching it on, and `useLastMonthRule` is gone.
 
-Both failures are `ERROR` diagnostics and both return `indeterminate`:
+§223(b)(8)(A) says an individual who is an eligible individual during the last month of the
+taxable year "shall be treated" as an eligible individual for each month of that year. Notice
+2008-52 states the resulting maximum as **the greater of**
 
-| Shares | Diagnostic |
+1. the sum of the monthly limitations on the facts as they stand, "based on eligibility and
+   HDHP coverage on the first day of each month", plus monthly catch-up amounts; and
+2. the whole annual amount for the coverage tier held on December 1, plus the whole §223(b)(3)
+   amount.
+
+Neither limb is conditioned on a taxpayer's choice: there is no election statement, no Form
+8889 checkbox and no revocation, and the Form 8889 instructions simply tell a
+December-eligible taxpayer whose coverage changed to enter the greater amount on line 3. The
+instructions' "you may consider yourself an eligible individual for the entire year" is the
+practical decision to *fund* the extra capacity — and a taxpayer may always contribute less
+than a statutory maximum without lowering it.
+
+What follows from actually funding it is the testing period, and that is measured on conduct
+rather than on any flag. §223(b)(8)(B)(i) reaches only contributions "which could not have
+been made but for" the rule, which is
+`hsa.amountAttributableToLastMonthRule`. Where that figure is zero — because the month-by-month
+candidate won, or because a spousal division left this owner no more room than their own months
+gave them — no testing-period obligation is reported at all, and `hsa.testingPeriod` is `null`.
+
+Two fields report the outcome, and they answer different questions:
+
+| Field | Question |
 |---|---|
-| Total above 1 | `HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE` — the couple would claim more than one family limitation |
-| Total below 1 | `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE` — capacity the couple is entitled to would be silently forfeited |
-| Supplied on one spouse but not the other | `HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES` |
+| `hsa.fullContributionCandidateSelected` | Which candidate was the ceiling built from? True means candidate (2) |
+| `hsa.amountAttributableToLastMonthRule` | What was the rule worth *to this owner*, and so what is exposed if the testing period fails? |
 
-They are diagnosed rather than rejected, because a share is a caller-supplied fact and this
-package reports on facts rather than overriding them — but at `ERROR` severity, because
-unlike an unusual eligibility fact this one is arithmetically impossible, and a determinate
-number computed from it would assert a ceiling the statute does not produce. Two spouses at
-0.3 each for 2026 would otherwise return a confident 2625 apiece against an 8750 limitation,
-forfeiting 3500 with no signal at all.
+Testing-period facts are stated per person, and only the consequence is stateable:
 
-The constraint is on the **sum**, not on either share: 1 and 0 is a valid division that gives
-one spouse the whole limitation. And where only one spouse owns an HSA, the shares that can
-be supplied cover one spouse, so a share below 1 there is a complete division whose remainder
-the other spouse has no account to use, and no error applies.
+```ts
+{ id: "t", hsaLastMonthRuleTestingPeriod: { satisfied: true } }
+{ id: "t", hsaLastMonthRuleTestingPeriod: { satisfied: false, failureByDeathOrDisability: true } }
+```
+
+Omitting them leaves the period unresolved, which is reported
+(`HSA_LAST_MONTH_RULE_TESTING_PERIOD_UNRESOLVED`, status `determinate_with_assumptions`) rather
+than assumed satisfied — but only where the attributable amount is positive. The attributable
+amount measures this individual's potential recapture exposure. It is zero for an
+owner established ineligible on December 1, even if the household's full candidate
+increases their ceiling through the other spouse. That owner receives no testing
+period, income-inclusion amount, additional tax, or testing-period warning.
+
+**Reading the division off the result.** `sharedFamilyContributionLimit` is the whole family
+limitation an owner refigured for their own family months, and Q&A-31 does not divide all of it:
+a month only one spouse was eligible for goes to that spouse whole. `dividedFamilyContributionLimit`
+is the part `familyLimitShare` actually multiplies, so with no Archer MSA amount in play
+
+```
+proratedContributionLimit - dividedFamilyContributionLimit * (1 - familyLimitShare)
+```
+
+is the owner's §223(b)(1) limitation. A taxpayer family-covered all year beside a spouse eligible
+in December alone holds 8750 and divides only December's 729.17 of it: 8750 - 729.17 × 0.5 =
+8385.42. Multiplying the share by the whole 8750 instead gives 4375, which is wrong by 4010.42.
+The published figures are rounded to cents while the engine divides the unrounded monthly amounts,
+so treat the identity as a description of the composition rather than a way to re-derive the ceiling.
+The divided portion is also `null` when an Archer MSA reduction leaves family capacity but its
+placement between shared and sole-eligible months is unresolved. The total family limitation
+can remain known in that case; exhausting it establishes a divided portion of zero.
+
+**A married spouse's own share can fall while the couple's limitation rises.** Notice 2008-52
+Example 14 compares the *couple's combined* candidates and divides the winner, and Form 8889
+follows that order — line 3 and line 5 before the spousal division on line 6. So where one
+spouse holds family coverage in December alone and the other is eligible all year with
+self-only coverage, the couple's combined candidate (2) of 8750 beats their combined candidate
+(1) of 4762.50, and the equal division gives 4375 each — below the 4397.92 the all-year spouse's
+own months would have earned undivided. Nothing is wrong there and nothing is diagnosed: the
+rule raised the couple's limitation, and §223(b)(5)(A) plus the default equal division moved
+part of it across. Spouses who would rather not move it may agree a different division under
+§223(b)(5)(B)(ii). The spouse whose share fell has an attributable amount of zero and no
+testing-period exposure, because none of their ceiling depends on the rule.
+
+### The division is one fact about the couple
+
+**Breaking change in 0.5.0.** Four fields moved off `planRules.hsa`. An account that still
+carries one is rejected rather than read, so a stale call fails loudly instead of quietly
+using half of what it stated:
+
+| Removed from `planRules.hsa` | Now | Error code if still supplied |
+|---|---|---|
+| `familyLimitShare` | `hsaFamilyLimitDivision` on the **scenario** | `HSA_ACCOUNT_LEVEL_FAMILY_LIMIT_SHARE_REMOVED` |
+| `useLastMonthRule` | **nowhere — §223(b)(8) is not an election** | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodSatisfied` | `persons[].hsaLastMonthRuleTestingPeriod.satisfied` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+| `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` | `HSA_ACCOUNT_LEVEL_LAST_MONTH_RULE_REMOVED` |
+
+The same four are rejected on `persons[].hsaCoverage` too. That object is the nearest-looking
+home for a field you have just been told to move off the account, and reading them there would
+be the worse of the two failures: an ignored `familyLimitShare` falls back to the §223(b)(5)(B)(ii)
+statutory equal split, so acting on the error and moving the field one object sideways would hand
+you **half** the limitation you asked for, with nothing saying so.
+
+None of the four was ever a fact about an account. §223(b)(5)(B)(ii) divides the limitation
+between "them" — the married individuals — and §223(b)(8) operates on "an individual". An
+owner's two HSAs cannot disagree about any of them, and Pub. 969 is explicit that multiple HSAs
+do not subdivide their owner's maximum: "If you have more than one HSA in 2005, your total
+contributions to all the HSAs cannot be more than the limits discussed earlier."
+
+`useLastMonthRule` did not move: it stated a thing the Code does not have. **Delete it** —
+the ceiling it used to unlock is now computed from the coverage facts, so removing it changes
+no answer except where it was wrongly withholding one.
+
+`hsaFamilyLimitDivision` is one statement, on the scenario:
+
+```ts
+{ status: "statutory_equal" }                  // the default; omit it for the same effect
+{ status: "agreed", taxpayerShare: 0.25 }      // the spouse takes the remaining 0.75
+{ status: "unknown" }                          // whether they agreed anything is not known
+{ status: "disputed" }                         // the spouses report different divisions
+{ status: "inconsistent" }                     // two records of one division conflict
+```
+
+`taxpayerShare` is the share belonging to the person whose `role` is `taxpayer`; the spouse
+takes `1 - taxpayerShare`. Because there is one number rather than one per account, shares
+can no longer fail to total 1, and the three diagnostics that policed that
+(`HSA_FAMILY_LIMIT_SHARES_EXCEED_ONE`, `HSA_FAMILY_LIMIT_SHARES_BELOW_ONE`,
+`HSA_FAMILY_LIMIT_SHARE_REQUIRED_FOR_BOTH_SPOUSES`) are gone with the states they described.
+
+0 and 1 are both valid. Notice 2004-50 Q&A-32: spouses "can divide the annual HSA contribution
+in any way they want, **including allocating nothing to one spouse**". The spouse allocated
+nothing still keeps their own §223(b)(3) age-55 amount — Notice 2008-59 Q&A-22 holds that an
+individual eligible for the catch-up "may only make such contributions to his or her own HSA",
+and §223(b)(5)(B) divides the limitation "without regard to any additional contribution amount
+under paragraph (3)", so a division cannot reach it either way.
+
+**Omitting the field means `statutory_equal`, not unknown.** The statute divides equally
+"unless they agree on a different division", so silence is the default rule rather than a
+missing fact, and the Instructions for Form 8889 say the same. The three non-numeric statuses
+exist because failing to establish the agreement is not the same input state as establishing
+its absence: contradictory records are equally consistent with "they agreed equally and one is
+wrong" and "they agreed 25/75 and the other is wrong", and defaulting those to 50/50 would
+overstate one spouse's limitation in the second case. `unknown`, `disputed` and `inconsistent`
+differ only in the wording of the diagnostic they produce; they are deliberately identical in
+effect, and should stay that way.
+
+**A spouse who owns the only HSA still gets half — unless they are the only *eligible* one.** §223(b)(5)(B)(ii) divides "equally between
+them", and *them* is "individuals who are married to each other" from the opening clause of
+paragraph (5) — a phrase about a marriage, not about a pair of accounts. Owning an HSA is not a
+condition of being an eligible individual under §223(c)(1), so a spouse with family coverage and
+no account still holds their half and simply has nowhere to put it. A sole owner therefore takes
+$4,375 of an $8,750 limitation, reports `HSA_SOLE_SPOUSE_ACCOUNT_TAKES_ONLY_ITS_EQUAL_SHARE`, and
+reaches the whole $8,750 only through an agreement:
+
+```ts
+{ status: "agreed", taxpayerShare: 1 }   // Notice 2004-50 Q&A-32 permits exactly this
+```
+
+The distinction is eligibility, not account ownership. Where the other spouse is stated to have held no
+HDHP coverage in any month (`hsaCoverage: {}`), they are not an eligible individual under §223(c)(1), take
+no share, and the owner gets the whole limitation — Notice 2004-50 Q&A-31: "if only one spouse is an
+eligible individual, only that spouse may contribute to an HSA (**notwithstanding** the treatment under
+section 223(b)(5)(A) of both spouses as having only family coverage)", worked by Example (1) of that Q&A.
+That case reports `HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` instead. If the other spouse
+states nothing, eligibility remains unknown: the owner might receive half or the whole. Where
+those readings change the answer, the engine reports `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE`,
+`familyLimitShare: null`, and a null maximum.
+For an MFJ or MFS family-covered HSA owner, supply both person records. An absent
+partner does not establish either their eligibility or their Archer MSA amount, so
+`HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` withholds the result even with an agreed whole
+share. That agreement settles the eligibility-dependent division but cannot settle
+the aggregate reduction in §223(b)(5)(B)(i). On a supplied person record an omitted
+Archer amount defaults to zero. The reduction precedes division and never consumes
+the separate age-55 amount. A missing spouse deductible can still matter in
+2004–2006, and missing coverage can still change self-only months.
+
+Earlier versions assumed a sole HSA owner had agreed to take everything when no
+account-level share was supplied, reporting `HSA_SOLE_SPOUSE_ACCOUNT_ASSUMED_FULL_FAMILY_LIMIT`.
+The scenario-level contract applies the statutory default when the supplied eligibility
+and coverage establish it; otherwise the division remains unknown. **If you relied on
+that earlier assumption, state the agreement explicitly.**
+
+**An unknown division of nothing is still determinate.** The division is only ever a fact about
+something: where the limitation left after the §223(b)(5)(B)(i) Archer reduction is zero, every
+division yields the same zero monetary maximum, so that maximum remains determinate. The
+division itself is still unestablished and `familyLimitShare` remains null. What counts as
+"nothing" depends on the doubt: a doubtful *share* divides only the family portion, so an
+exhausted family residue makes it immaterial even where undivided self-only months survive,
+while an Archer aggregate whose placement among undivided months is open is immaterial only
+once the whole paragraph (1) residue is gone. The same principle
+applies one level down — an eligibility doubt about a spouse
+whose agreed share is already exactly `0` stands aside, because that spouse gets nothing whether
+they are an eligible individual or not. Both rules exist because an unknown that cannot change
+an answer is not worth withholding an answer for.
+
+Two shapes are rejected outright, because each states an agreement and denies it in the same
+object: `{ status: "agreed" }` with no share raises
+`HSA_FAMILY_LIMIT_DIVISION_SHARE_REQUIRED`, and a `taxpayerShare` beside any other status
+raises `HSA_FAMILY_LIMIT_DIVISION_SHARE_NOT_PERMITTED`.
+
+### The `hsa` detail is withheld, never completed
+
+`account.hsa` is an audit trail of **one** chosen coverage schedule and **one** chosen winner of the
+§223(b)(8) comparison — the months, the monthly amounts applied to them, both limitation figures,
+the selected candidate and the amount attributable to the rule. Where the input leaves several
+completions open, there is no such trail, and the whole object is `null` rather than filled in from
+whichever statement happened to be read first:
+
+- an owner's two HSAs, or an HSA and `persons[].hsaCoverage`, stating different coverage months (or,
+  in a capped year, different annual deductibles);
+- no usable coverage statement at all;
+- a spouse's family coverage neither supplied nor reconcilable, where it could rewrite a month of
+  either schedule;
+- a birth year that would decide which candidate wins, because §223(b)(3) is prorated in one and
+  whole in the other;
+- an unapportionable §223(b)(5)(B)(i) Archer reduction, where which spouse's undivided months
+  absorbed it decides the pre-division amount.
+
+Where the couple's *combined* candidates are what the greater-of compares, one spouse's open
+candidate withholds the other's detail too. **An unsettled §223(b)(5)(B)(ii) division does not**: it
+leaves both candidates exactly as computable, so every figure describing the owner's own undivided
+months or the couple's limitation stays. What it does null is the four figures that are this owner's
+*share* of the result rather than the result — see below.
+
+### A share nobody established is not a zero
+
+`familyLimitShare` is not the only field an unsettled §223(b)(5)(B)(ii) division reaches. Four more
+report a fall in, or a slice of, **this owner's** ceiling, and each of them is that owner's share of
+a couple-level figure:
+
+| Field | Why the share decides it |
+|---|---|
+| `archerMsaLimitReduction` | §223(b)(5)(B)(i) takes the spouses' aggregate off the one limitation *before* (B)(ii) divides it, so an owner's own fall is their share of that reduction |
+| `qualifiedHsaFundingLimitReduction` | §223(b)(4)(C) reduces the share (B)(ii) left them, so how far their ceiling fell is bounded by it |
+| `amountAttributableToLastMonthRule` | §223(b)(8)(B)(i) recaptures what "could not have been made but for subparagraph (A)" — the owner's share of the couple's increase |
+| `testingPeriod` | it exists only where that attributable amount is positive |
+
+These four, plus `familyLimitShare`, are also `null` where the account's **ceiling itself** was never
+established — a plan whose stated deductible contradicts §223(c)(2)(A)(i), say. A fall is the
+difference between two ceilings, so a $100 Archer MSA contribution against no established limitation
+took an unknown amount off an unknown amount; `0` would say the paragraph applied and cost nothing.
+`archerMsaContributionsApplied` and `qualifiedHsaFundingDistributionsApplied` still report what was
+supplied, and `0` is still exact where nothing was supplied — the operand settles that without a
+ceiling.
+
+Each is `null` where a share is genuinely in question, not `0`. Two spouses whose only coverage is
+family in December 2026 have a couple's limitation of 8750 against a month-by-month 729.17, so each
+owner's attributable amount is somewhere between nothing and 8020.83 — and a `0` there would say
+§223(b)(8)(B)(i) has nothing to recapture from them. `testingPeriod` is `null` both where no
+obligation arises and where none can be computed; `amountAttributableToLastMonthRule` separates the
+two, being `0` in the first case and `null` in the second.
+
+**A share is only in question where a month is shared.** Spouses eligible in disjoint halves of the
+year each take their own months whole under Notice 2004-50 Q&A-31, so nothing of theirs is divided
+and all four figures stay numeric while `familyLimitShare` is still `null`. And the immateriality
+that rescues a *maximum* does not rescue these: where an Archer reduction exhausts the limitation to
+a zero every division yields alike, both ceilings end at zero, but how far each spouse fell to get
+there is still their share, so the maximum stays `0` and `archerMsaLimitReduction` is `null`.
+
+`null` here is not the same as the key being absent, which still means "not an HSA account". The
+account's status, its null maximum, its shared limits and its diagnostics are all reported as before
+— only the completion is withheld. The point is order-independence: reversing two contradictory
+account records must not change any fact the engine reports, and a field-by-field completion beside
+a diagnostic saying the fact was never established is exactly the shape that lets it.
 
 ### A known ceiling with an unknown draw
 
@@ -586,29 +844,40 @@ draw. The engine does not publish a bound in place of a usage: bounding upwards 
 taxpayers of excess contributions, and bounding downwards reported a pool as untouched when a
 qualified HSA funding distribution had consumed nearly all of it.
 
-`familyLimitShare` is `null` under the same condition, rather than reporting the share of whichever of
-a spouse's contradictory accounts happened to be listed first.
+The `familyLimitShare` reported in each account's `hsa` detail is `null` under the same
+condition. It is an output — the share this account actually got — and it stays `null` rather
+than reporting a share nobody has established.
 
 ### An unknown division does not make the limitation unknown
 
 §223(b)(5) settles two things, and they fail separately. Subparagraph (A) fixes **one family
 limitation** for the couple; (B)(ii) **divides** it between them. A disagreement about the
-shares — one spouse's HSAs stating different `familyLimitShare` values — reaches only the
-second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
+division — an `hsaFamilyLimitDivision` status of `unknown`, `disputed` or `inconsistent` —
+reaches only the second. Subparagraph (A) has already fixed the amount from coverage facts by the time (B)(ii)
 is reached, so the couple's ceiling is still a number even though nobody can say whose it is.
+
+A **disagreement about eligibility** reaches it too, and only that kind does. Two of a spouse's
+statements saying self-only and family both assert an eligible individual and leave the division
+branch fixed; one saying family and another saying no covered month do not, because §223(b)(5)(B)(ii)
+divides the limitation between spouses who are each an eligible individual while Notice 2004-50
+Q&A-31 gives the whole of it to the other spouse when only one is. Neither branch is then established,
+so no `HSA_FAMILY_LIMIT_DIVIDED_EQUALLY_BY_DEFAULT` and no
+`HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT` is announced — those name a statutory branch, not
+an arithmetic result. A deductible disagreement in a year that no longer reads the deductible is not
+an eligibility disagreement.
 
 The engine reports the two separately:
 
 | Unknown | Diagnostic | `hsa223b5` shared limit | Account maximum |
 |---|---|---|---|
-| The amount — coverage, a 2004–2006 annual deductible, the §223(b)(8) election | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
-| The division — conflicting `familyLimitShare` only | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
+| The amount — coverage or a 2004–2006 annual deductible | `HSA_SHARED_FAMILY_LIMIT_INDETERMINATE` | `null` | `null` |
+| The division — an unsettled `hsaFamilyLimitDivision`, or an impeached eligibility assertion | `HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE` | the limitation | `null` |
 
 Both are `ERROR` and both leave every account's `statutoryMaximumAnnualContribution` null: a
 share of a known amount is still unknown when the share is. What differs is the couple-wide
 figure. `sharedFamilyContributionLimit` follows the **amount**, because that is its contract —
-the limitation this owner divides, reported before the share is applied — so a caller
-reconciling contradictory shares can still see the 8750 they are dividing.
+the limitation this owner divides, reported before the share is applied — so a caller settling
+an unsettled division can still see the 8750 they are dividing.
 
 ### When the other spouse's coverage is required
 
@@ -635,6 +904,23 @@ Absence is not an assertion. If the spouse genuinely held no HDHP coverage, say 
 stays determinate. The engine will not read silence as "no competing family plan", because
 that would answer the comparison from a fact you never supplied, and in the direction that
 costs a taxpayer the §4973 excise.
+
+Coverage is resolved across every statement for an owner, independently of account order.
+Equivalent month sets and equivalent `coverageTier`/`eligibleMonths` and `monthlyCoverage`
+representations agree. An explicit `planRules.hsa: {}` is unusable: even with a complete
+duplicate statement, it produces `HSA_COVERAGE_FACTS_REQUIRED` and `hsa: null` on that
+owner's accounts. It is not a contradictory assertion of no coverage. Person-level coverage
+is compared with every usable account statement, and a missing 2004–2006 deductible is
+diagnosed across the statements rather than taken from the first account. Conflicting supplied
+deductibles are diagnosed as conflicts, without also claiming a deductible is missing.
+
+Only an empty person-level `hsaCoverage: {}` affirmatively states no coverage. A nonempty
+statement with no usable schedule, such as `{ hdhpAnnualDeductible: 3400 }` or
+`{ eligibleMonths: [1] }`, leaves coverage unknown. It cannot establish that the other
+spouse is the sole eligible individual. An unusable person-level duplicate also leaves its
+owner indeterminate with `HSA_COVERAGE_FACTS_REQUIRED`, even if an account supplies a complete
+schedule. Explicit empty schedules (`monthlyCoverage: []`
+or a tier with `eligibleMonths: []`) still establish no eligible months.
 
 ### A deductible below the statutory minimum is inconsistent input
 
@@ -666,12 +952,12 @@ The **division** is a separate question with a different answer, and any tier re
 divides the limitation only between spouses who are each an eligible individual: "if only one
 spouse is an eligible individual, only that spouse may contribute to an HSA". This engine reads
 your month list as the assertion of eligibility, so a deductible contradicting that list
-impeaches it. Where the contradicting spouse **owns an HSA**, the engine therefore cannot tell
-whether the limitation is wholly the other spouse's — as in Example (1) — or divided, so
-`familyLimitShare` and both maximums go null while the §223(b)(5) pool keeps reporting the
-amount. Do not expect the full family maximum in that case; expect nothing, and a diagnostic
-saying why. Where that spouse owns no HSA there is no division to doubt and the owner takes the
-whole limitation.
+impeaches it. That doubt can change the division whether or not the contradicting spouse
+owns an HSA. Where the alternative eligibility readings change an owner's allocation,
+`familyLimitShare` and the affected maximum are null with a diagnostic. The §223(b)(5)
+pool can still report its amount when only the division is uncertain. A doubt that cannot
+move the allocation, such as an already agreed zero share for that spouse, leaves the
+monetary result intact.
 
 Encoded HSA parameters are verified against the Revenue Procedure that published them —
 see [`evidence/hsa-limits/`](evidence/hsa-limits/).
