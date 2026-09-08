@@ -123,6 +123,25 @@ deferral limit elsewhere, so its meaning is per-record; and a lower value can on
 an allocation, never enlarge one. The Roth and contribution-preference flags likewise
 differ legitimately, since one plan may hold both a pre-tax and a designated Roth account.
 
+The internal `Section457Plan` state (a native associative structure in PHP) owns
+its member records, resolved fact views, cached ceilings, catch-up capacities,
+and all three resource balances. It is constructed once before participant-wide
+method selection. Account lookup points to that plan; it does not own another
+copy of its balances. Contradictory inputs retain per-member fact and ceiling
+views for the existing diagnostics, within the same plan state.
+
+Participant method selection reads the plans' capacities. Allocation reads the
+same cached ceilings and continues in global ascending priority, then input
+order; it never allocates a whole group together. One contribution-classification
+function charges plan resources for both supplied contributions and new
+allocations. Ordinary employee deferrals spend base and salary, employer deposits
+spend base only, special catch-ups spend special and salary, and age catch-ups
+spend salary. Invalid employee after-tax amounts retain their existing base-only
+accounting and diagnostics. The structural invariant suite exercises record
+splitting, owner isolation, interleaved allocation order, existing versus new
+deposits, and replaying completed allocations as existing contributions in both
+runtimes. These characterize established behavior rather than changing it.
+
 ## 6. Section 401(a)(17) recognized compensation
 
 `planCompensation` is the compensation recognized by supplied plan facts. For employer allocation formulas, the engine then applies:
