@@ -21867,6 +21867,616 @@
       "expectDiagnosticCodes": [
         "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
       ]
+    },
+    {
+      "name": "2026 an excess on a zero-share HSA still reserves the household guard False",
+      "description": "Rev. Proc. 2025-19 gives the 2026 family limitation of 8750; IRC 223(b)(5)(B)(ii) and the supplied agreement assign all of it to the taxpayer. Both spouses are under 55, so neither has separate catch-up capacity. The spouse has already contributed 1200 against a zero owner limitation; those contributions remain counted pending correction and must not free household room. The taxpayer can receive at most 8750 - 1200 = 7550 under the aggregate family guard, though their statutory owner ceiling remains 8750. The spouse has allowable A = min(1200, 0) = 0, so base and catch-up audit usage are zero, with the shared-limit excess diagnostic recording the separately counted owner excess. No provision labels that excess as catch-up. The unchanged priorities yield the same account results when input order reverses.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "existingContributions": {
+              "hsaDeductible": 1200
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 8750,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 7550,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.1.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.1.status": "indeterminate",
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 an excess on a zero-share HSA still reserves the household guard True",
+      "description": "Rev. Proc. 2025-19 gives the 2026 family limitation of 8750; IRC 223(b)(5)(B)(ii) and the supplied agreement assign all of it to the taxpayer. Both spouses are under 55, so neither has separate catch-up capacity. The spouse has already contributed 1200 against a zero owner limitation; those contributions remain counted pending correction and must not free household room. The taxpayer can receive at most 8750 - 1200 = 7550 under the aggregate family guard, though their statutory owner ceiling remains 8750. The spouse has allowable A = min(1200, 0) = 0, so base and catch-up audit usage are zero, with the shared-limit excess diagnostic recording the separately counted owner excess. No provision labels that excess as catch-up. The unchanged priorities yield the same account results when input order reverses.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 1
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 2,
+            "existingContributions": {
+              "hsaDeductible": 1200
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.statutoryMaximumAnnualContribution": 8750,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 7550,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.status": "indeterminate",
+        "totals.hsaContribution": 8750
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 HSA unknown division retains reachable cent-rounding extrema",
+      "description": "Rev. Proc. 2025-19 fixes the family amount at 8750, and IRC 223(b)(1) counts January only, yielding 8750 / 12 = 729.1666... for the family. Neither spouse is December-eligible or age 55. Under IRC 223(b)(5)(B)(ii), equal division gives each 729.1666... / 2 = 364.5833..., rounded to 364.58, so combined allowable usage is 729.16. Assigning the whole limitation to one spouse yields 729.17 after rounding. Both endpoints are therefore reachable: unknown family usage is [729.16, 729.17], with remaining [0, 0.01] against the reported 729.17 ceiling. Both contributed 1000, so they have unavoidable aggregate excess independently of the division. This checks legal rounding extrema, not values derived from floating-point artifacts.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.1.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.minimum": 729.16,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.maximum": 729.17,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.minimum": 0,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.maximum": 0.01
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 a near-half-cent HSA division rounds the statutory monthly expression once",
+      "description": "Rev. Proc. 2025-19 fixes family 8750. IRC 223(b)(1) and Notice 2004-50 Q&A-31 leave the taxpayer their sole-eligible December month 8750/12 and divide the eleven shared months S=11*8750/12 under IRC 223(b)(5)(B)(ii). For supplied taxpayer share r=0.9896513246753247, the exact statutory expressions are r*S+8750/12 for the taxpayer and (1-r)*S for the spouse. With the represented binary input number, these are 8666.9950000000000693... and 83.0049999999999307..., respectively: round once to 8667.00 and 83.00. Treating the displayed decimal rate as exact puts them on the same sides of the half-cent. The family usage therefore totals 8750. Both owners contributed 10000, so their allowable usage reaches each base, while aggregate excess is diagnosed independently. Separately rounded monthly coefficients or an intermediate binary product can put the taxpayer on the wrong side of the half-cent and are not an authority for a different expected value.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.9896513246753247
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 10000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 10000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 8667,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 83,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 8750,
+        "accounts.1.sharedLimits.1.usedBeforeAccount": 8750
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2008 funding above annual beneficiary ceiling preserves spouse capacity without beneficiary account",
+      "description": "Notice 2008-51 Example 5 establishes that a March qualified HSA funding distribution of 5800 is permitted with family coverage January-May and self-only June-December, despite the annual deductible limit 5 * 5800 / 12 + 7 * 2900 / 12 = 4108.33. In this synthetic married extension, both spouses have those schedules and agree under IRC 223(b)(5)(B)(ii) that the beneficiary receives the shared family portion. The taxpayer retains their seven self-only months: 7 * 2900 / 12 = 1691.67. IRC 223(b)(4)(C) reduces only the beneficiary individual limit, to max(0,4108.33-5800)=0; unlike Archer under (b)(5)(B)(i), it does not reduce the family aggregate or the taxpayer 1691.67. Presence of a beneficiary account result cannot change that conclusion. The ordinary couple candidate 5800 equals the two December self-only annual amounts, so the last-month rule adds nothing. Funding qualification and its testing period are otherwise taken as supplied.",
+      "input": {
+        "taxYear": 2008,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "qualifiedHsaFundingDistributions": 5800,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "family"
+                },
+                {
+                  "month": 2,
+                  "coverage": "family"
+                },
+                {
+                  "month": 3,
+                  "coverage": "family"
+                },
+                {
+                  "month": 4,
+                  "coverage": "family"
+                },
+                {
+                  "month": 5,
+                  "coverage": "family"
+                },
+                {
+                  "month": 6,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 7,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 8,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 9,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 10,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 11,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 12,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 1691.67,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1691.67
+      }
+    },
+    {
+      "name": "2008 funding above annual beneficiary ceiling preserves spouse capacity with beneficiary account",
+      "description": "Notice 2008-51 Example 5 establishes that a March qualified HSA funding distribution of 5800 is permitted with family coverage January-May and self-only June-December, despite the annual deductible limit 5 * 5800 / 12 + 7 * 2900 / 12 = 4108.33. In this synthetic married extension, both spouses have those schedules and agree under IRC 223(b)(5)(B)(ii) that the beneficiary receives the shared family portion. The taxpayer retains their seven self-only months: 7 * 2900 / 12 = 1691.67. IRC 223(b)(4)(C) reduces only the beneficiary individual limit, to max(0,4108.33-5800)=0; unlike Archer under (b)(5)(B)(i), it does not reduce the family aggregate or the taxpayer 1691.67. Presence of a beneficiary account result cannot change that conclusion. The ordinary couple candidate 5800 equals the two December self-only annual amounts, so the last-month rule adds nothing. Funding qualification and its testing period are otherwise taken as supplied.",
+      "input": {
+        "taxYear": 2008,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "qualifiedHsaFundingDistributions": 5800,
+            "hsaCoverage": {
+              "monthlyCoverage": [
+                {
+                  "month": 1,
+                  "coverage": "family"
+                },
+                {
+                  "month": 2,
+                  "coverage": "family"
+                },
+                {
+                  "month": 3,
+                  "coverage": "family"
+                },
+                {
+                  "month": 4,
+                  "coverage": "family"
+                },
+                {
+                  "month": 5,
+                  "coverage": "family"
+                },
+                {
+                  "month": 6,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 7,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 8,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 9,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 10,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 11,
+                  "coverage": "self_only"
+                },
+                {
+                  "month": 12,
+                  "coverage": "self_only"
+                }
+              ]
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "monthlyCoverage": [
+                  {
+                    "month": 1,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 2,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 3,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 4,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 5,
+                    "coverage": "family"
+                  },
+                  {
+                    "month": 6,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 7,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 8,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 9,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 10,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 11,
+                    "coverage": "self_only"
+                  },
+                  {
+                    "month": 12,
+                    "coverage": "self_only"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 1691.67,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 1691.67,
+        "accounts.1.statutoryMaximumAnnualContribution": 0,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0
+      }
     }
   ]
 }

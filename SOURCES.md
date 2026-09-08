@@ -179,7 +179,14 @@ from contradictory divisions. This changes audit attribution, not statutory cons
 division and excludes the separate §223(b)(3) amount. In capped years the statutory monthly
 amount bounds an unknown deductible from above; exhausting that bound proves zero reduced
 base without supplying or validating the missing deductible. Sources below retain the
-annual amounts and the construction/eligibility distinctions.
+annual amounts and the construction/eligibility distinctions. Section 223(b)(4)(C) reduces
+the beneficiary's individual limitation, unlike the aggregate Archer reduction in (b)(5)(B)(i).
+[Notice 2008-51 Example 5](https://www.irs.gov/irb/2008-25_IRB) permits a 5800 qualified funding
+distribution with family coverage January-May and self-only June-December, even though the
+annual deductible limit is 4108.33. This amount must not reduce the other spouse's allocated
+capacity. The distinct qualification and testing rules in
+[IRC §408(d)(9)](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section408&num=0&edition=prelim)
+remain outside the calculation.
 
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
 cost-of-living notice, so they are cited and verified separately.

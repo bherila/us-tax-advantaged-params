@@ -966,10 +966,11 @@ export interface SharedLimitUse {
   usedByAccount: Money | null;
   remainingAfterAccount: Money | null;
   /**
-   * Present exactly where the scalar beside it is null for want of a settled
-   * usage -- not where the ceiling itself is unknown, which leaves nothing to
-   * bound. The range is closed and inclusive, and its endpoints are reachable:
-   * some completion of the supplied facts produces each.
+   * Present when a scalar attribution is unsettled and feasible extrema are
+   * established. Usage may be bounded even when an owner ceiling is unknown
+   * within a known household limitation; remaining ranges need a known ceiling.
+   * No range is offered when missing facts prevent a feasible capacity model.
+   * Endpoints are reachable under completions of the supplied facts.
    *
    * Endpoints from different pools may be summed only at the minimum. Two pools
    * widened by the same unresolved amount reach their maxima under opposite
@@ -12018,7 +12019,8 @@ interface HsaOwnerPlan {
   /** Family base available after the other owners' necessary base use in every completion. */
   familyBaseRoom?: Money | null;
   /** Before the owner's funding-distribution reduction; endpoints share one taxpayer-share variable. */
-  usageCapacity?: { baseAtZero: Money; baseAtOne: Money; catchUp: Money; funding: Money };
+  usageCapacity?: { baseAtZero: Money; baseAtOne: Money; catchUp: Money; funding: Money;
+    sharedBase?: number; soleBase?: number; selfBase?: number; taxpayer?: boolean; statutoryMonthlyAmounts?: boolean };
 }
 
 interface HsaOwnerFacts {
@@ -12255,6 +12257,38 @@ function hsaMarriedCouple(context: CalculationContext): [string, string] | null 
     if (person.role === "spouse" && spouseId === null) spouseId = person.id;
   }
   return taxpayerId !== null && spouseId !== null ? [taxpayerId, spouseId] : null;
+}
+
+/**
+ * Round one HSA shared/sole-month composition only once. Statutory monthly
+ * amounts are exact multiples of 1/1200 dollar (annual cents divided by 12).
+ * A capped-year raw deductible keeps its represented precision instead. Rates
+ * retain the exact binary value supplied to both native runtimes; a spouse's
+ * complement is taken on that fraction, without another floating subtraction.
+ */
+function roundHsaDividedMoney(
+  shared: number, undivided: number, share: number,
+  complement: boolean = false, statutoryMonthlyAmounts: boolean = false,
+): Money {
+  const binary = (value: number): [bigint, bigint] => {
+    if (value === 0) return [0n, 1n];
+    const bits = new DataView(new ArrayBuffer(8));
+    bits.setFloat64(0, value);
+    const high = bits.getUint32(0);
+    const exponent = (high >>> 20) & 0x7ff;
+    const significand = (BigInt(high & 0xfffff) << 32n) + BigInt(bits.getUint32(4))
+      + (exponent === 0 ? 0n : 1n << 52n);
+    const shift = exponent === 0 ? 1074 : 1075 - exponent;
+    return shift >= 0 ? [significand, 1n << BigInt(shift)] : [significand << BigInt(-shift), 1n];
+  };
+  const amount = (value: number): [bigint, bigint] => statutoryMonthlyAmounts
+    ? [BigInt(Math.round(value * 1200)), 1200n] : binary(value);
+  const [s, sd] = amount(shared);
+  const [u, ud] = amount(undivided);
+  const [r, rd] = binary(share);
+  const numerator = u * sd * rd + s * (complement ? rd - r : r) * ud;
+  const denominator = ud * sd * rd;
+  return Number((200n * numerator + denominator) / (2n * denominator)) / 100;
 }
 
 /**
@@ -14651,6 +14685,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
      * `soleFamilyPortion` defaults to the difference so a caller of this helper
      * that has only the total still divides nothing it should not.
      */
+    const agreement = context.hsaFamilyLimitDivision;
+    const exactDivisionRate = agreement.status === "agreed" && isSharingMember ? agreement.taxpayerShare : share ?? 1;
+    const complementDivisionRate = agreement.status === "agreed" && isSharingMember &&
+      context.persons.get(ownerId)?.role === "spouse";
+    const roundDivided = (shared: number, undivided: number): Money => roundHsaDividedMoney(
+      shared, undivided, exactDivisionRate, complementDivisionRate,
+      !parameters.contributionLimitCappedByHdhpAnnualDeductible,
+    );
     const divided = (
       familyPortion: number,
       selfPortion: number,
@@ -14659,9 +14701,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     ): Money =>
       share === null
         ? undivided
-        : roundMoney(
-            share * sharedFamilyPortion + (familyPortion - sharedFamilyPortion) + selfPortion,
-          );
+        : roundDivided(sharedFamilyPortion, (familyPortion - sharedFamilyPortion) + selfPortion);
 
     /**
      * IRC 223(b)(4)(A) reduces "the limitation which would (but for this
@@ -14679,15 +14719,14 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       selfPortion: number,
       undivided: Money,
       sharedFamilyPortion: number = familyPortion,
-      effectiveShare: number | null = share,
     ): Money => {
-      if (effectiveShare === null) return nonnegative(undivided - archerAmount);
+      if (share === null) return nonnegative(undivided - archerAmount);
       const [family, self] = archerReducedPortions(familyPortion, selfPortion, archerAmount);
       // Wholly shared or wholly sole-eligible months need no apportionment of
       // the IRC 223(b)(5)(B)(i) reduction, because there is only one kind of
       // month for it to have come out of.
-      if (sharedFamilyPortion >= familyPortion) return roundMoney(effectiveShare * family + self);
-      if (sharedFamilyPortion <= 0) return roundMoney(family + self);
+      if (sharedFamilyPortion >= familyPortion) return roundDivided(family, self);
+      if (sharedFamilyPortion <= 0) return roundDivided(0, family + self);
       // Mixed. `sharedFamilyPortion` is measured before the IRC 223(b)(5)(B)(i)
       // reduction, so subtracting it from `family` states the sole-eligible
       // remainder only where the reduction left the shared months whole. Which
@@ -14706,9 +14745,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       // 223(b)(3) additional contribution amount -- which IRC 223(b)(5)(B)(i)
       // reduces the paragraph (1) limitation "without regard to" entirely.
       const survivingShared = Math.min(sharedFamilyPortion, family);
-      return roundMoney(
-        effectiveShare * survivingShared + (family - survivingShared) + self,
-      );
+      return roundDivided(survivingShared, (family - survivingShared) + self);
     };
     const baseLimitAfterArcher = indeterminate
       ? null
@@ -15215,6 +15252,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
       testingPeriod,
     };
 
+    const [usageFamily, usageSelf] = archerReducedPortions(
+      amounts.familyPortionApplied, amounts.selfPortionApplied, archerAmount,
+    );
+    const usageShared = Math.min(amounts.familySharedPortionApplied, usageFamily);
+    const usageSole = usageFamily - usageShared;
+    const usageTaxpayer = context.persons.get(ownerId)?.role === "taxpayer";
     context.hsaPlans.set(ownerId, {
       status: planStatus,
       diagnostics,
@@ -15229,12 +15272,12 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
         diagnostics.every((entry) => entry.severity !== DiagnosticSeverity.ERROR ||
           entry.code === "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE") ? {
         usageCapacity: {
-          baseAtZero: reducedDivided(amounts.familyPortionApplied, amounts.selfPortionApplied,
-            amounts.proratedApplied, amounts.familySharedPortionApplied,
-            context.persons.get(ownerId)?.role === "taxpayer" ? 0 : 1),
-          baseAtOne: reducedDivided(amounts.familyPortionApplied, amounts.selfPortionApplied,
-            amounts.proratedApplied, amounts.familySharedPortionApplied,
-            context.persons.get(ownerId)?.role === "taxpayer" ? 1 : 0),
+          // Keep the raw monthly coefficient. Interpolating rounded endpoint
+          // amounts changes the cents at interior agreed divisions.
+          baseAtZero: (usageTaxpayer ? 0 : usageShared) + usageSole + usageSelf,
+          baseAtOne: (usageTaxpayer ? usageShared : 0) + usageSole + usageSelf,
+          sharedBase: usageShared, soleBase: usageSole, selfBase: usageSelf, taxpayer: usageTaxpayer,
+          statutoryMonthlyAmounts: !parameters.contributionLimitCappedByHdhpAnnualDeductible,
           catchUp: catchUpAfterArcher,
           funding: fundingAmount,
         },
@@ -15254,16 +15297,20 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
 }
 
 /** Marginal feasible usages, conditional on one coherent couple-wide division. */
-function hsaUsageAtShare(plan: HsaOwnerPlan, share: number): { base: MoneyInterval; catchUp: MoneyInterval } | null {
+function hsaUsageAtShare(plan: HsaOwnerPlan, share: number): { base: MoneyInterval; catchUp: MoneyInterval; requiredBase: Money | null } | null {
   const total = plan.countedContributions ?? 0;
-  if (total === 0) return { base: settled(0), catchUp: settled(0) };
+  if (total === 0) return { base: settled(0), catchUp: settled(0), requiredBase: 0 };
   const capacity = plan.usageCapacity;
   if (!capacity) return null;
-  const raw = capacity.baseAtZero + share * (capacity.baseAtOne - capacity.baseAtZero);
+  const raw = capacity.sharedBase === undefined ? capacity.baseAtZero : roundHsaDividedMoney(
+    capacity.sharedBase, capacity.soleBase! + capacity.selfBase!, share,
+    !capacity.taxpayer, capacity.statutoryMonthlyAmounts,
+  );
   const base = nonnegative(raw - capacity.funding);
   const catchUp = nonnegative(capacity.catchUp - nonnegative(capacity.funding - raw));
   const allowed = Math.min(total, base + catchUp);
   return {
+    requiredBase: nonnegative(roundMoney(total - catchUp)),
     base: { minimum: nonnegative(roundMoney(allowed - catchUp)), maximum: roundMoney(Math.min(allowed, base)) },
     catchUp: { minimum: nonnegative(roundMoney(allowed - base)), maximum: roundMoney(Math.min(allowed, catchUp)) },
   };
@@ -15286,6 +15333,31 @@ function refreshHsaUsage(context: CalculationContext): void {
       if (share > 0 && share < 1) shares.add(share);
     }
   }
+  // On each analytic segment, paired shared-month coefficients are equal
+  // and opposite. Their rounded sum repeats over a one-cent change of either
+  // component. Shared months are the intersection of both eligibility
+  // schedules and use the same family amount, so their coefficients match;
+  // unresolved Archer placement is excluded from this model. Sample each
+  // rounding transition and its sides in one period of each analytic segment.
+  const bends = [...shares].sort((a, b) => a - b);
+  for (const plan of context.hsaPlans.values()) {
+    const c = plan.usageCapacity;
+    if (!c?.sharedBase) continue;
+    const slope = c.taxpayer ? c.sharedBase : -c.sharedBase;
+    for (let i = 0; i + 1 < bends.length; i++) {
+      const left = bends[i], right = bends[i + 1];
+      for (const anchor of [left, (left + right) / 2, right]) {
+        const raw = c.baseAtZero + anchor * slope;
+        for (const offset of [-1, 0, 1]) {
+          const crossing = ((Math.floor(raw * 100) + offset + 0.5) / 100 - c.baseAtZero) / slope;
+          for (const delta of [-1e-12, 0, 1e-12]) {
+            const share = crossing + delta;
+            if (share > left && share < right) shares.add(share);
+          }
+        }
+      }
+    }
+  }
   const install = (pool: LimitPool | undefined, values: Array<MoneyInterval | null>): void => {
     if (!pool) return;
     pool.usageUnknown = values.some((value) => value === null);
@@ -15305,8 +15377,8 @@ function refreshHsaUsage(context: CalculationContext): void {
       const others = plans.filter((other) => other !== plan);
       const necessary = [...shares].map((share) => {
         const usages = others.map((other) => hsaUsageAtShare(other, share));
-        return usages.some((usage) => usage === null) ? null :
-          roundMoney(usages.reduce((sum, usage) => sum + usage!.base.minimum, 0));
+        return usages.some((usage) => usage === null || usage.requiredBase === null) ? null :
+          roundMoney(usages.reduce((sum, usage) => sum + usage!.requiredBase!, 0));
       });
       plan.familyBaseRoom = pool.limit === null || necessary.some((value) => value === null) ? null :
         nonnegative(roundMoney(pool.limit - Math.max(...necessary as number[])));
@@ -15366,7 +15438,13 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
     };
   }
 
-  if (plan.status === CalculationStatus.INDETERMINATE) {
+  const rawFamilyGuardUnknown = familyPool !== undefined && plan.familyBaseRoom === null;
+  if (rawFamilyGuardUnknown && plan.status !== CalculationStatus.INDETERMINATE) diagnostics.push(diagnostic(
+    "HSA_HOUSEHOLD_CONTRIBUTION_FACTS_INDETERMINATE", DiagnosticSeverity.ERROR,
+    "The spouse's supplied HSA contributions require an established age-55 capacity to determine their necessary draw on the household base. Supply the spouse's age and coherent coverage facts; an unstated catch-up amount cannot free household contribution room.",
+    `accounts.${account.id}`, "IRC 223(b)(3); IRC 223(b)(4)(C); IRC 223(b)(5)",
+  ));
+  if (plan.status === CalculationStatus.INDETERMINATE || rawFamilyGuardUnknown) {
     reportPoolWithoutConsuming(basePool, sharedLimits);
     if (familyPool) reportPoolWithoutConsuming(familyPool, sharedLimits);
     reportPoolWithoutConsuming(catchUpPool, sharedLimits);
@@ -15389,7 +15467,9 @@ function allocateHsa(context: CalculationContext, account: NormalizedAccount): A
   const beforeFamily = familyPool ? { ...familyPool.usage } : null;
   const ownerRoom = nonnegative(roundMoney((plan.statutoryMaximum ?? 0) - (plan.countedContributions ?? 0)));
   // A component range is not a trace of irrevocable charges. The other owners
-  // need at least their base minima; this owner may use their own catch-up.
+  // reserve ordinary contributions beyond their remaining catch-up. Funding
+  // reduces only its beneficiary under IRC 223(b)(4)(C); it is not an
+  // aggregate family reduction. Audit usage separately excludes excess.
   // Taking the worst coherent completion preserves the family guard, including
   // a final cent where individually rounded owner ceilings sum above it.
   const total = familyPool ? Math.min(ownerRoom, nonnegative(roundMoney(

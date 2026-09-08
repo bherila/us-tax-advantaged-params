@@ -862,7 +862,18 @@ handling remains deferred to [#68](https://github.com/bherila/us-tax-advantaged-
 Component usage excludes aggregate excess rather than assigning it to an invented component.
 `SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT` separately diagnoses known excess across
 one owner's HSAs, or contributions above even the couple's family base plus separate age-55
-amounts. The latter can be known while the division remains unknown.
+amounts. Supplied excess remains counted against the household allocation guard pending
+correction, even though it is excluded from allowable component usage. The latter can be known while the division remains unknown.
+
+Qualified HSA funding distributions reduce only their beneficiary's individual ceiling under
+IRC §223(b)(4)(C). They are not an aggregate family reduction. Notice 2008-51 Example 5
+permits a distribution exceeding the beneficiary's annual deductible limit; reserving that
+excess against the other spouse would wrongly withhold their capacity. Funding qualification
+and its separate testing period remain outside this calculation.
+
+Shared-month amounts and the spouse's complementary share are combined before final cent
+rounding. Modern statutory monthly amounts retain their annual-cents-over-twelve precision;
+capped-year raw deductible amounts retain their supplied represented precision.
 
 In 2004–2006 a missing deductible need not always withhold the final answer. If established
 Archer contributions exhaust the upper bound on the couple's unreduced base, every deductible
