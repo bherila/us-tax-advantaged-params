@@ -17943,7 +17943,7 @@ final class Engine
                     self::money(
                         $account['planRules']['planDocumentAnnualAdditionsLimit'],
                         "{$account['id']}.planDocumentAnnualAdditionsLimit",
-                    ) - self::annualAdditions($annual),
+                    ) - self::annualAdditions($annual) - $unresolvedOrdinaryExposure,
                 );
             $desiredSpecial = self::minMoney(
                 self::nonnegative($specialLimit - $existingSpecial),
@@ -18436,7 +18436,11 @@ final class Engine
                 - $account['existingContributions']['employerRoth'],
             );
         }
-        $accountRemainingBeforeEmployer = self::nonnegative($accountAnnualLimit - self::annualAdditions($annual));
+        // Preserve the ordinary-deferral completion for every later addition
+        // under the account-local plan ceiling, as for the earlier base draw.
+        $unresolvedOrdinaryExposure =
+            self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits)['existing'] ?? 0.0;
+        $accountRemainingBeforeEmployer = self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure);
         $employerAdded = 0.0;
         $employerTaxTreatmentAvailable = $employerDesired === 0.0
             || self::validateEmployerRothAvailability($context, $account, $traits, $diagnostics);
@@ -18457,7 +18461,7 @@ final class Engine
         if (!empty($account['planRules']['permitsAfterTaxEmployeeContributions']) && !$deferralOnly) {
             $afterTaxCapacity = self::minMoney(
                 self::poolRemaining($context['annualAdditionsPools'][$groupId]),
-                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual)),
+                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure),
                 $deferral['compensationRemaining'],
             );
             if ($afterTaxCapacity > 0.0) {
@@ -18479,7 +18483,7 @@ final class Engine
         ) {
             $planTermDependentCapacity = self::minMoney(
                 self::poolRemaining($context['annualAdditionsPools'][$groupId]),
-                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual)),
+                self::nonnegative($accountAnnualLimit - self::annualAdditions($annual) - $unresolvedOrdinaryExposure),
             );
             if ($planTermDependentCapacity > 0.0) {
                 $diagnostics[] = self::diagnostic(
@@ -19314,7 +19318,7 @@ final class Engine
             && !$existingCatchUpClassificationInvalid
             && $ownCatchUpRoomWithoutPool > 0.0
         )
-            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics)['treatment']
+            ? self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, $ownCatchUpRoomWithoutPool)['treatment']
             : null;
         $catchUpCapacityWithoutClassificationBlock = in_array(
             $ageCatchUpTreatmentBeforeClassificationBlock,
@@ -19404,7 +19408,7 @@ final class Engine
                 );
             }
         } elseif ($resolution['mode'] === 'age' && $catchUpPotential > 0.0) {
-            $classification = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics);
+            $classification = self::catchUpTaxTreatment($context, $account, $traits, $diagnostics, $catchUpPotential);
             $treatment = $classification['treatment'];
             if ($treatment === 'unknown') {
                 self::reportPoolWithoutConsuming($context['section457CatchUpPools'][$ownerId], $sharedLimits);

@@ -20755,6 +20755,239 @@
       "expectDiagnosticCodes": [
         "EXISTING_PRE_TAX_CATCH_UP_ABOVE_ROTH_CATCH_UP_WAGE_THRESHOLD"
       ]
+    },
+    {
+      "name": "2026 unresolved catch-up reserves the plan annual ceiling for later employer capacity",
+      "description": "IRC 414(v)(7)(A) withdraws paragraph (1) treatment from the supplied pre-tax catch-up above the wage threshold, so the ordinary-deferral completion loses the IRC 414(v)(3)(A) annual-additions relief. Under 26 CFR 1.414(v)-1(b)(1)(ii) and (d)(1), the applicable limits include the employer-provided plan limits. The supplied 3000 may therefore occupy the 10000 plan annual-additions ceiling. Only 10000 - 3000 = 7000 is guaranteed for new ordinary additions. The base deferral allocates all 7000, leaving zero for any later annual-additions component or plan-term-dependent capacity. The statutory 72000 group ceiling does not bind, so it cannot enforce this smaller account-local cap.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 5000,
+              "planDocumentAnnualAdditionsLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.employerPreTax": 0
+      }
+    },
+    {
+      "name": "2026 unresolved catch-up reserves the plan annual ceiling for later after-tax capacity",
+      "description": "IRC 414(v)(7)(A) withdraws paragraph (1) treatment from the supplied pre-tax catch-up above the wage threshold, so the ordinary-deferral completion loses the IRC 414(v)(3)(A) annual-additions relief. Under 26 CFR 1.414(v)-1(b)(1)(ii) and (d)(1), the applicable limits include the employer-provided plan limits. The supplied 3000 may therefore occupy the 10000 plan annual-additions ceiling. Only 10000 - 3000 = 7000 is guaranteed for new ordinary additions. The base deferral allocates all 7000, leaving zero for any later annual-additions component or plan-term-dependent capacity. The statutory 72000 group ceiling does not bind, so it cannot enforce this smaller account-local cap.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "planDocumentAnnualAdditionsLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true,
+              "permitsAfterTaxEmployeeContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.employeeAfterTax": 0
+      }
+    },
+    {
+      "name": "2026 unresolved catch-up reserves the plan annual ceiling for later special 403b capacity",
+      "description": "IRC 414(v)(7)(A) withdraws paragraph (1) treatment from the supplied pre-tax catch-up above the wage threshold, so the ordinary-deferral completion loses the IRC 414(v)(3)(A) annual-additions relief. Under 26 CFR 1.414(v)-1(b)(1)(ii) and (d)(1), the applicable limits include the employer-provided plan limits. The supplied 3000 may therefore occupy the 10000 plan annual-additions ceiling. Only 10000 - 3000 = 7000 is guaranteed for new ordinary additions. The base deferral allocates all 7000, leaving zero for any later annual-additions component or plan-term-dependent capacity. The statutory 72000 group ceiling does not bind, so it cannot enforce this smaller account-local cap. IRC 402(g)(7) ordinarily permits the lesser of 3000, the unused 15000 lifetime amount, and 5000 x 15 - 20000 = 55000, hence 3000 here, but that special catch-up remains subject to the annual-additions limit; the account-local remaining zero binds.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "403b",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "expectedEmployerContribution": 0,
+              "planDocumentAnnualAdditionsLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true,
+              "special403bCatchUp": {
+                "eligible": true,
+                "yearsOfService": 15,
+                "priorElectiveDeferrals": 20000,
+                "priorSpecialCatchUpUsed": 0
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.contributionComponents.special403bCatchUp": 0
+      }
+    },
+    {
+      "name": "2026 unresolved catch-up reserves the plan annual ceiling for later plan-term capacity",
+      "description": "IRC 414(v)(7)(A) withdraws paragraph (1) treatment from the supplied pre-tax catch-up above the wage threshold, so the ordinary-deferral completion loses the IRC 414(v)(3)(A) annual-additions relief. Under 26 CFR 1.414(v)-1(b)(1)(ii) and (d)(1), the applicable limits include the employer-provided plan limits. The supplied 3000 may therefore occupy the 10000 plan annual-additions ceiling. Only 10000 - 3000 = 7000 is guaranteed for new ordinary additions. The base deferral allocates all 7000, leaving zero for any later annual-additions component or plan-term-dependent capacity. The statutory 72000 group ceiling does not bind, so it cannot enforce this smaller account-local cap.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 300000,
+              "planDocumentAnnualAdditionsLimit": 10000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 7000,
+        "accounts.0.planTermDependentCapacity": 0
+      }
+    },
+    {
+      "name": "2026 a compensation-bounded 457 catch-up fits entirely within guaranteed sibling pool room",
+      "description": "IRC 414(v)(7)(A) leaves the first plan's recorded 3000 pre-tax catch-up unresolved. Against the 2026 age-based 8000 limit (Notice 2025-67), this yields guaranteed catch-up room of 8000 - 3000 = 5000 and possible room of 8000. The first plan uses the guaranteed ordinary 457 room of 24500 - 3000 = 21500, leaving no guaranteed ordinary room for the second. IRC 414(v)(2)(A)(ii) bounds that second account by its supplied 4000 compensation. Its entire 4000 catch-up fits within the guaranteed 5000, independently of the first plan's reconciliation, so its answer is determinate and the sibling-allocation-block diagnostic must be absent. The supplied high prior-year wages and Roth permission require the 4000 to be Roth.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 800000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e1": 500000,
+              "e2": 500000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e1",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 300000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 3000
+            }
+          },
+          {
+            "id": "b457",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e2",
+            "priority": 2,
+            "planRules": {
+              "includibleCompensation457": 4000,
+              "permitsRothCatchUp": true,
+              "permitsRothContributions": true
+            },
+            "existingContributions": {}
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.status": "determinate",
+        "accounts.1.contributionComponents.employeeRothCatchUp": 4000,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 0
+      },
+      "expectAbsentDiagnosticCodes": [
+        "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ]
     }
   ]
 }

@@ -17009,7 +17009,7 @@ function allocateBaseAndCatchUp(
       ? Number.MAX_SAFE_INTEGER
       : nonnegative(
           money(account.planRules.planDocumentAnnualAdditionsLimit, `${account.id}.planDocumentAnnualAdditionsLimit`) -
-            annualAdditionsAmount(annual),
+            annualAdditionsAmount(annual) - unresolvedOrdinaryExposure,
         );
     const desiredSpecial = minMoney(
       nonnegative(specialLimit - existingSpecial),
@@ -17452,7 +17452,12 @@ function allocateQualifiedElective(
     );
   }
 
-  const accountRemainingBeforeEmployer = nonnegative(accountAnnualLimit - annualAdditionsAmount(annual));
+  // Every later addition must preserve the same ordinary-deferral completion
+  // reserved before the base draw; the larger IRC 415(c) pool cannot enforce
+  // this account's lower plan-document ceiling.
+  const unresolvedOrdinaryExposure =
+    highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0;
+  const accountRemainingBeforeEmployer = nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure);
   const employerTaxTreatmentAvailable =
     employerDesired === 0 || validateEmployerRothAvailability(context, account, traits, diagnostics);
   const employerAdded = employerKnown && employerTaxTreatmentAvailable
@@ -17466,7 +17471,7 @@ function allocateQualifiedElective(
   if (!deferralOnly && account.planRules.permitsAfterTaxEmployeeContributions) {
     const afterTaxCapacity = minMoney(
       poolRemaining(annualGroup),
-      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
+      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure),
       deferral.compensationRemaining,
     );
     if (afterTaxCapacity > 0) {
@@ -17480,7 +17485,7 @@ function allocateQualifiedElective(
   if (!deferralOnly && !employerKnown && !account.planRules.permitsAfterTaxEmployeeContributions) {
     planTermDependentCapacity = minMoney(
       poolRemaining(annualGroup),
-      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual)),
+      nonnegative(accountAnnualLimit - annualAdditionsAmount(annual) - unresolvedOrdinaryExposure),
     );
     if (planTermDependentCapacity > 0) {
       diagnostics.push(
@@ -18112,7 +18117,7 @@ function allocateSection457(
     resolution.mode === "age" &&
     !existingCatchUpClassificationInvalid &&
     ownCatchUpRoomWithoutPool > 0
-      ? catchUpTaxTreatment(context, account, traits, diagnostics).treatment
+      ? catchUpTaxTreatment(context, account, traits, diagnostics, ownCatchUpRoomWithoutPool).treatment
       : null;
   const catchUpCapacityWithoutClassificationBlock =
     ageCatchUpTreatmentBeforeClassificationBlock === "unknown" ||
@@ -18197,7 +18202,7 @@ function allocateSection457(
       );
     }
   } else if (resolution.mode === "age" && catchUpPotential > 0) {
-    const classification = catchUpTaxTreatment(context, account, traits, diagnostics);
+    const classification = catchUpTaxTreatment(context, account, traits, diagnostics, catchUpPotential);
     const treatment = classification.treatment;
     if (treatment === "unknown") {
       reportPoolWithoutConsuming(ageCatchUpPool, sharedLimits);
