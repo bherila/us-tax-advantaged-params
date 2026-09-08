@@ -276,7 +276,7 @@ function randomPlanRules(type) {
   // The same identifier shapes as annualAdditionsGroupId, for the same reason:
   // 0, "0" and "" are where JavaScript and PHP most easily disagree, and this
   // key decides which records 26 CFR 1.457-4(c) treats as one eligible plan.
-  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "0", 0, "", null]);
+  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "é", "税😀", "0", 0, "", null]);
   if (chance(0.15)) rules.planDocumentEmployeeDeferralLimit = money();
   if (chance(0.15)) rules.planDocumentAnnualAdditionsLimit = money();
   if (chance(0.4)) rules.permitsRothContributions = chance(0.05) ? junk() : chance(0.7);
@@ -710,7 +710,7 @@ function randomScenario() {
     // the last also reaching the includible-compensation half of the conflict,
     // since the host constrains that field whenever section457Host holds.
     if (chance(0.4)) {
-      const shared = pick(["s1", "s2"]);
+      const shared = pick(["s1", "s2", "é", "税😀"]);
       hostRules.section457PlanGroupId = shared;
       // null included: an explicit null is absent, so it must separate the pair
       // rather than joining them in a group named for it.

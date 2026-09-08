@@ -11624,6 +11624,12 @@ final class Engine
                 'legalLimit' => '26 CFR 1.457-4(c)(3)(i) plan ceiling for the last three years before normal retirement age',
                 'limit' => max(array_column($plan['ceilings'], 'specialAdditional')), 'usage' => self::settled(0.0),
             ];
+            $plan['specialTotalPool'] = [
+                'id' => "457b-plan-special-total:{$key}",
+                'legalLimit' => '26 CFR 1.457-4(c)(3)(i) combined basic and special plan ceiling',
+                'limit' => max(array_map(static fn (array $ceiling): float => $ceiling['basicPlanCeiling'] + $ceiling['specialAdditional'], $plan['ceilings'])),
+                'usage' => self::settled(0.0),
+            ];
             unset($plan);
         }
         return $keys;
@@ -11645,6 +11651,7 @@ final class Engine
         if (isset($plan['basePool'])) self::chargePool($plan['basePool'], $base);
         if (isset($plan['compensationPool'])) self::chargePool($plan['compensationPool'], $salary);
         if (isset($plan['specialPool'])) self::chargePool($plan['specialPool'], $special);
+        if (isset($plan['specialTotalPool'])) self::chargePool($plan['specialTotalPool'], self::roundMoney($base + $special));
     }
 
     private static function section457SalaryDeferrals(array $components): float
@@ -11960,6 +11967,41 @@ final class Engine
         }
     }
 
+    private static function seedUnresolvedSection457SpecialAttribution(array &$context): void
+    {
+        foreach ($context['section457Plans'] as &$plan) {
+            $account = $plan['members'][0];
+            $facts = $plan['facts'][$account['id']];
+            if (!isset($plan['specialPool']) || count($facts['conflictingFields']) === 0 || $facts['groupExistingSpecialCatchUp'] == 0.0) continue;
+            $ownerId = $account['ownerId'];
+            $person = $context['persons'][$ownerId];
+            $leastSpecialCapacity = INF;
+            foreach ($facts['compensationCandidates'] as $compensation) {
+                foreach ($facts['specialCandidates'] as $special) {
+                    $readingFacts = $facts;
+                    $readingFacts['includibleCompensation'] = $compensation;
+                    $readingFacts['special'] = $special;
+                    $reading = self::section457PlanCeilings(
+                        $context['parameters'], $person, $account, $readingFacts,
+                        (float) ($context['parameters']['section457b']['baseDeferralLimit'] ?? 0),
+                        (float) ($context['parameters']['section457b']['includibleCompensationFraction'] ?? 0),
+                    );
+                    $leastSpecialCapacity = min($leastSpecialCapacity, $reading['specialAdditional']);
+                }
+            }
+            $possibleOrdinary = self::nonnegative(self::roundMoney($facts['groupExistingSpecialCatchUp'] - $leastSpecialCapacity));
+            $key = "existing-special-catch-up:{$plan['key']}";
+            $ownerRelieved = [];
+            $ownerRelieved[] =& $context['section457BasePools'][$ownerId];
+            self::attributeToEitherPool($context['section457SpecialCatchUpPools'][$ownerId], $ownerRelieved, $possibleOrdinary, $key);
+            $planRelieved = [];
+            $planRelieved[] =& $plan['basePool'];
+            self::attributeToEitherPool($plan['specialPool'], $planRelieved, $possibleOrdinary, $key);
+            unset($ownerRelieved, $planRelieved);
+        }
+        unset($plan);
+    }
+
     /**
      * Widen the pools an IRC 414(v)(7)(A)-condemned existing catch-up may have
      * consumed, from the figure the seeding assumed to the range the facts leave.
@@ -11985,6 +12027,7 @@ final class Engine
      */
     private static function seedUnresolvedCatchUpAttribution(array &$context, array $accounts): void
     {
+        self::seedUnresolvedSection457SpecialAttribution($context);
         foreach ($accounts as $account) {
             $traits = self::traits($account['type']);
             $invalid = self::unresolvedExistingPreTaxCatchUp($context, $account, $traits);
@@ -20275,6 +20318,9 @@ final class Engine
             $hasPlanBasePool
                 ? (self::poolRemainingInterval($context['section457Plans'][$planPoolKey]['basePool'])['minimum'] ?? null)
                 : null,
+            isset($context['section457Plans'][$planPoolKey]['compensationPool'])
+                ? (self::poolRemainingInterval($context['section457Plans'][$planPoolKey]['compensationPool'])['minimum'] ?? null)
+                : null,
         );
         $regularAdded = self::takeAcrossPools(
             $context,
@@ -20363,7 +20409,10 @@ final class Engine
         // replaces.
         $planSpecialRemaining = $resolution['mode'] === 'special'
             ? ($hasPlanSpecialPool
-                ? self::poolRemaining($context['section457Plans'][$planPoolKey]['specialPool'])
+                ? self::minMoney(
+                    self::poolRemainingInterval($context['section457Plans'][$planPoolKey]['specialPool'])['minimum'] ?? null,
+                    self::poolRemainingInterval($context['section457Plans'][$planPoolKey]['specialTotalPool'])['minimum'] ?? null,
+                )
                 : 0.0)
             : INF;
         // What decides whether the classification is worth asking for: the most this

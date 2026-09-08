@@ -26186,6 +26186,384 @@
         "accounts.0.contributionComponents.employeePreTaxDeferral": 24500,
         "accounts.0.contributionComponents.employeePreTaxCatchUp": 0
       }
+    },
+    {
+      "name": "2026 Unicode IRC 457 plan keys use UTF8 byte lengths",
+      "description": "The input contract permits non-ASCII plan IDs. The injective shared-limit key uses UTF8 byte counts in both engines: participant is11bytes, plan4bytes, and é2bytes. IRC414(v)(7)(A) makes the existing4000 attribution unresolved as in the paired ASCII vector, exposing the plan-base identifier without changing its8000 guaranteed allocation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "participant",
+            "birthYear": 1970,
+            "compensation": {
+              "w2Compensation": 300000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "low": 50000,
+              "high": 250000,
+              "outside": 50000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "é",
+              "includibleCompensation457": 12000
+            }
+          },
+          {
+            "id": "existing",
+            "ownerId": "participant",
+            "type": "governmental_457b",
+            "employerId": "high",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "é",
+              "includibleCompensation457": 12000
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 4000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.id": "457b-plan-base:11:participant4:plan2:é",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 8000
+      }
+    },
+    {
+      "name": "2026 existing special IRC 457 deferrals reserve salary before sibling base allocation",
+      "description": "IRC457(e)(5) and415(c)(3)(D): the plan has10000 of participant compensation; its existing5000 special salary deferral leaves5000 to defer. Under457(b)(3) the15000 combined plan ceiling does not create another5000 salary. The priority-zero sibling receives5000 base, existing special remains5000, total salary10000.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 10000
+            }
+          },
+          {
+            "id": "existing",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 10000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 5000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 5000,
+        "accounts.1.contributionComponents.special457CatchUp": 5000,
+        "totals.maximumAnnualContributionBasedOnInputs": 10000
+      }
+    },
+    {
+      "name": "2026 IRC 457 base overage consumes combined special plan ceiling",
+      "description": "26CFR1.457-4(c)(3)(i): special plan ceiling=min(2*24500,min(24500,20000)+5000)=25000. Two existing10500 nonelective employer deposits total21000 and reduce no participant salary under457(e)(5). They exceed the basic20000 ceiling by1000, so only25000-21000=4000 remains under the combined special ceiling, not the entire5000 incremental special allowance.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000
+            }
+          },
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employerPreTax": 10500
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000
+            },
+            "existingContributions": {
+              "employerPreTax": 10500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.special457CatchUp": 4000,
+        "totals.maximumAnnualContributionBasedOnInputs": 25000
+      }
+    },
+    {
+      "name": "2026 disputed IRC 457 special classification reserves participant base capacity",
+      "description": "26CFR1.457-5(c) recognizes special deferrals only through an eligible plan provision. The group reports both presence and absence, leaving the existing4000 special contribution potentially ordinary under1.457-5(b). The outside plan can therefore use only24500-4000=20500 ordinary capacity under every reading. Contradiction and attribution remain unresolved; the supplied special4000 is preserved for reconciliation.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "outside",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "outside",
+              "includibleCompensation457": 100000
+            }
+          },
+          {
+            "id": "yes",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 4000
+            }
+          },
+          {
+            "id": "no",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": false
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 20500,
+        "accounts.0.status": "indeterminate",
+        "accounts.1.contributionComponents.special457CatchUp": 4000
+      }
+    },
+    {
+      "name": "2026 partial disputed IRC 457 special allowance reserves only its possible ordinary excess",
+      "description": "26CFR1.457-5(c) permits the special provision only to its plan allowance. The plan reports5000 versus3000 unused capacity and holds4000 special contributions. At most4000-3000=1000 can be ordinary under either reading, so the outside plan has24500-1000=23500 guaranteed base capacity. The unresolved plan facts still make its maximum indeterminate, and the4000 supplied special component remains unchanged.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "outside",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "outside",
+              "includibleCompensation457": 100000
+            }
+          },
+          {
+            "id": "yes",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 4000
+            }
+          },
+          {
+            "id": "no",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 3000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 23500,
+        "accounts.0.status": "indeterminate",
+        "accounts.1.contributionComponents.special457CatchUp": 4000
+      }
+    },
+    {
+      "name": "2026 disputed IRC 457 special attribution is seeded once across multiple records",
+      "description": "26CFR1.457-5(c): the contradictory plan holds2000 special deferrals on each of two records, total4000, and may provide no special allowance. Its one possibly ordinary amount is4000, so the outside plan gets24500-4000=20500 guaranteed base capacity. Do not charge the whole4000 once for each member. Both original2000 components remain supplied and the outside maximum stays indeterminate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "outside",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 0,
+            "planRules": {
+              "section457PlanGroupId": "outside",
+              "includibleCompensation457": 100000
+            }
+          },
+          {
+            "id": "yes",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 2000
+            }
+          },
+          {
+            "id": "no",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": false
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 2000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 20500,
+        "accounts.0.status": "indeterminate",
+        "accounts.1.contributionComponents.special457CatchUp": 2000,
+        "accounts.2.contributionComponents.special457CatchUp": 2000
+      }
     }
   ]
 }

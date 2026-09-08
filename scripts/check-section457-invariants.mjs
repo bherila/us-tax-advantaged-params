@@ -85,6 +85,39 @@ for (const employer of [false, true]) {
   }
 }
 
+// Existing special salary reduces every sibling's ordinary salary capacity,
+// regardless of how the supplied amount is partitioned (457(e)(5)).
+for (const count of [1, 2, 4]) {
+  for (const special of [2500, 5000]) {
+    const accounts = Array.from({ length: count }, (_, i) => {
+      const account = record(`seed${i}`, 'participant', 'salary', 10000, 0, 1);
+      account.existingContributions = { special457CatchUp: special / count };
+      account.planRules.section457SpecialCatchUp = { eligible: true, unusedDeferralsFromPriorYears: 5000 };
+      return account;
+    });
+    accounts.unshift(record('sibling', 'participant', 'salary', 10000, 0, 0));
+    add(`special salary ${special} split into ${count} records`, scenario(accounts), (result) => {
+      assert.equal(total(result), 10000);
+      assert.equal(amount(result, 'sibling'), 10000 - special);
+    });
+  }
+}
+// The full 20,000+5,000 plan ceiling includes ordinary employer overages;
+// splitting 21,000 of deposits never restores the whole special increment.
+for (const count of [1, 2, 3]) {
+  const accounts = Array.from({ length: count }, (_, i) => {
+    const account = record(`deposit${i}`, 'participant', 'combined', 20000, 0, 1);
+    account.existingContributions = { employerPreTax: 21000 / count };
+    account.planRules.section457SpecialCatchUp = { eligible: true, unusedDeferralsFromPriorYears: 5000 };
+    return account;
+  });
+  accounts.unshift(record('sibling', 'participant', 'combined', 20000, 0, 0));
+  add(`ordinary overage split into ${count} records`, scenario(accounts), (result) => {
+    assert.equal(total(result), 25000);
+    assert.equal(amount(result, 'sibling', 'special457CatchUp'), 4000);
+  });
+}
+
 function phpResults(inputs) {
   const process = spawnSync('php', [new URL('./php-parity-runner.php', import.meta.url).pathname], {
     input: JSON.stringify(inputs), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,

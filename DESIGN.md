@@ -139,10 +139,23 @@ differ legitimately, since one plan may hold both a pre-tax and a designated Rot
 
 The internal `Section457Plan` state (a native associative structure in PHP) owns
 its member records, resolved fact views, cached ceilings, catch-up capacities,
-and all three resource balances. It is constructed once before participant-wide
+and all four resource balances. It is constructed once before participant-wide
 method selection. Account lookup points to that plan; it does not own another
 copy of its balances. Contradictory inputs retain per-member fact and ceiling
 views for the existing diagnostics, within the same plan state.
+
+The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
+special contributions both consume it, so ordinary overages reduce the remaining
+special capacity. Its usage does not depend on which of those two component
+labels ultimately applies. Ordinary employee draws also consult the salary
+balance before allocation, including salary already deferred as a special catch-up.
+
+When contradictory plan facts leave existing special contributions partly or
+wholly outside a permitted special allowance, the maximum possibly ordinary
+portion is attributed once per plan to both participant and plan base pools.
+Matching uncertainty IDs preserve its correlation with the special pools; the
+full plan ceiling and salary usage remain unchanged by that classification.
+Internal plan keys use UTF-8 byte lengths consistently in both runtimes.
 
 Participant method selection reads the plans' capacities. Allocation reads the
 same cached ceilings and continues in global ascending priority, then input

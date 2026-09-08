@@ -10785,6 +10785,8 @@ interface Section457Plan {
   basePool?: LimitPool;
   compensationPool?: LimitPool;
   specialPool?: LimitPool;
+  /** Full basic-plus-special ceiling, including ordinary overages. */
+  specialTotalPool?: LimitPool;
 }
 
 function buildSection457Plans(
@@ -10847,6 +10849,12 @@ function buildSection457Plans(
       legalLimit: "26 CFR 1.457-4(c)(3)(i) plan ceiling for the last three years before normal retirement age",
       limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.specialAdditional), 0), usage: settled(0),
     };
+    plan.specialTotalPool = {
+      id: `457b-plan-special-total:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(3)(i) combined basic and special plan ceiling",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling + value.specialAdditional), 0),
+      usage: settled(0),
+    };
   }
   return [...plans.values()];
 }
@@ -10861,6 +10869,7 @@ function chargeSection457Plan(plan: Section457Plan, components: ContributionComp
   if (plan.basePool) chargePool(plan.basePool, base);
   if (plan.compensationPool) chargePool(plan.compensationPool, salary);
   if (plan.specialPool) chargePool(plan.specialPool, special);
+  if (plan.specialTotalPool) chargePool(plan.specialTotalPool, roundMoney(base + special));
 }
 
 function section457SalaryDeferrals(components: ContributionComponents): Money {
@@ -11186,7 +11195,7 @@ function section457PlanGroupKey(person: NormalizedPerson, account: NormalizedAcc
   const supplied = account.planRules.section457PlanGroupId ?? undefined;
   const parts =
     supplied === undefined ? [person.id, "account", account.id] : [person.id, "plan", supplied];
-  return parts.map((part) => `${part.length}:${part}`).join("");
+  return parts.map((part) => `${new TextEncoder().encode(part).length}:${part}`).join("");
 }
 
 function section457PlanCeilings(
@@ -11534,6 +11543,33 @@ function resolveSection457CatchUpModes(
   }
 }
 
+function seedUnresolvedSection457SpecialAttribution(context: CalculationContext): void {
+  for (const plan of context.section457Plans.values()) {
+    const account = plan.members[0]!;
+    const facts = plan.facts.get(account.id)!;
+    if (plan.specialPool === undefined || facts.conflictingFields.length === 0 || facts.groupExistingSpecialCatchUp === 0) continue;
+    const person = context.persons.get(account.ownerId)!;
+    let leastSpecialCapacity = Infinity;
+    for (const includibleCompensation of facts.compensationCandidates) {
+      for (const special of facts.specialCandidates) {
+        const reading = section457PlanCeilings(
+          context.parameters, person, account, { ...facts, includibleCompensation, special },
+          context.parameters.section457b.baseDeferralLimit ?? 0,
+          context.parameters.section457b.includibleCompensationFraction ?? 0,
+        );
+        leastSpecialCapacity = Math.min(leastSpecialCapacity, reading.specialAdditional);
+      }
+    }
+    const possibleOrdinary = nonnegative(roundMoney(facts.groupExistingSpecialCatchUp - leastSpecialCapacity));
+    const key = `existing-special-catch-up:${plan.key}`;
+    // One group-level attribution, not one whole-group charge per record.
+    // The combined plan ceiling and salary usage are invariant to this label.
+    attributeToEitherPool(context.section457SpecialCatchUpPools.get(account.ownerId),
+      [context.section457BasePools.get(account.ownerId)], possibleOrdinary, key);
+    attributeToEitherPool(plan.specialPool, [plan.basePool], possibleOrdinary, key);
+  }
+}
+
 /**
  * Widen the pools an IRC 414(v)(7)(A)-condemned existing catch-up may have
  * consumed, from the figure the seeding assumed to the range the facts leave.
@@ -11569,6 +11605,7 @@ function seedUnresolvedCatchUpAttribution(
   context: CalculationContext,
   accounts: NormalizedAccount[],
 ): void {
+  seedUnresolvedSection457SpecialAttribution(context);
   for (const account of accounts) {
     const traits = ACCOUNT_TRAITS[account.type];
     const invalid = unresolvedExistingPreTaxCatchUp(context, account, traits);
@@ -19056,6 +19093,7 @@ function allocateSection457(
   const regularDesired = minMoney(
     nonnegative(appliedHostBaseLimit - regularBeforeEmployee),
     planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null,
+    planCompensationPool === undefined ? null : poolRemainingInterval(planCompensationPool)?.minimum ?? null,
   );
   const regularAdded = takeAcrossPools(
     plesaPool ? [basePool, plesaPool] : [basePool],
@@ -19148,7 +19186,10 @@ function allocateSection457(
     resolution.mode === "special"
       ? planSpecialPool === undefined
         ? 0
-        : poolRemaining(planSpecialPool)
+        : minMoney(
+            poolRemainingInterval(planSpecialPool)?.minimum,
+            plan.specialTotalPool === undefined ? null : poolRemainingInterval(plan.specialTotalPool)?.minimum,
+          )
       : Infinity;
   // What decides whether the classification is worth asking for: the most this
   // account could take if every open question resolved in its favour.
