@@ -810,9 +810,17 @@ test("nonempty unusable person HSA statements never assert no coverage", () => {
     const input = structuredClone(vector.input);
     input.persons[1].hsaCoverage = hsaCoverage;
     const row = account(U.calculate(input), "t-hsa");
+    const codes = new Set(row.diagnostics.map(({ code }) => code));
+    if ("eligibleMonths" in hsaCoverage) {
+      // January eligibility is stated; either missing tier becomes family
+      // beside the owner. Q&A-31 leaves eleven months whole and divides one:
+      // 8750 - (8750 / 12 / 2) = 8385.42, never the sole-spouse 8750.
+      assert.equal(row.statutoryMaximumAnnualContribution, 8385.42);
+      assert.ok(codes.has("HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE"));
+      continue;
+    }
     assert.equal(row.statutoryMaximumAnnualContribution, null);
     assert.equal(row.status, CalculationStatus.INDETERMINATE);
-    const codes = new Set(row.diagnostics.map(({ code }) => code));
     assert.ok(codes.has("HSA_SPOUSE_COVERAGE_FACTS_REQUIRED"));
     assert.ok(codes.has("HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"));
     assert.ok(!codes.has("HSA_SOLE_ELIGIBLE_SPOUSE_TAKES_WHOLE_FAMILY_LIMIT"));

@@ -618,6 +618,31 @@ owner established ineligible on December 1, even if the household's full candida
 increases their ceiling through the other spouse. That owner receives no testing
 period, income-inclusion amount, additional tax, or testing-period warning.
 
+**Conflicting spouse coverage.** A complete coverage statement remains one schedule,
+including its annual deductible. The engine evaluates each coherent spouse statement
+through both Notice 2008-52 candidates, the household comparison, monthly eligibility,
+and the family division. An established owner's result can remain determinate when
+all completions give identical contribution amounts, shared-limit usage, candidate
+selection, and testing-period state. `HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE`
+records that proof; the spouse's own contradictory statements remain unresolved.
+Varying nullable audit amounts, such as `dividedFamilyContributionLimit`, are `null`.
+
+For example, an under-55 owner with family coverage January–November and self-only
+coverage in December has a monthly candidate of `(11 × 8750 + 4400) / 12 = 8387.50`
+in 2026. With an agreed whole share, contradictory January-only spouse statements
+(family versus self-only) cannot make the full-year candidate overtake it. The owner
+retains 8387.50. A December-only self-only owner remains indeterminate: the same
+statements give 4400 versus 4762.50.
+
+Partial statements retain the facts they supply: `eligibleMonths: [1]` without a
+tier leaves the common self-only/family tier unresolved, not January eligibility.
+For entirely unknown post-2006 schedules, the evaluator traverses every schedule
+up to permutations of equivalent January–November months, with December separate.
+It does not sample or truncate the possibilities. Missing continuous deductible
+facts in capped years remain conservative. A missing spouse person still leaves
+the Archer operand unestablished. Coverage may be supplied on the person alone;
+an absent account statement differs from an explicitly unusable account `{}`.
+
 **Reading the division off the result.** `sharedFamilyContributionLimit` is the whole family
 limitation an owner refigured for their own family months, and Q&A-31 does not divide all of it:
 a month only one spouse was eligible for goes to that spouse whole. `dividedFamilyContributionLimit`

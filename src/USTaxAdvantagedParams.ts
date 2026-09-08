@@ -9591,6 +9591,7 @@ interface CalculationContext {
   hsaCatchUpPools: Map<string, LimitPool>;
   hsaFamilyPools: Map<string, LimitPool>;
   hsaPlans: Map<string, HsaOwnerPlan>;
+  hsaResolvedOutcomes?: Map<string, AllocationOutcome>;
   healthFsaPools: Map<string, LimitPool>;
   healthFsaPlans: Map<string, HealthFsaAccountPlan>;
   dependentCarePools: Map<string, LimitPool>;
@@ -10437,6 +10438,7 @@ function createCalculationContext(
   initializeHealthFsaPools(context, accounts);
   initializeDependentCarePools(context, accounts);
   initializeHsaPools(context, accounts);
+  recoverHsaCoherentCompletions(context, accounts);
   return context;
 }
 
@@ -12413,7 +12415,7 @@ function initializeHsaPools(context: CalculationContext, accounts: NormalizedAcc
     facts.set(ownerId, {
       ownerId,
       resolvedDeductible,
-      hasUnusableAccountStatement: hasUnusableAccountStatement || usableAccounts.length === 0,
+      hasUnusableAccountStatement: hasUnusableAccountStatement || (usableAccounts.length === 0 && (declared === undefined || resolvePersonHsaMonths(declared) === null)),
       hasUnusablePersonStatement: declared !== undefined && resolvePersonHsaMonths(declared) === null,
       conflict,
       personConflict,
@@ -15394,7 +15396,175 @@ function refreshHsaUsage(context: CalculationContext): void {
   }
 }
 
+/** One coherent schedule, including its annual deductible, never a set of monthly votes. */
+function hsaCompletionStatements(context: CalculationContext, accounts: NormalizedAccount[], personId: string): HsaCoverageVariant[] {
+  const statements: HsaCoverageVariant[] = [];
+  for (const account of accounts) {
+    if (account.ownerId !== personId || ACCOUNT_TRAITS[account.type].family !== "hsa") continue;
+    const coverage = account.planRules.hsa;
+    if (coverage === undefined) continue;
+    statements.push({ source: "account", coverage, months: resolveHsaMonths(coverage) });
+  }
+  const coverage = context.persons.get(personId)?.hsaCoverage;
+  if (coverage !== undefined) statements.push({ source: "person", coverage, months: resolvePersonHsaMonths(coverage) });
+  return statements;
+}
+
+function hsaCompletionCoverage(months: Array<HsaCoverageTier | null>, deductible?: Money): HsaCoverageInput {
+  return {
+    monthlyCoverage: months.map((coverage, index) => ({ month: index + 1, coverage }))
+      .filter((entry): entry is HsaMonthlyCoverageInput => entry.coverage !== null),
+    ...(deductible === undefined ? {} : { hdhpAnnualDeductible: deductible }),
+  };
+}
+
+/**
+ * Enumerate an unknown schedule modulo permutations of equivalent January-November
+ * months. The established spouse's tier is the only month-dependent operand of
+ * §223(b) before December: annual deductible, age, Archer/funding amounts and the
+ * division are scalars. FSA facts are annual, diagnostic-only facts, not monthly
+ * eligibility overrides. December stays separate because it selects candidate (2)
+ * and the testing period. For a class of n months, the counts (none,self,family)
+ * enumerate every orbit: (n+1)(n+2)/2 representatives, never a truncated sample.
+ */
+function* hsaUnknownSchedules(ownMonths: Array<HsaCoverageTier | null>): Generator<Array<HsaCoverageTier | null>> {
+  const classes = new Map<string, number[]>();
+  for (let index = 0; index < 12; index++) {
+    const key = index === 11 ? "december" : ownMonths[index] ?? "none";
+    const group = classes.get(key) ?? [];
+    group.push(index);
+    classes.set(key, group);
+  }
+  const groups = [...classes.values()];
+  const schedule: Array<HsaCoverageTier | null> = Array(12).fill(null);
+  function* visit(groupIndex: number): Generator<Array<HsaCoverageTier | null>> {
+    if (groupIndex === groups.length) { yield [...schedule]; return; }
+    const group = groups[groupIndex];
+    for (let family = 0; family <= group.length; family++) {
+      for (let self = 0; self <= group.length - family; self++) {
+        for (let i = 0; i < group.length; i++) schedule[group[i]] = i < family ? "family" : i < family + self ? "self_only" : null;
+        yield* visit(groupIndex + 1);
+      }
+    }
+  }
+  yield* visit(0);
+}
+
+/**
+ * Recover only an established owner's invariant allocation beside an unresolved
+ * spouse. Run the complete native calculation for each coherent completion,
+ * including existing-contribution seeding and priority allocation. The source
+ * spouse remains refused: no hypothetical additional spouse contribution is spent.
+ * No candidate pool is transplanted into live state; cached account outcomes are
+ * safe because the source spouse has no live allocation and all other owners'
+ * pools are separate. Shared-limit records themselves must also agree exactly.
+ */
+function recoverHsaCoherentCompletions(context: CalculationContext, accounts: NormalizedAccount[]): void {
+  const couple = hsaMarriedCouple(context);
+  if (couple === null || context.hsaParameters === null) return;
+  const sorted = [...accounts].sort((a, b) => a.priority! - b.priority! || a.inputIndex - b.inputIndex);
+  for (const ownerId of couple) {
+    if (context.hsaPlans.get(ownerId)?.status !== CalculationStatus.INDETERMINATE) continue;
+    const spouseId = couple.find((id) => id !== ownerId)!;
+    const sourcePlan = context.hsaPlans.get(spouseId);
+    if (sourcePlan && sourcePlan.status !== CalculationStatus.INDETERMINATE) continue;
+    const own = hsaCompletionStatements(context, accounts, ownerId);
+    if (own.length === 0 || own.some((entry) => entry.months === null)) continue;
+    if (new Set(own.map((entry) => hsaCoverageSignature(entry.coverage, entry.source))).size !== 1) continue;
+    const source = hsaCompletionStatements(context, accounts, spouseId);
+    const unknown = source.length === 0 || source.some((entry) => entry.months === null);
+    // A missing continuous capped-year deductible is not a finite domain.
+    if (unknown && context.hsaParameters.contributionLimitCappedByHdhpAnnualDeductible) continue;
+    const options = new Map<string, HsaCoverageInput>();
+    for (const entry of source) {
+      if (entry.months !== null) options.set(hsaCoverageSignature(entry.coverage, entry.source), hsaCompletionCoverage(entry.months, entry.coverage.hdhpAnnualDeductible));
+    }
+    function* completions(): Generator<HsaCoverageInput> {
+      for (const key of [...options.keys()].sort()) yield options.get(key)!;
+      if (unknown) {
+        const incomplete = source.filter((entry) => entry.months === null);
+        if (incomplete.length === 0) incomplete.push({ source: "person", coverage: {}, months: null });
+        for (const entry of incomplete) {
+          if (entry.coverage.eligibleMonths !== undefined) {
+            // The eligible months are stated; only the common tier is missing.
+            for (const coverageTier of ["self_only", "family"] as const) {
+              yield hsaCompletionCoverage(resolveHsaMonths({ ...entry.coverage, coverageTier })!, entry.coverage.hdhpAnnualDeductible);
+            }
+          } else {
+            for (const schedule of hsaUnknownSchedules(own[0].months!)) {
+              yield hsaCompletionCoverage(schedule, entry.coverage.hdhpAnnualDeductible);
+            }
+          }
+        }
+      }
+    }
+    const ownedAccounts = sorted.filter((account) => account.ownerId === ownerId && ACCOUNT_TRAITS[account.type].family === "hsa");
+    let reference: AllocationOutcome[] | null = null;
+    let invariant = true;
+    const nullableAudit = new Set(["proratedContributionLimit", "contributionLimitWithoutLastMonthRule", "familyLimitShare", "sharedFamilyContributionLimit", "dividedFamilyContributionLimit"]);
+    for (const coverage of completions()) {
+      const variantAccounts = accounts.map((account) => account.ownerId === spouseId && ACCOUNT_TRAITS[account.type].family === "hsa"
+        ? { ...account, planRules: { ...account.planRules, hsa: coverage } } : account);
+      const persons = new Map(context.persons);
+      persons.set(spouseId, { ...persons.get(spouseId)!, hsaCoverage: coverage });
+      const variant: CalculationContext = {
+        ...context, persons, accountsById: new Map(variantAccounts.map((account) => [account.id, account])),
+        hsaBasePools: new Map(), hsaCatchUpPools: new Map(), hsaFamilyPools: new Map(), hsaPlans: new Map(),
+        hsaResolvedOutcomes: undefined,
+      };
+      initializeHsaPools(variant, variantAccounts);
+      const outcomes = ownedAccounts.map((account) => allocateHsa(variant, account));
+      if (outcomes.some((outcome) => outcome.status === CalculationStatus.INDETERMINATE || outcome.hsaDetail == null)) { invariant = false; break; }
+      if (reference === null) { reference = outcomes; continue; }
+      for (let i = 0; i < outcomes.length; i++) {
+        const current = outcomes[i];
+        const expected = reference[i];
+        // Includes the complete shared-limit records, not merely the final ceiling.
+        const projection = (outcome: AllocationOutcome) => ({ ...outcome, diagnostics: undefined, hsaDetail: undefined });
+        if (JSON.stringify(projection(current)) !== JSON.stringify(projection(expected))) { invariant = false; break; }
+        const merged = expected.hsaDetail!;
+        const detail = current.hsaDetail!;
+        for (const key of Object.keys(detail) as Array<keyof HsaAccountDetail>) {
+          if (nullableAudit.has(key)) {
+            if (JSON.stringify(merged[key]) !== JSON.stringify(detail[key])) (merged as unknown as Record<string, unknown>)[key] = null;
+          } else if (JSON.stringify(merged[key]) !== JSON.stringify(detail[key])) {
+            invariant = false; break;
+          }
+        }
+        if (!invariant) break;
+        // Diagnostics that depend on one completion are not established facts.
+        expected.diagnostics = expected.diagnostics.filter((entry) => current.diagnostics.some((other) => JSON.stringify(entry) === JSON.stringify(other)));
+      }
+      if (!invariant) break;
+    }
+    if (!invariant || reference === null) continue;
+    context.hsaResolvedOutcomes ??= new Map();
+    for (let i = 0; i < reference.length; i++) {
+      reference[i].diagnostics.push(diagnostic(
+        "HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE", DiagnosticSeverity.INFO,
+        "All coherent completions of the spouse's unresolved coverage give this account the same contribution amounts, shared-limit usage, and last-month-rule candidate and testing-period state. Varying nullable audit fields are withheld; the spouse's own coverage remains unresolved.",
+        `persons.${spouseId}.hsaCoverage`, "IRC 223(b); Notice 2008-52; Notice 2004-50 Q&A-31",
+      ));
+      context.hsaResolvedOutcomes.set(ownedAccounts[i].id, reference[i]);
+    }
+  }
+}
+
 function allocateHsa(context: CalculationContext, account: NormalizedAccount): AllocationOutcome {
+  const recovered = context.hsaResolvedOutcomes?.get(account.id);
+  if (recovered) {
+    // The refused spouse may be reported later. Advance the shared live audit
+    // from the invariant completed outcomes, so it cannot show phantom room.
+    for (const shared of recovered.sharedLimits) {
+      const pools = [...context.hsaBasePools.values(), ...context.hsaCatchUpPools.values(), ...context.hsaFamilyPools.values()];
+      const pool = pools.find((entry) => entry.id === shared.id);
+      if (!pool || shared.usedByAccount === null) continue;
+      pool.limit = shared.limit;
+      const before = shared.usedBeforeAccount === null ? shared.possibleUsedBeforeAccount : { minimum: shared.usedBeforeAccount, maximum: shared.usedBeforeAccount };
+      if (before) pool.usage = { minimum: roundMoney(before.minimum + shared.usedByAccount), maximum: roundMoney(before.maximum + shared.usedByAccount) };
+    }
+    return recovered;
+  }
   const plan = context.hsaPlans.get(account.ownerId)!;
   const annual = cloneComponentsFromComponents(account.existingContributions);
   const additional = zeroComponents();

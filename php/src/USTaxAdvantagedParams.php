@@ -10717,6 +10717,7 @@ final class Engine
         self::initializeHealthFsaPools($context, $accounts);
         self::initializeDependentCarePools($context, $accounts);
         self::initializeHsaPools($context, $accounts);
+        self::recoverHsaCoherentCompletions($context, $accounts);
         return $context;
     }
 
@@ -13047,7 +13048,7 @@ final class Engine
             $facts[$ownerId] = [
                 'ownerId' => $ownerId,
                 'resolvedDeductible' => $resolvedDeductible,
-                'hasUnusableAccountStatement' => $hasUnusableAccountStatement || count($usableSignatures) === 0,
+                'hasUnusableAccountStatement' => $hasUnusableAccountStatement || (count($usableSignatures) === 0 && (!is_array($declared) || self::resolvePersonHsaMonths($declared) === null)),
                 'hasUnusablePersonStatement' => is_array($declared) && self::resolvePersonHsaMonths($declared) === null,
                 'conflict' => $conflict,
                 'personConflict' => $personConflict,
@@ -16433,8 +16434,176 @@ final class Engine
      *  @param array<string,mixed> $account
      *  @return array<string,mixed>
      */
+    /** Whole schedules, each retaining the deductible stated with it. */
+    private static function hsaCompletionStatements(array $context, array $accounts, string $personId): array
+    {
+        $statements = [];
+        foreach ($accounts as $account) {
+            if ($account['ownerId'] !== $personId || self::traits($account['type'])['family'] !== 'hsa') continue;
+            $coverage = $account['planRules']['hsa'] ?? null;
+            if ($coverage === null) continue;
+            $statements[] = ['source' => 'account', 'coverage' => $coverage, 'months' => self::resolveHsaMonths($coverage)];
+        }
+        $coverage = $context['persons'][$personId]['hsaCoverage'] ?? null;
+        if ($coverage !== null) $statements[] = ['source' => 'person', 'coverage' => $coverage, 'months' => self::resolvePersonHsaMonths($coverage)];
+        return $statements;
+    }
+
+    private static function hsaCompletionCoverage(array $months, int|float|null $deductible = null): array
+    {
+        $coverage = ['monthlyCoverage' => []];
+        foreach ($months as $index => $tier) {
+            if ($tier !== null) $coverage['monthlyCoverage'][] = ['month' => $index + 1, 'coverage' => $tier];
+        }
+        if ($deductible !== null) $coverage['hdhpAnnualDeductible'] = $deductible;
+        return $coverage;
+    }
+
+    /**
+     * Every orbit of January-November schedules under permutations preserving the
+     * established spouse's tier. All other §223 inputs are annual scalars; FSA
+     * facts are annual diagnostics. December is separate for candidate selection
+     * and testing. Counts (none,self,family) traverse all possibilities without
+     * truncation: a class of n months has (n+1)(n+2)/2 representatives.
+     */
+    private static function hsaUnknownSchedules(array $ownMonths): \Generator
+    {
+        $classes = [];
+        for ($index = 0; $index < 12; $index++) {
+            $key = $index === 11 ? 'december' : ($ownMonths[$index] ?? 'none');
+            $classes[$key][] = $index;
+        }
+        $groups = array_values($classes);
+        $schedule = array_fill(0, 12, null);
+        $visit = function (int $groupIndex) use (&$visit, &$schedule, $groups): \Generator {
+            if ($groupIndex === count($groups)) { yield $schedule; return; }
+            $group = $groups[$groupIndex];
+            for ($family = 0; $family <= count($group); $family++) {
+                for ($self = 0; $self <= count($group) - $family; $self++) {
+                    foreach ($group as $i => $index) $schedule[$index] = $i < $family ? 'family' : ($i < $family + $self ? 'self_only' : null);
+                    yield from $visit($groupIndex + 1);
+                }
+            }
+        };
+        yield from $visit(0);
+    }
+
+    /**
+     * Pure complete-candidate initialization, seeding and priority allocation.
+     * Only an established owner beside an accountless or refused spouse may be
+     * recovered. No hypothetical new spouse contribution is allocated and no
+     * candidate pool replaces live state. Every account amount, shared-limit
+     * record and candidate/testing fact must agree across all completions.
+     */
+    private static function recoverHsaCoherentCompletions(array &$context, array $accounts): void
+    {
+        $couple = self::hsaMarriedCouple($context);
+        if ($couple === null || $context['hsaParameters'] === null) return;
+        $sorted = $accounts;
+        usort($sorted, static fn (array $a, array $b): int => ($a['priority'] <=> $b['priority']) ?: ($a['inputIndex'] <=> $b['inputIndex']));
+        foreach ($couple as $ownerId) {
+            if (($context['hsaPlans'][$ownerId]['status'] ?? null) !== CalculationStatus::INDETERMINATE->value) continue;
+            $spouseId = $couple[0] === $ownerId ? $couple[1] : $couple[0];
+            $sourcePlan = $context['hsaPlans'][$spouseId] ?? null;
+            if ($sourcePlan !== null && $sourcePlan['status'] !== CalculationStatus::INDETERMINATE->value) continue;
+            $own = self::hsaCompletionStatements($context, $accounts, $ownerId);
+            if ($own === [] || array_filter($own, static fn (array $entry): bool => $entry['months'] === null) !== []) continue;
+            $signatures = array_unique(array_map(static fn (array $entry): string => self::hsaCoverageSignature($entry['coverage'], $entry['source']), $own));
+            if (count($signatures) !== 1) continue;
+            $source = self::hsaCompletionStatements($context, $accounts, $spouseId);
+            $unknown = $source === [] || array_filter($source, static fn (array $entry): bool => $entry['months'] === null) !== [];
+            // Unknown capped-year deductible is a continuous domain, not a sample.
+            if ($unknown && $context['hsaParameters']['contributionLimitCappedByHdhpAnnualDeductible']) continue;
+            $options = [];
+            foreach ($source as $entry) {
+                if ($entry['months'] !== null) $options[self::hsaCoverageSignature($entry['coverage'], $entry['source'])] = self::hsaCompletionCoverage($entry['months'], $entry['coverage']['hdhpAnnualDeductible'] ?? null);
+            }
+            ksort($options, SORT_STRING);
+            $completions = function () use ($options, $unknown, $source, $own): \Generator {
+                foreach ($options as $coverage) yield $coverage;
+                if ($unknown) {
+                    $incomplete = array_values(array_filter($source, static fn (array $entry): bool => $entry['months'] === null));
+                    if ($incomplete === []) $incomplete[] = ['source' => 'person', 'coverage' => [], 'months' => null];
+                    foreach ($incomplete as $entry) {
+                        if (isset($entry['coverage']['eligibleMonths'])) {
+                            foreach (['self_only', 'family'] as $tier) {
+                                $completed = $entry['coverage'];
+                                $completed['coverageTier'] = $tier;
+                                yield self::hsaCompletionCoverage(self::resolveHsaMonths($completed), $entry['coverage']['hdhpAnnualDeductible'] ?? null);
+                            }
+                        } else {
+                            foreach (self::hsaUnknownSchedules($own[0]['months']) as $schedule) {
+                                yield self::hsaCompletionCoverage($schedule, $entry['coverage']['hdhpAnnualDeductible'] ?? null);
+                            }
+                        }
+                    }
+                }
+            };
+            $ownedAccounts = array_values(array_filter($sorted, static fn (array $account): bool => $account['ownerId'] === $ownerId && self::traits($account['type'])['family'] === 'hsa'));
+            $reference = null;
+            $invariant = true;
+            $nullableAudit = ['proratedContributionLimit', 'contributionLimitWithoutLastMonthRule', 'familyLimitShare', 'sharedFamilyContributionLimit', 'dividedFamilyContributionLimit'];
+            foreach ($completions() as $coverage) {
+                $variantAccounts = array_map(static function (array $account) use ($spouseId, $coverage): array {
+                    if ($account['ownerId'] === $spouseId && self::traits($account['type'])['family'] === 'hsa') $account['planRules']['hsa'] = $coverage;
+                    return $account;
+                }, $accounts);
+                $variant = $context;
+                $variant['persons'][$spouseId]['hsaCoverage'] = $coverage;
+                foreach ($variantAccounts as $account) $variant['accountsById'][$account['id']] = $account;
+                foreach (['hsaBasePools', 'hsaCatchUpPools', 'hsaFamilyPools', 'hsaPlans', 'hsaResolvedOutcomes'] as $key) $variant[$key] = [];
+                self::initializeHsaPools($variant, $variantAccounts);
+                $outcomes = [];
+                foreach ($ownedAccounts as $account) $outcomes[] = self::allocateHsa($variant, $account);
+                foreach ($outcomes as $outcome) {
+                    if ($outcome['status'] === CalculationStatus::INDETERMINATE->value || ($outcome['hsaDetail'] ?? null) === null) { $invariant = false; break; }
+                }
+                if (!$invariant) break;
+                if ($reference === null) { $reference = $outcomes; continue; }
+                foreach ($outcomes as $i => $current) {
+                    $expected = $reference[$i];
+                    $projection = static function (array $outcome): array { unset($outcome['diagnostics'], $outcome['hsaDetail']); return $outcome; };
+                    if (json_encode($projection($current)) !== json_encode($projection($expected))) { $invariant = false; break; }
+                    foreach ($current['hsaDetail'] as $key => $value) {
+                        if (in_array($key, $nullableAudit, true)) {
+                            if ($expected['hsaDetail'][$key] !== $value) $reference[$i]['hsaDetail'][$key] = null;
+                        } elseif ($expected['hsaDetail'][$key] !== $value) { $invariant = false; break; }
+                    }
+                    if (!$invariant) break;
+                    $reference[$i]['diagnostics'] = array_values(array_filter($expected['diagnostics'], static fn (array $entry): bool => in_array($entry, $current['diagnostics'], true)));
+                }
+                if (!$invariant) break;
+            }
+            if (!$invariant || $reference === null) continue;
+            foreach ($reference as $i => $outcome) {
+                $outcome['diagnostics'][] = self::diagnostic(
+                    'HSA_COHERENT_COVERAGE_COMPLETIONS_AGREE', DiagnosticSeverity::INFO,
+                    "All coherent completions of the spouse's unresolved coverage give this account the same contribution amounts, shared-limit usage, and last-month-rule candidate and testing-period state. Varying nullable audit fields are withheld; the spouse's own coverage remains unresolved.",
+                    "persons.{$spouseId}.hsaCoverage", 'IRC 223(b); Notice 2008-52; Notice 2004-50 Q&A-31',
+                );
+                $context['hsaResolvedOutcomes'][$ownedAccounts[$i]['id']] = $outcome;
+            }
+        }
+    }
+
     private static function allocateHsa(array &$context, array $account): array
     {
+        if (isset($context['hsaResolvedOutcomes'][$account['id']])) {
+            $recovered = $context['hsaResolvedOutcomes'][$account['id']];
+            // Later refused accounts must see the already allocated family usage.
+            foreach ($recovered['sharedLimits'] as $shared) {
+                if ($shared['usedByAccount'] === null) continue;
+                foreach (['hsaBasePools', 'hsaCatchUpPools', 'hsaFamilyPools'] as $poolKey) {
+                    foreach ($context[$poolKey] as $id => $pool) {
+                        if ($pool['id'] !== $shared['id']) continue;
+                        $context[$poolKey][$id]['limit'] = $shared['limit'];
+                        $before = $shared['usedBeforeAccount'] === null ? ($shared['possibleUsedBeforeAccount'] ?? null) : ['minimum' => $shared['usedBeforeAccount'], 'maximum' => $shared['usedBeforeAccount']];
+                        if ($before !== null) $context[$poolKey][$id]['usage'] = ['minimum' => self::roundMoney($before['minimum'] + $shared['usedByAccount']), 'maximum' => self::roundMoney($before['maximum'] + $shared['usedByAccount'])];
+                    }
+                }
+            }
+            return $recovered;
+        }
         $ownerId = (string) $account['ownerId'];
         $plan = $context['hsaPlans'][$ownerId];
         $annual = $account['existingContributions'];
