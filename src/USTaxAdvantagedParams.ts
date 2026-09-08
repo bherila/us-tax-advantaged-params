@@ -15473,6 +15473,7 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
   const sorted = [...accounts].sort((a, b) => a.priority! - b.priority! || a.inputIndex - b.inputIndex);
   for (const ownerId of couple) {
     if (context.hsaPlans.get(ownerId)?.status !== CalculationStatus.INDETERMINATE) continue;
+    if (!accounts.some((account) => account.ownerId === ownerId && ACCOUNT_TRAITS[account.type].family === "hsa")) continue;
     const spouseId = couple.find((id) => id !== ownerId)!;
     const sourcePlan = context.hsaPlans.get(spouseId);
     if (sourcePlan && sourcePlan.status !== CalculationStatus.INDETERMINATE) continue;
@@ -15531,10 +15532,9 @@ function recoverHsaCoherentCompletions(context: CalculationContext, accounts: No
         outcomes.push(allocateHsa(variant, account));
         // A later refresh rebuilds usage from these facts, so output equality
         // alone is insufficient. The refused source needs a model only when
-        // its counted contributions or qualified funding distribution are positive.
+        // its actual existing contributions are positive.
         models.push([...variant.hsaPlans].filter(([id, plan]) =>
-          id === ownerId || (id === spouseId && ((plan.existingCountedContributions ?? 0) > 0 ||
-            (variant.persons.get(id)?.qualifiedHsaFundingDistributions ?? 0) > 0)),
+          id === ownerId || (id === spouseId && (plan.existingCountedContributions ?? 0) > 0),
         ).map(([id, plan]) => ({
           ownerId: id, countedContributions: plan.countedContributions ?? 0,
           existingCountedContributions: plan.existingCountedContributions ?? 0,

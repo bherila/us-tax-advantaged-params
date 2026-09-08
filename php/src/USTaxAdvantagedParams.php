@@ -16503,6 +16503,7 @@ final class Engine
         usort($sorted, static fn (array $a, array $b): int => ($a['priority'] <=> $b['priority']) ?: ($a['inputIndex'] <=> $b['inputIndex']));
         foreach ($couple as $ownerId) {
             if (($context['hsaPlans'][$ownerId]['status'] ?? null) !== CalculationStatus::INDETERMINATE->value) continue;
+            if (array_filter($accounts, static fn (array $account): bool => $account['ownerId'] === $ownerId && self::traits($account['type'])['family'] === 'hsa') === []) continue;
             $spouseId = $couple[0] === $ownerId ? $couple[1] : $couple[0];
             $sourcePlan = $context['hsaPlans'][$spouseId] ?? null;
             if ($sourcePlan !== null && $sourcePlan['status'] !== CalculationStatus::INDETERMINATE->value) continue;
@@ -16569,7 +16570,7 @@ final class Engine
                     $outcomes[] = self::allocateHsa($variant, $account);
                     $snapshot = [];
                     foreach ($variant['hsaPlans'] as $id => $plan) {
-                        if ($id !== $ownerId && ($id !== $spouseId || (($plan['existingCountedContributions'] ?? 0) <= 0 && ($variant['persons'][$id]['qualifiedHsaFundingDistributions'] ?? 0) <= 0))) continue;
+                        if ($id !== $ownerId && ($id !== $spouseId || ($plan['existingCountedContributions'] ?? 0) <= 0)) continue;
                         $snapshot[] = [
                             'ownerId' => $id, 'countedContributions' => $plan['countedContributions'] ?? 0,
                             'existingCountedContributions' => $plan['existingCountedContributions'] ?? 0,

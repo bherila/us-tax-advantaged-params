@@ -210,7 +210,7 @@ last-month candidate selection and testing-period state across all completions.
 Already-nullable audit fields are intersected: a differing figure becomes null.
 Cached outcomes retain the invariant owner capacities and aggregate counted
 contributions after each allocation. The refused spouse's numerical usage model
-must also agree across completions when that spouse has counted contributions or a qualified funding distribution.
+must also agree across completions when that spouse has existing contributions.
 Installing those numerical facts and refreshing the ordinary interval model
 keeps later accounts' shared-pool audits current, including marginal draws with
 no scalar value. Source status and diagnostics remain unresolved; candidate
