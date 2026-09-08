@@ -13594,8 +13594,8 @@
       ]
     },
     {
-      "name": "2026 an existing contribution consumes the known family pool though the division is not known",
-      "description": "The IRC 223(b)(5) pool reports the couple's limitation whenever subparagraph (A) fixes it, even where the (B)(ii) division does not. A reported ceiling has to account for what has already been paid in, or it states capacity that is gone. This is the preceding share-conflict vector with 1000 already contributed to the taxpayer's first health savings account. Both spouses state family coverage for all twelve months of 2026, so the limitation is the IRC 223(b)(2)(B) family amount of 8750 as adjusted by Rev. Proc. 2025-19, and 1000 of it is spent: the pool reports limit 8750, usedBeforeAccount 1000 and remainingAfterAccount 7750. Both owners are aged 41 in 2026 and so have no IRC 223(b)(3) additional contribution amount for any part of the 1000 to fall into, which makes 1000 the exact amount of family capacity consumed rather than merely an upper bound on it. The accounts themselves stay indeterminate with null maximums, because how much of the remaining 7750 belongs to each is still the thing the contradictory shares of 0.5 and 0.25 leave unsettled. usedByAccount is asserted as a numeric 0 rather than null, which is the paired half of the third-state vectors: here the draw is determinable and the account simply adds nothing further to the pool, so a zero is a computed figure rather than a withheld one. The two assertions together are what keep the determinate and indeterminate states distinguishable in the output.",
+      "name": "2026 an unknown division bounds allowable existing family-pool usage",
+      "description": "IRC 223(b)(5)(B)(ii) permits the spouses to assign any share, including zero (Notice 2004-50 Q&A-32). An inconsistent record does not establish which share applied. Both spouses have full-year family coverage; Rev. Proc. 2025-19 fixes the 2026 family amount at 8750. Neither is 55, so C=0. The taxpayer contributed T=1000. Across feasible taxpayer base allocations B in [0,8750], allowable base usage A=min(T,B) ranges from 0 (share zero) to 1000 (share at least 1000/8750). Thus the family pool has possible used [0,1000] and remaining [7750,8750], not an exact 1000 charge: the old expectation incorrectly treated potentially excess contributions as allowable pool usage. The spouse contributed nothing, so no further usage changes either endpoint. Both account maxima and any further draw remain indeterminate because the division is inconsistent.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13659,12 +13659,20 @@
         "accounts.0.statutoryMaximumAnnualContribution": null,
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
-        "accounts.0.sharedLimits.1.usedBeforeAccount": 1000,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": 7750,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
         "accounts.2.accountId": "s-hsa",
-        "accounts.2.sharedLimits.1.usedBeforeAccount": 1000,
-        "accounts.2.sharedLimits.1.remainingAfterAccount": 7750,
-        "accounts.0.sharedLimits.1.usedByAccount": 0
+        "accounts.2.sharedLimits.1.usedBeforeAccount": null,
+        "accounts.2.sharedLimits.1.remainingAfterAccount": null,
+        "accounts.0.sharedLimits.1.usedByAccount": null,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.minimum": 0,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.maximum": 1000,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.minimum": 7750,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.maximum": 8750,
+        "accounts.2.sharedLimits.1.possibleUsedBeforeAccount.minimum": 0,
+        "accounts.2.sharedLimits.1.possibleUsedBeforeAccount.maximum": 1000,
+        "accounts.2.sharedLimits.1.possibleRemainingAfterAccount.minimum": 7750,
+        "accounts.2.sharedLimits.1.possibleRemainingAfterAccount.maximum": 8750
       },
       "expectDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
@@ -13803,8 +13811,8 @@
       ]
     },
     {
-      "name": "2026 a qualified HSA funding distribution leaves the IRC 223(b)(5) draw unstated",
-      "description": "The second reason a draw on the pool can be uncomputable, with the first one excluded so it is tested alone. This owner's birth year is stated and they attain age 56, so the IRC 223(b)(3)(B) amount of 1000 is known exactly; what is unknown is the IRC 223(b)(5)(B)(ii) division, because their two accounts state shares of 0.5 and 0.25. The couple's limitation is unaffected by that and the pool reports the 2026 family amount of 8750 from Rev. Proc. 2025-19. But IRC 223(b)(4)(C) reduces the subsection (b) limitation by the 9500 qualified HSA funding distribution, and that reduction comes off the paragraph (1) share first, spilling into the paragraph (3) amount only once the share is exhausted -- so how much of it reaches each turns on the very limitation the unresolved division leaves undeterminable. The 500 already contributed therefore cannot be apportioned between the pool and the individual's own amount, and the pool withholds the draw: usedBeforeAccount and remainingAfterAccount are both null. Reporting a draw of nil instead would have said the couple's whole 8750 was still available when at most 250 of room exists on the most favourable reading, 8750 plus 1000 less 9500. The IRC 223(b)(1) and 223(b)(3) pools report null limits throughout, which is the separate and older statement that this owner's own limitation is undeterminable. usedByAccount is asserted null alongside usedBeforeAccount: all three usage fields go together, and a regression that restored a numeric zero to any one of them would otherwise pass both native suites and full-output parity unnoticed.",
+      "name": "2026 funding beyond every possible base collapses family usage to zero",
+      "description": "Rev. Proc. 2025-19 fixes the 2026 family base at 8750, and IRC 223(b)(3)(B) adds 1000 for this full-year age-56 owner. The inconsistent division leaves the pre-funding owner base B anywhere in [0,8750]. IRC 223(b)(4)(C) subtracts the stated 9500 funding distribution from the owner total, without going below zero. Since 9500 exceeds every B, the remaining base is exactly zero under every division; remaining catch-up is max(0,B+1000-9500), ranging from 0 to 250. The stated T=500 contributes allowable catch-up min(T,C) in [0,250] and zero base in every case. The family pool therefore reports used=0, remaining=8750, and a computed additional base draw of 0. This is the couple-wide family audit pool, not this owner's additional capacity: the owner maximum remains null. The old expectation incorrectly inferred unknown family usage from the unknown owner total.",
       "input": {
         "taxYear": 2026,
         "filingStatus": "MFJ",
@@ -13869,9 +13877,12 @@
         "accounts.0.hsa.additionalContributionAmount": 1000,
         "accounts.0.sharedLimits.1.id": "hsa223b5:t|s",
         "accounts.0.sharedLimits.1.limit": 8750,
-        "accounts.0.sharedLimits.1.usedBeforeAccount": null,
-        "accounts.0.sharedLimits.1.remainingAfterAccount": null,
-        "accounts.0.sharedLimits.1.usedByAccount": null
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.1.remainingAfterAccount": 8750,
+        "accounts.0.sharedLimits.1.usedByAccount": 0,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.2.possibleUsedBeforeAccount.minimum": 0,
+        "accounts.0.sharedLimits.2.possibleUsedBeforeAccount.maximum": 250
       },
       "expectDiagnosticCodes": [
         "HSA_FAMILY_LIMIT_DIVISION_INDETERMINATE"
@@ -20987,6 +20998,874 @@
       },
       "expectAbsentDiagnosticCodes": [
         "CATCH_UP_ALLOCATION_BLOCKED_BY_UNRECONCILED_EXISTING_PRE_TAX_CATCH_UP"
+      ]
+    },
+    {
+      "name": "2026 HSA component usage is a feasible interval while total capacity stays exact",
+      "description": "Rev. Proc. 2025-19 gives a family base of 8750. IRC 223(b)(5)(B)(ii) and the agreed equal division give B=4375, and IRC 223(b)(3)(B) gives C=1000 to this full-year age-56 owner. With T=2000, IRC 223 and 4973 compare aggregates: A=min(T,B+C)=2000. Base use is [max(0,A-C),min(A,B)]=[1000,2000], catch-up use [max(0,A-B),min(A,C)]=[0,1000]. The owner has 5375-2000=3375 additional room. Filling it exhausts both components, so final remaining is zero, but the new 3375 has feasible base attribution [4375-2000,4375-1000]=[2375,3375] and catch-up attribution [0,1000]. No statutory consumption ordering selects one endpoint.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 2000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": 5375,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 3375,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": null,
+        "accounts.0.sharedLimits.0.usedByAccount": null,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "totals.hsaContribution": 5375,
+        "accounts.0.sharedLimits.0.possibleUsedBeforeAccount.minimum": 1000,
+        "accounts.0.sharedLimits.0.possibleUsedBeforeAccount.maximum": 2000,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.minimum": 2375,
+        "accounts.0.sharedLimits.0.possibleUsedByAccount.maximum": 3375,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.minimum": 1000,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.maximum": 2000,
+        "accounts.0.sharedLimits.1.possibleUsedByAccount.minimum": 2375,
+        "accounts.0.sharedLimits.1.possibleUsedByAccount.maximum": 3375,
+        "accounts.0.sharedLimits.2.possibleUsedBeforeAccount.minimum": 0,
+        "accounts.0.sharedLimits.2.possibleUsedBeforeAccount.maximum": 1000,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.minimum": 0,
+        "accounts.0.sharedLimits.2.possibleUsedByAccount.maximum": 1000
+      }
+    },
+    {
+      "name": "2026 HSA usage collapses for zero contributions",
+      "description": "Rev. Proc. 2025-19 fixes family base 8750; IRC 223(b)(5)(B)(ii) share 0.5 yields B=4375. IRC 223(b)(3)(B), applied to the supplied birth year and full-year eligibility, yields C=1000. For T=0, A=min(T,B+C)=0. The feasible intervals [max(0,A-C),min(A,B)] and [max(0,A-B),min(A,C)] collapse to base 0 and catch-up 0. Additional capacity is max(0,B+C-T)=5375. Aggregate excess is max(0,T-B-C)=0 under IRC 4973(g); it is not attributed as catch-up pool usage.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 5375,
+        "accounts.0.excessContribution": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 HSA usage collapses for no catch-up",
+      "description": "Rev. Proc. 2025-19 fixes family base 8750; IRC 223(b)(5)(B)(ii) share 0.5 yields B=4375. IRC 223(b)(3)(B), applied to the supplied birth year and full-year eligibility, yields C=0. For T=2000, A=min(T,B+C)=2000. The feasible intervals [max(0,A-C),min(A,B)] and [max(0,A-B),min(A,C)] collapse to base 2000 and catch-up 0. Additional capacity is max(0,B+C-T)=2375. Aggregate excess is max(0,T-B-C)=0 under IRC 4973(g); it is not attributed as catch-up pool usage.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 2000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 2000,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 2375,
+        "accounts.0.excessContribution": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 HSA usage collapses for full exhaustion",
+      "description": "Rev. Proc. 2025-19 fixes family base 8750; IRC 223(b)(5)(B)(ii) share 0.5 yields B=4375. IRC 223(b)(3)(B), applied to the supplied birth year and full-year eligibility, yields C=1000. For T=5375, A=min(T,B+C)=5375. The feasible intervals [max(0,A-C),min(A,B)] and [max(0,A-B),min(A,C)] collapse to base 4375 and catch-up 1000. Additional capacity is max(0,B+C-T)=0. Aggregate excess is max(0,T-B-C)=0 under IRC 4973(g); it is not attributed as catch-up pool usage.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 5375
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 4375,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 1000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.excessContribution": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 HSA usage collapses for zero base",
+      "description": "Rev. Proc. 2025-19 fixes family base 8750; IRC 223(b)(5)(B)(ii) share 0 yields B=0. IRC 223(b)(3)(B), applied to the supplied birth year and full-year eligibility, yields C=1000. For T=500, A=min(T,B+C)=500. The feasible intervals [max(0,A-C),min(A,B)] and [max(0,A-B),min(A,C)] collapse to base 0 and catch-up 500. Additional capacity is max(0,B+C-T)=500. Aggregate excess is max(0,T-B-C)=0 under IRC 4973(g); it is not attributed as catch-up pool usage.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 0,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 500,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 500,
+        "accounts.0.excessContribution": 0,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 HSA usage collapses for aggregate excess",
+      "description": "Rev. Proc. 2025-19 fixes family base 8750; IRC 223(b)(5)(B)(ii) share 0.5 yields B=4375. IRC 223(b)(3)(B), applied to the supplied birth year and full-year eligibility, yields C=1000. For T=6000, A=min(T,B+C)=5375. The feasible intervals [max(0,A-C),min(A,B)] and [max(0,A-B),min(A,C)] collapse to base 4375 and catch-up 1000. Additional capacity is max(0,B+C-T)=0. Aggregate excess is max(0,T-B-C)=625 under IRC 4973(g); it is not attributed as catch-up pool usage.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 6000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 4375,
+        "accounts.0.sharedLimits.2.usedBeforeAccount": 1000,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.excessContribution": 625,
+        "accounts.0.sharedLimits.0.remainingAfterAccount": 0,
+        "accounts.0.sharedLimits.2.remainingAfterAccount": 0
+      }
+    },
+    {
+      "name": "2026 HSA owner-total allocation survives account order False",
+      "description": "IRC 223(b)(5)(B)(ii) equal division of the 2026 8750 family base gives 4375; IRC 223(b)(3)(B) adds 1000, for 5375. The two accounts each contain 1000, so the owner aggregate is 2000 and additional room is 3375. The public priority contract assigns all 3375 to hsa-b (priority 1) before hsa-a (priority 2), regardless of input order. Initial base usage [1000,2000] and catch-up [0,1000] collapse after filling the owner total, leaving the later account exact base usage 4375 and no additional room. Account statements agree; no coverage completion is introduced.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "priority": 2
+          },
+          {
+            "id": "hsa-b",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "priority": 1
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.accountId": "hsa-b",
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 3375,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 4375,
+        "totals.hsaContribution": 5375,
+        "accounts.1.sharedLimits.0.possibleUsedBeforeAccount.minimum": 1000,
+        "accounts.1.sharedLimits.0.possibleUsedBeforeAccount.maximum": 2000
+      }
+    },
+    {
+      "name": "2026 HSA owner-total allocation survives account order True",
+      "description": "IRC 223(b)(5)(B)(ii) equal division of the 2026 8750 family base gives 4375; IRC 223(b)(3)(B) adds 1000, for 5375. The two accounts each contain 1000, so the owner aggregate is 2000 and additional room is 3375. The public priority contract assigns all 3375 to hsa-b (priority 1) before hsa-a (priority 2), regardless of input order. Initial base usage [1000,2000] and catch-up [0,1000] collapse after filling the owner total, leaving the later account exact base usage 4375 and no additional room. Account statements agree; no coverage completion is introduced.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "agreed",
+          "taxpayerShare": 0.5
+        },
+        "accounts": [
+          {
+            "id": "hsa-b",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "priority": 1
+          },
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 1000
+            },
+            "priority": 2
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.accountId": "hsa-b",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 3375,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.1.sharedLimits.0.usedBeforeAccount": 4375,
+        "totals.hsaContribution": 5375,
+        "accounts.0.sharedLimits.0.possibleUsedBeforeAccount.minimum": 1000,
+        "accounts.0.sharedLimits.0.possibleUsedBeforeAccount.maximum": 2000
+      }
+    },
+    {
+      "name": "2026 HSA family usage extrema preserve the spouses correlated division",
+      "description": "Rev. Proc. 2025-19 fixes the full-year family base F=8750; both spouses are under 55. IRC 223(b)(5)(B)(ii) gives bases 8750*s and 8750*(1-s), with unknown s in [0,1]. Each contributed 3000. Allowable family use is min(3000,8750*s)+min(3000,8750*(1-s)). At s=0 or 1 the sum is 3000; for s between 3000/8750 and 5750/8750 both terms are 3000, giving 6000. Hence attainable usage is [3000,6000] and remaining [2750,5750]. Independently minimizing both owners would combine incompatible shares and incorrectly report zero.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        },
+        "accounts": [
+          {
+            "id": "hsa-a",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 3000
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            },
+            "existingContributions": {
+              "hsaDeductible": 3000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.minimum": 3000,
+        "accounts.0.sharedLimits.1.possibleUsedBeforeAccount.maximum": 6000,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.minimum": 2750,
+        "accounts.0.sharedLimits.1.possibleRemainingAfterAccount.maximum": 5750
+      }
+    },
+    {
+      "name": "2005 missing spouse deductible reduction 5250 owner born 1980",
+      "description": "Rev. Proc. 2004-71 fixes the 2005 family contribution dollar cap at 5250. IRC 223(b)(2) takes the lesser of the applicable deductible and that cap. IRC 223(b)(5)(A) also reads the lowest family deductible, which is unknown because the spouse supplies none; the taxpayer supplies 5000. IRC 223(b)(5)(B)(i) subtracts the established aggregate Archer amount 5250 before division and excludes the separate catch-up amount. The 5250 reduction exhausts even the statutory upper bound, so every missing deductible leaves base zero without assuming the spouse plan satisfies IRC 223(c)(2). The under-55 owner has no additional amount, so the total is zero. The unknown pre-reduction detail is withheld.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "archerMsaContributions": 5250
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 0,
+        "accounts.0.hsa": null,
+        "accounts.0.sharedLimits.1.limit": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0
+      },
+      "expectDiagnosticCodes": [
+        "HSA_ARCHER_REDUCTION_COLLAPSES_MISSING_DEDUCTIBLE"
+      ]
+    },
+    {
+      "name": "2005 missing spouse deductible reduction 5250 owner born 1950",
+      "description": "Rev. Proc. 2004-71 fixes the 2005 family contribution dollar cap at 5250. IRC 223(b)(2) takes the lesser of the applicable deductible and that cap. IRC 223(b)(5)(A) also reads the lowest family deductible, which is unknown because the spouse supplies none; the taxpayer supplies 5000. IRC 223(b)(5)(B)(i) subtracts the established aggregate Archer amount 5250 before division and excludes the separate catch-up amount. The 5250 reduction exhausts even the statutory upper bound, so every missing deductible leaves base zero without assuming the spouse plan satisfies IRC 223(c)(2). The age-55 owner retains the 2005 600 additional amount under IRC 223(b)(3)(B), untouched by the married Archer reduction. The unknown pre-reduction detail is withheld.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1950,
+            "archerMsaContributions": 5250
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.statutoryMaximumAnnualContribution": 600,
+        "accounts.0.hsa": null,
+        "accounts.0.sharedLimits.1.limit": 0,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 600
+      },
+      "expectDiagnosticCodes": [
+        "HSA_ARCHER_REDUCTION_COLLAPSES_MISSING_DEDUCTIBLE"
+      ]
+    },
+    {
+      "name": "2005 missing spouse deductible reduction 4999 owner born 1980",
+      "description": "Rev. Proc. 2004-71 fixes the 2005 family contribution dollar cap at 5250. IRC 223(b)(2) takes the lesser of the applicable deductible and that cap. IRC 223(b)(5)(A) also reads the lowest family deductible, which is unknown because the spouse supplies none; the taxpayer supplies 5000. IRC 223(b)(5)(B)(i) subtracts the established aggregate Archer amount 4999 before division and excludes the separate catch-up amount. A missing deductible of 4000 leaves zero after 4999; a deductible at least 5000 leaves a 1 base before the equal division. The differing completions mean the missing fact remains material and the maximum stays null.",
+      "input": {
+        "taxYear": 2005,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "archerMsaContributions": 4999
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "hsaCoverage": {
+              "coverageTier": "family"
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "hdhpAnnualDeductible": 5000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.statutoryMaximumAnnualContribution": null
+      },
+      "expectDiagnosticCodes": [
+        "HSA_HDHP_ANNUAL_DEDUCTIBLE_REQUIRED"
+      ]
+    },
+    {
+      "name": "2026 aggregate excess across HSAs is diagnosed without inventing catch-up usage",
+      "description": "Rev. Proc. 2025-19 gives the full-year self-only base 4400; the owner is under 55 so IRC 223(b)(3) adds zero. IRC 4973(g) compares aggregate contributions to all owner accounts: 3000+3000=6000 exceeds 4400 by 1600 although neither account alone exceeds 4400. Allowable A=min(6000,4400)=4400 is all base; catch-up use is zero. No further contribution fits. The shared-limit excess diagnostic must survive independently of component audit usage, which deliberately excludes excess.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "one",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 3000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          },
+          {
+            "id": "two",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 3000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "self_only"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 0,
+        "accounts.0.sharedLimits.0.usedBeforeAccount": 4400,
+        "accounts.0.sharedLimits.1.usedBeforeAccount": 0,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 0
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
+      ]
+    },
+    {
+      "name": "2026 HSA household rounding preserves the shared final cent False",
+      "description": "IRC 223(b)(1) sums the two eligible family months; Rev. Proc. 2025-19 gives 8750 annually. Neither spouse is December eligible, so IRC 223(b)(8) does not deem additional months. The household base is 2*8750/12=1458.333..., reported at cents as 1458.33. IRC 223(b)(5)(B)(ii) equal division gives each statutory maximum 729.166..., reported as 729.17. The library must preserve both its cent-rounded shared ceiling and deterministic priority contract: the first account gets 729.17, the second the remaining 729.16, for a total 1458.33. Merely adding two rounded owner maxima would exceed the household guard by a cent.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 0,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 729.17,
+        "accounts.1.statutoryMaximumAnnualContribution": 729.17,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 729.16,
+        "totals.hsaContribution": 1458.33
+      }
+    },
+    {
+      "name": "2026 HSA household rounding preserves the shared final cent True",
+      "description": "IRC 223(b)(1) sums the two eligible family months; Rev. Proc. 2025-19 gives 8750 annually. Neither spouse is December eligible, so IRC 223(b)(8) does not deem additional months. The household base is 2*8750/12=1458.333..., reported at cents as 1458.33. IRC 223(b)(5)(B)(ii) equal division gives each statutory maximum 729.166..., reported as 729.17. The library must preserve both its cent-rounded shared ceiling and deterministic priority contract: the first account gets 729.17, the second the remaining 729.16, for a total 1458.33. Merely adding two rounded owner maxima would exceed the household guard by a cent.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "priority": 1,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "priority": 0,
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family",
+                "eligibleMonths": [
+                  1,
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": 729.17,
+        "accounts.0.statutoryMaximumAnnualContribution": 729.17,
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": 729.16,
+        "totals.hsaContribution": 1458.33
+      }
+    },
+    {
+      "name": "2026 unavoidable married HSA aggregate excess is known even without a division",
+      "description": "The 2026 family base is 8750 under Rev. Proc. 2025-19, and IRC 223(b)(3)(B) adds one separate 1000 for each full-year age-56 spouse, excluded from the division by IRC 223(b)(5)(B). Whatever unknown division the spouses agreed, their combined maximum cannot exceed 8750+1000+1000=10750. Their 9000+9000=18000 existing contributions therefore exceed that bound by at least 7250 under IRC 4973(g). Owner maxima remain unknown; a capped component usage interval is not a reason to lose this aggregate excess diagnostic.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "hsaFamilyLimitDivision": {
+          "status": "unknown"
+        },
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1970
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1970
+          }
+        ],
+        "accounts": [
+          {
+            "id": "t-hsa",
+            "ownerId": "t",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 9000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          },
+          {
+            "id": "s-hsa",
+            "ownerId": "s",
+            "type": "hsa",
+            "existingContributions": {
+              "hsaDeductible": 9000
+            },
+            "planRules": {
+              "hsa": {
+                "coverageTier": "family"
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.statutoryMaximumAnnualContribution": null,
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate"
+      },
+      "expectDiagnosticCodes": [
+        "SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT"
       ]
     }
   ]

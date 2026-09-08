@@ -829,24 +829,46 @@ account's status, its null maximum, its shared limits and its diagnostics are al
 account records must not change any fact the engine reports, and a field-by-field completion beside
 a diagnostic saying the fact was never established is exactly the shape that lets it.
 
-### A known ceiling with an unknown draw
+### HSA usage describes feasible attribution
 
-A shared limit can be a number while how much of it is already spent is not. The §223(b)(5) pool is
-where this arises: existing contributions consume the §223(b)(1) limitation before reaching the
-§223(b)(3) additional amount, so once any additional amount exists, how much of a contribution landed
-on the couple's pool depends on the size of that spouse's share — which is exactly what an unresolved
-§223(b)(5)(B)(ii) division leaves unknown. The §223(b)(4) reductions raise the same question, coming
-off the paragraph (1) share first.
+IRC §223 and §4973(g) compare aggregate contributions with the owner's combined limitation.
+They do not specify whether a contribution consumes base capacity before the age-55 increase.
+The audit pools therefore report feasible attribution, not a base-first convention. For base
+`B`, age-55 increase `C`, counted owner contributions `T`, and `A = min(T, B + C)`:
 
-In that case the entry reports its `limit` and nulls `usedBeforeAccount`, `usedByAccount` and
-`remainingAfterAccount`, and **no excess is diagnosed against it** — an excess is a statement about the
-draw. The engine does not publish a bound in place of a usage: bounding upwards accused compliant
-taxpayers of excess contributions, and bounding downwards reported a pool as untouched when a
-qualified HSA funding distribution had consumed nearly all of it.
+```text
+base usage     = [max(0, A - C), min(A, B)]
+age-55 usage   = [max(0, A - B), min(A, C)]
+```
 
-The `familyLimitShare` reported in each account's `hsa` detail is `null` under the same
-condition. It is an output — the share this account actually got — and it stays `null` rather
-than reporting a share nobody has established.
+`usedBeforeAccount` and `remainingAfterAccount` are numbers when their range collapses, and
+otherwise null beside `possibleUsedBeforeAccount` and `possibleRemainingAfterAccount`.
+`usedByAccount` follows the same rule; `possibleUsedByAccount` carries the feasible component
+attribution of a newly allocated amount. These ranges can be open even with an established
+`familyLimitShare`. A settled aggregate allocation does not establish its component attribution.
+
+For example, a 2026 owner with base 4,375, age-55 increase 1,000 and existing contributions
+2,000 has base usage `[1000, 2000]` and age-55 usage `[0, 1000]`. The owner still has exactly
+3,375 of additional capacity. Allocation uses that combined capacity and preserves the family
+guard, including deterministic assignment of its final cent; it does not add independent pool
+remainders and lose the correlation between them.
+
+An unknown division is evaluated with one common taxpayer-share variable for both spouses.
+The family range combines feasible usages under the **same division**. Missing coverage,
+unknown age and unresolved Archer placement remain unknown when no feasible capacity model is
+established; reporting then supplies nulls without invented endpoints. Coverage-completion
+handling remains deferred to [#68](https://github.com/bherila/us-tax-advantaged-params/issues/68).
+
+Component usage excludes aggregate excess rather than assigning it to an invented component.
+`SUPPLIED_EXISTING_CONTRIBUTIONS_EXCEED_SHARED_LIMIT` separately diagnoses known excess across
+one owner's HSAs, or contributions above even the couple's family base plus separate age-55
+amounts. The latter can be known while the division remains unknown.
+
+In 2004–2006 a missing deductible need not always withhold the final answer. If established
+Archer contributions exhaust the upper bound on the couple's unreduced base, every deductible
+leaves zero base. `HSA_ARCHER_REDUCTION_COLLAPSES_MISSING_DEDUCTIBLE` reports this proof. The
+separate age-55 amount survives, and `hsa` detail is null because the pre-reduction figures
+remain unknown. This does not assume that an absent plan fact establishes HDHP eligibility.
 
 ### An unknown division does not make the limitation unknown
 
