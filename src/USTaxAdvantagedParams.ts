@@ -20446,23 +20446,39 @@ export function calculatePayrollTax(input: PayrollCalculationInput): PayrollTaxR
   totals.employerTotal = roundMoney(totals.employerSocialSecurity + totals.employerMedicare);
   totals.selfEmploymentTotalLiability = roundMoney(totals.selfEmploymentSocialSecurity + totals.selfEmploymentMedicare + totals.additionalMedicareSelfEmploymentLiability);
   if (![...Object.values(totals), householdMedicareWages, householdSelfEmployment].every(Number.isFinite)) payrollInputError();
-  return { taxYear: input.taxYear, status: CalculationStatus.DETERMINATE, parameters, netEarningsFactor: factor, totals, persons: personResults, diagnostics };
+  return { taxYear: input.taxYear, status: accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, diagnostics), parameters, netEarningsFactor: factor, totals, persons: personResults, diagnostics };
 }
 function scenarioPayrollEffects(
-  input: ScenarioInput, filingStatus: FilingStatus, accounts: AccountCalculationResult[], conversions: ConversionCalculationResult[],
+  input: ScenarioInput, context: CalculationContext, accounts: AccountCalculationResult[], conversions: ConversionCalculationResult[],
 ): FederalTaxEffects | undefined {
   if (input.payrollTax === undefined) return undefined;
   const payrollPersons = normalizePayrollPersons(input.payrollTax?.persons);
-  const before = calculatePayrollTax({ taxYear: input.taxYear, filingStatus, persons: payrollPersons });
+  const requiredRoles: PersonRole[] = context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY
+    ? ["taxpayer", "spouse"] : ["taxpayer"];
+  const requiredIds = requiredRoles.map((role) => {
+    const members = [...context.persons.values()].filter((person) => person.role === role);
+    return members.length === 1 ? members[0]!.id : null;
+  });
+  const payrollIds = new Set(payrollPersons.map((person) => person.id));
+  if (requiredIds.length !== payrollIds.size || requiredIds.some((id) => id === null || !payrollIds.has(id))) {
+    throw new ParameterError("INVALID_PAYROLL_RETURN_PERSONS", "Scenario payroll persons must identify exactly the taxpayer, plus the spouse for a joint return, using the normalized scenario roles.");
+  }
+  const before = calculatePayrollTax({ taxYear: input.taxYear, filingStatus: input.filingStatus, persons: payrollPersons });
   const result = zeroTaxEffects();
   for (const entry of [...accounts, ...conversions]) mergeTaxEffects(result, entry.federalTaxEffects);
   const diagnostics: Diagnostic[] = [];
   const afterPersons = deepClone(payrollPersons);
-  for (const person of payrollPersons) if (!input.persons.some((candidate) => candidate.id === person.id)) payrollInputError();
   for (const account of accounts) {
+    if (!payrollIds.has(account.ownerId)) continue;
     const reduction = account.federalTaxEffects.ficaWageReduction;
     const family = ACCOUNT_TRAITS[account.accountType].family;
-    if (account.status === CalculationStatus.INDETERMINATE && (reduction > 0 || family === "hsa" || family === "health_fsa" || family === "dependent_care_fsa")) {
+    const source = context.accountsById.get(account.accountId)!;
+    // An indeterminate HSA can still have a settled zero FICA effect: neither
+    // existing employer/cafeteria deposits nor an employer target can fund one.
+    const hsaExclusionPossible = family === "hsa" && (
+      source.existingContributions.hsaEmployerOrCafeteria > 0 || (source.planRules.expectedEmployerContribution ?? 0) > 0
+    );
+    if (account.status === CalculationStatus.INDETERMINATE && (reduction > 0 || hsaExclusionPossible || family === "health_fsa" || family === "dependent_care_fsa")) {
       diagnostics.push(diagnostic("PAYROLL_EXCLUSION_UNRESOLVED", DiagnosticSeverity.ERROR, "A modeled wage exclusion is unresolved; payroll savings cannot be determined.", `accounts.${account.accountId}`));
       continue;
     }
@@ -20476,14 +20492,14 @@ function scenarioPayrollEffects(
     wages.socialSecurityWages = roundMoney(wages.socialSecurityWages - reduction);
     wages.medicareWages = roundMoney(wages.medicareWages - reduction);
   }
-  const after = diagnostics.length === 0 ? calculatePayrollTax({ taxYear: input.taxYear, filingStatus, persons: afterPersons }) : null;
+  const after = diagnostics.length === 0 ? calculatePayrollTax({ taxYear: input.taxYear, filingStatus: input.filingStatus, persons: afterPersons }) : null;
   let savings: PayrollTaxAmounts | null = null;
   if (before.totals !== null && after?.totals != null) {
     savings = zeroPayrollTaxAmounts();
     for (const key of Object.keys(savings) as Array<keyof PayrollTaxAmounts>) savings[key] = roundMoney(before.totals[key] - after.totals[key]);
   }
   result.payrollTax = {
-    status: savings === null ? CalculationStatus.INDETERMINATE : CalculationStatus.DETERMINATE,
+    status: savings === null ? CalculationStatus.INDETERMINATE : accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, [...before.diagnostics, ...(after?.diagnostics ?? [])]),
     before, after, savings, diagnostics,
   };
   return result;
@@ -20626,7 +20642,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     accounts: accountResults,
     conversions: conversionResults,
     totals: calculateScenarioTotals(accountResults, conversionResults),
-    ...(input.payrollTax === undefined ? {} : { federalTaxEffects: scenarioPayrollEffects(input, filingStatus, accountResults, conversionResults) }),
+    ...(input.payrollTax === undefined ? {} : { federalTaxEffects: scenarioPayrollEffects(input, context, accountResults, conversionResults) }),
     diagnostics: allDiagnostics,
   };
 }

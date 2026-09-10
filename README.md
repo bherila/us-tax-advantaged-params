@@ -1619,6 +1619,13 @@ must match the accounts. The optional scenario-level
 `federalTaxEffects.payrollTax` contains `before`, `after`, and `savings` (before
 minus after) with employee, employer, SECA, withholding, and deduction components.
 A deduction change can be negative when a wage exclusion opens more SECA base.
+Scenario payroll persons must be exactly the normalized taxpayer (and spouse for
+MFJ). Substituted or missing return members throw
+`INVALID_PAYROLL_RETURN_PERSONS`; duplicate roles retain `DUPLICATE_PERSON_ROLE`. Account exclusions belonging to other people
+do not affect the filed return payroll calculation. The `M` alias retains
+`determinate_with_assumptions` in standalone and scenario payroll results.
+An HSA with unknown coverage does not block payroll when both its existing
+employer/cafeteria contributions and employer target are zero.
 Insufficient or unmatched wages and unresolved account exclusions withhold the
 savings result and explain why. Scenarios without payroll facts retain their
 existing output shape.

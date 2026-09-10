@@ -265,3 +265,11 @@ remain unavailable if a necessary wage exclusion is unresolved or cannot be
 matched in full. The SE-tax deduction is reported separately; feeding it into
 retirement compensation remains the caller's job, avoiding an implicit circular
 calculation. Omitted payroll input leaves all prior serialized results unchanged.
+
+Scenario payroll membership uses normalized person roles, including positional
+defaults: exactly one taxpayer, plus exactly one spouse for MFJ. Its wage
+exclusion pass considers only those return members. Filing-status assumptions
+propagate through before, after, and aggregate payroll status. An indeterminate
+HSA blocks payroll only when its existing employer/cafeteria contributions or
+expected employer contribution can produce a nonzero exclusion; coverage
+uncertainty alone cannot change a known-zero wage effect.

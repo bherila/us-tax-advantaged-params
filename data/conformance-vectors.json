@@ -26163,6 +26163,655 @@
       "expectError": {
         "code": "INVALID_PAYROLL_INPUT"
       }
+    },
+    {
+      "name": "Payroll review: MFJ rejects other replacing spouse",
+      "description": "The scenario input contract assigns a filed return to its normalized taxpayer role and, only for MFJ, its spouse role. A count-correct list substituting an unrelated person or the spouse on a separate return cannot establish that return and must throw INVALID_PAYROLL_RETURN_PERSONS.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            },
+            {
+              "id": "o",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_RETURN_PERSONS"
+      }
+    },
+    {
+      "name": "Payroll review: single rejects spouse replacing taxpayer",
+      "description": "The scenario input contract assigns a filed return to its normalized taxpayer role and, only for MFJ, its spouse role. A count-correct list substituting an unrelated person or the spouse on a separate return cannot establish that return and must throw INVALID_PAYROLL_RETURN_PERSONS.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_RETURN_PERSONS"
+      }
+    },
+    {
+      "name": "Payroll review: MFS rejects other replacing taxpayer",
+      "description": "The scenario input contract assigns a filed return to its normalized taxpayer role and, only for MFJ, its spouse role. A count-correct list substituting an unrelated person or the spouse on a separate return cannot establish that return and must throw INVALID_PAYROLL_RETURN_PERSONS.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFS",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "o",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expectError": {
+        "code": "INVALID_PAYROLL_RETURN_PERSONS"
+      }
+    },
+    {
+      "name": "Payroll review: correct explicit roles",
+      "description": "IRC3101(b)(2) aggregates the taxpayer200000 and spouse100000 Medicare wages on an MFJ return: (300000-250000)*0.009=450. The other person is excluded. Explicit roles survive input reversal; omitted roles retain the established first-taxpayer/second-spouse defaults. Complete explicit MFJ facts give determinate payroll status.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 200000,
+                  "medicareWages": 200000
+                }
+              ]
+            },
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 100000,
+                  "medicareWages": 100000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.additionalMedicareLiability": 450
+      }
+    },
+    {
+      "name": "Payroll review: correct default roles",
+      "description": "IRC3101(b)(2) aggregates the taxpayer200000 and spouse100000 Medicare wages on an MFJ return: (300000-250000)*0.009=450. The other person is excluded. Explicit roles survive input reversal; omitted roles retain the established first-taxpayer/second-spouse defaults. Complete explicit MFJ facts give determinate payroll status.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 200000,
+                  "medicareWages": 200000
+                }
+              ]
+            },
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 100000,
+                  "medicareWages": 100000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.additionalMedicareLiability": 450
+      }
+    },
+    {
+      "name": "Payroll review: correct reversed explicit roles",
+      "description": "IRC3101(b)(2) aggregates the taxpayer200000 and spouse100000 Medicare wages on an MFJ return: (300000-250000)*0.009=450. The other person is excluded. Explicit roles survive input reversal; omitted roles retain the established first-taxpayer/second-spouse defaults. Complete explicit MFJ facts give determinate payroll status.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 100000,
+                  "medicareWages": 100000
+                }
+              ]
+            },
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 200000,
+                  "medicareWages": 200000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.additionalMedicareLiability": 450
+      }
+    },
+    {
+      "name": "Payroll review: ambiguous M standalone",
+      "description": "The filing-status alias contract interprets M as MFJ with AMBIGUOUS_M_ALIAS_ASSUMED_MFJ. Zero wages and earnings produce zero tax under IRC 3101/1401, but successful status must be determinate_with_assumptions so consumers see the assumption. The scenario aggregate and both before/after results must retain it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "M",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ]
+          },
+          {
+            "id": "s",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "status": "determinate_with_assumptions",
+        "totals.employeeTotalLiability": 0
+      },
+      "operation": "payrollTax",
+      "expectDiagnosticCodes": [
+        "AMBIGUOUS_M_ALIAS_ASSUMED_MFJ"
+      ]
+    },
+    {
+      "name": "Payroll review: ambiguous M scenario",
+      "description": "The filing-status alias contract interprets M as MFJ with AMBIGUOUS_M_ALIAS_ASSUMED_MFJ. Zero wages and earnings produce zero tax under IRC 3101/1401, but successful status must be determinate_with_assumptions so consumers see the assumption. The scenario aggregate and both before/after results must retain it.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "M",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 0,
+                  "medicareWages": 0
+                }
+              ]
+            },
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 0,
+                  "medicareWages": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "federalTaxEffects.payrollTax.status": "determinate_with_assumptions",
+        "federalTaxEffects.payrollTax.before.status": "determinate_with_assumptions",
+        "federalTaxEffects.payrollTax.after.status": "determinate_with_assumptions",
+        "federalTaxEffects.payrollTax.before.totals.employeeTotalLiability": 0
+      }
+    },
+    {
+      "name": "Payroll review: indeterminate HSA known zero exclusion",
+      "description": "IRC 106(d) excludes employer/cafeteria HSA amounts. Coverage is missing, so the HSA remains indeterminate. Existing employer/cafeteria contributions are 0 and the employer target is 0. With both sources zero, no HSA FICA exclusion is possible. At 10000 wages,3101/3111 tax 10000*(.062+.0145)=765 each before and after, so savings are 0 and payroll is determinate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "type": "hsa",
+            "ownerId": "t",
+            "employerId": "e",
+            "planRules": {
+              "expectedEmployerContribution": 0
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.after.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.savings.employeeTotalLiability": 0,
+        "federalTaxEffects.payrollTax.savings.employerTotal": 0
+      }
+    },
+    {
+      "name": "Payroll review: indeterminate HSA potential exclusion",
+      "description": "IRC 106(d) excludes employer/cafeteria HSA amounts. Coverage is missing, so the HSA remains indeterminate. Existing employer/cafeteria contributions are 0 and the employer target is 1000. A potential 1000 wage exclusion depends on unresolved coverage, so payroll after and savings must remain null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "type": "hsa",
+            "ownerId": "t",
+            "employerId": "e",
+            "planRules": {
+              "expectedEmployerContribution": 1000
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "federalTaxEffects.payrollTax.status": "indeterminate",
+        "federalTaxEffects.payrollTax.after": null,
+        "federalTaxEffects.payrollTax.savings": null
+      }
+    },
+    {
+      "name": "Payroll review: existing HSA exclusion remains unresolved",
+      "description": "IRC 106(d) makes the existing synthetic $1,000 employer HSA contribution a potential wage exclusion. Missing coverage leaves its eligibility unresolved even when the additional employer target is zero; payroll after and savings must remain null.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "type": "hsa",
+            "ownerId": "t",
+            "employerId": "e",
+            "planRules": {
+              "expectedEmployerContribution": 0
+            },
+            "existingContributions": {
+              "hsaEmployerOrCafeteria": 1000
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "federalTaxEffects.payrollTax.status": "indeterminate",
+        "federalTaxEffects.payrollTax.after": null,
+        "federalTaxEffects.payrollTax.savings": null
+      }
+    },
+    {
+      "name": "Payroll review: other person exclusion does not affect filed return",
+      "description": "The scenario payroll contract covers the filed return taxpayer only for single filing status. An other person HSA with an unresolved synthetic $1,000 employer target cannot change this taxpayer wage base. IRC 3101/3111 yield $10,000 × (6.2% + 1.45%) = $765 before and after, with zero employee and employer savings; the unrelated HSA remains indeterminate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 10000
+            }
+          },
+          {
+            "id": "o",
+            "role": "other",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [
+          {
+            "id": "h",
+            "type": "hsa",
+            "ownerId": "o",
+            "employerId": "e",
+            "planRules": {
+              "expectedEmployerContribution": 1000
+            }
+          }
+        ],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 10000,
+                  "medicareWages": 10000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "federalTaxEffects.payrollTax.status": "determinate",
+        "federalTaxEffects.payrollTax.before.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.after.totals.employeeTotalLiability": 765,
+        "federalTaxEffects.payrollTax.savings.employeeTotalLiability": 0,
+        "federalTaxEffects.payrollTax.savings.employerTotal": 0
+      }
+    },
+    {
+      "name": "Payroll review: duplicate taxpayer role is ambiguous",
+      "description": "The existing normalized-person input contract rejects two taxpayer roles before payroll calculation with DUPLICATE_PERSON_ROLE. This control preserves that validation precedence when payroll facts are supplied.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980
+          },
+          {
+            "id": "o",
+            "role": "taxpayer",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": [],
+        "payrollTax": {
+          "persons": [
+            {
+              "id": "t",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 200000,
+                  "medicareWages": 200000
+                }
+              ]
+            },
+            {
+              "id": "s",
+              "wages": [
+                {
+                  "employerId": "e",
+                  "socialSecurityWages": 100000,
+                  "medicareWages": 100000
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expectError": {
+        "code": "DUPLICATE_PERSON_ROLE"
+      }
     }
   ]
 }

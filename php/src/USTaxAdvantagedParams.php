@@ -9520,13 +9520,23 @@ final class Engine
         $totals['employerTotal'] = self::roundMoney($totals['employerSocialSecurity'] + $totals['employerMedicare']);
         $totals['selfEmploymentTotalLiability'] = self::roundMoney($totals['selfEmploymentSocialSecurity'] + $totals['selfEmploymentMedicare'] + $totals['additionalMedicareSelfEmploymentLiability']);
         foreach ([...array_values($totals), $householdMedicareWages, $householdSelfEmployment] as $amount) if (!is_finite($amount)) self::payrollInputError();
-        return ['taxYear' => $year, 'status' => CalculationStatus::DETERMINATE->value, 'parameters' => $parameters, 'netEarningsFactor' => $factor, 'totals' => $totals, 'persons' => $personResults, 'diagnostics' => $diagnostics];
+        return ['taxYear' => $year, 'status' => self::accountStatusFromDiagnostics(CalculationStatus::DETERMINATE->value, $diagnostics), 'parameters' => $parameters, 'netEarningsFactor' => $factor, 'totals' => $totals, 'persons' => $personResults, 'diagnostics' => $diagnostics];
     }
 
-    private static function scenarioPayrollEffects(array $input, string $filingStatus, array $accounts, array $conversions): array
+    private static function scenarioPayrollEffects(array $input, array $context, array $accounts, array $conversions): array
     {
         $payrollPersons = self::normalizePayrollPersons($input['payrollTax']['persons'] ?? null);
-        $before = self::calculatePayrollTax(['taxYear' => $input['taxYear'], 'filingStatus' => $filingStatus, 'persons' => $payrollPersons]);
+        $requiredRoles = $context['filingStatus'] === FilingStatus::MARRIED_FILING_JOINTLY->value ? ['taxpayer', 'spouse'] : ['taxpayer'];
+        $requiredIds = [];
+        foreach ($requiredRoles as $role) {
+            $members = array_values(array_filter($context['persons'], static fn (array $person): bool => $person['role'] === $role));
+            $requiredIds[] = count($members) === 1 ? $members[0]['id'] : null;
+        }
+        $payrollIds = array_column($payrollPersons, 'id');
+        if (count($requiredIds) !== count($payrollIds) || count(array_filter($requiredIds, static fn ($id): bool => $id === null || !in_array($id, $payrollIds, true))) > 0) {
+            throw new ParameterException('INVALID_PAYROLL_RETURN_PERSONS', 'Scenario payroll persons must identify exactly the taxpayer, plus the spouse for a joint return, using the normalized scenario roles.');
+        }
+        $before = self::calculatePayrollTax(['taxYear' => $input['taxYear'], 'filingStatus' => $input['filingStatus'], 'persons' => $payrollPersons]);
         $result = self::zeroTaxEffects();
         foreach ([...$accounts, ...$conversions] as $entry) {
             foreach ($result as $key => $value) {
@@ -9535,11 +9545,17 @@ final class Engine
             }
         }
         $diagnostics = []; $afterPersons = $payrollPersons;
-        foreach ($payrollPersons as $person) if (!in_array($person['id'], array_column($input['persons'], 'id'), true)) self::payrollInputError();
         foreach ($accounts as $account) {
+            if (!in_array($account['ownerId'], $payrollIds, true)) continue;
             $reduction = $account['federalTaxEffects']['ficaWageReduction'];
             $family = self::traits($account['accountType'])['family'];
-            if ($account['status'] === CalculationStatus::INDETERMINATE->value && ($reduction > 0 || in_array($family, ['hsa', 'health_fsa', 'dependent_care_fsa'], true))) {
+            $source = $context['accountsById'][$account['accountId']];
+            // Coverage uncertainty cannot create an employer/cafeteria exclusion
+            // where both existing contributions and the employer target are zero.
+            $hsaExclusionPossible = $family === 'hsa' && (
+                $source['existingContributions']['hsaEmployerOrCafeteria'] > 0 || ($source['planRules']['expectedEmployerContribution'] ?? 0) > 0
+            );
+            if ($account['status'] === CalculationStatus::INDETERMINATE->value && ($reduction > 0 || $hsaExclusionPossible || in_array($family, ['health_fsa', 'dependent_care_fsa'], true))) {
                 $diagnostics[] = self::diagnostic('PAYROLL_EXCLUSION_UNRESOLVED', DiagnosticSeverity::ERROR, 'A modeled wage exclusion is unresolved; payroll savings cannot be determined.', "accounts.{$account['accountId']}");
                 continue;
             }
@@ -9562,13 +9578,13 @@ final class Engine
             unset($person);
             if (!$matched) $diagnostics[] = self::diagnostic('PAYROLL_EXCLUSION_WAGES_REQUIRED', DiagnosticSeverity::ERROR, 'Each modeled FICA wage exclusion needs matching person/employer payroll wages before that exclusion, sufficient for the full reduction.', "accounts.{$account['accountId']}");
         }
-        $after = count($diagnostics) === 0 ? self::calculatePayrollTax(['taxYear' => $input['taxYear'], 'filingStatus' => $filingStatus, 'persons' => $afterPersons]) : null;
+        $after = count($diagnostics) === 0 ? self::calculatePayrollTax(['taxYear' => $input['taxYear'], 'filingStatus' => $input['filingStatus'], 'persons' => $afterPersons]) : null;
         $savings = null;
         if ($before['totals'] !== null && ($after['totals'] ?? null) !== null) {
             $savings = self::zeroPayrollTaxAmounts();
             foreach ($savings as $key => $_) $savings[$key] = self::roundMoney($before['totals'][$key] - $after['totals'][$key]);
         }
-        $result['payrollTax'] = ['status' => $savings === null ? CalculationStatus::INDETERMINATE->value : CalculationStatus::DETERMINATE->value, 'before' => $before, 'after' => $after, 'savings' => $savings, 'diagnostics' => $diagnostics];
+        $result['payrollTax'] = ['status' => $savings === null ? CalculationStatus::INDETERMINATE->value : self::accountStatusFromDiagnostics(CalculationStatus::DETERMINATE->value, [...$before['diagnostics'], ...($after['diagnostics'] ?? [])]), 'before' => $before, 'after' => $after, 'savings' => $savings, 'diagnostics' => $diagnostics];
         return $result;
     }
 
@@ -9750,7 +9766,7 @@ final class Engine
             'conversions' => $conversionResults,
             'totals' => self::totals($accountResults, $conversionResults),
             'diagnostics' => $allDiagnostics,
-            ...(array_key_exists('payrollTax', $input) ? ['federalTaxEffects' => self::scenarioPayrollEffects($input, $filingStatus, $accountResults, $conversionResults)] : []),
+            ...(array_key_exists('payrollTax', $input) ? ['federalTaxEffects' => self::scenarioPayrollEffects($input, $context, $accountResults, $conversionResults)] : []),
         ];
     }
 
