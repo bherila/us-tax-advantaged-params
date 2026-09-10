@@ -17791,13 +17791,13 @@ function appendSection457ExistingCatchUpDiagnostics(
       ),
     );
   }
-  // The IRC 457(b)(2) counterpart of the IRC 457(b)(3) test below, and needed for
-  // the same reason: 26 CFR 1.457-4(c)(1)(i) caps the annual deferral "under the
-  // plan", so records that are each within the ceiling alone can still put the
-  // plan above it. The generic account-level excess test cannot see that -- it
-  // measures one record against one maximum -- which is why an amount it reports
-  // as a $200 excess when supplied on one record went unreported when split
-  // across two records of the same plan.
+  // During the special period paragraph (c)(3) replaces the basic ceiling.
+  // Ordinary deposits still consume that combined ceiling, but exceeding the
+  // basic portion alone neither invalidates their provenance nor erases the
+  // remaining special capacity. Diagnose a true combined excess instead.
+  const specialMethod = resolution.mode === "special";
+  const applicablePlanCeiling = roundMoney(ceilings.basicPlanCeiling + (specialMethod ? ceilings.specialAdditional : 0));
+  const existingAgainstPlanCeiling = roundMoney(facts.existingRegularDeferrals + (specialMethod ? facts.existingSpecialCatchUp : 0));
   const accountExistingRegularDeferrals = roundMoney(
     baseElectiveDeferrals(account.existingContributions) +
       account.existingContributions.employeeAfterTax +
@@ -17807,17 +17807,19 @@ function appendSection457ExistingCatchUpDiagnostics(
   if (
     facts.memberIds.length > 1 &&
     accountExistingRegularDeferrals > 0 &&
-    facts.existingRegularDeferrals > ceilings.basicPlanCeiling
+    existingAgainstPlanCeiling > applicablePlanCeiling
   ) {
     diagnostics.push(
       diagnostic(
         "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING",
         DiagnosticSeverity.ERROR,
-        `Existing contributions record $${facts.existingRegularDeferrals.toLocaleString()} of ordinary annual deferral under this eligible plan (across records ${facts.memberIds.join(
+        specialMethod
+          ? `Existing ordinary and special contributions total $${existingAgainstPlanCeiling.toLocaleString()} under this eligible plan (across records ${facts.memberIds.join(", ")}), above its $${applicablePlanCeiling.toLocaleString()} combined ceiling under 26 CFR 1.457-4(c)(3)(i). Splitting one plan into records does not create additional capacity.`
+          : `Existing contributions record $${facts.existingRegularDeferrals.toLocaleString()} of ordinary annual deferral under this eligible plan (across records ${facts.memberIds.join(
           ", ",
         )}), above the $${ceilings.basicPlanCeiling.toLocaleString()} ceiling 26 CFR 1.457-4(c)(1)(i) sets for the plan, which is the lesser of the IRC 457(e)(15) amount and 100 percent of the participant's IRC 457(e)(5) includible compensation. No single record exceeds it, but the ceiling is the plan's and these records are one plan.`,
         `accounts.${account.id}.existingContributions`,
-        "IRC 457(b)(2); 26 CFR 1.457-4(c)(1)(i)",
+        specialMethod ? "IRC 457(b)(3); 26 CFR 1.457-4(c)(3)(i)" : "IRC 457(b)(2); 26 CFR 1.457-4(c)(1)(i)",
       ),
     );
   }

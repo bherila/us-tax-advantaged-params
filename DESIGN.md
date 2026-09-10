@@ -147,7 +147,12 @@ views for the existing diagnostics, within the same plan state.
 The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
 special contributions both consume it, so ordinary overages reduce the remaining
 special capacity. Its usage does not depend on which of those two component
-labels ultimately applies. Ordinary employee draws also consult the salary
+labels ultimately applies. During the special period, an ordinary deposit above
+the basic portion does not itself invalidate the record or block special room:
+the excess diagnostic compares ordinary plus special deposits with the combined
+ceiling. True combined excess and invalid catch-up provenance still block further
+catch-up. This must hold even when every member already contains deposits.
+Ordinary employee draws also consult the salary
 balance before allocation, including salary already deferred as a special catch-up.
 
 When contradictory plan facts leave existing special contributions partly or

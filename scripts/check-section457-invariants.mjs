@@ -111,6 +111,11 @@ for (const count of [1, 2, 3]) {
     account.planRules.section457SpecialCatchUp = { eligible: true, unusedDeferralsFromPriorYears: 5000 };
     return account;
   });
+  add(`ordinary overage on all ${count} records`, scenario(structuredClone(accounts)), (result) => {
+    assert.equal(total(result), 25000);
+    assert.equal(amount(result, 'deposit0', 'special457CatchUp'), 4000);
+    for (const entry of result.accounts) assert.equal(entry.status, 'determinate');
+  });
   accounts.unshift(record('sibling', 'participant', 'combined', 20000, 0, 0));
   add(`ordinary overage split into ${count} records`, scenario(accounts), (result) => {
     assert.equal(total(result), 25000);

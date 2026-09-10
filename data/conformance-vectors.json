@@ -26564,6 +26564,169 @@
         "accounts.1.contributionComponents.special457CatchUp": 2000,
         "accounts.2.contributionComponents.special457CatchUp": 2000
       }
+    },
+    {
+      "name": "2026 IRC 457 special room with ordinary deposits on all 1 records",
+      "description": "26 CFR 1.457-4(c)(3)(i) replaces the basic limitation during the special catch-up period: min(2 × 24500, min(24500, 20000) + 5000) = 25000. Synthetic existing nonelective employer contributions total 21000, leaving 4000 special capacity and 25000 total. Such deposits reduce no participant salary (IRC 457(e)(5), 415(c)(3)(D)). Every record holds deposits; splitting the same plan cannot change its determinate status or total, and no component is reclassified.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employerPreTax": 21000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.special457CatchUp": 4000,
+        "totals.maximumAnnualContributionBasedOnInputs": 25000
+      }
+    },
+    {
+      "name": "2026 IRC 457 special room with ordinary deposits on all 2 records",
+      "description": "26 CFR 1.457-4(c)(3)(i) replaces the basic limitation during the special catch-up period: min(2 × 24500, min(24500, 20000) + 5000) = 25000. Synthetic existing nonelective employer contributions total 21000, leaving 4000 special capacity and 25000 total. Such deposits reduce no participant salary (IRC 457(e)(5), 415(c)(3)(D)). Every record holds deposits; splitting the same plan cannot change its determinate status or total, and no component is reclassified.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employerPreTax": 10500
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000
+            },
+            "existingContributions": {
+              "employerPreTax": 10500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.special457CatchUp": 4000,
+        "totals.maximumAnnualContributionBasedOnInputs": 25000,
+        "accounts.1.status": "determinate"
+      }
+    },
+    {
+      "name": "2026 IRC 457 true combined special excess remains blocked",
+      "description": "26 CFR 1.457-4(c)(3)(i) gives min(2 × 24500, min(24500, 20000) + 5000) = 25000 for this special-period plan. Synthetic ordinary employer deposits total 21000 and existing special deferrals total 4500, so the combined 25500 exceeds that ceiling by 500 even though 4500 is within the 5000 incremental allowance. Both records with ordinary deposits must retain an excess diagnostic and receive no additional allocation; supplied contributions remain reported as 25500. The indeterminate-result contract reports maximumAdditionalContributionBasedOnInputs as null, while unchanged special components (4500 and 0) prove that no additional catch-up was allocated.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "a",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employerPreTax": 10500,
+              "special457CatchUp": 4500
+            }
+          },
+          {
+            "id": "b",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "priority": 1,
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000
+            },
+            "existingContributions": {
+              "employerPreTax": 10500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate",
+        "accounts.0.maximumAdditionalContributionBasedOnInputs": null,
+        "accounts.1.maximumAdditionalContributionBasedOnInputs": null,
+        "totals.maximumAnnualContributionBasedOnInputs": 25500,
+        "accounts.0.contributionComponents.special457CatchUp": 4500,
+        "accounts.1.contributionComponents.special457CatchUp": 0
+      },
+      "expectDiagnosticCodes": [
+        "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING"
+      ]
     }
   ]
 }
