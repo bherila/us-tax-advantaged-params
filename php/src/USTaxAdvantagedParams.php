@@ -10576,60 +10576,6 @@ final class Engine
     }
 
     /**
-     * Records of one eligible plan that disagree about that plan.
-     *
-     * @param array<string,mixed> $facts
-     * @return array<string,mixed>
-     */
-    private static function section457PlanGroupFactsConflictDiagnostic(string $accountId, array $facts): array
-    {
-        return self::diagnostic(
-            'SECTION_457_PLAN_GROUP_FACTS_CONFLICT',
-            DiagnosticSeverity::ERROR,
-            'Accounts '
-                . implode(', ', $facts['memberIds'])
-                . ' name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but'
-                . ' describe that plan inconsistently: '
-                . implode(' and ', $facts['conflictingFields'])
-                . '. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5)'
-                . ' includible compensation and one IRC 457(b)(3) provision, and IRC 414(v)(6)(A)(ii)'
-                . ' makes that plan either an eligible governmental plan or not; no reading of the'
-                . " input settles which description is the plan's, and choosing would answer a"
-                . " question only the caller can answer. Each record keeps its own facts for the"
-                . " basic annual limitation, which the plan's records share, and no catch-up is"
-                . ' allocated under either method until they agree.',
-            "accounts.{$accountId}.planRules.section457PlanGroupId",
-            '26 CFR 1.457-4(c)',
-        );
-    }
-
-    /**
-     * A contradiction in one of the participant's other IRC 457 plans.
-     *
-     * @param array<string,mixed> $resolution
-     * @return array<string,mixed>
-     */
-    private static function section457ConflictingPlanFactsDiagnostic(string $accountId, array $resolution): array
-    {
-        return self::diagnostic(
-            'SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS',
-            DiagnosticSeverity::ERROR,
-            'Records '
-                . implode(', ', $resolution['conflictingPlanMemberIds'])
-                . " describe one of this participant's other eligible IRC 457(b) plans"
-                . ' inconsistently. 26 CFR 1.457-5(a) states the individual limitation as the basic'
-                . ' annual limitation plus either the age 50 catch-up or the IRC 457(b)(3) catch-up'
-                . ' "taking into account the combined annual deferral for the participant for any'
-                . ' taxable year under all eligible plans", and 1.457-5(c) takes the amount from'
-                . ' whichever plan provides the largest, so which method applies to this account and'
-                . ' how much it is worth are settled by figures the input contradicts. No catch-up is'
-                . ' allocated here until those records agree.',
-            "accounts.{$accountId}",
-            '26 CFR 1.457-5(a); 26 CFR 1.457-5(c)',
-        );
-    }
-
-    /**
      * @param array<string,mixed> $context
      * @param array<string,mixed> $account
      * @param array<string,mixed> $traits
@@ -10648,18 +10594,6 @@ final class Engine
         array &$diagnostics,
     ): bool {
         $diagnosticCountBefore = count($diagnostics);
-        if ($facts['conflictingFields'] === [] && !empty($resolution['planFactsConflicted'])) {
-            // 26 CFR 1.457-5(a) selects the method once for the participant "under
-            // all eligible plans", so a contradiction in one plan is not that plan's
-            // alone: the method this account would use, and whether it has one at
-            // all, are decided from figures the input contradicts. Reporting a
-            // settled zero here would file that contradiction under this account's
-            // name.
-            $diagnostics[] = self::section457ConflictingPlanFactsDiagnostic($account['id'], $resolution);
-        }
-        if ($facts['conflictingFields'] !== []) {
-            $diagnostics[] = self::section457PlanGroupFactsConflictDiagnostic($account['id'], $facts);
-        }
         $accountExistingAgeCatchUp = self::ageCatchUps($account['existingContributions']);
         $accountExistingSpecialCatchUp = self::roundMoney(
             $account['existingContributions']['special457CatchUp']
@@ -10847,23 +10781,15 @@ final class Engine
         }
 
         $plan = $context['section457Plans'][$context['section457AccountPlanKeys'][$account['id']]];
-        // An excess is asserted only where it is one under every reading. The
-        // pool's limit is the smallest stated figure, which bounds allocation; a
-        // contradiction between records is already reported as such.
-        $largestStatedCompensation = array_reduce(
-            $plan['ceilings'],
-            static fn (float $largest, array $ceiling): float => max($largest, (float) $ceiling['includibleCompensation']),
-            0.0,
-        );
         if (self::section457SalaryDeferrals($account['existingContributions']) > 0.0
             && isset($plan['compensationPool']['limit'])
-            && $plan['existingSalaryDeferrals'] > $largestStatedCompensation) {
+            && $plan['existingSalaryDeferrals'] > $plan['compensationPool']['limit']) {
             $diagnostics[] = self::diagnostic(
                 'SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION',
                 DiagnosticSeverity::ERROR,
                 'Existing participant salary deferrals total $' . self::localeNumber($plan['existingSalaryDeferrals'])
                     . ' across records ' . implode(', ', $facts['memberIds'])
-                    . ", above this plan's $" . self::localeNumber($largestStatedCompensation)
+                    . ", above this plan's $" . self::localeNumber($plan['compensationPool']['limit'])
                     . ' of IRC 457(e)(5) includible compensation. Separate base and catch-up ceilings do not supply additional salary. Reconcile the existing contributions or the plan compensation.',
                 "accounts.{$account['id']}.existingContributions",
                 'IRC 457(e)(5); IRC 415(c)(3)(D)',
@@ -11335,7 +11261,7 @@ final class Engine
             $normalized['inputIndex'] = $index;
             $result[] = $normalized;
         }
-        return $result;
+        return self::validateSection457PlanGroups($result, $persons);
     }
 
     /** @param array<string,mixed> $rules */
@@ -11762,6 +11688,116 @@ final class Engine
     /** @param array<string,mixed> $account
      *  @param array<string,mixed> $person
      */
+    /**
+     * Records sharing a planRules.section457PlanGroupId assert that they are one
+     * eligible plan, so what they state about that plan has to be one thing.
+     *
+     * 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5)
+     * includible compensation and one IRC 457(b)(3) provision. IRC
+     * 414(v)(6)(A)(ii) makes the plan an eligible governmental plan or not, which
+     * the account types settle. IRC 414(v)(7)(A) reads the prior-year wages "from
+     * the employer sponsoring the plan", which is one employer. Records
+     * disagreeing about any of these describe no plan. Modelling every reading
+     * of such a group let each unenumerated reading resolve in the permissive
+     * direction somewhere, so it is an input-contract error instead.
+     *
+     * A record that names no employer is not a disagreement. It inherits the
+     * group's sponsor, because the plan it belongs to has one, and the IRC
+     * 414(v)(7)(A) wage test then reads that sponsor's wages on every record.
+     *
+     * @param list<array<string,mixed>> $accounts
+     * @param array<string,array<string,mixed>> $persons
+     * @return list<array<string,mixed>>
+     */
+    private static function validateSection457PlanGroups(array $accounts, array $persons): array
+    {
+        $groups = [];
+        foreach ($accounts as $index => $account) {
+            if (($account['planRules']['section457PlanGroupId'] ?? null) === null) {
+                continue;
+            }
+            if (self::traits($account['type'])['family'] !== 'section457') {
+                continue;
+            }
+            $groups[self::section457PlanGroupKey($persons[$account['ownerId']], $account)][] = $index;
+        }
+        foreach ($groups as $indexes) {
+            $members = [];
+            foreach ($indexes as $index) {
+                $members[] = $accounts[$index];
+            }
+            $person = $persons[$members[0]['ownerId']];
+            $conflicting = [];
+            $specials = [];
+            $explicit = [];
+            $governmental = [];
+            $employers = [];
+            foreach ($members as $account) {
+                $special = $account['planRules']['section457SpecialCatchUp'] ?? null;
+                if (is_array($special)) {
+                    $unused = self::money(
+                        $special['unusedDeferralsFromPriorYears'] ?? null,
+                        'section457SpecialCatchUp.unusedDeferralsFromPriorYears',
+                    );
+                    $specials[(!empty($special['eligible']) ? 'true' : 'false') . ':' . self::moneyKey($unused)] = true;
+                }
+                $amount = $account['planRules']['includibleCompensation457']
+                    ?? $account['planRules']['planCompensation']
+                    ?? null;
+                if ($amount !== null) {
+                    $explicit[self::moneyKey(self::money($amount, 'includibleCompensation457'))] = true;
+                }
+                $governmental[!empty(self::traits($account['type'])['governmental457']) ? '1' : '0'] = true;
+                if (isset($account['employerId'])) {
+                    $employers[(string) $account['employerId']] = (string) $account['employerId'];
+                }
+            }
+            if (count($specials) > 1) {
+                $conflicting[] = 'planRules.section457SpecialCatchUp';
+            }
+            if ($explicit === []) {
+                foreach ($members as $account) {
+                    $explicit[self::moneyKey(self::planCompensation($account, $person))] = true;
+                }
+            }
+            if (count($explicit) > 1) {
+                $conflicting[] = 'planRules.includibleCompensation457';
+            }
+            if (count($governmental) > 1) {
+                $conflicting[] = 'whether the plan is an eligible governmental plan (its account types)';
+            }
+            if (count($employers) > 1) {
+                $conflicting[] = 'employerId';
+            }
+            if ($conflicting !== []) {
+                $ids = [];
+                foreach ($members as $account) {
+                    $ids[] = $account['id'];
+                }
+                throw new ParameterException(
+                    'SECTION_457_PLAN_GROUP_FACTS_CONFLICT',
+                    'Accounts ' . implode(', ', $ids)
+                        . ' name one eligible IRC 457(b) plan through planRules.section457PlanGroupId but state '
+                        . implode(' and ', $conflicting)
+                        . ' differently. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5)'
+                        . ' includible compensation and one IRC 457(b)(3) provision; IRC 414(v)(6)(A)(ii) makes that'
+                        . ' plan an eligible governmental plan or not; and IRC 414(v)(7)(A) reads prior-year wages'
+                        . " from the one employer sponsoring it. State the plan's facts consistently, or give records"
+                        . ' that are separate plans different group ids.',
+                );
+            }
+            if (count($employers) === 1) {
+                $sponsor = array_values($employers)[0];
+                foreach ($indexes as $index) {
+                    if (!isset($accounts[$index]['employerId'])) {
+                        $accounts[$index]['employerId'] = $sponsor;
+                    }
+                }
+            }
+        }
+        return $accounts;
+    }
+
     private static function planCompensation(array $account, array $person): float
     {
         $rules = $account['planRules'];
@@ -12163,6 +12199,7 @@ final class Engine
             'section457BasePools' => [],
             'section457CatchUpPools' => [],
             'section457SpecialCatchUpPools' => [],
+            'section457PossibleOrdinaryByAccount' => [],
             // One state container per eligible plan, indexed by account key.
             'section457Plans' => [],
             'section457AccountPlanKeys' => [],
@@ -12459,14 +12496,14 @@ final class Engine
      * the group is the account alone, which is the contract that held before the
      * key existed and leaves every single-record plan computing exactly as it did.
      *
-     * A fact stated by one record covers the whole plan; a fact two records state
-     * differently is a contradiction rather than two plans. Includible
-     * compensation is resolved here alongside the IRC 457(b)(3) provision because
-     * the provision alone does not determine the plan's ceiling: 26 CFR
-     * 1.457-4(c)(3)(ii)(A) builds the special ceiling on "the plan ceiling
-     * established for purposes of paragraph (2)", which is IRC 457(e)(5)
-     * includible compensation-bounded, so one plan with two compensation figures
-     * would still have two ceilings.
+     * A fact stated by one record covers the whole plan. Records stating a fact
+     * differently were rejected at normalization by
+     * validateSection457PlanGroups, so the first statement found is the plan's.
+     * Includible compensation is resolved here alongside the IRC 457(b)(3)
+     * provision because the provision alone does not determine the plan's
+     * ceiling: 26 CFR 1.457-4(c)(3)(ii)(A) builds the special ceiling on "the plan
+     * ceiling established for purposes of paragraph (2)", which is IRC 457(e)(5)
+     * includible compensation-bounded.
      *
      * @param array<string,mixed> $person
      * @param list<array<string,mixed>> $owned
@@ -12485,92 +12522,28 @@ final class Engine
             foreach ($members as $account) {
                 $memberIds[] = $account['id'];
             }
-            $conflictingFields = [];
-
-            // 26 CFR 1.457-5(c) recognises the special catch-up only "as a result
-            // of plan provisions permitted under Sec. 1.457-4(c)(3)" -- provisions
-            // of the plan, so one statement of them is the plan's and two
-            // different ones describe no plan at all.
-            $statements = [];
-            $distinctStatements = [];
+            // Explicit statements first, so a host plan's figure covers a record
+            // that states none; only where the plan states nothing does the
+            // person-level default apply.
+            $resolvedSpecial = null;
             foreach ($members as $account) {
                 $special = $account['planRules']['section457SpecialCatchUp'] ?? null;
-                if (!is_array($special)) {
-                    continue;
+                if (is_array($special)) {
+                    $resolvedSpecial = $special;
+                    break;
                 }
-                $statements[] = $special;
-                $eligible = !empty($special['eligible']) ? 'true' : 'false';
-                $unused = self::money(
-                    $special['unusedDeferralsFromPriorYears'] ?? null,
-                    "{$memberIds[0]}.unused457Deferrals",
-                );
-                $distinctStatements[$eligible . ':' . self::moneyKey($unused)] = $special;
             }
-            if (count($distinctStatements) > 1) {
-                $conflictingFields[] = 'planRules.section457SpecialCatchUp';
-            }
-
-            // Explicit statements first, so a host plan's figure covers a record
-            // that states none. Only where the plan states nothing anywhere does
-            // the person-level default apply, and then it has to agree across the
-            // records for the same reason.
-            $explicit = [];
+            $resolvedCompensation = null;
             foreach ($members as $account) {
                 $amount = $account['planRules']['includibleCompensation457']
                     ?? $account['planRules']['planCompensation']
                     ?? null;
-                if ($amount === null) {
-                    continue;
-                }
-                $explicit[] = self::money($amount, "{$memberIds[0]}.includibleCompensation457");
-            }
-            if ($explicit === []) {
-                foreach ($members as $account) {
-                    $explicit[] = self::planCompensation($account, $person);
+                if ($amount !== null) {
+                    $resolvedCompensation = self::money($amount, "{$memberIds[0]}.includibleCompensation457");
+                    break;
                 }
             }
-            $candidates = [];
-            foreach ($explicit as $amount) {
-                $candidates[self::moneyKey($amount)] = $amount;
-            }
-            if (count($candidates) > 1) {
-                $conflictingFields[] = 'planRules.includibleCompensation457';
-            }
-
-            // IRC 414(v)(6)(A)(ii) makes only an eligible *governmental* IRC 457(b)
-            // plan an applicable employer plan, so the status decides whether the
-            // age-based method exists at all -- and a plan is one or the other,
-            // never both. It is settled by the account types rather than by a rule
-            // field, which is exactly why it needs checking here: nothing else
-            // stops a nongovernmental record from joining a governmental plan and
-            // changing the participant's method.
-            $governmental = [];
-            foreach ($members as $account) {
-                $governmental[!empty(self::traits($account['type'])['governmental457']) ? '1' : '0'] = true;
-            }
-            $governmentalStatusConflicts = count($governmental) > 1;
-            if ($governmentalStatusConflicts) {
-                $conflictingFields[] = 'whether it is an eligible governmental plan,'
-                    . ' which the account types settle';
-            }
-
-            // One plan has one sponsoring employer, and IRC 414(v)(7)(A) tests the
-            // participant's prior-year FICA wages from the employer sponsoring the
-            // plan. Left unchecked, one record could name a high-wage employer and
-            // another a zero-wage one, and the second would take pre-tax the
-            // catch-up paragraph (7)(A) requires the first to make as a designated
-            // Roth contribution. Absence is not a disagreement: an account with no
-            // employerId is already asked for one wherever that test can decide
-            // something.
-            $employers = [];
-            foreach ($members as $account) {
-                if (($account['employerId'] ?? null) !== null) {
-                    $employers[$account['employerId']] = true;
-                }
-            }
-            if (count($employers) > 1) {
-                $conflictingFields[] = 'employerId';
-            }
+            $resolvedCompensation ??= self::planCompensation($members[0], $person);
 
             $existingSpecialCatchUp = 0.0;
             foreach ($members as $account) {
@@ -12586,51 +12559,16 @@ final class Engine
                     + $account['existingContributions']['employerRoth'];
             }
             $existingRegularDeferrals = self::roundMoney($existingRegularDeferrals);
-            $resolvedCompensation = array_values($candidates)[0];
-            $resolvedSpecial = $statements === [] ? null : $statements[0];
-            $compensationCandidates = array_values($candidates);
-            $specialCandidates = $distinctStatements === []
-                ? [null]
-                : array_values($distinctStatements);
 
             foreach ($members as $account) {
-                $byAccount[$account['id']] = $conflictingFields === []
-                    ? [
-                        'key' => $key,
-                        'memberIds' => $memberIds,
-                        'includibleCompensation' => $resolvedCompensation,
-                        'special' => $resolvedSpecial,
-                        'existingSpecialCatchUp' => $existingSpecialCatchUp,
-                        'existingRegularDeferrals' => $existingRegularDeferrals,
-                        'conflictingFields' => $conflictingFields,
-                        'compensationCandidates' => $compensationCandidates,
-                        'specialCandidates' => $specialCandidates,
-                        'governmentalStatusConflicts' => $governmentalStatusConflicts,
-                        'groupExistingSpecialCatchUp' => $existingSpecialCatchUp,
-                    ]
-                    : [
-                        'key' => $key,
-                        'memberIds' => $memberIds,
-                        'includibleCompensation' => self::section457IncludibleCompensation($account, $person),
-                        'special' => is_array($account['planRules']['section457SpecialCatchUp'] ?? null)
-                            ? $account['planRules']['section457SpecialCatchUp']
-                            : null,
-                        'existingSpecialCatchUp' => self::roundMoney(
-                            $account['existingContributions']['special457CatchUp']
-                                + $account['existingContributions']['special457RothCatchUp'],
-                        ),
-                        'existingRegularDeferrals' => self::roundMoney(
-                            self::baseDeferrals($account['existingContributions'])
-                                + $account['existingContributions']['employeeAfterTax']
-                                + $account['existingContributions']['employerPreTax']
-                                + $account['existingContributions']['employerRoth'],
-                        ),
-                        'conflictingFields' => $conflictingFields,
-                        'compensationCandidates' => $compensationCandidates,
-                        'specialCandidates' => $specialCandidates,
-                        'governmentalStatusConflicts' => $governmentalStatusConflicts,
-                        'groupExistingSpecialCatchUp' => $existingSpecialCatchUp,
-                    ];
+                $byAccount[$account['id']] = [
+                    'key' => $key,
+                    'memberIds' => $memberIds,
+                    'includibleCompensation' => $resolvedCompensation,
+                    'special' => $resolvedSpecial,
+                    'existingSpecialCatchUp' => $existingSpecialCatchUp,
+                    'existingRegularDeferrals' => $existingRegularDeferrals,
+                ];
             }
         }
 
@@ -12785,114 +12723,6 @@ final class Engine
         );
     }
 
-    /**
-     * Whether one plan's self-contradiction can change what the *participant's
-     * other* plans are entitled to.
-     *
-     * 26 CFR 1.457-5(a) selects the method once for the participant "under all
-     * eligible plans" and 1.457-5(c) takes the amount from whichever plan
-     * provides the largest, so a contradiction in one plan can decide the method
-     * and the amount everywhere. It does not follow that it always does. The
-     * resolution reads exactly four things off a plan's facts -- the IRC 414(v)
-     * capacity it offers, the largest such capacity the year could give it, its
-     * IRC 457(b)(3) capacity, and whether its existing catch-ups sit outside what
-     * it provides -- and where every reading the input leaves open produces the
-     * same four, the contradiction is real but inert: no other plan's entitlement
-     * depends on which record is right. Reporting it as though it did marks an
-     * unrelated plan indeterminate and allocates it nothing, which is a wrong
-     * answer rather than a cautious one.
-     *
-     * The readings are the Cartesian product of the figures the records actually
-     * state, not an interval: the plan's true includible compensation is one of
-     * the amounts stated for it, and its true IRC 457(b)(3) provision is one of
-     * the provisions stated for it. Governmental status is the exception and is
-     * treated as always load-bearing, because the status is settled by each
-     * record's own account *type*: the reading in which the plan is governmental
-     * is not one this engine can compute a ceiling under for a record whose type
-     * says otherwise.
-     *
-     * Members' own entitlements are not at stake here. Every record of a
-     * contradictory plan is reported indeterminate by
-     * SECTION_457_PLAN_GROUP_FACTS_CONFLICT whatever this returns.
-     *
-     * @param array<string, mixed> $parameters
-     * @param array<string, mixed> $person
-     * @param list<array<string, mixed>> $members
-     * @param array<string, mixed> $facts
-     */
-    private static function section457PlanConflictIsLoadBearing(
-        array $parameters,
-        array $person,
-        array $members,
-        array $facts,
-        float $statutoryBase,
-        float $compensationFraction,
-    ): bool {
-        if (!empty($facts['governmentalStatusConflicts'])) {
-            return true;
-        }
-        $first = null;
-        foreach ($facts['compensationCandidates'] as $includibleCompensation) {
-            foreach ($facts['specialCandidates'] as $special) {
-                $reading = $facts;
-                $reading['includibleCompensation'] = $includibleCompensation;
-                $reading['special'] = $special;
-                $reading['existingSpecialCatchUp'] = $facts['groupExistingSpecialCatchUp'];
-                $age = 0.0;
-                $largestAge = 0.0;
-                $specialCapacity = 0.0;
-                $unreconciled = false;
-                foreach ($members as $member) {
-                    $ceilings = self::section457PlanCeilings(
-                        $parameters,
-                        $person,
-                        $member,
-                        $reading,
-                        $statutoryBase,
-                        $compensationFraction,
-                    );
-                    $age = max($age, $ceilings['ageAdditional']);
-                    $largestAge = max($largestAge, $ceilings['largestPossibleAgeAdditional']);
-                    $specialCapacity = max($specialCapacity, $ceilings['specialAdditional']);
-                    // The IRC 457(b)(3) half of the participant-wide
-                    // reconciliation test, which is the only half a plan's facts
-                    // can move: the age half turns on the record's account type,
-                    // which no reading changes.
-                    $memberExistingSpecial = self::roundMoney(
-                        $member['existingContributions']['special457CatchUp']
-                        + $member['existingContributions']['special457RothCatchUp'],
-                    );
-                    $readingProvidesSpecial = is_array($reading['special'])
-                        && !empty($reading['special']['eligible']);
-                    if (
-                        $memberExistingSpecial > 0.0
-                        && (
-                            !$readingProvidesSpecial
-                            || $reading['existingSpecialCatchUp'] > $ceilings['specialAdditional']
-                        )
-                    ) {
-                        $unreconciled = true;
-                    }
-                }
-                if ($first === null) {
-                    $first = [$age, $largestAge, $specialCapacity, $unreconciled];
-                } elseif (
-                    // Compared as numbers rather than through a composite string
-                    // key, so no float-formatting rule stands between two figures
-                    // and their difference.
-                    $first[0] !== $age
-                    || $first[1] !== $largestAge
-                    || $first[2] !== $specialCapacity
-                    || $first[3] !== $unreconciled
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     /** One eligible plan owns member views, cached ceilings and all resource balances. */
     private static function buildSection457Plans(array &$context, array $person, array $owned): array
     {
@@ -12937,7 +12767,7 @@ final class Engine
                 }
                 $plan['capacity']['special'] = max($plan['capacity']['special'], $ceiling['specialAdditional']);
             }
-            $limits = self::section457GuaranteedPlanLimits($context['parameters'], $person, $plan, (float) $base, (float) $fraction);
+            $limits = self::section457PlanLimits($context['parameters'], $person, $plan, (float) $base, (float) $fraction);
             $plan['basePool'] = [
                 'id' => "457b-plan-base:{$key}",
                 'legalLimit' => '26 CFR 1.457-4(c)(1)(i) plan ceiling on the annual deferral',
@@ -12969,63 +12799,38 @@ final class Engine
     }
 
     /**
-     * The plan ceilings that hold under every reading the plan's records leave
-     * open.
+     * The ceilings one plan offers, from the facts its records state once.
      *
-     * Consistent records describe one plan, so there is one reading and these
-     * are its ceilings. Contradictory records describe several, and 26 CFR
-     * 1.457-4(c) gives the plan exactly one of them -- which one is the question
-     * SECTION_457_PLAN_GROUP_FACTS_CONFLICT puts to the caller. Until it is
-     * answered, an allocation is safe only where it fits the smallest ceiling
-     * any reading produces. Taking the largest let two records stating $1,000
-     * and $2,000 of IRC 457(e)(5) includible compensation defer $2,000 under a
-     * plan that on the first reading allows $1,000 in all.
-     *
-     * Within one reading the plan offers what any of its records can host, as
-     * `capacity` does: an emergency savings record's own type does not remove
-     * its host's IRC 414(v) room.
+     * The plan offers what any of its records can host, as `capacity` does: an
+     * emergency savings record's own type does not remove its host's IRC 414(v)
+     * room. Records stating the plan's facts differently never reach here;
+     * validateSection457PlanGroups rejects them.
      *
      * @param array<string,mixed> $parameters
      * @param array<string,mixed> $person
      * @param array<string,mixed> $plan
      * @return array{basic: float, compensation: float, special: float, age: float, specialTotal: float, ageTotal: float}
      */
-    private static function section457GuaranteedPlanLimits(
+    private static function section457PlanLimits(
         array $parameters,
         array $person,
         array $plan,
         float $statutoryBase,
         float $compensationFraction,
     ): array {
-        $facts = $plan['facts'][$plan['members'][0]['id']];
-        $guaranteed = null;
-        foreach ($facts['compensationCandidates'] as $includibleCompensation) {
-            foreach ($facts['specialCandidates'] as $special) {
-                $reading = $facts;
-                $reading['includibleCompensation'] = $includibleCompensation;
-                $reading['special'] = $special;
-                $limits = ['basic' => 0.0, 'compensation' => 0.0, 'special' => 0.0, 'age' => 0.0, 'specialTotal' => 0.0, 'ageTotal' => 0.0];
-                foreach ($plan['members'] as $member) {
-                    $ceiling = self::section457PlanCeilings(
-                        $parameters, $person, $member, $reading, $statutoryBase, $compensationFraction,
-                    );
-                    $limits['basic'] = max($limits['basic'], $ceiling['basicPlanCeiling']);
-                    $limits['compensation'] = max($limits['compensation'], $ceiling['includibleCompensation']);
-                    $limits['special'] = max($limits['special'], $ceiling['specialAdditional']);
-                    $limits['age'] = max($limits['age'], $ceiling['ageAdditional']);
-                    $limits['specialTotal'] = max($limits['specialTotal'], $ceiling['basicPlanCeiling'] + $ceiling['specialAdditional']);
-                    $limits['ageTotal'] = max($limits['ageTotal'], $ceiling['basicPlanCeiling'] + $ceiling['ageAdditional']);
-                }
-                if ($guaranteed === null) {
-                    $guaranteed = $limits;
-                    continue;
-                }
-                foreach ($limits as $name => $value) {
-                    $guaranteed[$name] = min($guaranteed[$name], $value);
-                }
-            }
+        $limits = ['basic' => 0.0, 'compensation' => 0.0, 'special' => 0.0, 'age' => 0.0, 'specialTotal' => 0.0, 'ageTotal' => 0.0];
+        foreach ($plan['members'] as $member) {
+            $ceiling = self::section457PlanCeilings(
+                $parameters, $person, $member, $plan['facts'][$member['id']], $statutoryBase, $compensationFraction,
+            );
+            $limits['basic'] = max($limits['basic'], $ceiling['basicPlanCeiling']);
+            $limits['compensation'] = max($limits['compensation'], $ceiling['includibleCompensation']);
+            $limits['special'] = max($limits['special'], $ceiling['specialAdditional']);
+            $limits['age'] = max($limits['age'], $ceiling['ageAdditional']);
+            $limits['specialTotal'] = max($limits['specialTotal'], $ceiling['basicPlanCeiling'] + $ceiling['specialAdditional']);
+            $limits['ageTotal'] = max($limits['ageTotal'], $ceiling['basicPlanCeiling'] + $ceiling['ageAdditional']);
         }
-        return $guaranteed;
+        return $limits;
     }
 
     private static function section457AccountFacts(array $context, string $accountId): array
@@ -13054,23 +12859,16 @@ final class Engine
             + $components['special457CatchUp'] + $components['special457RothCatchUp']);
     }
 
-    /** Evaluate all conflicting plan sponsors for attribution, without choosing one. */
+    /**
+     * The existing pre-tax catch-up IRC 414(v)(7)(A) leaves unresolved, if any.
+     *
+     * One plan has one sponsor. validateSection457PlanGroups rejects a group
+     * naming two and gives a record that names none its group's sponsor, so the
+     * account's own employerId is the plan's and is the only wage figure to test.
+     */
     private static function unresolvedExistingPreTaxCatchUp(array $context, array $account, array $traits): ?array
     {
-        $own = self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
-        if ($own !== null) return $own;
-        $key = $context['section457AccountPlanKeys'][$account['id']] ?? null;
-        if ($key === null) return null;
-        $plan = $context['section457Plans'][$key];
-        if (!in_array('employerId', $plan['facts'][$account['id']]['conflictingFields'], true)) return null;
-        foreach ($plan['members'] as $member) {
-            if (!isset($member['employerId'])) continue;
-            $readingAccount = $account;
-            $readingAccount['employerId'] = $member['employerId'];
-            $reading = self::highWageInvalidExistingPreTaxCatchUp($context, $readingAccount, $traits);
-            if ($reading !== null) return $reading;
-        }
-        return null;
+        return self::highWageInvalidExistingPreTaxCatchUp($context, $account, $traits);
     }
 
     /** Newly allocated amounts use the same component classification as existing ones. */
@@ -13148,12 +12946,6 @@ final class Engine
             // the allocator reads it on every path including the one that reports
             // the year's IRC 457(e)(15) amount as unavailable.
             $planKeys = self::buildSection457Plans($context, $person, $owned);
-            $conflictingPlanMemberIds = [];
-            foreach ($owned as $account) {
-                if (self::section457AccountFacts($context, $account['id'])['conflictingFields'] !== []) {
-                    $conflictingPlanMemberIds[] = $account['id'];
-                }
-            }
             if ($statutoryBase === null || $compensationFraction === null) {
                 $context['section457CatchUpResolutions'][$personId] = [
                     'mode' => 'none',
@@ -13163,8 +12955,6 @@ final class Engine
                     'existingAgeCatchUp' => 0.0,
                     'existingSpecialCatchUp' => 0.0,
                     'existingCatchUpClassificationUnreconciled' => false,
-                    'planFactsConflicted' => $conflictingPlanMemberIds !== [],
-                    'conflictingPlanMemberIds' => $conflictingPlanMemberIds,
                     'eligibleAccountIds' => [],
                 ];
                 continue;
@@ -13277,33 +13067,6 @@ final class Engine
             $unselectedExistingCatchUp = self::roundMoney(
                 $existingAgeCatchUp + $existingSpecialCatchUp - $selectedExistingCatchUp,
             );
-            // 26 CFR 1.457-5(a) settles the method once for the participant, so a
-            // contradiction about one plan can decide another plan's entitlement --
-            // but only where the readings it leaves open differ in what they give
-            // the participant. Where they do not, the contradiction stays on its own
-            // records: SECTION_457_PLAN_GROUP_FACTS_CONFLICT still reports it on
-            // every one of them, and every other plan is answered from facts it does
-            // not touch.
-            $loadBearingConflictMemberIds = [];
-            foreach ($planKeys as $key) {
-                $members = $context['section457Plans'][$key]['members'];
-                $accountFacts = $context['section457Plans'][$key]['facts'][$members[0]['id']];
-                if ($accountFacts['conflictingFields'] === []) continue;
-                if (
-                    self::section457PlanConflictIsLoadBearing(
-                        $context['parameters'],
-                        $person,
-                        $members,
-                        $accountFacts,
-                        $statutoryBase,
-                        $compensationFraction,
-                    )
-                ) {
-                    foreach ($accountFacts['memberIds'] as $memberId) {
-                        $loadBearingConflictMemberIds[] = $memberId;
-                    }
-                }
-            }
             $existingCatchUpClassificationUnreconciled = (
                 $mode === 'indeterminate'
                 && $existingAgeCatchUp + $existingSpecialCatchUp > 0.0
@@ -13354,8 +13117,6 @@ final class Engine
                 'existingAgeCatchUp' => $existingAgeCatchUp,
                 'existingSpecialCatchUp' => $existingSpecialCatchUp,
                 'existingCatchUpClassificationUnreconciled' => $existingCatchUpClassificationUnreconciled,
-                'planFactsConflicted' => $loadBearingConflictMemberIds !== [],
-                'conflictingPlanMemberIds' => $loadBearingConflictMemberIds,
                 'eligibleAccountIds' => array_fill_keys($eligibleIds, true),
             ];
         }
@@ -13390,8 +13151,7 @@ final class Engine
      * A supported label is not a valid amount either. What remains can be a
      * catch-up only up to two ceilings, and anything above either may have been
      * ordinary: the plan's own allowance, which 26 CFR 1.457-5(c) recognises
-     * "only to the extent" an amount is made under that plan's provisions, taken
-     * at the smallest figure any reading of its records gives
+     * "only to the extent" an amount is made under that plan's provisions
      * (SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT); and the participant's
      * headroom, which 1.457-5(a) and (b) apply on an aggregate basis
      * (SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT). Which plan's
@@ -13403,6 +13163,15 @@ final class Engine
      *
      * An IRC 414(v)(7)(A)-condemned pre-tax age catch-up is widened separately
      * by seedUnresolvedCatchUpAttribution and is not widened a second time here.
+     *
+     * Where the participant's age is unknown the method itself is open, and each
+     * reading makes different amounts ordinary. Below age 50 IRC 414(v)(5)(A)
+     * makes no age-based catch-up available, so every one is unsupported. From
+     * 50 the age-based method may win 26 CFR 1.457-4(c)(2)(ii)'s comparison,
+     * making every special catch-up unsupported; its smallest allowance is the
+     * one at age 50, which leaves the most above it. Both readings are evaluated
+     * and each pool takes the larger. The basic pools take the larger *combined*
+     * figure rather than the sum of two maxima, because no completion has both.
      */
     private static function seedUnsupportedSection457CatchUpAttribution(array &$context): void
     {
@@ -13417,110 +13186,208 @@ final class Engine
             if ($resolution === null) {
                 continue;
             }
-            $mode = $resolution['mode'];
-            $shares = [];
+            $planKeys = [];
             foreach ($context['section457Plans'] as $key => $plan) {
-                if ($plan['members'][0]['ownerId'] !== $personId || !isset($plan['specialPool'])) {
-                    continue;
+                if ($plan['members'][0]['ownerId'] === $personId && isset($plan['specialPool'])) {
+                    $planKeys[] = $key;
                 }
-                $allowance = self::section457GuaranteedPlanLimits(
-                    $context['parameters'], $person, $plan, (float) $statutoryBase, (float) $compensationFraction,
-                );
-                $supportedSpecial = 0.0;
-                $unsupportedSpecial = 0.0;
-                $supportedAge = 0.0;
-                $unsupportedAge = 0.0;
-                foreach ($plan['members'] as $member) {
-                    $traits = self::traits($member['type']);
-                    $existing = $member['existingContributions'];
-                    $special = self::roundMoney($existing['special457CatchUp'] + $existing['special457RothCatchUp']);
-                    $condemned = (float) (self::unresolvedExistingPreTaxCatchUp($context, $member, $traits)['existing'] ?? 0.0);
-                    $age = self::nonnegative(self::roundMoney(self::ageCatchUps($existing) - $condemned));
-                    $memberSpecial = $plan['facts'][$member['id']]['special'];
-                    $memberProvidesSpecial = is_array($memberSpecial) && !empty($memberSpecial['eligible']);
-                    if ($mode === 'age' || $mode === 'none' || ($mode === 'special' && !$memberProvidesSpecial)) {
-                        $unsupportedSpecial = self::roundMoney($unsupportedSpecial + $special);
-                    } else {
-                        $supportedSpecial = self::roundMoney($supportedSpecial + $special);
-                    }
-                    $permitsAge = !empty($traits['governmental457']) && !empty($traits['permitsAgeCatchUpByStatute']);
-                    if ($mode === 'special' || $mode === 'none' || ($mode === 'age' && !$permitsAge)) {
-                        $unsupportedAge = self::roundMoney($unsupportedAge + $age);
-                    } else {
-                        $supportedAge = self::roundMoney($supportedAge + $age);
-                    }
-                }
-                $specialAboveAllowance = self::nonnegative(self::roundMoney($supportedSpecial - $allowance['special']));
-                $ageAboveAllowance = $mode === 'age'
-                    ? self::nonnegative(self::roundMoney($supportedAge - $allowance['age']))
-                    : 0.0;
-                $shares[] = [
-                    'key' => $key,
-                    'special' => self::roundMoney($unsupportedSpecial + $specialAboveAllowance),
-                    'age' => self::roundMoney($unsupportedAge + $ageAboveAllowance),
-                    'withinAllowance' => $mode === 'special'
-                        ? self::minMoney($supportedSpecial, $allowance['special'])
-                        : ($mode === 'age' ? self::minMoney($supportedAge, $allowance['age']) : 0.0),
-                ];
             }
-            if ($shares === []) {
+            if ($planKeys === []) {
                 continue;
             }
-            $overflow = self::nonnegative(self::roundMoney(
-                array_reduce($shares, static fn (float $total, array $share): float => $total + $share['withinAllowance'], 0.0)
-                    - (float) $resolution['headroom'],
-            ));
+            if ($resolution['mode'] === 'indeterminate') {
+                $atFifty = $person;
+                unset($atFifty['birthDate']);
+                $atFifty['birthYear'] = $context['taxYear'] - 50;
+                $readings = [
+                    self::section457OrdinaryExposure(
+                        $context, $person, $planKeys, $resolution['specialAmount'] > 0.0 ? 'special' : 'none',
+                        (float) $statutoryBase, (float) $compensationFraction,
+                    ),
+                    self::section457OrdinaryExposure(
+                        $context, $atFifty, $planKeys, 'age', (float) $statutoryBase, (float) $compensationFraction,
+                    ),
+                ];
+            } else {
+                $readings = [self::section457OrdinaryExposure(
+                    $context, $person, $planKeys, $resolution['mode'], (float) $statutoryBase, (float) $compensationFraction,
+                )];
+            }
+            $most = static function (callable $pick) use ($readings): float {
+                $largest = 0.0;
+                foreach ($readings as $reading) {
+                    $largest = max($largest, (float) $pick($reading));
+                }
+                return $largest;
+            };
 
-            $participantSpecial = $mode === 'special' ? $overflow : 0.0;
-            $participantAge = $mode === 'age' ? $overflow : 0.0;
-            foreach ($shares as $share) {
-                $plan =& $context['section457Plans'][$share['key']];
-                $planOverflow = self::minMoney($share['withinAllowance'], $overflow);
-                $participantSpecial = self::roundMoney($participantSpecial + $share['special']);
-                $participantAge = self::roundMoney($participantAge + $share['age']);
+            foreach ($planKeys as $key) {
+                $plan =& $context['section457Plans'][$key];
                 // One group-level attribution, not one whole-group charge per
                 // record. Salary usage is invariant to this label.
                 $specialRelieved = [];
-                $specialRelieved[] =& $plan['basePool'];
-                if ($mode === 'age') {
+                if ($resolution['mode'] === 'age') {
                     $specialRelieved[] =& $plan['ageTotalPool'];
                 }
                 self::attributeToEitherPool(
                     $plan['specialPool'],
                     $specialRelieved,
-                    self::roundMoney($share['special'] + ($mode === 'special' ? $planOverflow : 0.0)),
+                    $most(static fn (array $reading): float => $reading['plans'][$key]['special']),
                     "existing-special-catch-up:{$plan['key']}",
                 );
                 $ageRelieved = [];
-                $ageRelieved[] =& $plan['basePool'];
-                if ($mode === 'special') {
+                if ($resolution['mode'] === 'special') {
                     $ageRelieved[] =& $plan['specialTotalPool'];
                 }
                 $noCatchUpPool = null;
                 self::attributeToEitherPool(
                     $noCatchUpPool,
                     $ageRelieved,
-                    self::roundMoney($share['age'] + ($mode === 'age' ? $planOverflow : 0.0)),
+                    $most(static fn (array $reading): float => $reading['plans'][$key]['age']),
                     "existing-age-catch-up:{$plan['key']}",
                 );
-                unset($plan, $specialRelieved, $ageRelieved);
+                $baseRelieved = [];
+                $baseRelieved[] =& $plan['basePool'];
+                $noCatchUpPool = null;
+                self::attributeToEitherPool(
+                    $noCatchUpPool,
+                    $baseRelieved,
+                    $most(static fn (array $reading): float => self::roundMoney(
+                        $reading['plans'][$key]['special'] + $reading['plans'][$key]['age'],
+                    )),
+                    "existing-catch-up:{$plan['key']}",
+                );
+                foreach ($plan['members'] as $member) {
+                    $memberId = $member['id'];
+                    $context['section457PossibleOrdinaryByAccount'][$memberId] =
+                        $most(static fn (array $reading): float => $reading['accounts'][$memberId] ?? 0.0);
+                }
+                unset($plan, $specialRelieved, $ageRelieved, $baseRelieved);
             }
-            $participantRelieved = [];
-            $participantRelieved[] =& $context['section457BasePools'][$personId];
+            $noneRelieved = [];
             self::attributeToEitherPool(
                 $context['section457SpecialCatchUpPools'][$personId],
-                $participantRelieved,
-                $participantSpecial,
+                $noneRelieved,
+                $most(static fn (array $reading): float => $reading['participantSpecial']),
                 "existing-special-catch-up:{$personId}",
             );
+            $noneRelieved = [];
             self::attributeToEitherPool(
                 $context['section457CatchUpPools'][$personId],
-                $participantRelieved,
-                $participantAge,
+                $noneRelieved,
+                $most(static fn (array $reading): float => $reading['participantAge']),
                 "existing-age-catch-up:{$personId}",
+            );
+            $participantRelieved = [];
+            $participantRelieved[] =& $context['section457BasePools'][$personId];
+            $noCatchUpPool = null;
+            self::attributeToEitherPool(
+                $noCatchUpPool,
+                $participantRelieved,
+                $most(static fn (array $reading): float => self::roundMoney(
+                    $reading['participantSpecial'] + $reading['participantAge'],
+                )),
+                "existing-catch-up:{$personId}",
             );
             unset($participantRelieved);
         }
+    }
+
+    /**
+     * The most of each existing IRC 457 catch-up that can be ordinary under one
+     * method reading.
+     *
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $person
+     * @param list<string> $planKeys
+     * @return array{participantSpecial: float, participantAge: float, plans: array<string,array{special: float, age: float}>, accounts: array<string,float>}
+     */
+    private static function section457OrdinaryExposure(
+        array $context,
+        array $person,
+        array $planKeys,
+        string $mode,
+        float $statutoryBase,
+        float $compensationFraction,
+    ): array {
+        $shares = [];
+        foreach ($planKeys as $key) {
+            $plan = $context['section457Plans'][$key];
+            $limits = self::section457PlanLimits($context['parameters'], $person, $plan, $statutoryBase, $compensationFraction);
+            $allowance = $mode === 'special' ? $limits['special'] : ($mode === 'age' ? $limits['age'] : 0.0);
+            $supportedSpecial = 0.0;
+            $unsupportedSpecial = 0.0;
+            $supportedAge = 0.0;
+            $unsupportedAge = 0.0;
+            $members = [];
+            foreach ($plan['members'] as $member) {
+                $traits = self::traits($member['type']);
+                $existing = $member['existingContributions'];
+                $special = self::roundMoney($existing['special457CatchUp'] + $existing['special457RothCatchUp']);
+                $condemned = (float) (self::unresolvedExistingPreTaxCatchUp($context, $member, $traits)['existing'] ?? 0.0);
+                $age = self::nonnegative(self::roundMoney(self::ageCatchUps($existing) - $condemned));
+                $memberSpecial = $plan['facts'][$member['id']]['special'];
+                $specialSupported = $mode === 'special' && is_array($memberSpecial) && !empty($memberSpecial['eligible']);
+                $ageSupported = $mode === 'age'
+                    && !empty($traits['governmental457']) && !empty($traits['permitsAgeCatchUpByStatute']);
+                if ($specialSupported) {
+                    $supportedSpecial = self::roundMoney($supportedSpecial + $special);
+                } else {
+                    $unsupportedSpecial = self::roundMoney($unsupportedSpecial + $special);
+                }
+                if ($ageSupported) {
+                    $supportedAge = self::roundMoney($supportedAge + $age);
+                } else {
+                    $unsupportedAge = self::roundMoney($unsupportedAge + $age);
+                }
+                $members[] = [
+                    'id' => $member['id'],
+                    'unsupported' => self::roundMoney(($specialSupported ? 0.0 : $special) + ($ageSupported ? 0.0 : $age)),
+                    'supported' => $specialSupported ? $special : ($ageSupported ? $age : 0.0),
+                ];
+            }
+            $supported = $mode === 'special' ? $supportedSpecial : $supportedAge;
+            $aboveAllowance = $mode === 'none' ? 0.0 : self::nonnegative(self::roundMoney($supported - $allowance));
+            $shares[] = [
+                'key' => $key,
+                'members' => $members,
+                'allowance' => $allowance,
+                'aboveAllowance' => $aboveAllowance,
+                'special' => self::roundMoney($unsupportedSpecial + ($mode === 'special' ? $aboveAllowance : 0.0)),
+                'age' => self::roundMoney($unsupportedAge + ($mode === 'age' ? $aboveAllowance : 0.0)),
+                'withinAllowance' => $mode === 'none' ? 0.0 : self::minMoney($supported, $allowance),
+            ];
+        }
+        // 26 CFR 1.457-5(c): the participant's headroom is the largest amount any one plan provides.
+        $headroom = 0.0;
+        $within = 0.0;
+        foreach ($shares as $share) {
+            $headroom = max($headroom, $share['allowance']);
+            $within += $share['withinAllowance'];
+        }
+        $overflow = self::nonnegative(self::roundMoney($within - $headroom));
+        $exposure = [
+            'participantSpecial' => $mode === 'special' ? $overflow : 0.0,
+            'participantAge' => $mode === 'age' ? $overflow : 0.0,
+            'plans' => [],
+            'accounts' => [],
+        ];
+        foreach ($shares as $share) {
+            $planOverflow = self::minMoney($share['withinAllowance'], $overflow);
+            $exposure['participantSpecial'] = self::roundMoney($exposure['participantSpecial'] + $share['special']);
+            $exposure['participantAge'] = self::roundMoney($exposure['participantAge'] + $share['age']);
+            $exposure['plans'][$share['key']] = [
+                'special' => self::roundMoney($share['special'] + ($mode === 'special' ? $planOverflow : 0.0)),
+                'age' => self::roundMoney($share['age'] + ($mode === 'age' ? $planOverflow : 0.0)),
+            ];
+            $beyondRecognised = self::roundMoney($share['aboveAllowance'] + $planOverflow);
+            foreach ($share['members'] as $member) {
+                $exposure['accounts'][$member['id']] = self::roundMoney(
+                    $member['unsupported'] + self::minMoney($member['supported'], $beyondRecognised),
+                );
+            }
+        }
+        return $exposure;
     }
 
     /**
@@ -21724,12 +21591,19 @@ final class Engine
         $unresolvedOrdinaryExposure = $unresolvedInvalid457 === null
             ? 0.0
             : (float) $unresolvedInvalid457['existing'];
+        // A plan-document limit is account-local, so no pool carries the reading
+        // in which this account's own mislabelled catch-up was an ordinary deferral
+        // under it. The statutory ceilings are pools and are widened at seeding.
+        $planDocumentLimit = $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? null;
         $appliedHostBaseLimit = !empty($traits['isPlesa'])
             ? $statutoryHostBaseLimit
             : self::nonnegative(
                 self::minMoney(
                     $statutoryHostBaseLimit,
-                    $account['planRules']['planDocumentEmployeeDeferralLimit'] ?? $statutoryHostBaseLimit,
+                    $planDocumentLimit === null
+                        ? $statutoryHostBaseLimit
+                        : (float) $planDocumentLimit
+                            - (float) ($context['section457PossibleOrdinaryByAccount'][$account['id']] ?? 0.0),
                 ) - $unresolvedOrdinaryExposure,
             );
         // IRC 402A(e)(3)(A) gates the account balance rather than a deferral limit, so

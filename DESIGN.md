@@ -93,31 +93,23 @@ A group asserts one plan, so four things must agree across its records: the §45
 provision, includible compensation, whether it is an eligible governmental plan (which the
 account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50 method),
 and the sponsoring `employerId` (which §414(v)(7)(A) reads the wage figure from). Records
-that disagree are diagnosed rather than reconciled.
+that disagree are an input-contract error, `SECTION_457_PLAN_GROUP_FACTS_CONFLICT`, raised
+at account normalization. A record that names no employer takes the group's sponsor there.
 
-Because §1.457-5(a) selects the method once for the participant across all plans, a
-contradiction in one plan can also leave the participant's *other* §457 accounts without a
-settled catch-up — but only where it actually decides something. The resolution reads four
-things off a plan's facts: the §414(v) capacity the plan offers, the largest such capacity
-the year could give it, its §457(b)(3) capacity, and whether its existing catch-ups sit
-outside what it provides. Every reading the contradiction leaves open is evaluated, and
-where all of them produce the same four the contradiction stays on its own records: those
-are still indeterminate, and every other plan is answered normally. Two records disagreeing
-about includible compensation at $100,000 and $200,000 contradict each other, but in a year
-whose §457(e)(15) amount is $24,500 both readings give the same ceiling and the same
-catch-up, so nothing else turns on which is right. Governmental status is the exception and
-always propagates: it is settled by each record's own account *type*, so the reading in
-which the plan is governmental is not one a ceiling can be computed under for a record
-whose type says otherwise.
+This was modelled rather than rejected until PR #72's ninth review round. Each reading of a
+contradictory group had to be enumerated by hand in each place it could matter: method
+selection, ceilings, existing-catch-up attribution and sponsor wage tests. Every round found
+a place where an unenumerated reading resolved in the allocation's favour, and one where
+two mutually exclusive readings were summed. A contradictory group has no legal meaning,
+so the engine no longer represents it.
 
-Method selection and existing-contribution attribution are separate dependencies.
-Sponsor disagreements can leave the method unchanged while changing whether an
-existing pre-tax age catch-up qualifies under §414(v)(7)(A). Attribution evaluates
-the supplied sponsor alternatives, widens both the participant and plan base
-pools for possible ordinary treatment, and preserves the correlated catch-up
-uncertainty. Plan allocations use the guaranteed endpoint of those intervals;
-where the interval can change an account's allocation, its result is indeterminate.
-Sponsors that all give the same wage treatment do not create this uncertainty.
+Existing-catch-up attribution now evaluates one reading of the participant's method,
+or two where the age is unknown: under 50, and the age method at 50. It widens the
+participant and plan basic pools by the most that can be ordinary in any single
+reading. It also records each account's own exposure, which reduces that account's
+plan-document deferral limit because no pool backs that limit. Plan allocations
+use the guaranteed endpoint of those intervals; where the interval can change an
+account's allocation, its result is indeterminate.
 
 The plan retains an immutable total of existing salary deferrals. That total is
 checked against plan compensation, independently of its base and special ceilings,
@@ -141,13 +133,8 @@ The internal `Section457Plan` state (a native associative structure in PHP) owns
 its member records, resolved fact views, cached ceilings, catch-up capacities,
 and all five resource balances. It is constructed once before participant-wide
 method selection. Account lookup points to that plan; it does not own another
-copy of its balances. Contradictory inputs retain per-member fact and ceiling
-views for the existing diagnostics, within the same plan state. The shared
-balances are initialized from the smallest ceiling any reading of the records
-produces. Within one reading, the plan offers what any member can host. A
-contradiction therefore never enlarges an allocation. Diagnostics that assert
-an excess compare against the largest stated figure, because an excess is
-asserted only where it holds under every reading.
+copy of its balances. Because contradictory groups are rejected at input, every
+member shares one fact view, and the plan offers what any member can host.
 
 The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
 special contributions both consume it, so ordinary overages reduce the remaining

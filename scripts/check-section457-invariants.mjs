@@ -155,18 +155,6 @@ for (const method of ['special', 'age']) {
   }
 }
 
-// 26 CFR 1.457-4(c)(1)(i): records of one plan stating includible compensation
-// of 1,000 and 2,000 give it min(24,500, 1,000) = 1,000 on one reading. Neither
-// order may allocate more than that between them.
-for (const reverse of [false, true]) {
-  const low = record('low', 'participant', 'conflict', 1000);
-  const high = record('high', 'participant', 'conflict', 2000);
-  add(`conflicting compensation shares the smallest ceiling, reverse=${reverse}`,
-    scenario(reverse ? [high, low] : [low, high]), (result) => {
-      assert.equal(total(result), 1000);
-    });
-}
-
 // Age 55 in 2026: min(24,500, U = 5,000) = 5,000 of special room loses to the
 // 8,000 age amount (1.457-4(c)(2)(ii)). 10,000 recorded as special catch-up may
 // be ordinary, so new ordinary deferrals fit in 24,500 - 10,000 = 14,500 whether

@@ -1416,9 +1416,8 @@ answer.
 | Age-based catch-up on a plan that cannot host one | `SECTION_457_AGE_CATCH_UP_NOT_AVAILABLE_ON_PLAN` (error). §414(v)(6)(A)(ii) makes only an eligible **governmental** §457(b) plan an applicable employer plan |
 | Special catch-up on a plan providing none | `SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN` (error). §1.457-5(c) counts it only as a result of plan provisions permitted under §1.457-4(c)(3) |
 | Special catch-up above that plan's own amount | `SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT` (error), even where the participant is entitled to more elsewhere. Measured on the plan, so two records of one plan each within their own share still trip it together |
-| Records of one plan disagreeing about that plan | `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` (error) on every record in the group. The provision, includible compensation, governmental status, and sponsoring employer must all agree |
+| Records of one plan disagreeing about that plan | The input is **rejected**: `calculateScenario` throws `ParameterError` / `ParameterException` with code `SECTION_457_PLAN_GROUP_FACTS_CONFLICT`. The provision, includible compensation, governmental status, and sponsoring employer must all agree |
 | Ordinary deferrals across a plan's records above that plan's own ceiling | `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING` (error). §1.457-4(c)(1)(i) caps the deferral "under the plan", so records each inside it alone can still put the plan above it |
-| Another of the participant's plans described inconsistently | `SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS` (error). §1.457-5(a) selects the method once across all eligible plans, so the contradiction is not local to the plan that carries it |
 
 ### One eligible plan, several records
 
@@ -1472,31 +1471,27 @@ Within a group:
   records of one plan could reduce the same salary twice. Existing participant
   deferrals above that salary raise
   `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION` on affected records;
-- records that describe the plan inconsistently raise
-  `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` on each of them and allocate no catch-up
-  under either method. Until they agree, every plan ceiling the records share
-  is the **smallest** any reading of them produces, so a contradiction never
-  enlarges an ordinary allocation: two records stating $1,000 and $2,000 of
-  includible compensation defer $1,000 between them, not $2,000. Four things
-  must agree, because a group asserts one plan:
-  `section457SpecialCatchUp`, `includibleCompensation457`, whether the plan is an
-  eligible **governmental** plan (settled by the account types, and decisive under
-  §414(v)(6)(A)(ii) for whether the age 50 method exists at all), and the
-  sponsoring `employerId`, which §414(v)(7)(A) reads the prior-year wage figure
-  from. An *absent* `employerId` is not a disagreement. `planDocumentEmployeeDeferralLimit`
-  and the Roth/preference flags are deliberately not invariants — they mean
-  different things per record, and neither can enlarge an allocation;
-- a contradiction reaches the participant's **other** §457 accounts too. §1.457-5(a)
-  selects the method once across all eligible plans, so an unrelated plan whose
-  catch-up would differ according to which contradictory record is right is
-  reported indeterminate with
-  `SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS` rather than settled.
-  Sponsor conflicts can also leave existing pre-tax catch-up attribution unresolved
-  even when the method is unchanged. The engine reserves possible ordinary usage
+- a group asserts one plan, so four things must agree across its records, and
+  input where they do not is **rejected** with `SECTION_457_PLAN_GROUP_FACTS_CONFLICT`
+  rather than calculated: `section457SpecialCatchUp`, `includibleCompensation457`,
+  whether the plan is an eligible **governmental** plan (settled by the account
+  types, and decisive under §414(v)(6)(A)(ii) for whether the age 50 method exists
+  at all), and the sponsoring `employerId`, which §414(v)(7)(A) reads the
+  prior-year wage figure from. Such a group describes no plan, and modelling each
+  of its readings let the ones nobody enumerated resolve in the allocation's
+  favour. An *absent* `employerId` is not a disagreement: the record takes the
+  group's sponsor, so its catch-up is wage-tested against the plan's employer.
+  `planDocumentEmployeeDeferralLimit` and the Roth/preference flags are
+  deliberately not invariants — they mean different things per record, and
+  neither can enlarge an allocation;
+- where an existing catch-up's classification is unresolved (IRC 414(v)(7)(A),
+  or a label discussed below), the engine reserves its possible ordinary usage
   against both participant and plan ceilings. It allocates only guaranteed room
   and reports `SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED` where that
   uncertainty changes an account's capacity, whether through the plan's own
-  ceiling or the participant's aggregate basic annual limitation;
+  ceiling or the participant's aggregate basic annual limitation. An account's
+  `planDocumentEmployeeDeferralLimit` is reduced by the same exposure, because no
+  shared pool carries that limit;
 - an existing catch-up the resolved method or its plan does not support — one
   recorded under the unselected method (§1.457-4(c)(2)(ii), §414(v)(6)(C)), a
   §457(b)(3) amount under a plan providing none, or an age 50 amount on a plan
@@ -1507,7 +1502,10 @@ Within a group:
   $8,000 age method with $10,000 recorded as special catch-up leaves an empty
   sibling $14,500, not $24,500. A catch-up under the right method is reserved
   too, to the extent it sits above its own plan's allowance (§1.457-5(c)) or
-  above the participant's one aggregate catch-up amount (§1.457-5(a)–(b)): two
+  above the participant's one aggregate catch-up amount (§1.457-5(a)–(b)). Where
+  the participant's age is unknown the method itself is open, so both readings
+  are reserved: under 50 no age catch-up exists, and from 50 the age method may
+  displace a special catch-up. Two
   plans each holding $5,000 of age catch-up against one $8,000 leave $22,500 of
   basic room, not $24,500.
 
