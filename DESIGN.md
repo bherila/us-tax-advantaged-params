@@ -71,8 +71,116 @@ Monetary outputs are rounded to cents, and allocation is deterministic.
 | §415(c) annual additions | Owner and controlled-employer group | Employee and employer defined-contribution additions, generally excluding catch-up |
 | 403(b) 15-year catch-up | Owner | Shared across eligible 403(b) accounts |
 | 457(b) special catch-up | Owner | Last-three-years special catch-up |
+| 457(b)(2) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(1)(i) ceiling of one eligible plan — the lesser of the §457(e)(15) amount and 100% of that plan's includible compensation |
+| 457(b)(3) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(3)(i) ceiling of one eligible plan, bounding what its records absorb between them |
+| 457(e)(5) includible compensation | Owner and §457 plan group | The salary a plan's records have between them to reduce — the only bound on a §457(b)(3) catch-up, which replaces the paragraph (2) 100% term rather than reapplying it. Spent by participant deferrals only |
 
 Plans of the same controlled employer should use the same `annualAdditionsGroupId`. Unrelated employers should normally use different IDs.
+
+The owner-level and group-level §457 pools are pairs, and the distinction is between the
+statute's two levels. §1.457-5(b) aggregates the annual deferral across every eligible
+plan and §1.457-5(c) gives the participant the largest special catch-up any one plan
+provides — those are the owner pools. §1.457-4(c)(1)(i) and §1.457-4(c)(3)(i) set each
+*plan's* own ceilings — those are the group pools.
+
+Records sharing a `section457PlanGroupId` are one eligible plan — the case that matters is
+a §402A(f)(1)(C) pension-linked emergency savings account and its host — so the plan's
+§457(b)(3) provision and its §457(e)(5) includible compensation are stated once, and both
+of its ceilings bind those records together rather than each. Absent the key each account
+is its own eligible plan.
+
+A group asserts one plan, so four things must agree across its records: the §457(b)(3)
+provision, includible compensation, whether it is an eligible governmental plan (which the
+account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50 method),
+and the sponsoring `employerId` (which §414(v)(7)(A) reads the wage figure from). Records
+that disagree are diagnosed rather than reconciled.
+
+Because §1.457-5(a) selects the method once for the participant across all plans, a
+contradiction in one plan can also leave the participant's *other* §457 accounts without a
+settled catch-up — but only where it actually decides something. The resolution reads four
+things off a plan's facts: the §414(v) capacity the plan offers, the largest such capacity
+the year could give it, its §457(b)(3) capacity, and whether its existing catch-ups sit
+outside what it provides. Every reading the contradiction leaves open is evaluated, and
+where all of them produce the same four the contradiction stays on its own records: those
+are still indeterminate, and every other plan is answered normally. Two records disagreeing
+about includible compensation at $100,000 and $200,000 contradict each other, but in a year
+whose §457(e)(15) amount is $24,500 both readings give the same ceiling and the same
+catch-up, so nothing else turns on which is right. Governmental status is the exception and
+always propagates: it is settled by each record's own account *type*, so the reading in
+which the plan is governmental is not one a ceiling can be computed under for a record
+whose type says otherwise.
+
+Method selection and existing-contribution attribution are separate dependencies.
+Sponsor disagreements can leave the method unchanged while changing whether an
+existing pre-tax age catch-up qualifies under §414(v)(7)(A). Attribution evaluates
+the supplied sponsor alternatives, widens both the participant and plan base
+pools for possible ordinary treatment, and preserves the correlated catch-up
+uncertainty. Plan allocations use the guaranteed endpoint of those intervals;
+where the interval can change an account's allocation, its result is indeterminate.
+Sponsors that all give the same wage treatment do not create this uncertainty.
+
+The plan retains an immutable total of existing salary deferrals. That total is
+checked against plan compensation, independently of its base and special ceilings,
+so splitting an already excessive salary deferral among records cannot hide it.
+The check runs on both the normal allocation path and the PLESA early-return path.
+
+The §457(e)(5) pool is spent by the participant's own deferrals and not by nonelective
+employer contributions. Those are annual deferrals under §1.457-4(a) and are charged to the
+plan's §457(b)(2) ceiling, but they reduce no salary: §457(e)(5) takes includible
+compensation from §415(c)(3), whose subparagraph (D) adds back only amounts deferred "at
+the election of the employee", and §414(v)(2)(A)(ii) caps a catch-up at compensation over
+"any other elective deferrals".
+
+Two things are deliberately **not** group invariants. `planDocumentEmployeeDeferralLimit`
+carries the sponsor's §402A(e)(3)(A)(ii) amount on a PLESA record and a plan-document
+deferral limit elsewhere, so its meaning is per-record; and a lower value can only reduce
+an allocation, never enlarge one. The Roth and contribution-preference flags likewise
+differ legitimately, since one plan may hold both a pre-tax and a designated Roth account.
+
+The internal `Section457Plan` state (a native associative structure in PHP) owns
+its member records, resolved fact views, cached ceilings, catch-up capacities,
+and all five resource balances. It is constructed once before participant-wide
+method selection. Account lookup points to that plan; it does not own another
+copy of its balances. Contradictory inputs retain per-member fact and ceiling
+views for the existing diagnostics, within the same plan state.
+
+The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
+special contributions both consume it, so ordinary overages reduce the remaining
+special capacity. Its usage does not depend on which of those two component
+labels ultimately applies. During the special period, an ordinary deposit above
+the basic portion does not itself invalidate the record or block special room:
+the excess diagnostic compares ordinary plus special deposits with the combined
+ceiling. True combined excess and invalid catch-up provenance still block further
+catch-up. This must hold even when every member already contains deposits.
+Ordinary employee draws also consult the salary
+balance before allocation, including salary already deferred as a special catch-up.
+Ordinary employee and employer draws also read the combined ceiling for the
+selected method. A fifth balance tracks basic-plus-age contributions, so an
+ordinary overage consumes age capacity just as it consumes special capacity.
+Both combined balances are charged by the same contribution writer for existing
+and new deposits; component attribution does not restore combined capacity.
+A combined special-period excess affects every record with ordinary or special
+contributions, including records containing only a special contribution.
+
+
+When contradictory plan facts leave existing special contributions partly or
+wholly outside a permitted special allowance, the maximum possibly ordinary
+portion is attributed once per plan to both participant and plan base pools.
+Matching uncertainty IDs preserve its correlation with the special pools; the
+full plan ceiling and salary usage remain unchanged by that classification.
+Internal plan keys use UTF-8 byte lengths consistently in both runtimes.
+
+Participant method selection reads the plans' capacities. Allocation reads the
+same cached ceilings and continues in global ascending priority, then input
+order; it never allocates a whole group together. One contribution-classification
+function charges plan resources for both supplied contributions and new
+allocations. Ordinary employee deferrals spend base and salary, employer deposits
+spend base only, special catch-ups spend special and salary, and age catch-ups
+spend salary. Invalid employee after-tax amounts retain their existing base-only
+accounting and diagnostics. The structural invariant suite exercises record
+splitting, owner isolation, interleaved allocation order, existing versus new
+deposits, and replaying completed allocations as existing contributions in both
+runtimes. These characterize established behavior rather than changing it.
 
 ## 6. Section 401(a)(17) recognized compensation
 

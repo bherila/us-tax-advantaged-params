@@ -769,6 +769,26 @@ export interface PlanRulesInput {
   includibleCompensation457?: Money;
   /** Shared IRC 415(c) group; use the same ID for plans of one controlled employer. */
   annualAdditionsGroupId?: string;
+  /**
+   * Which eligible IRC 457(b) plan this account belongs to.
+   *
+   * 26 CFR 1.457-4(c) sets a ceiling for each *plan*, while an `AccountInput`
+   * is an account. The two coincide for every IRC 457 account type here but
+   * one: IRC 402A(e)(1) creates a pension-linked emergency savings account as a
+   * designated Roth account *within* an applicable retirement plan, so a
+   * IRC 402A(f)(1)(C)-hosted one and its host are two records of a single
+   * eligible plan, with a single plan document, a single normal retirement age
+   * and a single IRC 457(b)(3) provision.
+   *
+   * Accounts of one owner sharing this id are that one plan: its IRC 457(b)(3)
+   * provision and its IRC 457(e)(5) includible compensation are stated once and
+   * cover every record, its 26 CFR 1.457-4(c)(3) ceiling bounds what they may
+   * absorb between them, and records that state a fact about the plan
+   * differently are diagnosed rather than treated as two plans. Absent an id
+   * each account is its own eligible plan, which is the older contract and
+   * remains the default.
+   */
+  section457PlanGroupId?: string;
   /** Optional lower employee limit imposed by the plan document. */
   planDocumentEmployeeDeferralLimit?: Money;
   /** Optional lower annual-additions limit imposed by the plan document. */
@@ -10801,6 +10821,9 @@ interface CalculationContext {
   section457BasePools: Map<string, LimitPool>;
   section457CatchUpPools: Map<string, LimitPool>;
   section457SpecialCatchUpPools: Map<string, LimitPool>;
+  /** One state container per eligible plan; account entries alias the same container. */
+  section457Plans: Map<string, Section457Plan>;
+  section457AccountPlans: Map<string, Section457Plan>;
   section457CatchUpResolutions: Map<string, Section457CatchUpResolution>;
   hsaBasePools: Map<string, LimitPool>;
   hsaCatchUpPools: Map<string, LimitPool>;
@@ -11020,6 +11043,11 @@ function validatePlanRules(rules: PlanRulesInput, path: string): void {
     rules.annualAdditionsGroupId,
     `${path}.annualAdditionsGroupId`,
     "INVALID_ANNUAL_ADDITIONS_GROUP_ID",
+  );
+  optionalIdentifier(
+    rules.section457PlanGroupId,
+    `${path}.section457PlanGroupId`,
+    "INVALID_SECTION_457_PLAN_GROUP_ID",
   );
   money(rules.planCompensation, `${path}.planCompensation`);
   money(rules.includibleCompensation457, `${path}.includibleCompensation457`);
@@ -11627,6 +11655,8 @@ function createCalculationContext(
     section457BasePools: new Map(),
     section457CatchUpPools: new Map(),
     section457SpecialCatchUpPools: new Map(),
+    section457Plans: new Map(),
+    section457AccountPlans: new Map(),
     section457CatchUpResolutions: new Map(),
     hsaBasePools: new Map(),
     hsaCatchUpPools: new Map(),
@@ -11905,6 +11935,21 @@ interface Section457CatchUpResolution {
   existingSpecialCatchUp: Money;
   /** Whether any existing catch-up component needs participant-wide reconciliation. */
   existingCatchUpClassificationUnreconciled: boolean;
+  /**
+   * The records of one of this participant's plans contradict each other.
+   *
+   * Carried at the participant level, not left to the plan whose records
+   * disagree, because 26 CFR 1.457-5(a) selects the method once "under all
+   * eligible plans" and 1.457-5(c) sets the amount from whichever plan provides
+   * the largest. A contradiction in one plan therefore reaches every plan: the
+   * fallback figures below still decide `mode` and `headroom`, so an unrelated
+   * plan that would host an IRC 414(v) catch-up under one reading of the
+   * contradictory records and none under the other cannot be reported as
+   * settled.
+   */
+  planFactsConflicted: boolean;
+  /** The records of those plans, so the diagnostic can name what to reconcile. */
+  conflictingPlanMemberIds: readonly string[];
   eligibleAccountIds: ReadonlySet<string>;
 }
 
@@ -11940,6 +11985,153 @@ interface Section457CatchUpResolution {
  * answers a different question from the one 26 CFR 1.457-4(c)(2)(ii) asks, which
  * is between the resulting plan ceilings.
  */
+/**
+ * One eligible plan owns all of its resource balances and immutable account views.
+ * Conflicting inputs retain per-member views for diagnostics; they never create
+ * separate balances. Allocation still visits accounts in global priority order.
+ */
+interface Section457Plan {
+  key: string;
+  members: NormalizedAccount[];
+  facts: Map<string, Section457PlanFacts>;
+  ceilings: Map<string, Section457PlanCeilings>;
+  capacity: { age: Money; largestAge: Money; special: Money };
+  existingSalaryDeferrals: Money;
+  basePool?: LimitPool;
+  compensationPool?: LimitPool;
+  specialPool?: LimitPool;
+  /** Full basic-plus-special ceiling, including ordinary overages. */
+  specialTotalPool?: LimitPool;
+  /** Full basic-plus-age ceiling, including ordinary overages. */
+  ageTotalPool?: LimitPool;
+}
+
+function buildSection457Plans(
+  context: CalculationContext,
+  person: NormalizedPerson,
+  owned: NormalizedAccount[],
+): Section457Plan[] {
+  const factsByAccount = resolveSection457PlanFacts(person, owned);
+  const plans = new Map<string, Section457Plan>();
+  for (const account of owned) {
+    const facts = factsByAccount.get(account.id)!;
+    let plan = plans.get(facts.key);
+    if (plan === undefined) {
+      plan = {
+        key: facts.key, members: [], facts: new Map(), ceilings: new Map(),
+        capacity: { age: 0, largestAge: 0, special: 0 }, existingSalaryDeferrals: 0,
+      };
+      plans.set(facts.key, plan);
+      context.section457Plans.set(facts.key, plan);
+    }
+    plan.members.push(account);
+    plan.existingSalaryDeferrals = roundMoney(plan.existingSalaryDeferrals
+      + section457SalaryDeferrals(account.existingContributions));
+    plan.facts.set(account.id, facts);
+    context.section457AccountPlans.set(account.id, plan);
+  }
+  const base = context.parameters.section457b.baseDeferralLimit;
+  const fraction = context.parameters.section457b.includibleCompensationFraction;
+  for (const plan of plans.values()) {
+    if (base === null || fraction === null) continue;
+    for (const account of plan.members) {
+      plan.ceilings.set(account.id, section457PlanCeilings(
+        context.parameters, person, account, plan.facts.get(account.id)!, base, fraction,
+      ));
+    }
+    for (const account of plan.members) {
+      const ceiling = plan.ceilings.get(account.id)!;
+      const traits = ACCOUNT_TRAITS[account.type];
+      if (traits.governmental457 && traits.permitsAgeCatchUpByStatute) {
+        plan.capacity.age = Math.max(plan.capacity.age, ceiling.ageAdditional);
+        plan.capacity.largestAge = Math.max(plan.capacity.largestAge, ceiling.largestPossibleAgeAdditional);
+      }
+      plan.capacity.special = Math.max(plan.capacity.special, ceiling.specialAdditional);
+    }
+    const ceilings = [...plan.ceilings.values()];
+    // Contradictory members retain the existing conservative reporting envelope.
+    // Consistent members have identical plan ceilings. Initialize balances once.
+    plan.basePool = {
+      id: `457b-plan-base:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(1)(i) plan ceiling on the annual deferral",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling), 0), usage: settled(0),
+    };
+    plan.compensationPool = {
+      id: `457b-plan-compensation:${plan.key}`,
+      legalLimit: "IRC 457(e)(5) includible compensation available to be deferred under the plan",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.includibleCompensation), 0), usage: settled(0),
+    };
+    plan.specialPool = {
+      id: `457b-plan-special-catch-up:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(3)(i) plan ceiling for the last three years before normal retirement age",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.specialAdditional), 0), usage: settled(0),
+    };
+    plan.specialTotalPool = {
+      id: `457b-plan-special-total:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(3)(i) combined basic and special plan ceiling",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling + value.specialAdditional), 0),
+      usage: settled(0),
+    };
+    plan.ageTotalPool = {
+      id: `457b-plan-age-total:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(2) combined basic and age plan ceiling",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling + value.ageAdditional), 0),
+      usage: settled(0),
+    };
+  }
+  return [...plans.values()];
+}
+
+/** The only writer of plan usage, for both supplied and newly allocated amounts. */
+function chargeSection457Plan(plan: Section457Plan, components: ContributionComponents): void {
+  const base = roundMoney(baseElectiveDeferrals(components) + components.employeeAfterTax
+    + components.employerPreTax + components.employerRoth);
+  const special = roundMoney(components.special457CatchUp + components.special457RothCatchUp);
+  // IRC 415(c)(3)(D) / 457(e)(5): nonelective employer deposits reduce no salary.
+  const salary = section457SalaryDeferrals(components);
+  if (plan.basePool) chargePool(plan.basePool, base);
+  if (plan.compensationPool) chargePool(plan.compensationPool, salary);
+  if (plan.specialPool) chargePool(plan.specialPool, special);
+  if (plan.specialTotalPool) chargePool(plan.specialTotalPool, roundMoney(base + special));
+  if (plan.ageTotalPool) chargePool(plan.ageTotalPool, roundMoney(base + ageCatchUpDeferrals(components)));
+}
+
+function section457SalaryDeferrals(components: ContributionComponents): Money {
+  return roundMoney(baseElectiveDeferrals(components) + ageCatchUpDeferrals(components)
+    + components.special457CatchUp + components.special457RothCatchUp);
+}
+
+/**
+ * A plan's conflicting sponsors can disagree on whether a recorded pre-tax
+ * catch-up is valid. Evaluate every supplied sponsor for resource attribution;
+ * retain the original account facts for diagnostics, never choose a sponsor.
+ */
+function unresolvedExistingPreTaxCatchUp(
+  context: CalculationContext,
+  account: NormalizedAccount,
+  traits: AccountTraits,
+): ReturnType<typeof highWageInvalidExistingPreTaxCatchUp> {
+  const own = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+  if (own !== null) return own;
+  const plan = context.section457AccountPlans.get(account.id);
+  if (plan === undefined || !plan.facts.get(account.id)!.conflictingFields.includes("employerId")) return null;
+  for (const member of plan.members) {
+    if (member.employerId === undefined) continue;
+    const reading = highWageInvalidExistingPreTaxCatchUp(context, { ...account, employerId: member.employerId }, traits);
+    if (reading !== null) return reading;
+  }
+  return null;
+}
+
+/** Newly allocated amounts use the same component classification as existing ones. */
+function chargeSection457PlanContribution(
+  plan: Section457Plan,
+  component: "employerPreTax" | "employeePreTaxDeferral" | "special457CatchUp" | "employeePreTaxCatchUp",
+  amount: Money,
+): void {
+  chargeSection457Plan(plan, { ...zeroComponents(), [component]: amount });
+}
+
 interface Section457PlanCeilings {
   /** IRC 457(e)(5) includible compensation as supplied, before the fraction. */
   includibleCompensation: Money;
@@ -11970,18 +12162,279 @@ function section457IncludibleCompensation(
   );
 }
 
+/**
+ * The facts one eligible IRC 457(b) plan states about itself, gathered from
+ * every `AccountInput` that names it.
+ *
+ * 26 CFR 1.457-4(c) sets its ceilings for a *plan*; an `AccountInput` is an
+ * account. For every IRC 457 account type modelled here the two coincide except
+ * one: IRC 402A(e)(1)(A)(i) creates a pension-linked emergency savings account
+ * as a designated Roth account *within* an applicable retirement plan, and
+ * IRC 402A(f)(1)(C) names an eligible governmental IRC 457(b) plan as one of the
+ * three hosts. Such an account has no plan document, no normal retirement age
+ * and no IRC 457(b)(3) provision of its own -- it has its host's -- so its
+ * record and the host's are two records of one plan.
+ *
+ * `planRules.section457PlanGroupId` is how a caller says so. Where it is absent
+ * the group is the account alone, which is the contract that held before this
+ * type existed and leaves every single-record plan computing exactly as it did.
+ */
+interface Section457PlanFacts {
+  /** Group key, scoped to the participant so two owners may reuse one id. */
+  key: string;
+  /** Every account of this participant naming this plan, in input order. */
+  memberIds: readonly string[];
+  /** The IRC 457(e)(5) includible compensation the plan's records establish. */
+  includibleCompensation: Money;
+  /** The plan's IRC 457(b)(3) provision, where any of its records states one. */
+  special: Section457SpecialCatchUpInput | undefined;
+  /**
+   * IRC 457(b)(3) catch-up its records already hold between them.
+   *
+   * 26 CFR 1.457-4(c)(3)(i)'s ceiling is the plan's, so what has been made under
+   * the provision is what the plan's records hold together, not what any one of
+   * them holds.
+   */
+  existingSpecialCatchUp: Money;
+  /**
+   * Ordinary annual deferrals its records already hold between them.
+   *
+   * The same quantity the plan's IRC 457(b)(2) pool is seeded with, kept
+   * separately because that pool is spent by allocation as well: the test that a
+   * plan is not already above its own 26 CFR 1.457-4(c)(1)(i) ceiling has to read
+   * what was supplied, not what is left.
+   */
+  existingRegularDeferrals: Money;
+  /**
+   * Facts about this one plan that its own records state differently.
+   *
+   * Non-empty means the input contradicts itself about a single plan, which no
+   * reading resolves: the engine cannot know which record is right, and picking
+   * one would answer a question only the caller can answer. The facts then fall
+   * back to each account's own, so the basic annual limitation is still
+   * computed, and `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` reports the
+   * contradiction on every member while no catch-up is allocated to any of them.
+   */
+  conflictingFields: readonly string[];
+  /**
+   * Every IRC 457(e)(5) figure the plan's records state, in input order.
+   *
+   * One entry where they agree. Where they do not, these are the readings the
+   * input leaves open, and comparing what each produces is how the resolver
+   * decides whether the contradiction reaches the participant's other plans.
+   */
+  compensationCandidates: readonly Money[];
+  /**
+   * Every IRC 457(b)(3) provision the plan's records state, in input order.
+   *
+   * `[undefined]` where no record states one, because absence is not a reading:
+   * a record stating nothing takes its plan's provision rather than denying it.
+   */
+  specialCandidates: readonly (Section457SpecialCatchUpInput | undefined)[];
+  /**
+   * Whether the records disagree about IRC 414(v)(6)(A)(ii) governmental status.
+   *
+   * Kept apart from the other contradictions because it is the one whose
+   * readings cannot be evaluated by substituting a fact: the status is settled
+   * by each record's own account *type*, so the reading in which the plan is
+   * governmental is not one this engine can compute a ceiling under for a record
+   * whose type says otherwise.
+   */
+  governmentalStatusConflicts: boolean;
+  /**
+   * `existingSpecialCatchUp` as the plan's total, even where the facts conflict.
+   *
+   * `existingSpecialCatchUp` falls back to the account's own figure under a
+   * contradiction; this one does not, because the caller said these records are
+   * one plan and the reading under which they are is the one being tested.
+   */
+  groupExistingSpecialCatchUp: Money;
+}
+
+/**
+ * Resolves each of a participant's IRC 457 accounts to the eligible plan it
+ * belongs to, and that plan to the single set of facts its records state.
+ *
+ * A fact stated by one record covers the whole plan; a fact two records state
+ * differently is a contradiction rather than two plans. Includible compensation
+ * is resolved here alongside the IRC 457(b)(3) provision because the provision
+ * alone does not determine the plan's ceiling: 26 CFR 1.457-4(c)(3)(ii)(A)
+ * builds the special ceiling on "the plan ceiling established for purposes of
+ * paragraph (2)", which is IRC 457(e)(5) includible compensation-bounded, so one
+ * plan with two compensation figures would still have two ceilings.
+ */
+function resolveSection457PlanFacts(
+  person: NormalizedPerson,
+  owned: NormalizedAccount[],
+): Map<string, Section457PlanFacts> {
+  const groups = new Map<string, NormalizedAccount[]>();
+  for (const account of owned) {
+    const key = section457PlanGroupKey(person, account);
+    const members = groups.get(key);
+    if (members) members.push(account);
+    else groups.set(key, [account]);
+  }
+
+  const byAccount = new Map<string, Section457PlanFacts>();
+  for (const [key, members] of groups) {
+    const memberIds = members.map((account) => account.id);
+    const conflictingFields: string[] = [];
+
+    // 26 CFR 1.457-5(c) recognises the special catch-up only "as a result of
+    // plan provisions permitted under Sec. 1.457-4(c)(3)" -- provisions of the
+    // plan, so one statement of them is the plan's and two different ones
+    // describe no plan at all.
+    const statements = members
+      .map((account) => account.planRules.section457SpecialCatchUp)
+      .filter((special): special is Section457SpecialCatchUpInput => special !== undefined);
+    const distinctStatements = new Map(
+      statements.map((special) => [
+        `${special.eligible === true}:${money(special.unusedDeferralsFromPriorYears, `${memberIds[0]}.unused457Deferrals`)}`,
+        special,
+      ]),
+    );
+    if (distinctStatements.size > 1) conflictingFields.push("planRules.section457SpecialCatchUp");
+
+    // Explicit statements first, so a host plan's figure covers a record that
+    // states none. Only where the plan states nothing anywhere does the
+    // person-level default apply, and then it has to agree across the records
+    // for the same reason.
+    const explicit = new Set(
+      members
+        .map((account) => account.planRules.includibleCompensation457 ?? account.planRules.planCompensation)
+        .filter((amount) => amount !== undefined && amount !== null)
+        .map((amount) => money(amount, `${memberIds[0]}.includibleCompensation457`)),
+    );
+    const candidates =
+      explicit.size > 0 ? explicit : new Set(members.map((account) => planCompensation(account, person)));
+    if (candidates.size > 1) conflictingFields.push("planRules.includibleCompensation457");
+
+    // IRC 414(v)(6)(A)(ii) makes only an eligible *governmental* IRC 457(b) plan
+    // an applicable employer plan, so the status decides whether the age-based
+    // method exists at all -- and a plan is one or the other, never both. It is
+    // settled by the account types rather than by a rule field, which is exactly
+    // why it needs checking here: nothing else stops a nongovernmental record
+    // from joining a governmental plan and changing the participant's method.
+    const governmental = new Set(members.map((account) => ACCOUNT_TRAITS[account.type].governmental457));
+    const governmentalStatusConflicts = governmental.size > 1;
+    if (governmentalStatusConflicts) {
+      conflictingFields.push("whether it is an eligible governmental plan, which the account types settle");
+    }
+
+    // One plan has one sponsoring employer, and IRC 414(v)(7)(A) tests the
+    // participant's prior-year FICA wages from the employer sponsoring the plan.
+    // Left unchecked, one record could name a high-wage employer and another a
+    // zero-wage one, and the second would take pre-tax the catch-up paragraph
+    // (7)(A) requires the first to make as a designated Roth contribution.
+    // Absence is not a disagreement: an account with no employerId is already
+    // asked for one wherever that test can decide something.
+    const employers = new Set(
+      members
+        .map((account) => account.employerId)
+        .filter((employerId): employerId is string => employerId !== undefined),
+    );
+    if (employers.size > 1) conflictingFields.push("employerId");
+
+    const existingSpecialCatchUp = roundMoney(
+      members.reduce(
+        (total, account) =>
+          total +
+          account.existingContributions.special457CatchUp +
+          account.existingContributions.special457RothCatchUp,
+        0,
+      ),
+    );
+    const existingRegularDeferrals = roundMoney(
+      members.reduce(
+        (total, account) =>
+          total +
+          baseElectiveDeferrals(account.existingContributions) +
+          account.existingContributions.employeeAfterTax +
+          account.existingContributions.employerPreTax +
+          account.existingContributions.employerRoth,
+        0,
+      ),
+    );
+
+    for (const account of members) {
+      byAccount.set(
+        account.id,
+        conflictingFields.length > 0
+          ? {
+              key,
+              memberIds,
+              includibleCompensation: section457IncludibleCompensation(account, person),
+              special: account.planRules.section457SpecialCatchUp,
+              existingSpecialCatchUp: roundMoney(
+                account.existingContributions.special457CatchUp +
+                  account.existingContributions.special457RothCatchUp,
+              ),
+              existingRegularDeferrals: roundMoney(
+                baseElectiveDeferrals(account.existingContributions) +
+                  account.existingContributions.employeeAfterTax +
+                  account.existingContributions.employerPreTax +
+                  account.existingContributions.employerRoth,
+              ),
+              conflictingFields,
+              compensationCandidates: [...candidates],
+              specialCandidates:
+                distinctStatements.size === 0 ? [undefined] : [...distinctStatements.values()],
+              governmentalStatusConflicts,
+              groupExistingSpecialCatchUp: existingSpecialCatchUp,
+            }
+          : {
+              key,
+              memberIds,
+              includibleCompensation: [...candidates][0]!,
+              special: statements[0],
+              existingSpecialCatchUp,
+              existingRegularDeferrals,
+              conflictingFields,
+              compensationCandidates: [...candidates],
+              specialCandidates:
+                distinctStatements.size === 0 ? [undefined] : [...distinctStatements.values()],
+              governmentalStatusConflicts,
+              groupExistingSpecialCatchUp: existingSpecialCatchUp,
+            },
+      );
+    }
+  }
+  return byAccount;
+}
+
+/**
+ * The grouping key for one account, as a length-prefixed tuple.
+ *
+ * Both halves of the encoding are load-bearing. `null` is absent, exactly as it
+ * is for every other identifier field -- `optionalIdentifier` accepts it and
+ * `groupIdForAccount` reads it that way -- so a JSON caller who writes an
+ * explicit null gets their own plan rather than joining a `null` one. And every
+ * identifier field accepts arbitrary non-empty strings, so a delimiter alone
+ * cannot separate the parts: a participant id ending in a delimiter and a group
+ * id beginning with one would otherwise produce the key of a different pair, and
+ * two participants would share a plan ceiling. Length prefixes make the encoding
+ * injective whatever the ids contain.
+ */
+function section457PlanGroupKey(person: NormalizedPerson, account: NormalizedAccount): string {
+  const supplied = account.planRules.section457PlanGroupId ?? undefined;
+  const parts =
+    supplied === undefined ? [person.id, "account", account.id] : [person.id, "plan", supplied];
+  return parts.map((part) => `${new TextEncoder().encode(part).length}:${part}`).join("");
+}
+
 function section457PlanCeilings(
   parameters: YearParameters,
   person: NormalizedPerson,
   account: NormalizedAccount,
+  facts: Section457PlanFacts,
   statutoryBase: Money,
   compensationFraction: number,
 ): Section457PlanCeilings {
   const traits = ACCOUNT_TRAITS[account.type];
-  const includibleCompensation = section457IncludibleCompensation(account, person);
+  const includibleCompensation = facts.includibleCompensation;
   const deferrableCompensation = includibleCompensation * compensationFraction;
   const basicPlanCeiling = minMoney(statutoryBase, deferrableCompensation);
-  const special = account.planRules.section457SpecialCatchUp;
+  const special = facts.special;
   const specialAdditional = !special?.eligible
     ? 0
     : minMoney(
@@ -12005,6 +12458,98 @@ function section457PlanCeilings(
 }
 
 /**
+ * Whether one plan's self-contradiction can change what the *participant's
+ * other* plans are entitled to.
+ *
+ * 26 CFR 1.457-5(a) selects the method once for the participant "under all
+ * eligible plans" and 1.457-5(c) takes the amount from whichever plan provides
+ * the largest, so a contradiction in one plan can decide the method and the
+ * amount everywhere. It does not follow that it always does. The resolution
+ * reads exactly four things off a plan's facts -- the IRC 414(v) capacity it
+ * offers, the largest such capacity the year could give it, its IRC 457(b)(3)
+ * capacity, and whether its existing catch-ups sit outside what it provides --
+ * and where every reading the input leaves open produces the same four, the
+ * contradiction is real but inert: no other plan's entitlement depends on which
+ * record is right. Reporting it as though it did marks an unrelated plan
+ * indeterminate and allocates it nothing, which is a wrong answer rather than a
+ * cautious one.
+ *
+ * The readings are the Cartesian product of the figures the records actually
+ * state, not an interval: the plan's true includible compensation is one of the
+ * amounts stated for it, and its true IRC 457(b)(3) provision is one of the
+ * provisions stated for it. Governmental status is the exception and is treated
+ * as always load-bearing -- see `governmentalStatusConflicts`.
+ *
+ * Members' own entitlements are not at stake here. Every record of a
+ * contradictory plan is reported indeterminate by
+ * `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` whatever this returns.
+ */
+function section457PlanConflictIsLoadBearing(
+  parameters: YearParameters,
+  person: NormalizedPerson,
+  members: readonly NormalizedAccount[],
+  facts: Section457PlanFacts,
+  statutoryBase: Money,
+  compensationFraction: number,
+): boolean {
+  if (facts.governmentalStatusConflicts) return true;
+  let first: { age: Money; largestAge: Money; special: Money; unreconciled: boolean } | null = null;
+  for (const includibleCompensation of facts.compensationCandidates) {
+    for (const special of facts.specialCandidates) {
+      const reading: Section457PlanFacts = {
+        ...facts,
+        includibleCompensation,
+        special,
+        existingSpecialCatchUp: facts.groupExistingSpecialCatchUp,
+      };
+      let age = 0;
+      let largestAge = 0;
+      let specialCapacity = 0;
+      let unreconciled = false;
+      for (const member of members) {
+        const ceilings = section457PlanCeilings(
+          parameters,
+          person,
+          member,
+          reading,
+          statutoryBase,
+          compensationFraction,
+        );
+        age = Math.max(age, ceilings.ageAdditional);
+        largestAge = Math.max(largestAge, ceilings.largestPossibleAgeAdditional);
+        specialCapacity = Math.max(specialCapacity, ceilings.specialAdditional);
+        // The IRC 457(b)(3) half of the participant-wide reconciliation test,
+        // which is the only half a plan's facts can move: the age half turns on
+        // the record's account type, which no reading changes.
+        const memberExistingSpecial = roundMoney(
+          member.existingContributions.special457CatchUp +
+            member.existingContributions.special457RothCatchUp,
+        );
+        if (
+          memberExistingSpecial > 0 &&
+          (!reading.special?.eligible || reading.existingSpecialCatchUp > ceilings.specialAdditional)
+        ) {
+          unreconciled = true;
+        }
+      }
+      if (first === null) {
+        first = { age, largestAge, special: specialCapacity, unreconciled };
+      } else if (
+        first.age !== age ||
+        first.largestAge !== largestAge ||
+        first.special !== specialCapacity ||
+        first.unreconciled !== unreconciled
+      ) {
+        // Compared as numbers rather than through a composite string key, so no
+        // float-formatting rule stands between two figures and their difference.
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Resolves the participant-wide catch-up method for every person holding an
  * IRC 457 account, from the plan ceilings each of their plans actually produces
  * rather than from whatever pool capacity happens to survive to a given account.
@@ -12023,12 +12568,12 @@ function section457PlanCeilings(
  * "Larger than" is strict, which is also how IRC 414(v)(6)(C) and IRC 457(e)(18)
  * read: an equal IRC 457(b)(3) amount does not displace the age-based method.
  *
- * Each `AccountInput` is one eligible plan for these purposes. A pension-linked
- * emergency savings account is an account inside a host IRC 457(b) plan rather
- * than a plan of its own, so a host plan's IRC 457(b)(3) provision has to be
- * stated on the emergency savings record too for that record to draw the amount.
- * README documents the contract; #53 tracks the plan-group key that would let one
- * statement cover both records.
+ * Which plan an account belongs to is `resolveSection457PlanFacts`'s answer, not
+ * this function's: accounts sharing a `planRules.section457PlanGroupId` are one
+ * eligible plan and state its facts once, and an account without one is its own
+ * plan. That is what lets a pension-linked emergency savings account draw the
+ * IRC 457(b)(3) provision of the host plan it sits inside, which
+ * IRC 402A(e)(1)(A)(i) makes it an account of rather than a plan beside.
  */
 function resolveSection457CatchUpModes(
   context: CalculationContext,
@@ -12050,6 +12595,14 @@ function resolveSection457CatchUpModes(
         availabilityForAccount(context.parameters, ACCOUNT_TRAITS[account.type]),
     );
     if (owned.length === 0) continue;
+    // Resolved before the year's parameters are consulted: which plan an account
+    // belongs to is a fact about the input, not about the year, and the
+    // allocator reads it on every path including the one that reports the year's
+    // IRC 457(e)(15) amount as unavailable.
+    const plans = buildSection457Plans(context, person, owned);
+    const conflictingPlanMemberIds = owned
+      .filter((account) => context.section457AccountPlans.get(account.id)!.facts.get(account.id)!.conflictingFields.length > 0)
+      .map((account) => account.id);
     if (statutoryBase === null || compensationFraction === null) {
       context.section457CatchUpResolutions.set(person.id, {
         mode: "none",
@@ -12059,17 +12612,14 @@ function resolveSection457CatchUpModes(
         existingAgeCatchUp: 0,
         existingSpecialCatchUp: 0,
         existingCatchUpClassificationUnreconciled: false,
+        planFactsConflicted: conflictingPlanMemberIds.length > 0,
+        conflictingPlanMemberIds,
         eligibleAccountIds: new Set(),
       });
       continue;
     }
 
-    const ceilings = new Map(
-      owned.map((account) => [
-        account.id,
-        section457PlanCeilings(context.parameters, person, account, statutoryBase, compensationFraction),
-      ]),
-    );
+    const ceilings = new Map(plans.flatMap((plan) => [...plan.ceilings]));
 
     // IRC 414(v)(6)(A)(ii) reaches only an eligible governmental plan, so a
     // participant with no such account has no age-based method to choose.
@@ -12085,19 +12635,10 @@ function resolveSection457CatchUpModes(
     // Its Example 2 works the special side through four plans offering $7,000,
     // $2,000, $8,000 and nothing, which yield one $8,000 catch-up that has to be
     // deferred under the plan offering it.
-    const ageAmount = governmentalAccounts.reduce(
-      (largest, account) => Math.max(largest, ceilings.get(account.id)!.ageAdditional),
-      0,
-    );
-    const largestPossibleAgeCatchUp = governmentalAccounts.reduce(
-      (largest, account) => Math.max(largest, ceilings.get(account.id)!.largestPossibleAgeAdditional),
-      0,
-    );
+    const ageAmount = plans.reduce((largest, plan) => Math.max(largest, plan.capacity.age), 0);
+    const largestPossibleAgeCatchUp = plans.reduce((largest, plan) => Math.max(largest, plan.capacity.largestAge), 0);
     const specialAccounts = owned.filter((account) => ceilings.get(account.id)!.specialAdditional > 0);
-    const specialAmount = specialAccounts.reduce(
-      (largest, account) => Math.max(largest, ceilings.get(account.id)!.specialAdditional),
-      0,
-    );
+    const specialAmount = plans.reduce((largest, plan) => Math.max(largest, plan.capacity.special), 0);
     const ageUnknown = ageAtEndOfTaxYear(person, context.taxYear) === null;
 
     let mode: Section457CatchUpMode;
@@ -12163,6 +12704,31 @@ function resolveSection457CatchUpModes(
     const unselectedExistingCatchUp = roundMoney(
       existingAgeCatchUp + existingSpecialCatchUp - selectedExistingCatchUp,
     );
+    // 26 CFR 1.457-5(a) settles the method once for the participant, so a
+    // contradiction about one plan can decide another plan's entitlement -- but
+    // only where the readings it leaves open differ in what they give the
+    // participant. Where they do not, the contradiction stays on its own
+    // records: `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` still reports it on every
+    // one of them, and every other plan is answered from facts it does not
+    // touch.
+    const loadBearingConflictMemberIds: string[] = [];
+    for (const plan of plans) {
+      const accountFacts = plan.facts.get(plan.members[0]!.id)!;
+      if (accountFacts.conflictingFields.length === 0) continue;
+      const members = plan.members;
+      if (
+        section457PlanConflictIsLoadBearing(
+          context.parameters,
+          person,
+          members,
+          accountFacts,
+          statutoryBase,
+          compensationFraction,
+        )
+      ) {
+        loadBearingConflictMemberIds.push(...accountFacts.memberIds);
+      }
+    }
     const existingCatchUpClassificationUnreconciled =
       (mode === "indeterminate" && existingAgeCatchUp + existingSpecialCatchUp > 0) ||
       (existingAgeCatchUp > 0 && existingSpecialCatchUp > 0) ||
@@ -12176,12 +12742,14 @@ function resolveSection457CatchUpModes(
             account.existingContributions.special457RothCatchUp,
         );
 
+        const facts = context.section457AccountPlans.get(account.id)!.facts.get(account.id)!;
+
         return (
           (accountExistingAgeCatchUp > 0 &&
             !(traits.governmental457 && traits.permitsAgeCatchUpByStatute)) ||
           (accountExistingSpecialCatchUp > 0 &&
-            (!account.planRules.section457SpecialCatchUp?.eligible ||
-              accountExistingSpecialCatchUp > ceilings.get(account.id)!.specialAdditional))
+            (!facts.special?.eligible ||
+              facts.existingSpecialCatchUp > ceilings.get(account.id)!.specialAdditional))
         );
       });
     context.section457CatchUpResolutions.set(person.id, {
@@ -12192,8 +12760,37 @@ function resolveSection457CatchUpModes(
       existingAgeCatchUp,
       existingSpecialCatchUp,
       existingCatchUpClassificationUnreconciled,
+      planFactsConflicted: loadBearingConflictMemberIds.length > 0,
+      conflictingPlanMemberIds: loadBearingConflictMemberIds,
       eligibleAccountIds: new Set(eligible.map((account) => account.id)),
     });
+  }
+}
+
+function seedUnresolvedSection457SpecialAttribution(context: CalculationContext): void {
+  for (const plan of context.section457Plans.values()) {
+    const account = plan.members[0]!;
+    const facts = plan.facts.get(account.id)!;
+    if (plan.specialPool === undefined || facts.conflictingFields.length === 0 || facts.groupExistingSpecialCatchUp === 0) continue;
+    const person = context.persons.get(account.ownerId)!;
+    let leastSpecialCapacity = Infinity;
+    for (const includibleCompensation of facts.compensationCandidates) {
+      for (const special of facts.specialCandidates) {
+        const reading = section457PlanCeilings(
+          context.parameters, person, account, { ...facts, includibleCompensation, special },
+          context.parameters.section457b.baseDeferralLimit ?? 0,
+          context.parameters.section457b.includibleCompensationFraction ?? 0,
+        );
+        leastSpecialCapacity = Math.min(leastSpecialCapacity, reading.specialAdditional);
+      }
+    }
+    const possibleOrdinary = nonnegative(roundMoney(facts.groupExistingSpecialCatchUp - leastSpecialCapacity));
+    const key = `existing-special-catch-up:${plan.key}`;
+    // One group-level attribution, not one whole-group charge per record.
+    // The combined plan ceiling and salary usage are invariant to this label.
+    attributeToEitherPool(context.section457SpecialCatchUpPools.get(account.ownerId),
+      [context.section457BasePools.get(account.ownerId)], possibleOrdinary, key);
+    attributeToEitherPool(plan.specialPool, [plan.basePool], possibleOrdinary, key);
   }
 }
 
@@ -12232,9 +12829,10 @@ function seedUnresolvedCatchUpAttribution(
   context: CalculationContext,
   accounts: NormalizedAccount[],
 ): void {
+  seedUnresolvedSection457SpecialAttribution(context);
   for (const account of accounts) {
     const traits = ACCOUNT_TRAITS[account.type];
-    const invalid = highWageInvalidExistingPreTaxCatchUp(context, account, traits);
+    const invalid = unresolvedExistingPreTaxCatchUp(context, account, traits);
     if (invalid === null) continue;
     const section457 = catchUpPoolFamily(traits) === "section457";
     // Every limit IRC 414(v)(3)(A)(i) relieves a paragraph (1) contribution
@@ -12258,6 +12856,7 @@ function seedUnresolvedCatchUpAttribution(
           ? context.section457BasePools.get(account.ownerId)
           : context.elective402gPools.get(account.ownerId),
         traits.uses415c ? context.annualAdditionsPools.get(groupIdForAccount(account)) : undefined,
+        section457 ? context.section457AccountPlans.get(account.id)?.basePool : undefined,
       ],
       invalid.existing,
       `existing-pre-tax-catch-up:${account.id}`,
@@ -12319,18 +12918,16 @@ function initializeSection457Pools(context: CalculationContext, accounts: Normal
     const catchUpPool = context.section457CatchUpPools.get(account.ownerId);
     if (basePool) chargePool(basePool, base);
     if (catchUpPool) chargePool(catchUpPool, catchUp);
+    const existingSpecial = roundMoney(
+      account.existingContributions.special457CatchUp +
+        account.existingContributions.special457RothCatchUp,
+    );
     const specialPool = context.section457SpecialCatchUpPools.get(account.ownerId);
-    if (specialPool) {
-      // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
-      // catch-up does not change which statutory limitation it was made under.
-      chargePool(
-        specialPool,
-        roundMoney(
-          account.existingContributions.special457CatchUp +
-            account.existingContributions.special457RothCatchUp,
-        ),
-      );
-    }
+    // Both flavours seed the one IRC 457(b)(3) pool: the tax treatment of a
+    // catch-up does not change which statutory limitation it was made under.
+    if (specialPool) chargePool(specialPool, existingSpecial);
+    const plan = context.section457AccountPlans.get(account.id)!;
+    chargeSection457Plan(plan, account.existingContributions);
   }
 }
 
@@ -18159,7 +18756,7 @@ function appendSiblingCatchUpPoolBlockDiagnostic(
       other.id !== account.id &&
       other.ownerId === account.ownerId &&
       catchUpPoolFamily(ACCOUNT_TRAITS[other.type]) === family &&
-      highWageInvalidExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
+      unresolvedExistingPreTaxCatchUp(context, other, ACCOUNT_TRAITS[other.type]) !== null,
   );
   if (blockedBy === undefined) return false;
 
@@ -18303,10 +18900,40 @@ function appendSection457ExistingCatchUpDiagnostics(
   account: NormalizedAccount,
   traits: AccountTraits,
   resolution: Section457CatchUpResolution,
+  facts: Section457PlanFacts,
   ceilings: Section457PlanCeilings,
   diagnostics: Diagnostic[],
 ): boolean {
   const diagnosticCountBefore = diagnostics.length;
+  if (facts.conflictingFields.length === 0 && resolution.planFactsConflicted) {
+    // 26 CFR 1.457-5(a) selects the method once for the participant "under all
+    // eligible plans", so a contradiction in one plan is not that plan's alone:
+    // the method this account would use, and whether it has one at all, are
+    // decided from figures the input contradicts. Reporting a settled zero here
+    // would file that contradiction under this account's name.
+    diagnostics.push(
+      diagnostic(
+        "SECTION_457_CATCH_UP_BLOCKED_BY_CONFLICTING_PLAN_FACTS",
+        DiagnosticSeverity.ERROR,
+        `Records ${resolution.conflictingPlanMemberIds.join(", ")} describe one of this participant's other eligible IRC 457(b) plans inconsistently. 26 CFR 1.457-5(a) states the individual limitation as the basic annual limitation plus either the age 50 catch-up or the IRC 457(b)(3) catch-up "taking into account the combined annual deferral for the participant for any taxable year under all eligible plans", and 1.457-5(c) takes the amount from whichever plan provides the largest, so which method applies to this account and how much it is worth are settled by figures the input contradicts. No catch-up is allocated here until those records agree.`,
+        `accounts.${account.id}`,
+        "26 CFR 1.457-5(a); 26 CFR 1.457-5(c)",
+      ),
+    );
+  }
+  if (facts.conflictingFields.length > 0) {
+    diagnostics.push(
+      diagnostic(
+        "SECTION_457_PLAN_GROUP_FACTS_CONFLICT",
+        DiagnosticSeverity.ERROR,
+        `Accounts ${facts.memberIds.join(", ")} name one eligible IRC 457(b) plan through planRules.section457PlanGroupId, but describe that plan inconsistently: ${facts.conflictingFields.join(
+          " and ",
+        )}. 26 CFR 1.457-4(c) gives one plan one ceiling, built from one IRC 457(e)(5) includible compensation and one IRC 457(b)(3) provision, and IRC 414(v)(6)(A)(ii) makes that plan either an eligible governmental plan or not; no reading of the input settles which description is the plan's, and choosing would answer a question only the caller can answer. Each record keeps its own facts for the basic annual limitation, which the plan's records share, and no catch-up is allocated under either method until they agree.`,
+        `accounts.${account.id}.planRules.section457PlanGroupId`,
+        "26 CFR 1.457-4(c)",
+      ),
+    );
+  }
   const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
   const accountExistingSpecialCatchUp = roundMoney(
     account.existingContributions.special457CatchUp +
@@ -18388,7 +19015,39 @@ function appendSection457ExistingCatchUpDiagnostics(
       ),
     );
   }
-  if (accountExistingSpecialCatchUp > 0 && !account.planRules.section457SpecialCatchUp?.eligible) {
+  // During the special period paragraph (c)(3) replaces the basic ceiling.
+  // Ordinary deposits still consume that combined ceiling, but exceeding the
+  // basic portion alone neither invalidates their provenance nor erases the
+  // remaining special capacity. Diagnose a true combined excess instead.
+  const specialMethod = resolution.mode === "special";
+  const applicablePlanCeiling = roundMoney(ceilings.basicPlanCeiling + (specialMethod ? ceilings.specialAdditional : 0));
+  const existingAgainstPlanCeiling = roundMoney(facts.existingRegularDeferrals + (specialMethod ? facts.existingSpecialCatchUp : 0));
+  const accountExistingRegularDeferrals = roundMoney(
+    baseElectiveDeferrals(account.existingContributions) +
+      account.existingContributions.employeeAfterTax +
+      account.existingContributions.employerPreTax +
+      account.existingContributions.employerRoth,
+  );
+  if (
+    facts.memberIds.length > 1 &&
+    (accountExistingRegularDeferrals > 0 || (specialMethod && accountExistingSpecialCatchUp > 0)) &&
+    existingAgainstPlanCeiling > applicablePlanCeiling
+  ) {
+    diagnostics.push(
+      diagnostic(
+        "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING",
+        DiagnosticSeverity.ERROR,
+        specialMethod
+          ? `Existing ordinary and special contributions total $${existingAgainstPlanCeiling.toLocaleString()} under this eligible plan (across records ${facts.memberIds.join(", ")}), above its $${applicablePlanCeiling.toLocaleString()} combined ceiling under 26 CFR 1.457-4(c)(3)(i). Splitting one plan into records does not create additional capacity.`
+          : `Existing contributions record $${facts.existingRegularDeferrals.toLocaleString()} of ordinary annual deferral under this eligible plan (across records ${facts.memberIds.join(
+          ", ",
+        )}), above the $${ceilings.basicPlanCeiling.toLocaleString()} ceiling 26 CFR 1.457-4(c)(1)(i) sets for the plan, which is the lesser of the IRC 457(e)(15) amount and 100 percent of the participant's IRC 457(e)(5) includible compensation. No single record exceeds it, but the ceiling is the plan's and these records are one plan.`,
+        `accounts.${account.id}.existingContributions`,
+        specialMethod ? "IRC 457(b)(3); 26 CFR 1.457-4(c)(3)(i)" : "IRC 457(b)(2); 26 CFR 1.457-4(c)(1)(i)",
+      ),
+    );
+  }
+  if (accountExistingSpecialCatchUp > 0 && !facts.special?.eligible) {
     diagnostics.push(
       diagnostic(
         "SECTION_457_SPECIAL_CATCH_UP_NOT_PROVIDED_BY_PLAN",
@@ -18398,18 +19057,35 @@ function appendSection457ExistingCatchUpDiagnostics(
         "26 CFR 1.457-5(c)",
       ),
     );
-  } else if (accountExistingSpecialCatchUp > ceilings.specialAdditional) {
+  } else if (
+    accountExistingSpecialCatchUp > 0 &&
+    facts.existingSpecialCatchUp > ceilings.specialAdditional
+  ) {
     diagnostics.push(
       diagnostic(
         "SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT",
         DiagnosticSeverity.ERROR,
-        `Existing contributions record $${accountExistingSpecialCatchUp.toLocaleString()} of IRC 457(b)(3) special catch-up on this account, above the $${ceilings.specialAdditional.toLocaleString()} its own plan ceiling provides above the basic annual limitation. 26 CFR 1.457-4(c)(3)(i) caps that ceiling at the lesser of twice the IRC 457(e)(15) amount and the (c)(3)(ii) underutilized limitation, and 1.457-5(c) recognises the amount only under the plan whose provisions produce it.`,
+        `Existing contributions record $${facts.existingSpecialCatchUp.toLocaleString()} of IRC 457(b)(3) special catch-up under this eligible plan${
+          facts.memberIds.length > 1 ? ` (across records ${facts.memberIds.join(", ")})` : ""
+        }, above the $${ceilings.specialAdditional.toLocaleString()} its own plan ceiling provides above the basic annual limitation. 26 CFR 1.457-4(c)(3)(i) caps that ceiling at the lesser of twice the IRC 457(e)(15) amount and the (c)(3)(ii) underutilized limitation, and 1.457-5(c) recognises the amount only under the plan whose provisions produce it.`,
         `accounts.${account.id}.existingContributions`,
         "26 CFR 1.457-4(c)(3)(i); 26 CFR 1.457-5(c)",
       ),
     );
   }
 
+  const plan = context.section457AccountPlans.get(account.id)!;
+  if (section457SalaryDeferrals(account.existingContributions) > 0
+    && plan.compensationPool?.limit != null
+    && plan.existingSalaryDeferrals > plan.compensationPool.limit) {
+    diagnostics.push(diagnostic(
+      "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION",
+      DiagnosticSeverity.ERROR,
+      `Existing participant salary deferrals total $${plan.existingSalaryDeferrals.toLocaleString()} across records ${facts.memberIds.join(", ")}, above this plan's $${plan.compensationPool.limit.toLocaleString()} of IRC 457(e)(5) includible compensation. Separate base and catch-up ceilings do not supply additional salary. Reconcile the existing contributions or the plan compensation.`,
+      `accounts.${account.id}.existingContributions`,
+      "IRC 457(e)(5); IRC 415(c)(3)(D)",
+    ));
+  }
   return diagnostics.length > diagnosticCountBefore;
 }
 
@@ -18426,6 +19102,8 @@ function section457PlesaCatchUpCapacityUpperBoundBeforeBalance(
   ceilings: Section457PlanCeilings,
   basePool: LimitPool,
   catchUpPool: LimitPool,
+  planSpecialPool: LimitPool | undefined,
+  planCompensationPool: LimitPool | undefined,
 ): Money {
   if (!resolution.eligibleAccountIds.has(account.id)) return 0;
   const statutoryPlesaCap = context.parameters.pensionLinkedEmergencySavingsBalanceCap402A;
@@ -18451,33 +19129,38 @@ function section457PlesaCatchUpCapacityUpperBoundBeforeBalance(
     effectivePlesaCap,
   );
   const plesaRoomAfterBase = nonnegative(effectivePlesaCap - baseCapacity);
-  const compensationBeforeBase = nonnegative(
-    ceilings.includibleCompensation -
-      baseElectiveDeferrals(existing) -
-      ageCatchUpDeferrals(existing) -
-      existing.special457CatchUp -
-      existing.special457RothCatchUp -
-      existing.employerPreTax -
-      existing.employerRoth,
+  // The plan's compensation, not the record's: another record of this plan may
+  // already have deferred it.
+  const compensationBeforeBase = minMoney(
+    nonnegative(
+      ceilings.includibleCompensation -
+        baseElectiveDeferrals(existing) -
+        ageCatchUpDeferrals(existing) -
+        existing.special457CatchUp -
+        existing.special457RothCatchUp,
+    ),
+    planCompensationPool === undefined ? null : poolRemaining(planCompensationPool),
   );
   const compensationAfterBase = nonnegative(compensationBeforeBase - baseCapacity);
-  const accountExistingCatchUp =
+  // 26 CFR 1.457-4(c)(3)(i) sets its ceiling for the *plan*, so the IRC 457(b)(3)
+  // bound is what the plan has left -- the plan pool already carries what every
+  // record of it holds -- rather than what this one record has left. The
+  // IRC 414(v) bound stays the account's: IRC 414(v)(2)(A)(ii) measures it
+  // against the participant's compensation under this plan, which the ceilings
+  // already applied.
+  const planCatchUpRemaining =
     resolution.mode === "age"
-      ? ageCatchUpDeferrals(existing)
+      ? nonnegative(ceilings.ageAdditional - ageCatchUpDeferrals(existing))
       : resolution.mode === "special"
-        ? roundMoney(existing.special457CatchUp + existing.special457RothCatchUp)
-        : 0;
-  const accountCatchUpCeiling =
-    resolution.mode === "age"
-      ? ceilings.ageAdditional
-      : resolution.mode === "special"
-        ? ceilings.specialAdditional
+        ? planSpecialPool === undefined
+          ? 0
+          : poolRemaining(planSpecialPool)
         : 0;
 
   return minMoney(
     poolRemaining(catchUpPool),
     compensationAfterBase,
-    nonnegative(accountCatchUpCeiling - accountExistingCatchUp),
+    planCatchUpRemaining,
     plesaRoomAfterBase,
   );
 }
@@ -19428,13 +20111,14 @@ function allocateSection457(
   }
 
   const resolution = context.section457CatchUpResolutions.get(account.ownerId)!;
-  const ceilings = section457PlanCeilings(
-    context.parameters,
-    person,
-    account,
-    statutoryBase,
-    compensationFraction,
-  );
+  const plan = context.section457AccountPlans.get(account.id)!;
+  const facts = plan.facts.get(account.id)!;
+  const planBasePool = plan.basePool;
+  const planCompensationPool = plan.compensationPool;
+  const planSpecialPool = plan.specialPool;
+  const planTotalPool = resolution.mode === "special" ? plan.specialTotalPool
+    : resolution.mode === "age" ? plan.ageTotalPool : undefined;
+  const ceilings = plan.ceilings.get(account.id)!;
   const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
   const accountExistingSpecialCatchUp = roundMoney(
     account.existingContributions.special457CatchUp +
@@ -19472,6 +20156,7 @@ function allocateSection457(
       account,
       traits,
       resolution,
+      facts,
       ceilings,
       diagnostics,
     );
@@ -19487,6 +20172,8 @@ function allocateSection457(
         ceilings,
         basePool,
         catchUpPool,
+        planSpecialPool,
+        planCompensationPool,
       ) > 0
     ) {
       diagnostics.push(section457UnreconciledCatchUpDiagnostic(account.id));
@@ -19544,7 +20231,7 @@ function allocateSection457(
    */
   const unresolvedOrdinaryExposure = traits.isPlesa
     ? 0
-    : (highWageInvalidExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
+    : (unresolvedExistingPreTaxCatchUp(context, account, traits)?.existing ?? 0);
   const appliedHostBaseLimit = traits.isPlesa
     ? statutoryHostBaseLimit
     : nonnegative(
@@ -19587,9 +20274,33 @@ function allocateSection457(
     `${account.id}.expectedEmployerContribution`,
   );
   const existingEmployer = roundMoney(annual.employerPreTax + annual.employerRoth);
+  // 26 CFR 1.457-4(c)(1)(i) sets the annual-deferral ceiling for the *plan*, so
+  // where a plan is several records what one of them may add is what the plan has
+  // left, not what this record has left. The pool carries both, and for a plan of
+  // one record its remainder is the subtraction beside it.
+  const planBaseRemaining = planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null;
+  const planBaseInterval = planBasePool === undefined ? null : poolRemainingInterval(planBasePool);
+  const ordinaryDemand = minMoney(
+    nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
+    poolRemainingInterval(basePool)?.minimum,
+    plesaPool === null ? null : poolRemainingInterval(plesaPool)?.minimum,
+  );
+  if (planBaseInterval !== null
+    && minMoney(ordinaryDemand, planBaseInterval.maximum) > minMoney(ordinaryDemand, planBaseInterval.minimum)) {
+    diagnostics.push(diagnostic(
+      "SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED",
+      DiagnosticSeverity.ERROR,
+      "An existing pre-tax catch-up under this plan may instead consume its basic ceiling. Only ordinary deferrals that fit under every reading are allocated; reconcile the existing catch-up to establish the remaining plan capacity.",
+      `accounts.${account.id}`,
+      "IRC 414(v)(3)(A); IRC 414(v)(7)(A); IRC 457(b)(2)",
+    ));
+    reportPoolWithoutConsuming(planBasePool!, sharedLimits);
+  }
   const employerDesired = minMoney(
     nonnegative(expectedEmployer - existingEmployer),
     nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
+    planBaseRemaining,
+    planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
   );
   // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
   // contributions to the participant's *other* account under the plan, and
@@ -19601,18 +20312,25 @@ function allocateSection457(
     validateEmployerRothAvailability(context, account, traits, diagnostics)
   ) {
     const employerAdded = takeAcrossPools([basePool], employerDesired, sharedLimits);
+    chargeSection457PlanContribution(plan, "employerPreTax", employerAdded);
     addEmployerContribution(account, traits, annual, additional, employerAdded);
   }
 
   const regularBeforeEmployee = roundMoney(
     baseElectiveDeferrals(annual) + annual.employeeAfterTax + annual.employerPreTax + annual.employerRoth,
   );
-  const regularDesired = nonnegative(appliedHostBaseLimit - regularBeforeEmployee);
+  const regularDesired = minMoney(
+    nonnegative(appliedHostBaseLimit - regularBeforeEmployee),
+    planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null,
+    planCompensationPool === undefined ? null : poolRemainingInterval(planCompensationPool)?.minimum ?? null,
+    planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
+  );
   const regularAdded = takeAcrossPools(
     plesaPool ? [basePool, plesaPool] : [basePool],
     regularDesired,
     sharedLimits,
   );
+  chargeSection457PlanContribution(plan, "employeePreTaxDeferral", regularAdded);
   if (accountUsesRothEmployeeContributions(account, traits)) {
     additional.employeeRothDeferral = regularAdded;
     annual.employeeRothDeferral = roundMoney(annual.employeeRothDeferral + regularAdded);
@@ -19621,14 +20339,23 @@ function allocateSection457(
     annual.employeePreTaxDeferral = roundMoney(annual.employeePreTaxDeferral + regularAdded);
   }
 
-  let compensationRemaining = nonnegative(
-    includibleCompensation -
-      baseElectiveDeferrals(annual) -
-      ageCatchUpDeferrals(annual) -
-      annual.special457CatchUp -
-      annual.special457RothCatchUp -
-      annual.employerPreTax -
-      annual.employerRoth,
+  // IRC 457(e)(5) includible compensation is the participant's compensation from
+  // the employer under this plan, so it is one amount for the plan rather than one
+  // per record, and a dollar this plan's host record has already deferred is not
+  // available to its emergency savings record. IRC 457(b)(3) makes that bound the
+  // operative one for a catch-up: it replaces the paragraph (2) ceiling rather
+  // than reapplying its 100-percent-of-compensation term, so nothing else stops
+  // two records of one plan reducing the same salary twice. For a plan of one
+  // record the pool holds exactly the subtraction beside it.
+  let compensationRemaining = minMoney(
+    nonnegative(
+      includibleCompensation -
+        baseElectiveDeferrals(annual) -
+        ageCatchUpDeferrals(annual) -
+        annual.special457CatchUp -
+        annual.special457RothCatchUp,
+    ),
+    planCompensationPool === undefined ? null : poolRemaining(planCompensationPool),
   );
   // IRC 457(e)(18) and 26 CFR 1.457-4(c)(2)(ii) give the participant the greater
   // of the two catch-up methods for the year, never their sum, and 1.457-5(a)
@@ -19661,6 +20388,7 @@ function allocateSection457(
     account,
     traits,
     resolution,
+    facts,
     ceilings,
     diagnostics,
   );
@@ -19677,9 +20405,21 @@ function allocateSection457(
   // though Plan W also offers the catch-up, at $7,000. Without the second half a
   // Plan W already holding its whole $7,000 could still take the participant's
   // last $1,000 and finish the year $1,000 above its own plan ceiling.
-  const accountSpecialRemaining =
+  //
+  // The bound is the *plan's*, which is why it is a pool rather than a
+  // subtraction on this record: one plan may be several `AccountInput`s, and
+  // three records of Plan W each stopping at $7,000 individually could still
+  // take $21,000 between them. The pool carries what all of them hold and all of
+  // them have taken. For a plan of one record it is arithmetically the
+  // subtraction it replaces.
+  const planSpecialRemaining =
     resolution.mode === "special"
-      ? nonnegative(ceilings.specialAdditional - accountExistingSpecialCatchUp)
+      ? planSpecialPool === undefined
+        ? 0
+        : minMoney(
+            poolRemainingInterval(planSpecialPool)?.minimum,
+            plan.specialTotalPool === undefined ? null : poolRemainingInterval(plan.specialTotalPool)?.minimum,
+          )
       : Infinity;
   // What decides whether the classification is worth asking for: the most this
   // account could take if every open question resolved in its favour.
@@ -19703,7 +20443,8 @@ function allocateSection457(
   const ownCatchUpRoomWithoutPool = mayDrawCatchUp
     ? minMoney(
         compensationRemaining,
-        accountSpecialRemaining,
+        planSpecialRemaining,
+        planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
         plesaPool ? poolRemaining(plesaPool) : Infinity,
         poolCatchUpPossible,
       )
@@ -19791,6 +20532,12 @@ function allocateSection457(
       additional.special457CatchUp = specialAdded;
       annual.special457CatchUp = roundMoney(annual.special457CatchUp + specialAdded);
     }
+    // Deliberately charged rather than allocated through: the plan ceiling is a
+    // real bound on this record but it is not one of the shared statutory pools
+    // the result reports, and for a plan of a single record it is exactly the
+    // per-account bound it replaces, so reporting it would add an entry to every
+    // IRC 457 account that says nothing new.
+    chargeSection457PlanContribution(plan, "special457CatchUp", specialAdded);
     compensationRemaining = nonnegative(compensationRemaining - specialAdded);
     if (resolution.ageAmount > 0) {
       diagnostics.push(
@@ -19823,6 +20570,7 @@ function allocateSection457(
         additional.employeePreTaxCatchUp = ageAdded;
         annual.employeePreTaxCatchUp = roundMoney(annual.employeePreTaxCatchUp + ageAdded);
       }
+      chargeSection457PlanContribution(plan, "employeePreTaxCatchUp", ageAdded);
       compensationRemaining = nonnegative(compensationRemaining - ageAdded);
     }
   }
@@ -20964,6 +21712,11 @@ export class AccountBuilder {
 
   public annualAdditionsGroup(groupId: string): this {
     (this.value.planRules ??= {}).annualAdditionsGroupId = groupId;
+    return this;
+  }
+
+  public section457PlanGroup(groupId: string): this {
+    (this.value.planRules ??= {}).section457PlanGroupId = groupId;
     return this;
   }
 
