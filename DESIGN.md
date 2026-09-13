@@ -142,7 +142,12 @@ its member records, resolved fact views, cached ceilings, catch-up capacities,
 and all five resource balances. It is constructed once before participant-wide
 method selection. Account lookup points to that plan; it does not own another
 copy of its balances. Contradictory inputs retain per-member fact and ceiling
-views for the existing diagnostics, within the same plan state.
+views for the existing diagnostics, within the same plan state. The shared
+balances are initialized from the smallest ceiling any reading of the records
+produces. Within one reading, the plan offers what any member can host. A
+contradiction therefore never enlarges an allocation. Diagnostics that assert
+an excess compare against the largest stated figure, because an excess is
+asserted only where it holds under every reading.
 
 The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
 special contributions both consume it, so ordinary overages reduce the remaining
@@ -163,9 +168,18 @@ A combined special-period excess affects every record with ordinary or special
 contributions, including records containing only a special contribution.
 
 
-When contradictory plan facts leave existing special contributions partly or
-wholly outside a permitted special allowance, the maximum possibly ordinary
-portion is attributed once per plan to both participant and plan base pools.
+An existing catch-up whose component label the resolved method or its plan
+does not support may have been an ordinary deferral. That covers a label under
+the unselected method, a §457(b)(3) amount under a plan providing none, and an
+age 50 amount on a plan §414(v)(6)(A)(ii) does not reach. The possibly ordinary
+amount widens the participant's basic pool, the plan's basic pool, and the
+combined balance for the method that does apply. When contradictory plan facts
+leave existing special contributions partly or wholly outside a permitted
+special allowance, the possibly ordinary portion is treated the same way. The
+larger of the two figures is attributed once per plan. An IRC 414(v)(7)(A)
+amount is widened by its own attribution and is not counted twice. An account
+whose ordinary room either basic interval can change is indeterminate, whether
+the widened interval is the plan's or the participant's aggregate.
 Matching uncertainty IDs preserve its correlation with the special pools; the
 full plan ceiling and salary usage remain unchanged by that classification.
 Internal plan keys use UTF-8 byte lengths consistently in both runtimes.

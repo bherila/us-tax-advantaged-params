@@ -1474,7 +1474,11 @@ Within a group:
   `SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_COMPENSATION` on affected records;
 - records that describe the plan inconsistently raise
   `SECTION_457_PLAN_GROUP_FACTS_CONFLICT` on each of them and allocate no catch-up
-  under either method. Four things must agree, because a group asserts one plan:
+  under either method. Until they agree, every plan ceiling the records share
+  is the **smallest** any reading of them produces, so a contradiction never
+  enlarges an ordinary allocation: two records stating $1,000 and $2,000 of
+  includible compensation defer $1,000 between them, not $2,000. Four things
+  must agree, because a group asserts one plan:
   `section457SpecialCatchUp`, `includibleCompensation457`, whether the plan is an
   eligible **governmental** plan (settled by the account types, and decisive under
   §414(v)(6)(A)(ii) for whether the age 50 method exists at all), and the
@@ -1490,8 +1494,18 @@ Within a group:
   Sponsor conflicts can also leave existing pre-tax catch-up attribution unresolved
   even when the method is unchanged. The engine reserves possible ordinary usage
   against both participant and plan ceilings. It allocates only guaranteed room
-  and reports `SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED` where the plan-base
-  uncertainty changes an account's capacity.
+  and reports `SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED` where that
+  uncertainty changes an account's capacity, whether through the plan's own
+  ceiling or the participant's aggregate basic annual limitation;
+- an existing catch-up the resolved method or its plan does not support — one
+  recorded under the unselected method (§1.457-4(c)(2)(ii), §414(v)(6)(C)), a
+  §457(b)(3) amount under a plan providing none, or an age 50 amount on a plan
+  §414(v)(6)(A)(ii) does not reach — is reserved the same way. The reading in
+  which it was really an ordinary deferral is one its diagnostic leaves open, so
+  it widens the participant's basic limitation, the plan's basic ceiling and the
+  combined ceiling of the method that does apply. An age-55 participant in the
+  $8,000 age method with $10,000 recorded as special catch-up leaves an empty
+  sibling $14,500, not $24,500.
 
 **Absent the key, one `AccountInput` is one eligible plan**, which is the older
 contract and remains the default: a host plan's `section457SpecialCatchUp` facts
