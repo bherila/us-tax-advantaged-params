@@ -12988,7 +12988,7 @@ final class Engine
      * @param array<string,mixed> $parameters
      * @param array<string,mixed> $person
      * @param array<string,mixed> $plan
-     * @return array{basic: float, compensation: float, special: float, specialTotal: float, ageTotal: float}
+     * @return array{basic: float, compensation: float, special: float, age: float, specialTotal: float, ageTotal: float}
      */
     private static function section457GuaranteedPlanLimits(
         array $parameters,
@@ -13004,7 +13004,7 @@ final class Engine
                 $reading = $facts;
                 $reading['includibleCompensation'] = $includibleCompensation;
                 $reading['special'] = $special;
-                $limits = ['basic' => 0.0, 'compensation' => 0.0, 'special' => 0.0, 'specialTotal' => 0.0, 'ageTotal' => 0.0];
+                $limits = ['basic' => 0.0, 'compensation' => 0.0, 'special' => 0.0, 'age' => 0.0, 'specialTotal' => 0.0, 'ageTotal' => 0.0];
                 foreach ($plan['members'] as $member) {
                     $ceiling = self::section457PlanCeilings(
                         $parameters, $person, $member, $reading, $statutoryBase, $compensationFraction,
@@ -13012,6 +13012,7 @@ final class Engine
                     $limits['basic'] = max($limits['basic'], $ceiling['basicPlanCeiling']);
                     $limits['compensation'] = max($limits['compensation'], $ceiling['includibleCompensation']);
                     $limits['special'] = max($limits['special'], $ceiling['specialAdditional']);
+                    $limits['age'] = max($limits['age'], $ceiling['ageAdditional']);
                     $limits['specialTotal'] = max($limits['specialTotal'], $ceiling['basicPlanCeiling'] + $ceiling['specialAdditional']);
                     $limits['ageTotal'] = max($limits['ageTotal'], $ceiling['basicPlanCeiling'] + $ceiling['ageAdditional']);
                 }
@@ -13384,92 +13385,141 @@ final class Engine
      * special method every age catch-up is (IRC 414(v)(6)(C)), and so is a
      * special catch-up on a record whose plan provision is not eligible; under
      * the age method an age catch-up on a record IRC 414(v)(6)(A)(ii) does not
-     * reach is. A plan whose records contradict each other also carries the
-     * amount above the smallest IRC 457(b)(3) capacity any reading gives it. The
-     * larger of the two figures is attributed once; they describe the same
-     * dollars.
+     * reach is.
+     *
+     * A supported label is not a valid amount either. What remains can be a
+     * catch-up only up to two ceilings, and anything above either may have been
+     * ordinary: the plan's own allowance, which 26 CFR 1.457-5(c) recognises
+     * "only to the extent" an amount is made under that plan's provisions, taken
+     * at the smallest figure any reading of its records gives
+     * (SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT); and the participant's
+     * headroom, which 1.457-5(a) and (b) apply on an aggregate basis
+     * (SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT). Which plan's
+     * dollars are the overflow is not settled, so each plan is charged as much
+     * of it as it could hold, and the participant's pool the overflow once. The
+     * participant's pool therefore takes the most that can be ordinary in any
+     * one completion: every unsupported amount, every amount above its plan's
+     * allowance, and the participant-wide overflow of what is left.
      *
      * An IRC 414(v)(7)(A)-condemned pre-tax age catch-up is widened separately
      * by seedUnresolvedCatchUpAttribution and is not widened a second time here.
      */
     private static function seedUnsupportedSection457CatchUpAttribution(array &$context): void
     {
-        $amounts = [];
-        foreach ($context['section457Plans'] as $key => $plan) {
-            $account = $plan['members'][0];
-            $facts = $plan['facts'][$account['id']];
-            if (!isset($plan['specialPool'])) continue;
-            $ownerId = $account['ownerId'];
-            $person = $context['persons'][$ownerId];
-            $mode = $context['section457CatchUpResolutions'][$ownerId]['mode'] ?? null;
-
-            $conflictedSpecial = 0.0;
-            if (count($facts['conflictingFields']) > 0 && $facts['groupExistingSpecialCatchUp'] > 0.0) {
-                $leastSpecialCapacity = INF;
-                foreach ($facts['compensationCandidates'] as $compensation) {
-                    foreach ($facts['specialCandidates'] as $special) {
-                        $readingFacts = $facts;
-                        $readingFacts['includibleCompensation'] = $compensation;
-                        $readingFacts['special'] = $special;
-                        $reading = self::section457PlanCeilings(
-                            $context['parameters'], $person, $account, $readingFacts,
-                            (float) ($context['parameters']['section457b']['baseDeferralLimit'] ?? 0),
-                            (float) ($context['parameters']['section457b']['includibleCompensationFraction'] ?? 0),
-                        );
-                        $leastSpecialCapacity = min($leastSpecialCapacity, $reading['specialAdditional']);
+        $statutoryBase = $context['parameters']['section457b']['baseDeferralLimit'];
+        $compensationFraction = $context['parameters']['section457b']['includibleCompensationFraction'];
+        if ($statutoryBase === null || $compensationFraction === null) {
+            return;
+        }
+        foreach ($context['persons'] as $person) {
+            $personId = $person['id'];
+            $resolution = $context['section457CatchUpResolutions'][$personId] ?? null;
+            if ($resolution === null) {
+                continue;
+            }
+            $mode = $resolution['mode'];
+            $shares = [];
+            foreach ($context['section457Plans'] as $key => $plan) {
+                if ($plan['members'][0]['ownerId'] !== $personId || !isset($plan['specialPool'])) {
+                    continue;
+                }
+                $allowance = self::section457GuaranteedPlanLimits(
+                    $context['parameters'], $person, $plan, (float) $statutoryBase, (float) $compensationFraction,
+                );
+                $supportedSpecial = 0.0;
+                $unsupportedSpecial = 0.0;
+                $supportedAge = 0.0;
+                $unsupportedAge = 0.0;
+                foreach ($plan['members'] as $member) {
+                    $traits = self::traits($member['type']);
+                    $existing = $member['existingContributions'];
+                    $special = self::roundMoney($existing['special457CatchUp'] + $existing['special457RothCatchUp']);
+                    $condemned = (float) (self::unresolvedExistingPreTaxCatchUp($context, $member, $traits)['existing'] ?? 0.0);
+                    $age = self::nonnegative(self::roundMoney(self::ageCatchUps($existing) - $condemned));
+                    $memberSpecial = $plan['facts'][$member['id']]['special'];
+                    $memberProvidesSpecial = is_array($memberSpecial) && !empty($memberSpecial['eligible']);
+                    if ($mode === 'age' || $mode === 'none' || ($mode === 'special' && !$memberProvidesSpecial)) {
+                        $unsupportedSpecial = self::roundMoney($unsupportedSpecial + $special);
+                    } else {
+                        $supportedSpecial = self::roundMoney($supportedSpecial + $special);
+                    }
+                    $permitsAge = !empty($traits['governmental457']) && !empty($traits['permitsAgeCatchUpByStatute']);
+                    if ($mode === 'special' || $mode === 'none' || ($mode === 'age' && !$permitsAge)) {
+                        $unsupportedAge = self::roundMoney($unsupportedAge + $age);
+                    } else {
+                        $supportedAge = self::roundMoney($supportedAge + $age);
                     }
                 }
-                $conflictedSpecial = self::nonnegative(self::roundMoney($facts['groupExistingSpecialCatchUp'] - $leastSpecialCapacity));
+                $specialAboveAllowance = self::nonnegative(self::roundMoney($supportedSpecial - $allowance['special']));
+                $ageAboveAllowance = $mode === 'age'
+                    ? self::nonnegative(self::roundMoney($supportedAge - $allowance['age']))
+                    : 0.0;
+                $shares[] = [
+                    'key' => $key,
+                    'special' => self::roundMoney($unsupportedSpecial + $specialAboveAllowance),
+                    'age' => self::roundMoney($unsupportedAge + $ageAboveAllowance),
+                    'withinAllowance' => $mode === 'special'
+                        ? self::minMoney($supportedSpecial, $allowance['special'])
+                        : ($mode === 'age' ? self::minMoney($supportedAge, $allowance['age']) : 0.0),
+                ];
             }
-            $unsupportedSpecial = 0.0;
-            $unsupportedAge = 0.0;
-            foreach ($plan['members'] as $member) {
-                $traits = self::traits($member['type']);
-                $existing = $member['existingContributions'];
-                $special = self::roundMoney($existing['special457CatchUp'] + $existing['special457RothCatchUp']);
-                $memberSpecial = $plan['facts'][$member['id']]['special'];
-                $memberProvidesSpecial = is_array($memberSpecial) && !empty($memberSpecial['eligible']);
-                if ($mode === 'age' || $mode === 'none' || ($mode === 'special' && !$memberProvidesSpecial)) {
-                    $unsupportedSpecial = self::roundMoney($unsupportedSpecial + $special);
-                }
-                $permitsAge = !empty($traits['governmental457']) && !empty($traits['permitsAgeCatchUpByStatute']);
-                if ($mode === 'special' || $mode === 'none' || ($mode === 'age' && !$permitsAge)) {
-                    $condemned = (float) (self::unresolvedExistingPreTaxCatchUp($context, $member, $traits)['existing'] ?? 0.0);
-                    $unsupportedAge = self::roundMoney(
-                        $unsupportedAge + self::nonnegative(self::roundMoney(self::ageCatchUps($existing) - $condemned)),
-                    );
-                }
+            if ($shares === []) {
+                continue;
             }
-            $amounts[$key] = [$ownerId, $mode, max($conflictedSpecial, $unsupportedSpecial), $unsupportedAge];
-        }
+            $overflow = self::nonnegative(self::roundMoney(
+                array_reduce($shares, static fn (float $total, array $share): float => $total + $share['withinAllowance'], 0.0)
+                    - (float) $resolution['headroom'],
+            ));
 
-        foreach ($amounts as $key => [$ownerId, $mode, $possibleOrdinarySpecial, $unsupportedAge]) {
-            $plan =& $context['section457Plans'][$key];
-            $specialKey = "existing-special-catch-up:{$plan['key']}";
-            // One group-level attribution, not one whole-group charge per record.
-            // Salary usage is invariant to this label.
-            $ownerRelieved = [];
-            $ownerRelieved[] =& $context['section457BasePools'][$ownerId];
-            self::attributeToEitherPool($context['section457SpecialCatchUpPools'][$ownerId], $ownerRelieved, $possibleOrdinarySpecial, $specialKey);
-            $planRelieved = [];
-            $planRelieved[] =& $plan['basePool'];
-            if ($mode === 'age') {
-                $planRelieved[] =& $plan['ageTotalPool'];
+            $participantSpecial = $mode === 'special' ? $overflow : 0.0;
+            $participantAge = $mode === 'age' ? $overflow : 0.0;
+            foreach ($shares as $share) {
+                $plan =& $context['section457Plans'][$share['key']];
+                $planOverflow = self::minMoney($share['withinAllowance'], $overflow);
+                $participantSpecial = self::roundMoney($participantSpecial + $share['special']);
+                $participantAge = self::roundMoney($participantAge + $share['age']);
+                // One group-level attribution, not one whole-group charge per
+                // record. Salary usage is invariant to this label.
+                $specialRelieved = [];
+                $specialRelieved[] =& $plan['basePool'];
+                if ($mode === 'age') {
+                    $specialRelieved[] =& $plan['ageTotalPool'];
+                }
+                self::attributeToEitherPool(
+                    $plan['specialPool'],
+                    $specialRelieved,
+                    self::roundMoney($share['special'] + ($mode === 'special' ? $planOverflow : 0.0)),
+                    "existing-special-catch-up:{$plan['key']}",
+                );
+                $ageRelieved = [];
+                $ageRelieved[] =& $plan['basePool'];
+                if ($mode === 'special') {
+                    $ageRelieved[] =& $plan['specialTotalPool'];
+                }
+                $noCatchUpPool = null;
+                self::attributeToEitherPool(
+                    $noCatchUpPool,
+                    $ageRelieved,
+                    self::roundMoney($share['age'] + ($mode === 'age' ? $planOverflow : 0.0)),
+                    "existing-age-catch-up:{$plan['key']}",
+                );
+                unset($plan, $specialRelieved, $ageRelieved);
             }
-            self::attributeToEitherPool($plan['specialPool'], $planRelieved, $possibleOrdinarySpecial, $specialKey);
-            $ageRelieved = [];
-            $ageRelieved[] =& $context['section457BasePools'][$ownerId];
-            $ageRelieved[] =& $plan['basePool'];
-            if ($mode === 'special') {
-                $ageRelieved[] =& $plan['specialTotalPool'];
-            }
+            $participantRelieved = [];
+            $participantRelieved[] =& $context['section457BasePools'][$personId];
             self::attributeToEitherPool(
-                $context['section457CatchUpPools'][$ownerId],
-                $ageRelieved,
-                $unsupportedAge,
-                "existing-age-catch-up:{$plan['key']}",
+                $context['section457SpecialCatchUpPools'][$personId],
+                $participantRelieved,
+                $participantSpecial,
+                "existing-special-catch-up:{$personId}",
             );
-            unset($plan, $ownerRelieved, $planRelieved, $ageRelieved);
+            self::attributeToEitherPool(
+                $context['section457CatchUpPools'][$personId],
+                $participantRelieved,
+                $participantAge,
+                "existing-age-catch-up:{$personId}",
+            );
+            unset($participantRelieved);
         }
     }
 

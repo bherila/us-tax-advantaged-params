@@ -1505,7 +1505,11 @@ Within a group:
   it widens the participant's basic limitation, the plan's basic ceiling and the
   combined ceiling of the method that does apply. An age-55 participant in the
   $8,000 age method with $10,000 recorded as special catch-up leaves an empty
-  sibling $14,500, not $24,500.
+  sibling $14,500, not $24,500. A catch-up under the right method is reserved
+  too, to the extent it sits above its own plan's allowance (§1.457-5(c)) or
+  above the participant's one aggregate catch-up amount (§1.457-5(a)–(b)): two
+  plans each holding $5,000 of age catch-up against one $8,000 leave $22,500 of
+  basic room, not $24,500.
 
 **Absent the key, one `AccountInput` is one eligible plan**, which is the older
 contract and remains the default: a host plan's `section457SpecialCatchUp` facts

@@ -188,6 +188,36 @@ for (const grouped of [true, false]) {
   }
 }
 
+// A supported label is still bounded. Age 56, two plans each recording 5,000
+// of age catch-up against the participant's one 8,000 (1.457-5(a),(b)): the
+// 2,000 overflow may be ordinary, so an empty plan's new ordinary room is
+// 24,500 - 2,000. And a 4,000 special catch-up under a plan providing
+// min(24,500, U = 3,000) = 3,000 leaves 1,000 that 1.457-5(c) recognises under
+// no reading, so the empty plan's room is 24,500 - 1,000.
+for (const reverse of [false, true]) {
+  const empty = record('empty', 'participant', 'overflow-empty', 400000);
+  const accounts = [0, 1].map((i) => {
+    const account = record(`age${i}`, 'participant', `overflow-${i}`, 400000);
+    account.existingContributions = { employeePreTaxCatchUp: 5000 };
+    return account;
+  });
+  const input = scenario(reverse ? [...accounts, empty] : [empty, ...accounts]);
+  input.persons[0].birthYear = 1970;
+  input.persons[0].priorYearFicaWagesByEmployer = { employer: 0 };
+  add(`participant catch-up overflow reserves basic room, reverse=${reverse}`, input, (result) => {
+    assert.equal(total(result), 10000 + 22500);
+  });
+
+  const emptySpecial = record('empty', 'participant', 'excess-empty', 400000);
+  const excess = record('excess', 'participant', 'excess', 400000);
+  excess.planRules.section457SpecialCatchUp = { eligible: true, unusedDeferralsFromPriorYears: 3000 };
+  excess.existingContributions = { special457CatchUp: 4000 };
+  add(`plan-allowance excess reserves basic room, reverse=${reverse}`,
+    scenario(reverse ? [excess, emptySpecial] : [emptySpecial, excess]), (result) => {
+      assert.equal(total(result), 4000 + 23500);
+    });
+}
+
 function phpResults(inputs) {
   const process = spawnSync('php', [new URL('./php-parity-runner.php', import.meta.url).pathname], {
     input: JSON.stringify(inputs), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,

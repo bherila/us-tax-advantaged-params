@@ -173,11 +173,16 @@ does not support may have been an ordinary deferral. That covers a label under
 the unselected method, a §457(b)(3) amount under a plan providing none, and an
 age 50 amount on a plan §414(v)(6)(A)(ii) does not reach. The possibly ordinary
 amount widens the participant's basic pool, the plan's basic pool, and the
-combined balance for the method that does apply. When contradictory plan facts
-leave existing special contributions partly or wholly outside a permitted
-special allowance, the possibly ordinary portion is treated the same way. The
-larger of the two figures is attributed once per plan. An IRC 414(v)(7)(A)
-amount is widened by its own attribution and is not counted twice. An account
+combined balance for the method that does apply. A supported label is still
+bounded twice. The first bound is the plan's own allowance under §1.457-5(c),
+taken at the smallest figure any reading of its records gives. The second is
+the participant's headroom, which §1.457-5(a) and (b) apply in aggregate.
+Anything above either bound may also have been ordinary. Each plan's basic
+pool is widened by its unsupported amount, its amount above its own allowance,
+and as much of the participant-wide overflow as that plan could hold. The
+participant's basic pool is widened once by the most that can be ordinary in
+any single completion. An IRC 414(v)(7)(A) amount is widened by its own
+attribution and is not counted twice. An account
 whose ordinary room either basic interval can change is indeterminate, whether
 the widened interval is the plan's or the participant's aggregate.
 Matching uncertainty IDs preserve its correlation with the special pools; the

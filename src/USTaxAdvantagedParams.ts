@@ -12082,6 +12082,8 @@ interface Section457PlanLimits {
   basic: Money;
   compensation: Money;
   special: Money;
+  /** IRC 414(v) capacity above the basic ceiling that some member can host. */
+  age: Money;
   specialTotal: Money;
   ageTotal: Money;
 }
@@ -12114,12 +12116,13 @@ function section457GuaranteedPlanLimits(
   for (const includibleCompensation of facts.compensationCandidates) {
     for (const special of facts.specialCandidates) {
       const reading: Section457PlanFacts = { ...facts, includibleCompensation, special };
-      const limits: Section457PlanLimits = { basic: 0, compensation: 0, special: 0, specialTotal: 0, ageTotal: 0 };
+      const limits: Section457PlanLimits = { basic: 0, compensation: 0, special: 0, age: 0, specialTotal: 0, ageTotal: 0 };
       for (const member of plan.members) {
         const ceiling = section457PlanCeilings(parameters, person, member, reading, statutoryBase, compensationFraction);
         limits.basic = Math.max(limits.basic, ceiling.basicPlanCeiling);
         limits.compensation = Math.max(limits.compensation, ceiling.includibleCompensation);
         limits.special = Math.max(limits.special, ceiling.specialAdditional);
+        limits.age = Math.max(limits.age, ceiling.ageAdditional);
         limits.specialTotal = Math.max(limits.specialTotal, ceiling.basicPlanCeiling + ceiling.specialAdditional);
         limits.ageTotal = Math.max(limits.ageTotal, ceiling.basicPlanCeiling + ceiling.ageAdditional);
       }
@@ -12127,6 +12130,7 @@ function section457GuaranteedPlanLimits(
         basic: Math.min(guaranteed.basic, limits.basic),
         compensation: Math.min(guaranteed.compensation, limits.compensation),
         special: Math.min(guaranteed.special, limits.special),
+        age: Math.min(guaranteed.age, limits.age),
         specialTotal: Math.min(guaranteed.specialTotal, limits.specialTotal),
         ageTotal: Math.min(guaranteed.ageTotal, limits.ageTotal),
       };
@@ -12843,64 +12847,96 @@ function resolveSection457CatchUpModes(
  *   a special catch-up on a record whose plan provision is not eligible;
  * - under the age method, an age catch-up on a record IRC 414(v)(6)(A)(ii) does
  *   not reach is.
- * A plan whose records contradict each other also carries the amount above the
- * smallest IRC 457(b)(3) capacity any reading gives it. The larger of the two
- * figures is attributed once; they describe the same dollars.
+ *
+ * A supported label is not a valid amount either. What remains can be a catch-up
+ * only up to two ceilings, and anything above either may have been ordinary:
+ * - the plan's own allowance, which 26 CFR 1.457-5(c) recognises "only to the
+ *   extent" an amount is made under that plan's provisions, taken at the smallest
+ *   figure any reading of its records gives (SECTION_457_SPECIAL_CATCH_UP_EXCEEDS_PLAN_AMOUNT);
+ * - the participant's headroom, which 1.457-5(a) and (b) apply on an aggregate
+ *   basis (SECTION_457_EXISTING_CATCH_UP_EXCEEDS_PARTICIPANT_LIMIT). Which plan's
+ *   dollars are the overflow is not settled, so each plan is charged as much of it
+ *   as it could hold, and the participant's pool the overflow once.
+ * The participant's pool therefore takes the most that can be ordinary in any
+ * one completion: every unsupported amount, every amount above its plan's
+ * allowance, and the participant-wide overflow of what is left.
  *
  * An IRC 414(v)(7)(A)-condemned pre-tax age catch-up is widened separately by
  * seedUnresolvedCatchUpAttribution and is not widened a second time here.
  */
 function seedUnsupportedSection457CatchUpAttribution(context: CalculationContext): void {
-  for (const plan of context.section457Plans.values()) {
-    const account = plan.members[0]!;
-    const facts = plan.facts.get(account.id)!;
-    if (plan.specialPool === undefined) continue;
-    const person = context.persons.get(account.ownerId)!;
-    const mode = context.section457CatchUpResolutions.get(account.ownerId)?.mode;
-    const participantBasePool = context.section457BasePools.get(account.ownerId);
-
-    let conflictedSpecial = 0;
-    if (facts.conflictingFields.length > 0 && facts.groupExistingSpecialCatchUp > 0) {
-      let leastSpecialCapacity = Infinity;
-      for (const includibleCompensation of facts.compensationCandidates) {
-        for (const special of facts.specialCandidates) {
-          const reading = section457PlanCeilings(
-            context.parameters, person, account, { ...facts, includibleCompensation, special },
-            context.parameters.section457b.baseDeferralLimit ?? 0,
-            context.parameters.section457b.includibleCompensationFraction ?? 0,
-          );
-          leastSpecialCapacity = Math.min(leastSpecialCapacity, reading.specialAdditional);
+  const statutoryBase = context.parameters.section457b.baseDeferralLimit;
+  const compensationFraction = context.parameters.section457b.includibleCompensationFraction;
+  if (statutoryBase === null || compensationFraction === null) return;
+  for (const person of context.persons.values()) {
+    const resolution = context.section457CatchUpResolutions.get(person.id);
+    if (resolution === undefined) continue;
+    const mode = resolution.mode;
+    const shares = [...context.section457Plans.values()]
+      .filter((plan) => plan.members[0]!.ownerId === person.id && plan.specialPool !== undefined)
+      .map((plan) => {
+        const allowance = section457GuaranteedPlanLimits(
+          context.parameters, person, plan, statutoryBase, compensationFraction,
+        );
+        let supportedSpecial = 0;
+        let unsupportedSpecial = 0;
+        let supportedAge = 0;
+        let unsupportedAge = 0;
+        for (const member of plan.members) {
+          const traits = ACCOUNT_TRAITS[member.type];
+          const existing = member.existingContributions;
+          const special = roundMoney(existing.special457CatchUp + existing.special457RothCatchUp);
+          const condemned = unresolvedExistingPreTaxCatchUp(context, member, traits)?.existing ?? 0;
+          const age = nonnegative(roundMoney(ageCatchUpDeferrals(existing) - condemned));
+          if (mode === "age" || mode === "none" || (mode === "special" && !plan.facts.get(member.id)!.special?.eligible)) {
+            unsupportedSpecial = roundMoney(unsupportedSpecial + special);
+          } else {
+            supportedSpecial = roundMoney(supportedSpecial + special);
+          }
+          if (mode === "special" || mode === "none"
+            || (mode === "age" && !(traits.governmental457 && traits.permitsAgeCatchUpByStatute))) {
+            unsupportedAge = roundMoney(unsupportedAge + age);
+          } else {
+            supportedAge = roundMoney(supportedAge + age);
+          }
         }
-      }
-      conflictedSpecial = nonnegative(roundMoney(facts.groupExistingSpecialCatchUp - leastSpecialCapacity));
-    }
-    let unsupportedSpecial = 0;
-    let unsupportedAge = 0;
-    for (const member of plan.members) {
-      const traits = ACCOUNT_TRAITS[member.type];
-      const existing = member.existingContributions;
-      const special = roundMoney(existing.special457CatchUp + existing.special457RothCatchUp);
-      if (mode === "age" || mode === "none" || (mode === "special" && !plan.facts.get(member.id)!.special?.eligible)) {
-        unsupportedSpecial = roundMoney(unsupportedSpecial + special);
-      }
-      if (mode === "special" || mode === "none"
-        || (mode === "age" && !(traits.governmental457 && traits.permitsAgeCatchUpByStatute))) {
-        const condemned = unresolvedExistingPreTaxCatchUp(context, member, traits)?.existing ?? 0;
-        unsupportedAge = roundMoney(unsupportedAge + nonnegative(roundMoney(ageCatchUpDeferrals(existing) - condemned)));
-      }
-    }
+        const specialAboveAllowance = nonnegative(roundMoney(supportedSpecial - allowance.special));
+        const ageAboveAllowance = mode === "age" ? nonnegative(roundMoney(supportedAge - allowance.age)) : 0;
+        return {
+          plan,
+          special: roundMoney(unsupportedSpecial + specialAboveAllowance),
+          age: roundMoney(unsupportedAge + ageAboveAllowance),
+          withinAllowance: mode === "special"
+            ? minMoney(supportedSpecial, allowance.special)
+            : mode === "age" ? minMoney(supportedAge, allowance.age) : 0,
+        };
+      });
+    if (shares.length === 0) continue;
+    const overflow = nonnegative(roundMoney(
+      shares.reduce((total, share) => total + share.withinAllowance, 0) - resolution.headroom,
+    ));
 
-    const possibleOrdinarySpecial = Math.max(conflictedSpecial, unsupportedSpecial);
-    const specialKey = `existing-special-catch-up:${plan.key}`;
-    // One group-level attribution, not one whole-group charge per record.
-    // Salary usage is invariant to this label.
-    attributeToEitherPool(context.section457SpecialCatchUpPools.get(account.ownerId),
-      [participantBasePool], possibleOrdinarySpecial, specialKey);
-    attributeToEitherPool(plan.specialPool,
-      [plan.basePool, mode === "age" ? plan.ageTotalPool : undefined], possibleOrdinarySpecial, specialKey);
-    attributeToEitherPool(context.section457CatchUpPools.get(account.ownerId),
-      [participantBasePool, plan.basePool, mode === "special" ? plan.specialTotalPool : undefined],
-      unsupportedAge, `existing-age-catch-up:${plan.key}`);
+    let participantSpecial = mode === "special" ? overflow : 0;
+    let participantAge = mode === "age" ? overflow : 0;
+    for (const share of shares) {
+      const { plan } = share;
+      const planOverflow = minMoney(share.withinAllowance, overflow);
+      participantSpecial = roundMoney(participantSpecial + share.special);
+      participantAge = roundMoney(participantAge + share.age);
+      // One group-level attribution, not one whole-group charge per record.
+      // Salary usage is invariant to this label.
+      attributeToEitherPool(plan.specialPool,
+        [plan.basePool, mode === "age" ? plan.ageTotalPool : undefined],
+        roundMoney(share.special + (mode === "special" ? planOverflow : 0)), `existing-special-catch-up:${plan.key}`);
+      attributeToEitherPool(undefined,
+        [plan.basePool, mode === "special" ? plan.specialTotalPool : undefined],
+        roundMoney(share.age + (mode === "age" ? planOverflow : 0)), `existing-age-catch-up:${plan.key}`);
+    }
+    const participantBasePool = context.section457BasePools.get(person.id);
+    attributeToEitherPool(context.section457SpecialCatchUpPools.get(person.id),
+      [participantBasePool], participantSpecial, `existing-special-catch-up:${person.id}`);
+    attributeToEitherPool(context.section457CatchUpPools.get(person.id),
+      [participantBasePool], participantAge, `existing-age-catch-up:${person.id}`);
   }
 }
 
