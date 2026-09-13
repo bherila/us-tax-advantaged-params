@@ -10,10 +10,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const vectors = JSON.parse(
   await readFile(join(root, "data/conformance-vectors.json"), "utf8"),
 ).vectors;
-const inputs = vectors.map((vector) => vector.input);
+const inputs = vectors.map((vector) => vector.operation === "payrollTax" ? { __operation: "payrollTax", input: vector.input } : vector.input);
 const tsResults = inputs.map((input) => {
   try {
-    return USTaxAdvantagedParams.calculate(input);
+    return input.__operation === "payrollTax" ? USTaxAdvantagedParams.calculatePayrollTax(input.input) : USTaxAdvantagedParams.calculate(input);
   } catch (error) {
     if (error instanceof Error && typeof error.code === "string") {
       return { __error: { code: error.code, message: error.message } };

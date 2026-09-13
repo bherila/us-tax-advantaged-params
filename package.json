@@ -21,13 +21,15 @@
     "./data/retirement-parameters.json": "./data/retirement-parameters.json",
     "./data/hsa-parameters.json": "./data/hsa-parameters.json",
     "./data/fsa-parameters.json": "./data/fsa-parameters.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./data/payroll-tax-parameters.json": "./data/payroll-tax-parameters.json"
   },
   "files": [
     "dist",
     "data/retirement-parameters.json",
     "data/hsa-parameters.json",
     "data/fsa-parameters.json",
+    "data/payroll-tax-parameters.json",
     "README.md",
     "LICENSE",
     "SOURCES.md"

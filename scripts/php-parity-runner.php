@@ -24,7 +24,7 @@ try {
         }
         /** @var array<string,mixed> $input */
         try {
-            $results[] = USTaxAdvantagedParams::calculate($input);
+            $results[] = (($input['__operation'] ?? null) === 'payrollTax' ? USTaxAdvantagedParams::calculatePayrollTax($input['input']) : USTaxAdvantagedParams::calculate($input));
         } catch (\USTaxAdvantagedParams\ParameterException $error) {
             $results[] = ['__error' => ['code' => $error->errorCode, 'message' => $error->getMessage()]];
         }

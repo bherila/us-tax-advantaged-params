@@ -329,3 +329,47 @@ operands are annual scalars; FSA interaction facts are annual diagnostics rather
 than monthly eligibility overrides. Any future month-dependent operand must join
 the equivalence-class key. A missing capped-year deductible is continuous and
 therefore remains indeterminate instead of being approximated by a finite sample.
+
+## Payroll wage measures and tax effects
+
+The payroll layer is opt-in and consumes its own current-year facts. A
+`PayrollPersonInput` supplies ordinary §1402 earnings before paragraph (a)(12)
+and uncapped Social Security/Medicare wages for each employer. Neither W-2
+compensation nor the prior-year §414(v)(7) FICA input substitutes for those facts.
+One person is required per individual/separate return and two per joint return.
+Duplicate IDs are rejected; an explicit empty wage collection establishes zero.
+
+The standalone calculation has an independent 1991–2026 evidence table and
+returns unknown for missing rows, even where the retirement engine supports an
+earlier year. A null Medicare base *inside a known row* means uncapped. Published
+percent units are retained in data. The net-earnings factor and MFS threshold are
+derived, not transcribed constants. Holiday-specific rate bases and deduction
+fractions are explicit data, so reduced 2011–2012 rates cannot accidentally change
+the §1402(a)(12) adjustment or produce an ordinary half-tax deduction.
+
+Allocation order is wages first, then ordinary self-employment earnings, using
+separate OASDI/HI bases. OASDI bases belong to people for employee liability and
+to employer/person pairs for employer tax. Additional Medicare liability belongs
+to the return; withholding belongs to employer/person pairs. No shared employer
+base is pooled across spouses. Negative SE earnings cannot offset the other
+spouse's positive earnings. Each person's adjusted SE earnings and component
+taxes are rounded to cents before return totals; deduction components exclude
+the additional tax. Nonfinite totals are rejected rather than serialized as null.
+
+Scenario integration recomputes before/after taxes after reducing the matching
+wage records by annual `ficaWageReduction`. It never infers a wage record, subtracts
+from a prior-year record, or substitutes a generic rate times the exclusion.
+The optional aggregate `federalTaxEffects` combines the existing account and
+conversion classifications, with payroll results under `payrollTax`. Its savings
+remain unavailable if a necessary wage exclusion is unresolved or cannot be
+matched in full. The SE-tax deduction is reported separately; feeding it into
+retirement compensation remains the caller's job, avoiding an implicit circular
+calculation. Omitted payroll input leaves all prior serialized results unchanged.
+
+Scenario payroll membership uses normalized person roles, including positional
+defaults: exactly one taxpayer, plus exactly one spouse for MFJ. Its wage
+exclusion pass considers only those return members. Filing-status assumptions
+propagate through before, after, and aggregate payroll status. An indeterminate
+HSA blocks payroll only when its existing employer/cafeteria contributions or
+expected employer contribution can produce a nonzero exclusion; coverage
+uncertainty alone cannot change a known-zero wage effect.

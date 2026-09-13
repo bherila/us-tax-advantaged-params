@@ -469,3 +469,38 @@ salary usage for this check.
 Primary text: [IRC §414](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section414&num=0&edition=prelim),
 [IRC §457](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section457&num=0&edition=prelim),
 and [IRC §415](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section415&num=0&edition=prelim).
+
+## Ordinary FICA and SECA parameters (1991–2026)
+
+`data/payroll-tax-parameters.json` is backed by `evidence/payroll-tax/` (684 scalar
+comparisons). The corpus contains the actual primary documents, quoted narrative
+transcriptions, and SHA-256 digests. Its README describes the annual source map.
+
+- IRS Circular E, [1991](https://www.irs.gov/pub/irs-prior/p15--1991.pdf),
+  [1992](https://www.irs.gov/pub/irs-prior/p15--1992.pdf),
+  [1993](https://www.irs.gov/pub/irs-prior/p15--1993.pdf), and
+  [1994](https://www.irs.gov/pub/irs-prior/p15--1994.pdf): OASDI bases and the distinct
+  HI bases $125,000/$130,200/$135,000, followed by repeal of the HI cap in 1994.
+- Annual SSA Federal Register determinations supply later OASDI bases. The 1995
+  and 2014 bases are explicitly stated as current-year figures in the following
+  determination. Each other annual value is read from its determination's prose.
+  The December 15, 2017 correction (82 FR 59937) supersedes the initial 2018
+  $128,700 base with $128,400; both source documents are retained.
+  The 2024–2026 documents already in `retirement-limits` are linked using the
+  established `LINKED, not committed here:` convention, never duplicated.
+- [26 USC §3101](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3101&num=0&edition=prelim),
+  §3111, §3121, §1401, §1402, §164(f), and §3102(f): employee/employer/SECA rates,
+  wage-first coordination, minimum earnings, deduction, and the separate
+  Additional Medicare liability and withholding rules. Snapshots are in the corpus.
+- [Pub. L. 111-312 §601](https://www.govinfo.gov/content/pkg/PLAW-111publ312/pdf/PLAW-111publ312.pdf)
+  and [Pub. L. 112-96 §1001](https://www.govinfo.gov/content/pkg/PLAW-112publ96/pdf/PLAW-112publ96.pdf):
+  the 2011–2012 holiday, including 4.2% employee OASDI, 10.4% SECA OASDI, the
+  **unreduced** rate for §1402(a)(12), and the **59.6%** OASDI portion of the
+  §164(f) deduction. IRS Schedule SE for both years corroborates the calculation.
+
+The 0.9235 net-earnings factor is derived as `1 - (12.4 + 2.9) / 200`; the
+$125,000 MFS threshold is derived as half the $250,000 joint threshold. Neither
+is presented as a verbatim statutory figure. §1401(b)(2)(B)'s enacted cross-reference
+to §3121(b)(2) is a scrivener's error; the Additional Medicare wage threshold is
+§3101(b)(2). The data notes retain that distinction. Pre-1991 credits, special
+SECA methods, §86, IRMAA, NIIT, and benefit calculations are outside this tranche.
