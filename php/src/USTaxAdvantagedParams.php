@@ -10779,7 +10779,7 @@ final class Engine
         );
         if (
             count($facts['memberIds']) > 1
-            && $accountExistingRegularDeferrals > 0.0
+            && ($accountExistingRegularDeferrals > 0.0 || ($specialMethod && $accountExistingSpecialCatchUp > 0.0))
             && $existingAgainstPlanCeiling > $applicablePlanCeiling
         ) {
             $diagnostics[] = self::diagnostic(
@@ -12951,6 +12951,12 @@ final class Engine
                 'limit' => max(array_map(static fn (array $ceiling): float => $ceiling['basicPlanCeiling'] + $ceiling['specialAdditional'], $plan['ceilings'])),
                 'usage' => self::settled(0.0),
             ];
+            $plan['ageTotalPool'] = [
+                'id' => "457b-plan-age-total:{$key}",
+                'legalLimit' => '26 CFR 1.457-4(c)(2) combined basic and age plan ceiling',
+                'limit' => max(array_map(static fn (array $ceiling): float => $ceiling['basicPlanCeiling'] + $ceiling['ageAdditional'], $plan['ceilings'])),
+                'usage' => self::settled(0.0),
+            ];
             unset($plan);
         }
         return $keys;
@@ -12973,6 +12979,7 @@ final class Engine
         if (isset($plan['compensationPool'])) self::chargePool($plan['compensationPool'], $salary);
         if (isset($plan['specialPool'])) self::chargePool($plan['specialPool'], $special);
         if (isset($plan['specialTotalPool'])) self::chargePool($plan['specialTotalPool'], self::roundMoney($base + $special));
+        if (isset($plan['ageTotalPool'])) self::chargePool($plan['ageTotalPool'], self::roundMoney($base + self::ageCatchUps($components)));
     }
 
     private static function section457SalaryDeferrals(array $components): float
@@ -21605,10 +21612,13 @@ final class Engine
             );
             self::reportPoolWithoutConsuming($context['section457Plans'][$planPoolKey]['basePool'], $sharedLimits);
         }
+        $planTotalPoolName = $resolution['mode'] === 'special' ? 'specialTotalPool'
+            : ($resolution['mode'] === 'age' ? 'ageTotalPool' : null);
         $employerDesired = self::minMoney(
             self::nonnegative($expectedEmployer - $existingEmployer),
             self::nonnegative($appliedHostBaseLimit - $existingRegular),
             $planBaseRemaining,
+            $planTotalPoolName === null ? null : (self::poolRemainingInterval($context['section457Plans'][$planPoolKey][$planTotalPoolName])['minimum'] ?? null),
         );
         // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
         // contributions to the participant's *other* account under the plan, and
@@ -21642,6 +21652,7 @@ final class Engine
             isset($context['section457Plans'][$planPoolKey]['compensationPool'])
                 ? (self::poolRemainingInterval($context['section457Plans'][$planPoolKey]['compensationPool'])['minimum'] ?? null)
                 : null,
+            $planTotalPoolName === null ? null : (self::poolRemainingInterval($context['section457Plans'][$planPoolKey][$planTotalPoolName])['minimum'] ?? null),
         );
         $regularAdded = self::takeAcrossPools(
             $context,
@@ -21760,6 +21771,7 @@ final class Engine
             ? self::minMoney(
                 $compensationRemaining,
                 $planSpecialRemaining,
+                $planTotalPoolName === null ? null : (self::poolRemainingInterval($context['section457Plans'][$planPoolKey][$planTotalPoolName])['minimum'] ?? null),
                 $hasPlesaPool ? self::poolRemaining($context['plesaPools'][$account['id']]) : INF,
                 $poolCatchUpPossible,
             )

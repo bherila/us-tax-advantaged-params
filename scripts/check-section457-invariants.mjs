@@ -123,6 +123,38 @@ for (const count of [1, 2, 3]) {
   });
 }
 
+// The combined ceiling must bind every draw path, including existing amounts
+// carrying invalid component labels. Partition and order cannot restore room.
+for (const method of ['special', 'age']) {
+  for (const count of [1, 2, 3]) {
+    for (const reverse of [false, true]) {
+      const special = method === 'special';
+      const deposits = Array.from({ length: count }, (_, i) => {
+        const account = record(`existing${i}`, 'participant', 'combined-review', 100000);
+        account.existingContributions = special
+          ? { special457CatchUp: 6000 / count }
+          : { employerPreTax: i === 0 ? 25000 - Math.floor(25000 / count) * (count - 1) : Math.floor(25000 / count) };
+        return account;
+      });
+      const empty = [record('draw0', 'participant', 'combined-review', 100000),
+        record('draw1', 'participant', 'combined-review', 100000)];
+      const accounts = reverse ? [...deposits, ...empty] : [...empty, ...deposits];
+      if (special) for (const account of accounts) {
+        account.planRules.section457SpecialCatchUp = { eligible: true, unusedDeferralsFromPriorYears: 5000 };
+      }
+      const input = scenario(accounts);
+      input.persons[0].birthYear = special ? 1990 : 1971;
+      input.persons[0].priorYearFicaWagesByEmployer = { employer: 0 };
+      add(`${method} total ceiling with ${count} deposit records, reverse=${reverse}`, input, (result) => {
+        assert.equal(total(result), special ? 29500 : 32500);
+        // No record may newly allocate beyond the one shared total, including
+        // when prior allocations are replayed as existing contributions below.
+        if (!reverse) assert.equal(amount(result, 'draw0', special ? 'employeePreTaxDeferral' : 'employeePreTaxCatchUp'), special ? 23500 : 7500);
+      });
+    }
+  }
+}
+
 function phpResults(inputs) {
   const process = spawnSync('php', [new URL('./php-parity-runner.php', import.meta.url).pathname], {
     input: JSON.stringify(inputs), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,

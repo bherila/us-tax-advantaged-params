@@ -28937,6 +28937,291 @@
       "expectError": {
         "code": "DUPLICATE_PERSON_ROLE"
       }
+    },
+    {
+      "name": "457 review: special overage bounds employee base draw",
+      "description": "26 CFR 1.457-4(c)(3)(i)-(ii) limits this synthetic plan to min(2 × 24500, 24500 + 5000) = 29500. Existing special contributions of 6000 exceed their 5000 allowance but must still consume combined capacity. The empty sibling can add at most 29500 - 6000 = 23500 ordinary deferrals, for a total of 29500. The existing special record retains its invalid-classification status; supplied components are not reclassified. Employer and employee ordinary draws face the same combined plan ceiling.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "empty",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "special",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 6000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 23500,
+        "accounts.1.status": "indeterminate",
+        "totals.maximumAnnualContributionBasedOnInputs": 29500
+      }
+    },
+    {
+      "name": "457 review: special overage bounds employer base draw",
+      "description": "26 CFR 1.457-4(c)(3)(i)-(ii) limits this synthetic plan to min(2 × 24500, 24500 + 5000) = 29500. Existing special contributions of 6000 exceed their 5000 allowance but must still consume combined capacity. The empty sibling can add at most 29500 - 6000 = 23500 ordinary deferrals, for a total of 29500. The existing special record retains its invalid-classification status; supplied components are not reclassified. Employer and employee ordinary draws face the same combined plan ceiling.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "empty",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              },
+              "expectedEmployerContribution": 24500
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "special",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 6000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employerPreTax": 23500,
+        "accounts.1.status": "indeterminate",
+        "totals.maximumAnnualContributionBasedOnInputs": 29500
+      }
+    },
+    {
+      "name": "457 review: ordinary overage bounds age catch-up with 0 existing",
+      "description": "26 CFR 1.457-4(c)(2) and IRC 414(v)(2) give this age-55 participant a 24500 + 8000 = 32500 plan ceiling in 2026 (Notice 2025-67). Synthetic ordinary employer deposits of 25000 and existing age catch-up of 0 consume that total, leaving 7500 for the empty sibling. Nonelective deposits reduce no salary, but cannot leave the entire incremental age allowance available after exceeding the basic portion. Total annual contributions must be 32500.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1971,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "empty",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "ordinary",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000
+            },
+            "existingContributions": {
+              "employerPreTax": 25000,
+              "employeePreTaxCatchUp": 0
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 7500,
+        "totals.maximumAnnualContributionBasedOnInputs": 32500
+      }
+    },
+    {
+      "name": "457 review: ordinary overage bounds age catch-up with 2000 existing",
+      "description": "26 CFR 1.457-4(c)(2) and IRC 414(v)(2) give this age-55 participant a 24500 + 8000 = 32500 plan ceiling in 2026 (Notice 2025-67). Synthetic ordinary employer deposits of 25000 and existing age catch-up of 2000 consume that total, leaving 5500 for the empty sibling. Nonelective deposits reduce no salary, but cannot leave the entire incremental age allowance available after exceeding the basic portion. Total annual contributions must be 32500.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1971,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "empty",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000
+            },
+            "existingContributions": {}
+          },
+          {
+            "id": "ordinary",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 100000
+            },
+            "existingContributions": {
+              "employerPreTax": 25000,
+              "employeePreTaxCatchUp": 2000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 5500,
+        "totals.maximumAnnualContributionBasedOnInputs": 32500
+      }
+    },
+    {
+      "name": "457 review: special-only member shares combined excess diagnostic",
+      "description": "26 CFR 1.457-4(c)(3)(i) sets the synthetic plan ceiling at min(2 × 24500, 20000 + 5000) = 25000. Existing ordinary deposits of 21000 plus special deposits of 4500 total 25500, exceeding the plan ceiling by 500. Both contributing records participate in that excess, including the special-only record whose 4500 is within the incremental allowance. Both must be indeterminate, retain the supplied total 25500, and allocate no more.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 0
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "ordinary",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "employerPreTax": 21000
+            }
+          },
+          {
+            "id": "special",
+            "ownerId": "t",
+            "employerId": "e",
+            "type": "governmental_457b",
+            "planRules": {
+              "section457PlanGroupId": "g",
+              "includibleCompensation457": 20000,
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 5000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 4500
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.1.status": "indeterminate",
+        "totals.maximumAnnualContributionBasedOnInputs": 25500
+      },
+      "expectDiagnosticCodes": [
+        "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING"
+      ]
     }
   ]
 }

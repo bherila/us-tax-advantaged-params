@@ -12002,6 +12002,8 @@ interface Section457Plan {
   specialPool?: LimitPool;
   /** Full basic-plus-special ceiling, including ordinary overages. */
   specialTotalPool?: LimitPool;
+  /** Full basic-plus-age ceiling, including ordinary overages. */
+  ageTotalPool?: LimitPool;
 }
 
 function buildSection457Plans(
@@ -12070,6 +12072,12 @@ function buildSection457Plans(
       limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling + value.specialAdditional), 0),
       usage: settled(0),
     };
+    plan.ageTotalPool = {
+      id: `457b-plan-age-total:${plan.key}`,
+      legalLimit: "26 CFR 1.457-4(c)(2) combined basic and age plan ceiling",
+      limit: ceilings.reduce((maximum, value) => Math.max(maximum, value.basicPlanCeiling + value.ageAdditional), 0),
+      usage: settled(0),
+    };
   }
   return [...plans.values()];
 }
@@ -12085,6 +12093,7 @@ function chargeSection457Plan(plan: Section457Plan, components: ContributionComp
   if (plan.compensationPool) chargePool(plan.compensationPool, salary);
   if (plan.specialPool) chargePool(plan.specialPool, special);
   if (plan.specialTotalPool) chargePool(plan.specialTotalPool, roundMoney(base + special));
+  if (plan.ageTotalPool) chargePool(plan.ageTotalPool, roundMoney(base + ageCatchUpDeferrals(components)));
 }
 
 function section457SalaryDeferrals(components: ContributionComponents): Money {
@@ -19021,7 +19030,7 @@ function appendSection457ExistingCatchUpDiagnostics(
   );
   if (
     facts.memberIds.length > 1 &&
-    accountExistingRegularDeferrals > 0 &&
+    (accountExistingRegularDeferrals > 0 || (specialMethod && accountExistingSpecialCatchUp > 0)) &&
     existingAgainstPlanCeiling > applicablePlanCeiling
   ) {
     diagnostics.push(
@@ -20107,6 +20116,8 @@ function allocateSection457(
   const planBasePool = plan.basePool;
   const planCompensationPool = plan.compensationPool;
   const planSpecialPool = plan.specialPool;
+  const planTotalPool = resolution.mode === "special" ? plan.specialTotalPool
+    : resolution.mode === "age" ? plan.ageTotalPool : undefined;
   const ceilings = plan.ceilings.get(account.id)!;
   const accountExistingAgeCatchUp = ageCatchUpDeferrals(account.existingContributions);
   const accountExistingSpecialCatchUp = roundMoney(
@@ -20289,6 +20300,7 @@ function allocateSection457(
     nonnegative(expectedEmployer - existingEmployer),
     nonnegative(appliedHostBaseLimit - existingRegularAccountAmount),
     planBaseRemaining,
+    planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
   );
   // IRC 402A(e)(6)(A) directs any match earned on emergency-savings
   // contributions to the participant's *other* account under the plan, and
@@ -20311,6 +20323,7 @@ function allocateSection457(
     nonnegative(appliedHostBaseLimit - regularBeforeEmployee),
     planBasePool === undefined ? null : poolRemainingInterval(planBasePool)?.minimum ?? null,
     planCompensationPool === undefined ? null : poolRemainingInterval(planCompensationPool)?.minimum ?? null,
+    planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
   );
   const regularAdded = takeAcrossPools(
     plesaPool ? [basePool, plesaPool] : [basePool],
@@ -20431,6 +20444,7 @@ function allocateSection457(
     ? minMoney(
         compensationRemaining,
         planSpecialRemaining,
+        planTotalPool === undefined ? null : poolRemainingInterval(planTotalPool)?.minimum,
         plesaPool ? poolRemaining(plesaPool) : Infinity,
         poolCatchUpPossible,
       )

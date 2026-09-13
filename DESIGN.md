@@ -139,7 +139,7 @@ differ legitimately, since one plan may hold both a pre-tax and a designated Rot
 
 The internal `Section457Plan` state (a native associative structure in PHP) owns
 its member records, resolved fact views, cached ceilings, catch-up capacities,
-and all four resource balances. It is constructed once before participant-wide
+and all five resource balances. It is constructed once before participant-wide
 method selection. Account lookup points to that plan; it does not own another
 copy of its balances. Contradictory inputs retain per-member fact and ceiling
 views for the existing diagnostics, within the same plan state.
@@ -154,6 +154,14 @@ ceiling. True combined excess and invalid catch-up provenance still block furthe
 catch-up. This must hold even when every member already contains deposits.
 Ordinary employee draws also consult the salary
 balance before allocation, including salary already deferred as a special catch-up.
+Ordinary employee and employer draws also read the combined ceiling for the
+selected method. A fifth balance tracks basic-plus-age contributions, so an
+ordinary overage consumes age capacity just as it consumes special capacity.
+Both combined balances are charged by the same contribution writer for existing
+and new deposits; component attribution does not restore combined capacity.
+A combined special-period excess affects every record with ordinary or special
+contributions, including records containing only a special contribution.
+
 
 When contradictory plan facts leave existing special contributions partly or
 wholly outside a permitted special allowance, the maximum possibly ordinary
