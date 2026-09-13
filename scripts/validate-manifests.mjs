@@ -63,7 +63,7 @@ if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USTaxAdvantaged
 if (packageJson.exports?.["./data/retirement-parameters.json"] !== "./data/retirement-parameters.json") {
   fail("data file export target is incorrect");
 }
-for (const dataFile of ["hsa-parameters.json", "fsa-parameters.json"]) {
+for (const dataFile of ["hsa-parameters.json", "fsa-parameters.json", "payroll-tax-parameters.json"]) {
   if (packageJson.exports?.[`./data/${dataFile}`] !== `./data/${dataFile}`) {
     fail(`data/${dataFile} export target is incorrect`);
   }
@@ -136,6 +136,7 @@ const requiredSourceFiles = [
   "data/retirement-parameters.json",
   "data/hsa-parameters.json",
   "data/fsa-parameters.json",
+  "data/payroll-tax-parameters.json",
   "data/conformance-vectors.json",
   "scripts/generate.mjs",
   "scripts/validate-data.mjs",

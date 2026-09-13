@@ -399,7 +399,28 @@ function randomPerson(id, role, taxYear) {
   return person;
 }
 
+function randomPayrollPersons(joint = false) {
+  return Array.from({ length: joint ? 2 : 1 }, (_, i) => ({
+    id: `p${i}`, netEarningsBeforeAdjustment: chance(0.3) ? pick([-1000, 0, 433.12, 433.13, 434, 10000, 300000]) : money(),
+    wages: Array.from({ length: integer(0, 3) }, (_, j) => ({ employerId: `e${j}`,
+      socialSecurityWages: pick([0, 53400, 110100, 184500, money()]),
+      medicareWages: pick([0, 125000, 130200, 135000, 200000, 250000, money()]),
+    })),
+  }));
+}
 function randomScenario() {
+  if (chance(0.25)) {
+    const filingStatus = pick(["single", "MFJ", "MFS", "HOH", "QSS", "M"]);
+    const persons = randomPayrollPersons(filingStatus === "MFJ" || filingStatus === "M");
+    if (chance(0.1)) persons[0].netEarningsBeforeAdjustment = junk();
+    if (chance(0.1)) persons[0].wages = junk();
+    if (chance(0.05)) persons[0].id = pick(["é", "税", "😀", "\u00a0", "\u0085", "\u0000"]);
+    if (chance(0.05)) persons[0].netEarningsBeforeAdjustment = pick([1e100, 1e308, -1e308]);
+    const input = { taxYear: pick([1990, 1991, 1992, 1993, 1994, 2010, 2011, 2012, 2013, 2026, 2027]), filingStatus, persons };
+    if (chance(0.03)) input.taxYear = junk();
+    if (chance(0.03)) delete input.filingStatus;
+    return { __operation: "payrollTax", input };
+  }
   const hsaHeavy = chance(0.35);
   const fsaHeavy = chance(0.3);
   // A pension-linked emergency savings account exists only for plan years
@@ -788,6 +809,10 @@ function randomScenario() {
   }
 
   const scenario = { taxYear, filingStatus, persons, accounts };
+  if (chance(0.3)) scenario.payrollTax = { persons: persons.map((person) => ({
+    id: person.id, wages: [{ employerId: "e0", socialSecurityWages: money(), medicareWages: money() }],
+    netEarningsBeforeAdjustment: money(),
+  })) };
 
   // The IRC 223(b)(5)(B)(ii) division. Generated more often on an HSA-heavy
   // scenario, where it actually reaches a result, but not only there: on a
@@ -829,7 +854,7 @@ function randomScenario() {
 
 function runTypeScript(input) {
   try {
-    return USTaxAdvantagedParams.calculate(input);
+    return input.__operation === "payrollTax" ? USTaxAdvantagedParams.calculatePayrollTax(input.input) : USTaxAdvantagedParams.calculate(input);
   } catch (error) {
     if (error instanceof Error && typeof error.code === "string") {
       return { __error: { code: error.code, message: error.message } };

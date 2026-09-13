@@ -12,7 +12,7 @@ The repository contains two native implementations with the same behavior:
 
 Annual legal parameters are maintained once in `data/retirement-parameters.json` and `data/hsa-parameters.json`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
-> **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, calculate self-employment tax, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
+> **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, classify self-employment earnings or apply optional SECA methods, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
 ## Supported tax years
 
@@ -1549,11 +1549,94 @@ The package does not calculate:
 - Plan eligibility, vesting, loans, or distributions generally.
 - ADP, ACP, coverage, top-heavy, or other nondiscrimination testing.
 - Employer controlled-group ownership from raw entity records.
-- Full payroll, self-employment tax, or tax-return MAGI.
+- Full payroll processing, special SECA methods, or tax-return MAGI. Ordinary FICA/SECA on explicit facts is supported below.
 - The pre-2002 §403(b)(2) maximum exclusion allowance and the §415(c)(4) alternative elections. Both are diagnosed and the affected years return `indeterminate`; neither is computed.
 - Defined-benefit or cash-balance actuarial funding, and the participant-specific §415(b)(2) and §415(b)(5) adjustments to the annual benefit limit. The flat §415(b)(1)(A) figure itself *is* reported.
 - Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. All three §402A(f)(1) hosts are modelled, the governmental §457(b) one as its own account type. §402A(e)(9), which orders excess deferrals distributed under §402(g)(2)(A) out of the emergency account first, is not implemented at all — no excess-deferral ordering is — and its reach is in any case unsettled for a §457(b)-hosted account: it speaks of "any pension-linked emergency savings account of the participant", while a §457(b) deferral is not among the elective deferrals §402(g)(3) enumerates and so can produce no §402(g)(2)(A) excess of its own. No regulation or notice addresses the cross-plan case.
 - Investment returns, retirement sufficiency, or withdrawal planning.
+
+## Payroll-tax effects (1991–2026)
+
+`calculatePayrollTax` calculates ordinary FICA and SECA from explicit annual facts.
+`payrollParametersForYear(year)` returns a detached published row, or `null` outside
+1991–2026. The standalone calculation returns `indeterminate` with a diagnostic
+for those missing years. It never projects a wage base.
+
+```ts
+const payroll = USTaxAdvantagedParams.calculatePayrollTax({
+  taxYear: 2026,
+  filingStatus: "single",
+  persons: [{
+    id: "taxpayer",
+    wages: [{ employerId: "employer", socialSecurityWages: 10000, medicareWages: 10000 }],
+    netEarningsBeforeAdjustment: 0,
+  }],
+});
+// payroll.totals.employeeTotalLiability === 765
+// payroll.totals.employerTotal === 765
+```
+
+PHP exposes the same static methods and array keys. Supply one person for an
+individual or separate return and both spouses for a joint return, including a
+spouse with no earnings. IDs must be unique. Wage records are annual totals by
+employer, with one record per employer for each person. Supply **uncapped taxable
+wages**, with separate Social Security and Medicare measures; a capped W-2 box 3
+amount cannot establish the remaining wage base. `wages: []` explicitly states no
+wages (`{}` is also accepted as an empty collection for PHP array compatibility).
+Missing wage measures, negative wages, and duplicate employer records are errors.
+
+`netEarningsBeforeAdjustment` is the caller-established ordinary IRC §1402 earnings
+amount before §1402(a)(12), after applicable business adjustments. It defaults to
+zero; losses produce no SECA. The engine derives the adjustment factor from the
+encoded rates, applies the $400 minimum, and computes the §164(f) deduction.
+It does not infer this input from `selfEmploymentNetEarnings`, which serves the
+retirement contribution worksheet, or feed the resulting deduction back into
+that worksheet automatically. Optional farm/nonfarm methods, church employee
+rules, exempt employment, RRTA wages, and nonresident or other special regimes
+require caller classification and are outside this calculation.
+
+Employee OASDI liability uses a base per person; employer tax uses a base per
+employer and person. The employee result is net annual liability, including the
+effect of the excess multiple-employer Social Security tax credit, rather than a
+sum of paystub withholding. Medicare has a separate wage base in 1991–1993 and
+is uncapped from 1994. The 2011–2012 holiday reduces employee OASDI and SECA OASDI,
+keeps employer OASDI unchanged, preserves the unreduced net-earnings adjustment,
+and applies the special 59.6% Social Security SE-tax deduction fraction.
+
+Additional Medicare liability combines both spouses on a joint return and counts
+wages before self-employment earnings. `additionalMedicareWithholding` separately
+applies the flat $200,000 threshold to each employer/person wage record. Employer
+tax has no Additional Medicare component. The §164(f) deduction excludes the
+Additional Medicare tax. Amounts and intermediate earnings are rounded to cents;
+the output models annual liability, not individual payroll periods or tax-form
+whole-dollar rounding.
+
+To value account exclusions, add `payrollTax: { persons: [...] }` to a scenario,
+or call `.payrollTax(persons)` on its builder. Here the wage amounts must be
+**before every account exclusion modeled in that scenario**, including existing
+contributions represented by its annual account results. Person and employer IDs
+must match the accounts. The optional scenario-level
+`federalTaxEffects.payrollTax` contains `before`, `after`, and `savings` (before
+minus after) with employee, employer, SECA, withholding, and deduction components.
+A deduction change can be negative when a wage exclusion opens more SECA base.
+Scenario payroll persons must be exactly the normalized taxpayer (and spouse for
+MFJ). Substituted or missing return members throw
+`INVALID_PAYROLL_RETURN_PERSONS`; duplicate roles retain `DUPLICATE_PERSON_ROLE`. Account exclusions belonging to other people
+do not affect the filed return payroll calculation. The `M` alias retains
+`determinate_with_assumptions` in standalone and scenario payroll results.
+An HSA with unknown coverage does not block payroll when both its existing
+employer/cafeteria contributions and employer target are zero.
+Insufficient or unmatched wages and unresolved account exclusions withhold the
+savings result and explain why. Scenarios without payroll facts retain their
+existing output shape.
+
+For example, at $10,000 wages, a $1,000 health FSA salary reduction saves $76.50
+in employee FICA and $76.50 in employer FICA. A $1,000 traditional 401(k) deferral
+saves zero FICA. Both reduce W-2 box 1 by $1,000. Existing AGI-effect fields keep
+their established classification; payroll amounts are separate and must not be
+added indiscriminately to the income-tax fields. This API does not model income
+tax withholding schedules, §86 benefits taxation, IRMAA, NIIT, or benefit amounts.
+
 
 ## License
 

@@ -863,7 +863,93 @@ export interface RothConversionInput {
   sourceAccountId?: string;
 }
 
+/** Annual taxable wages before applying the modeled account exclusions, uncapped. */
+export interface PayrollWageInput {
+  employerId: string;
+  socialSecurityWages: Money;
+  medicareWages: Money;
+}
+export interface PayrollPersonInput {
+  id: string;
+  wages: PayrollWageInput[] | Record<string, never>;
+  /** Caller-established ordinary IRC 1402 earnings before paragraph (a)(12); losses are allowed. */
+  netEarningsBeforeAdjustment?: Money;
+}
+export interface PayrollCalculationInput {
+  taxYear: number;
+  filingStatus?: FilingStatus | string;
+  /** One person for a separate/individual return, two for a joint return. */
+  persons: PayrollPersonInput[];
+}
+export interface PayrollYearParameters {
+  taxYear: number;
+  contributionAndBenefitBase: Money;
+  /** Null means uncapped; an absent YEAR means unknown. */
+  hospitalInsuranceWageBase: Money | null;
+  oasdiRateEmployeePercent: number;
+  oasdiRateEmployerPercent: number;
+  hiRateEmployeePercent: number;
+  hiRateEmployerPercent: number;
+  secaOasdiRatePercent: number;
+  secaHiRatePercent: number;
+  netEarningsOasdiRateBasisPercent: number;
+  netEarningsHiRateBasisPercent: number;
+  netEarningsDeductionFraction: number;
+  selfEmploymentMinimumNetEarnings: Money;
+  secaOasdiDeductionFraction: number;
+  secaHiDeductionFraction: number;
+  additionalMedicareRatePercent: number | null;
+  additionalMedicareJointThreshold: Money | null;
+  additionalMedicareOtherThreshold: Money | null;
+  additionalMedicareSeparateThresholdFraction: number | null;
+  additionalMedicareWithholdingThreshold: Money | null;
+  source: string;
+}
+interface PayrollParameterData {
+  schemaVersion: number;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, PayrollYearParameters>;
+}
+export interface PayrollTaxAmounts {
+  employeeSocialSecurity: Money;
+  employeeMedicare: Money;
+  employerSocialSecurity: Money;
+  employerMedicare: Money;
+  selfEmploymentSocialSecurity: Money;
+  selfEmploymentMedicare: Money;
+  selfEmploymentTaxDeduction: Money;
+  additionalMedicareWageLiability: Money;
+  additionalMedicareSelfEmploymentLiability: Money;
+  additionalMedicareLiability: Money;
+  additionalMedicareWithholding: Money;
+  employeeTotalLiability: Money;
+  employerTotal: Money;
+  selfEmploymentTotalLiability: Money;
+}
+export interface PayrollTaxResult {
+  taxYear: number;
+  status: CalculationStatus;
+  parameters: PayrollYearParameters | null;
+  netEarningsFactor: number | null;
+  totals: PayrollTaxAmounts | null;
+  persons: Array<{ id: string; adjustedNetEarnings: Money; taxableSelfEmploymentEarnings: Money }>;
+  diagnostics: Diagnostic[];
+}
+export interface PayrollTaxEffects {
+  status: CalculationStatus;
+  before: PayrollTaxResult;
+  after: PayrollTaxResult | null;
+  /** Tax before exclusions minus tax after exclusions; deduction changes may be negative. */
+  savings: PayrollTaxAmounts | null;
+  diagnostics: Diagnostic[];
+}
+
 export interface ScenarioInput {
+  /** Opt-in current-year payroll facts, before modeled FICA exclusions. */
+  payrollTax?: { persons: PayrollPersonInput[] };
   taxYear: number;
   filingStatus: FilingStatus | string;
   persons: PersonInput[];
@@ -936,6 +1022,7 @@ export interface ContributionComponents {
 }
 
 export interface FederalTaxEffects {
+  payrollTax?: PayrollTaxEffects;
   federalAgiReduction: Money;
   federalAgiIncrease: Money;
   federalTaxableIncomeReduction: Money;
@@ -1064,6 +1151,8 @@ export interface ScenarioTotals {
 }
 
 export interface ScenarioResult {
+  /** Present only when payrollTax was requested. */
+  federalTaxEffects?: FederalTaxEffects;
   package: typeof PACKAGE_NAME;
   engineVersion: typeof ENGINE_VERSION;
   taxYear: number;
@@ -1298,6 +1387,1132 @@ interface FsaParameterData {
   sources: Array<Record<string, string>>;
   years: Record<string, FsaYearParameters>;
 }
+
+/* <generated-payroll-parameters> */
+const RAW_PAYROLL_PARAMETERS: PayrollParameterData = {
+  "schemaVersion": 1,
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1991,
+    "maximum": 2026
+  },
+  "historicalCoveragePolicy": {
+    "start": "1991 is the approved floor. Missing rows are unknown, never projected.",
+    "hospitalInsurance": "The HI base is separate in 1991-1993; null means uncapped from 1994, never unknown.",
+    "holiday": "Pub. L. 111-312 s.601, extended by Pub. L. 112-96 s.1001: employee OASDI 4.2 percent and SECA OASDI 10.4 percent in 2011-2012, employer unchanged. Section 1402(a)(12) uses unreduced rates; section 164(f) deducts 59.6 percent of the reduced OASDI tax plus half of HI.",
+    "derived": "Net earnings factor is 1 - deductionFraction*(OASDI rate basis + HI rate basis)/100. MFS Additional Medicare threshold is the joint threshold times the statutory one-half fraction. Neither derived figure is claimed as a verbatim statutory amount.",
+    "coordination": "IRC 1401(b)(2)(B) prints section 3121(b)(2); the enacted ACA has the same mistaken cross-reference. Its coordination is with Additional Medicare wage tax under 3101(b)(2)."
+  },
+  "sources": [
+    {
+      "id": "fr-95-26426",
+      "title": "fr-95-26426.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-1995-10-25/html/95-26426.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-96-27414",
+      "title": "fr-96-27414.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-1996-10-25/html/96-27414.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-97-28496",
+      "title": "fr-97-28496.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-1997-10-30/html/97-28496.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-98-28988",
+      "title": "fr-98-28988.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-1998-10-30/html/98-28988.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-99-27865",
+      "title": "fr-99-27865.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-1999-10-25/html/99-27865.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-00-27249",
+      "title": "fr-00-27249.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2000-10-24/html/00-27249.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-01-26911",
+      "title": "fr-01-26911.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2001-10-25/html/01-26911.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-02-27203",
+      "title": "fr-02-27203.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2002-10-25/html/02-27203.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-03-26642",
+      "title": "fr-03-26642.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2003-10-22/html/03-26642.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-04-23915",
+      "title": "fr-04-23915.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2004-10-26/html/04-23915.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-05-21272",
+      "title": "fr-05-21272.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2005-10-25/html/05-21272.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-E6-17939",
+      "title": "fr-E6-17939.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2006-10-26/html/E6-17939.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-E7-21070",
+      "title": "fr-E7-21070.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2007-10-25/html/E7-21070.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-E8-25905",
+      "title": "fr-E8-25905.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2008-10-30/html/E8-25905.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-E9-25930",
+      "title": "fr-E9-25930.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2009-10-28/html/E9-25930.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2010-26983",
+      "title": "fr-2010-26983.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2010-10-26/html/2010-26983.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2011-27496",
+      "title": "fr-2011-27496.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2011-10-25/html/2011-27496.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2012-26663",
+      "title": "fr-2012-26663.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2012-10-30/html/2012-26663.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2014-25802",
+      "title": "fr-2014-25802.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2014-10-29/html/2014-25802.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2015-27828",
+      "title": "fr-2015-27828.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2015-10-30/html/2015-27828.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2016-26026",
+      "title": "fr-2016-26026.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2016-10-27/html/2016-26026.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2017-23522",
+      "title": "fr-2017-23522.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2017-10-30/html/2017-23522.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2018-23193",
+      "title": "fr-2018-23193.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2018-10-24/html/2018-23193.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2019-22921",
+      "title": "fr-2019-22921.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2019-10-22/html/2019-22921.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2020-23442",
+      "title": "fr-2020-23442.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2020-10-22/html/2020-23442.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2021-23031",
+      "title": "fr-2021-23031.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2021-10-22/html/2021-23031.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2022-23073",
+      "title": "fr-2022-23073.txt",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2022-10-24/html/2022-23073.htm",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "p15--1991",
+      "title": "p15--1991.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/p15--1991.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "p15--1992",
+      "title": "p15--1992.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/p15--1992.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "p15--1993",
+      "title": "p15--1993.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/p15--1993.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "p15--1994",
+      "title": "p15--1994.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/p15--1994.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "f1040sse--2011",
+      "title": "f1040sse--2011.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/f1040sse--2011.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "f1040sse--2012",
+      "title": "f1040sse--2012.pdf",
+      "url": "https://www.irs.gov/pub/irs-prior/f1040sse--2012.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "usc-26-3101",
+      "title": "usc-26-3101.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3101&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-3111",
+      "title": "usc-26-3111.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3111&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-1401",
+      "title": "usc-26-1401.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section1401&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-1402",
+      "title": "usc-26-1402.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section1402&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-164",
+      "title": "usc-26-164.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section164&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-3102",
+      "title": "usc-26-3102.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3102&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "usc-26-3121",
+      "title": "usc-26-3121.html",
+      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3121&num=0&edition=prelim",
+      "authority": "U.S. House of Representatives"
+    },
+    {
+      "id": "pl-111publ312",
+      "title": "pl-111publ312.pdf",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-111publ312/pdf/PLAW-111publ312.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "pl-112publ96",
+      "title": "pl-112publ96.pdf",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-112publ96/pdf/PLAW-112publ96.pdf",
+      "authority": "U.S. Government Publishing Office"
+    },
+    {
+      "id": "fr-2023-23317",
+      "title": "SSA determination for 2024, linked from retirement-limits",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2023-10-23/html/2023-23317.htm",
+      "authority": "Social Security Administration"
+    },
+    {
+      "id": "fr-2024-24871",
+      "title": "SSA determination for 2025, linked from retirement-limits",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2024-10-25/html/2024-24871.htm",
+      "authority": "Social Security Administration"
+    },
+    {
+      "id": "fr-2025-19763",
+      "title": "SSA determination for 2026, linked from retirement-limits",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2025-11-03/html/2025-19763.htm",
+      "authority": "Social Security Administration"
+    },
+    {
+      "id": "fr-2017-27105",
+      "title": "SSA corrected 2018 cost-of-living determination",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2017-12-15/html/2017-27105.htm",
+      "authority": "Social Security Administration, 82 FR 59937, December 15, 2017"
+    }
+  ],
+  "years": {
+    "1991": {
+      "taxYear": 1991,
+      "contributionAndBenefitBase": 53400,
+      "hospitalInsuranceWageBase": 125000,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "p15--1991.pdf"
+    },
+    "1992": {
+      "taxYear": 1992,
+      "contributionAndBenefitBase": 55500,
+      "hospitalInsuranceWageBase": 130200,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "p15--1992.pdf"
+    },
+    "1993": {
+      "taxYear": 1993,
+      "contributionAndBenefitBase": 57600,
+      "hospitalInsuranceWageBase": 135000,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "p15--1993.pdf"
+    },
+    "1994": {
+      "taxYear": 1994,
+      "contributionAndBenefitBase": 60600,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "p15--1994.pdf"
+    },
+    "1995": {
+      "taxYear": 1995,
+      "contributionAndBenefitBase": 61200,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-95-26426.txt"
+    },
+    "1996": {
+      "taxYear": 1996,
+      "contributionAndBenefitBase": 62700,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-95-26426.txt"
+    },
+    "1997": {
+      "taxYear": 1997,
+      "contributionAndBenefitBase": 65400,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-96-27414.txt"
+    },
+    "1998": {
+      "taxYear": 1998,
+      "contributionAndBenefitBase": 68400,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-97-28496.txt"
+    },
+    "1999": {
+      "taxYear": 1999,
+      "contributionAndBenefitBase": 72600,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-98-28988.txt"
+    },
+    "2000": {
+      "taxYear": 2000,
+      "contributionAndBenefitBase": 76200,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-99-27865.txt"
+    },
+    "2001": {
+      "taxYear": 2001,
+      "contributionAndBenefitBase": 80400,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-00-27249.txt"
+    },
+    "2002": {
+      "taxYear": 2002,
+      "contributionAndBenefitBase": 84900,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-01-26911.txt"
+    },
+    "2003": {
+      "taxYear": 2003,
+      "contributionAndBenefitBase": 87000,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-02-27203.txt"
+    },
+    "2004": {
+      "taxYear": 2004,
+      "contributionAndBenefitBase": 87900,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-03-26642.txt"
+    },
+    "2005": {
+      "taxYear": 2005,
+      "contributionAndBenefitBase": 90000,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-04-23915.txt"
+    },
+    "2006": {
+      "taxYear": 2006,
+      "contributionAndBenefitBase": 94200,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-05-21272.txt"
+    },
+    "2007": {
+      "taxYear": 2007,
+      "contributionAndBenefitBase": 97500,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-E6-17939.txt"
+    },
+    "2008": {
+      "taxYear": 2008,
+      "contributionAndBenefitBase": 102000,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-E7-21070.txt"
+    },
+    "2009": {
+      "taxYear": 2009,
+      "contributionAndBenefitBase": 106800,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-E8-25905.txt"
+    },
+    "2010": {
+      "taxYear": 2010,
+      "contributionAndBenefitBase": 106800,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-E9-25930.txt"
+    },
+    "2011": {
+      "taxYear": 2011,
+      "contributionAndBenefitBase": 106800,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 4.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 10.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.596,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-2010-26983.txt"
+    },
+    "2012": {
+      "taxYear": 2012,
+      "contributionAndBenefitBase": 110100,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 4.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 10.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.596,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": null,
+      "additionalMedicareJointThreshold": null,
+      "additionalMedicareOtherThreshold": null,
+      "additionalMedicareSeparateThresholdFraction": null,
+      "additionalMedicareWithholdingThreshold": null,
+      "source": "fr-2011-27496.txt"
+    },
+    "2013": {
+      "taxYear": 2013,
+      "contributionAndBenefitBase": 113700,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2012-26663.txt"
+    },
+    "2014": {
+      "taxYear": 2014,
+      "contributionAndBenefitBase": 117000,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2014-25802.txt"
+    },
+    "2015": {
+      "taxYear": 2015,
+      "contributionAndBenefitBase": 118500,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2014-25802.txt"
+    },
+    "2016": {
+      "taxYear": 2016,
+      "contributionAndBenefitBase": 118500,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2015-27828.txt"
+    },
+    "2017": {
+      "taxYear": 2017,
+      "contributionAndBenefitBase": 127200,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2016-26026.txt"
+    },
+    "2018": {
+      "taxYear": 2018,
+      "contributionAndBenefitBase": 128400,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2017-27105 supersedes fr-2017-23522; corrected wage data reduced the announced 128700 base to 128400."
+    },
+    "2019": {
+      "taxYear": 2019,
+      "contributionAndBenefitBase": 132900,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2018-23193.txt"
+    },
+    "2020": {
+      "taxYear": 2020,
+      "contributionAndBenefitBase": 137700,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2019-22921.txt"
+    },
+    "2021": {
+      "taxYear": 2021,
+      "contributionAndBenefitBase": 142800,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2020-23442.txt"
+    },
+    "2022": {
+      "taxYear": 2022,
+      "contributionAndBenefitBase": 147000,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2021-23031.txt"
+    },
+    "2023": {
+      "taxYear": 2023,
+      "contributionAndBenefitBase": 160200,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2022-23073.txt"
+    },
+    "2024": {
+      "taxYear": 2024,
+      "contributionAndBenefitBase": 168600,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "LINKED, not committed here: evidence/retirement-limits/sources/fr-2023-23317.txt"
+    },
+    "2025": {
+      "taxYear": 2025,
+      "contributionAndBenefitBase": 176100,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "LINKED, not committed here: evidence/retirement-limits/sources/fr-2024-24871.txt"
+    },
+    "2026": {
+      "taxYear": 2026,
+      "contributionAndBenefitBase": 184500,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "LINKED, not committed here: evidence/retirement-limits/sources/fr-2025-19763.txt"
+    }
+  }
+} as PayrollParameterData;
+/* </generated-payroll-parameters> */
 
 /* <generated-parameters> */
 const RAW_PARAMETERS: ParameterData = {
@@ -9446,7 +10661,7 @@ function contributionTaxEffects(
 }
 
 function mergeTaxEffects(target: FederalTaxEffects, source: FederalTaxEffects): FederalTaxEffects {
-  const numericKeys: Array<Exclude<keyof FederalTaxEffects, "notes">> = [
+  const numericKeys: Array<Exclude<keyof FederalTaxEffects, "notes" | "payrollTax">> = [
     "federalAgiReduction",
     "federalAgiIncrease",
     "federalTaxableIncomeReduction",
@@ -19133,6 +20348,163 @@ function calculateIraConversionGroup(
   });
 }
 
+/** Exact published row; missing years are unknown, including unannounced future years. */
+export function payrollParametersForYear(taxYear: number): PayrollYearParameters | null {
+  if (!Number.isInteger(taxYear)) throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+  const row = RAW_PAYROLL_PARAMETERS.years[String(taxYear)];
+  return row === undefined ? null : deepClone(row);
+}
+function payrollInputError(): never {
+  throw new ParameterError("INVALID_PAYROLL_INPUT", "Payroll input requires unique person and employer IDs, explicit nonnegative uncapped wage amounts, and finite ordinary self-employment earnings.");
+}
+type NormalizedPayrollPerson = Omit<PayrollPersonInput, "wages"> & { wages: PayrollWageInput[] };
+function normalizePayrollPersons(input: unknown): NormalizedPayrollPerson[] {
+  if (!Array.isArray(input) || input.length === 0) payrollInputError();
+  const ids = new Set<string>();
+  return input.map((person: PayrollPersonInput) => {
+    if (person === null || typeof person !== "object" || typeof person.id !== "string" || person.id.trim() === "" || ids.has(person.id)) payrollInputError();
+    // PHP arrays represent both an empty JSON map and an empty list. Both
+    // explicitly state no wages; nonempty maps are not employer records.
+    const wageInput = person.wages;
+    const wageList = Array.isArray(wageInput) ? wageInput : wageInput !== null && typeof wageInput === "object" && Object.keys(wageInput).length === 0 ? [] : payrollInputError();
+    ids.add(person.id);
+    const employers = new Set<string>();
+    const wages = wageList.map((wage) => {
+      if (wage === null || typeof wage !== "object" || typeof wage.employerId !== "string" || wage.employerId.trim() === "" || employers.has(wage.employerId)) payrollInputError();
+      employers.add(wage.employerId);
+      for (const value of [wage.socialSecurityWages, wage.medicareWages]) {
+        if (typeof value !== "number" || !Number.isFinite(value) || value < 0) payrollInputError();
+      }
+      return { employerId: wage.employerId, socialSecurityWages: roundMoney(wage.socialSecurityWages), medicareWages: roundMoney(wage.medicareWages) };
+    });
+    const earnings = person.netEarningsBeforeAdjustment ?? 0;
+    if (typeof earnings !== "number" || !Number.isFinite(earnings)) payrollInputError();
+    return { id: person.id, wages, netEarningsBeforeAdjustment: roundMoney(earnings) };
+  });
+}
+function zeroPayrollTaxAmounts(): PayrollTaxAmounts {
+  return {
+    employeeSocialSecurity: 0, employeeMedicare: 0, employerSocialSecurity: 0, employerMedicare: 0,
+    selfEmploymentSocialSecurity: 0, selfEmploymentMedicare: 0, selfEmploymentTaxDeduction: 0,
+    additionalMedicareWageLiability: 0, additionalMedicareSelfEmploymentLiability: 0,
+    additionalMedicareLiability: 0, additionalMedicareWithholding: 0,
+    employeeTotalLiability: 0, employerTotal: 0, selfEmploymentTotalLiability: 0,
+  };
+}
+/** Ordinary FICA/SECA only: caller establishes taxable wage and earnings categories. */
+export function calculatePayrollTax(input: PayrollCalculationInput): PayrollTaxResult {
+  const parameters = payrollParametersForYear(input.taxYear);
+  const persons = normalizePayrollPersons(input.persons);
+  const diagnostics: Diagnostic[] = [];
+  const filingStatus = input.filingStatus === undefined ? null : parseFilingStatus(input.filingStatus, diagnostics);
+  const unavailable = (code: string, message: string): PayrollTaxResult => ({
+    taxYear: input.taxYear, status: CalculationStatus.INDETERMINATE, parameters,
+    netEarningsFactor: null, totals: null, persons: [],
+    diagnostics: [...diagnostics, diagnostic(code, DiagnosticSeverity.ERROR, message, "payrollTax")],
+  });
+  if (parameters === null) return unavailable("PAYROLL_PARAMETERS_UNAVAILABLE", "No determined payroll-tax parameter row is encoded for this tax year; no neighboring year or projection is substituted.");
+  if (filingStatus === null) return unavailable("PAYROLL_FILING_STATUS_REQUIRED", "Payroll-tax liability requires the filing status and all persons on that return.");
+  const joint = filingStatus === FilingStatus.MARRIED_FILING_JOINTLY;
+  if (persons.length !== (joint ? 2 : 1)) return unavailable("PAYROLL_RETURN_PERSONS_REQUIRED", "Supply both spouses for a joint payroll-tax calculation and exactly one person for any other filing status.");
+  const p = parameters;
+  const factor = 1 - p.netEarningsDeductionFraction * (p.netEarningsOasdiRateBasisPercent + p.netEarningsHiRateBasisPercent) / 100;
+  const totals = zeroPayrollTaxAmounts();
+  const personResults: PayrollTaxResult["persons"] = [];
+  let householdMedicareWages = 0;
+  let householdSelfEmployment = 0;
+  for (const person of persons) {
+    let ssWages = 0;
+    let hiWages = 0;
+    for (const wage of person.wages) {
+      ssWages = roundMoney(ssWages + wage.socialSecurityWages);
+      hiWages = roundMoney(hiWages + wage.medicareWages);
+      totals.employerSocialSecurity = roundMoney(totals.employerSocialSecurity + roundMoney(Math.min(wage.socialSecurityWages, p.contributionAndBenefitBase) * p.oasdiRateEmployerPercent / 100));
+      totals.employerMedicare = roundMoney(totals.employerMedicare + roundMoney(Math.min(wage.medicareWages, p.hospitalInsuranceWageBase ?? wage.medicareWages) * p.hiRateEmployerPercent / 100));
+      if (p.additionalMedicareRatePercent !== null) totals.additionalMedicareWithholding = roundMoney(totals.additionalMedicareWithholding + roundMoney(nonnegative(wage.medicareWages - p.additionalMedicareWithholdingThreshold!) * p.additionalMedicareRatePercent / 100));
+    }
+    totals.employeeSocialSecurity = roundMoney(totals.employeeSocialSecurity + roundMoney(Math.min(ssWages, p.contributionAndBenefitBase) * p.oasdiRateEmployeePercent / 100));
+    totals.employeeMedicare = roundMoney(totals.employeeMedicare + roundMoney(Math.min(hiWages, p.hospitalInsuranceWageBase ?? hiWages) * p.hiRateEmployeePercent / 100));
+    const adjusted = roundMoney(nonnegative(person.netEarningsBeforeAdjustment!) * factor);
+    const earnings = adjusted < p.selfEmploymentMinimumNetEarnings ? 0 : adjusted;
+    const ssTax = roundMoney(Math.min(earnings, nonnegative(p.contributionAndBenefitBase - ssWages)) * p.secaOasdiRatePercent / 100);
+    const hiTax = roundMoney(Math.min(earnings, p.hospitalInsuranceWageBase === null ? earnings : nonnegative(p.hospitalInsuranceWageBase - hiWages)) * p.secaHiRatePercent / 100);
+    totals.selfEmploymentSocialSecurity = roundMoney(totals.selfEmploymentSocialSecurity + ssTax);
+    totals.selfEmploymentMedicare = roundMoney(totals.selfEmploymentMedicare + hiTax);
+    totals.selfEmploymentTaxDeduction = roundMoney(totals.selfEmploymentTaxDeduction + roundMoney(ssTax * p.secaOasdiDeductionFraction + hiTax * p.secaHiDeductionFraction));
+    householdMedicareWages = roundMoney(householdMedicareWages + hiWages);
+    householdSelfEmployment = roundMoney(householdSelfEmployment + earnings);
+    personResults.push({ id: person.id, adjustedNetEarnings: adjusted, taxableSelfEmploymentEarnings: earnings });
+  }
+  if (p.additionalMedicareRatePercent !== null) {
+    const threshold = joint ? p.additionalMedicareJointThreshold! : filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY
+      ? p.additionalMedicareJointThreshold! * p.additionalMedicareSeparateThresholdFraction! : p.additionalMedicareOtherThreshold!;
+    totals.additionalMedicareWageLiability = roundMoney(nonnegative(householdMedicareWages - threshold) * p.additionalMedicareRatePercent / 100);
+    totals.additionalMedicareSelfEmploymentLiability = roundMoney(nonnegative(householdSelfEmployment - nonnegative(threshold - householdMedicareWages)) * p.additionalMedicareRatePercent / 100);
+  }
+  totals.additionalMedicareLiability = roundMoney(totals.additionalMedicareWageLiability + totals.additionalMedicareSelfEmploymentLiability);
+  totals.employeeTotalLiability = roundMoney(totals.employeeSocialSecurity + totals.employeeMedicare + totals.additionalMedicareWageLiability);
+  totals.employerTotal = roundMoney(totals.employerSocialSecurity + totals.employerMedicare);
+  totals.selfEmploymentTotalLiability = roundMoney(totals.selfEmploymentSocialSecurity + totals.selfEmploymentMedicare + totals.additionalMedicareSelfEmploymentLiability);
+  if (![...Object.values(totals), householdMedicareWages, householdSelfEmployment].every(Number.isFinite)) payrollInputError();
+  return { taxYear: input.taxYear, status: accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, diagnostics), parameters, netEarningsFactor: factor, totals, persons: personResults, diagnostics };
+}
+function scenarioPayrollEffects(
+  input: ScenarioInput, context: CalculationContext, accounts: AccountCalculationResult[], conversions: ConversionCalculationResult[],
+): FederalTaxEffects | undefined {
+  if (input.payrollTax === undefined) return undefined;
+  const payrollPersons = normalizePayrollPersons(input.payrollTax?.persons);
+  const requiredRoles: PersonRole[] = context.filingStatus === FilingStatus.MARRIED_FILING_JOINTLY
+    ? ["taxpayer", "spouse"] : ["taxpayer"];
+  const requiredIds = requiredRoles.map((role) => {
+    const members = [...context.persons.values()].filter((person) => person.role === role);
+    return members.length === 1 ? members[0]!.id : null;
+  });
+  const payrollIds = new Set(payrollPersons.map((person) => person.id));
+  if (requiredIds.length !== payrollIds.size || requiredIds.some((id) => id === null || !payrollIds.has(id))) {
+    throw new ParameterError("INVALID_PAYROLL_RETURN_PERSONS", "Scenario payroll persons must identify exactly the taxpayer, plus the spouse for a joint return, using the normalized scenario roles.");
+  }
+  const before = calculatePayrollTax({ taxYear: input.taxYear, filingStatus: input.filingStatus, persons: payrollPersons });
+  const result = zeroTaxEffects();
+  for (const entry of [...accounts, ...conversions]) mergeTaxEffects(result, entry.federalTaxEffects);
+  const diagnostics: Diagnostic[] = [];
+  const afterPersons = deepClone(payrollPersons);
+  for (const account of accounts) {
+    if (!payrollIds.has(account.ownerId)) continue;
+    const reduction = account.federalTaxEffects.ficaWageReduction;
+    const family = ACCOUNT_TRAITS[account.accountType].family;
+    const source = context.accountsById.get(account.accountId)!;
+    // An indeterminate HSA can still have a settled zero FICA effect: neither
+    // existing employer/cafeteria deposits nor an employer target can fund one.
+    const hsaExclusionPossible = family === "hsa" && (
+      source.existingContributions.hsaEmployerOrCafeteria > 0 || (source.planRules.expectedEmployerContribution ?? 0) > 0
+    );
+    if (account.status === CalculationStatus.INDETERMINATE && (reduction > 0 || hsaExclusionPossible || family === "health_fsa" || family === "dependent_care_fsa")) {
+      diagnostics.push(diagnostic("PAYROLL_EXCLUSION_UNRESOLVED", DiagnosticSeverity.ERROR, "A modeled wage exclusion is unresolved; payroll savings cannot be determined.", `accounts.${account.accountId}`));
+      continue;
+    }
+    if (reduction === 0) continue;
+    const person = afterPersons.find((candidate) => candidate.id === account.ownerId);
+    const wages = person?.wages.find((candidate) => candidate.employerId === account.employerId);
+    if (wages === undefined || reduction > wages.socialSecurityWages || reduction > wages.medicareWages) {
+      diagnostics.push(diagnostic("PAYROLL_EXCLUSION_WAGES_REQUIRED", DiagnosticSeverity.ERROR, "Each modeled FICA wage exclusion needs matching person/employer payroll wages before that exclusion, sufficient for the full reduction.", `accounts.${account.accountId}`));
+      continue;
+    }
+    wages.socialSecurityWages = roundMoney(wages.socialSecurityWages - reduction);
+    wages.medicareWages = roundMoney(wages.medicareWages - reduction);
+  }
+  const after = diagnostics.length === 0 ? calculatePayrollTax({ taxYear: input.taxYear, filingStatus: input.filingStatus, persons: afterPersons }) : null;
+  let savings: PayrollTaxAmounts | null = null;
+  if (before.totals !== null && after?.totals != null) {
+    savings = zeroPayrollTaxAmounts();
+    for (const key of Object.keys(savings) as Array<keyof PayrollTaxAmounts>) savings[key] = roundMoney(before.totals[key] - after.totals[key]);
+  }
+  result.payrollTax = {
+    status: savings === null ? CalculationStatus.INDETERMINATE : accountStatusFromDiagnostics(CalculationStatus.DETERMINATE, [...before.diagnostics, ...(after?.diagnostics ?? [])]),
+    before, after, savings, diagnostics,
+  };
+  return result;
+}
+
 export function calculateScenario(input: ScenarioInput): ScenarioResult {
   const scenarioDiagnostics: Diagnostic[] = [];
   const taxYear = input.taxYear;
@@ -19270,6 +20642,7 @@ export function calculateScenario(input: ScenarioInput): ScenarioResult {
     accounts: accountResults,
     conversions: conversionResults,
     totals: calculateScenarioTotals(accountResults, conversionResults),
+    ...(input.payrollTax === undefined ? {} : { federalTaxEffects: scenarioPayrollEffects(input, context, accountResults, conversionResults) }),
     diagnostics: allDiagnostics,
   };
 }
@@ -19912,6 +21285,11 @@ export class ScenarioBuilder {
     return this.addConversion(builder);
   }
 
+  public payrollTax(persons: PayrollPersonInput[]): this {
+    this.value.payrollTax = { persons: deepClone(persons) };
+    return this;
+  }
+
   /**
    * IRC 223(b)(5)(B)(ii) agreed division of the one family limitation.
    * `taxpayerShare` is the taxpayer's share from 0 through 1; the spouse takes
@@ -19996,6 +21374,17 @@ export class USTaxAdvantagedParams {
 
   public static hsaSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_HSA_PARAMETERS.sources);
+  }
+
+  /** Published FICA/SECA parameters, or null outside the evidence table. */
+  public static payrollParametersForYear(taxYear: number): PayrollYearParameters | null {
+    return payrollParametersForYear(taxYear);
+  }
+  public static supportedPayrollTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_PAYROLL_PARAMETERS.supportedTaxYears };
+  }
+  public static calculatePayrollTax(input: PayrollCalculationInput): PayrollTaxResult {
+    return calculatePayrollTax(input);
   }
 
   /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */

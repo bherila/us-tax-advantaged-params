@@ -183,7 +183,8 @@ produced them.
 ## Scope boundary
 
 The engine calculates statutory parameters from caller-supplied facts. It does
-not prepare returns, derive MAGI, compute SE tax, model state tax, RMDs,
+not prepare returns, derive MAGI, model state tax, RMDs,
 nondiscrimination testing, or plan-document eligibility. Keep new features
 inside this boundary; prefer an `indeterminate` status plus diagnostics over
-guessing.
+guessing. Ordinary 1991-onward FICA/SECA on explicit caller-classified wages and
+earnings is supported; special SECA methods and general payroll processing are not.

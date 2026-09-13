@@ -108,3 +108,9 @@ await update(
   "/* </generated-fsa-parameters> */",
   `private const FSA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(fsaParameters)}\nJSON;`,
 );
+
+const payrollParameters = await readCanonical("data/payroll-tax-parameters.json");
+await update(tsPath, "/* <generated-payroll-parameters> */", "/* </generated-payroll-parameters> */",
+  `const RAW_PAYROLL_PARAMETERS: PayrollParameterData = ${JSON.stringify(payrollParameters, null, 2)} as PayrollParameterData;`);
+await update(phpPath, "/* <generated-payroll-parameters> */", "/* </generated-payroll-parameters> */",
+  `private const PAYROLL_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(payrollParameters)}\nJSON;`);

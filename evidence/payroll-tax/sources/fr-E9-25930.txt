@@ -1,0 +1,499 @@
+<html>
+<head>
+<title>Federal Register, Volume 74 Issue 207 (Wednesday, October 28, 2009)</title>
+</head>
+<body><pre>
+[Federal Register Volume 74, Number 207 (Wednesday, October 28, 2009)]
+[Notices]
+[Pages 55614-55618]
+From the Federal Register Online via the Government Publishing Office [<a href="http://www.gpo.gov">www.gpo.gov</a>]
+[FR Doc No: E9-25930]
+
+
+=======================================================================
+-----------------------------------------------------------------------
+
+SOCIAL SECURITY ADMINISTRATION
+
+[Docket No. SSA-2009-0064]
+
+
+Office of the Commissioner; Cost-of-Living Increase and Other 
+Determinations for 2010
+
+AGENCY: Social Security Administration.
+
+ACTION: Notice.
+
+-----------------------------------------------------------------------
+
+SUMMARY: Under title II of the Social Security Act (Act), there will be 
+no cost-of-living increase in Social Security benefits effective for 
+December 2009. As a result, the following items will remain at their 
+2009 levels:
+    (1) The Federal Supplemental Security Income (SSI) monthly benefit 
+amounts for 2010, under title XVI of the Act, will remain $674 for an 
+eligible individual, $1,011 for an eligible individual with an eligible 
+spouse, and $338 for an essential person;
+    (2) The special benefit amount under title VIII of the Act for 
+certain World War II veterans will remain $505.50 in 2010;
+    (3) The student earned income exclusion under title XVI of the Act 
+will remain $1,640 per month in 2010 but not more than $6,600 in all of 
+2010;
+    (4) The dollar fee limit for services performed as a representative 
+payee will remain $37 per month ($72 per month in the case of a 
+beneficiary who is disabled and has an alcoholism or drug addiction 
+condition that leaves him or her incapable of managing benefits) in 
+2010;
+    (5) The dollar limit on the administrative-cost assessment charged 
+to attorneys representing claimants will remain $83 in 2010;
+    (6) The Old-Age, Survivors, and Disability Insurance (OASDI) 
+contribution and benefit base will remain $106,800 for remuneration 
+paid in 2010 and self-employment income earned in taxable years 
+beginning in 2010;
+    (7) The monthly exempt amounts under the Social Security retirement 
+earnings test for taxable years ending in calendar year 2010 will 
+remain $1,180 and $3,140;
+    (8) The ``old-law'' contribution and benefit base under title II of 
+the Act will remain $79,200 for 2010; and
+
+[[Page 55615]]
+
+    (9) The monthly amount deemed to constitute substantial gainful 
+activity for statutorily blind individuals in 2010 will remain $1,640.
+    The national average wage index for 2008 is $41,334.97. The 
+following items are affected by this index:
+    (1) The dollar amounts (``bend points'') used in the primary 
+insurance amount benefit formula for workers who become eligible for 
+benefits, or who die before becoming eligible, in 2010 will be $761 and 
+$4,586;
+    (2) The bend points used in the formula for computing maximum 
+family benefits for workers who become eligible for benefits, or who 
+die before becoming eligible, in 2010 will be $972, $1,403, and $1,830;
+    (3) The amount of taxable earnings a person must have to be 
+credited with a quarter of coverage in 2010 will be $1,120;
+    (4) The monthly amount deemed to constitute substantial gainful 
+activity for non-blind disabled persons will be $1,000 in 2010;
+    (5) The earnings threshold establishing a month as a part of a 
+trial work period will be $720 for 2010; and
+    (6) Coverage thresholds for 2010 will be $1,700 for domestic 
+workers and $1,500 for election officials and election workers.
+
+FOR FURTHER INFORMATION CONTACT: Jeffrey L. Kunkel, Office of the Chief 
+Actuary, Social Security Administration, 6401 Security Boulevard, 
+Baltimore, MD 21235, (410) 965-3013. Information relating to this 
+announcement is available on our Internet site at <a href="http://www.socialsecurity.gov/OACT/COLA/index.html">http://www.socialsecurity.gov/OACT/COLA/index.html</a>. For information on 
+eligibility or claiming benefits, call 1-800-772-1213, or visit our 
+Internet site, Social Security Online, at <a href="http://www.socialsecurity.gov">http://www.socialsecurity.gov</a>.
+
+SUPPLEMENTARY INFORMATION: In accordance with the Act, we must publish 
+on or before November 1 the national average wage index for 2008 
+(section 215(a)(1)(D)), the amount of earnings required to be credited 
+with a quarter of coverage in 2010 (section 213(d)(2)), the formula for 
+computing a primary insurance amount for workers who first become 
+eligible for benefits or die in 2010 (section 215(a)(1)(D)), and the 
+formula for computing the maximum amount of benefits payable to the 
+family of a worker who first becomes eligible for old-age benefits or 
+dies in 2010 (section 203(a)(2)(C)).
+
+Cost-of-Living Increases
+
+General
+
+    There will be no cost-of-living increase for benefits under titles 
+II and XVI of the Act.
+
+Computation
+
+    By law a cost-of-living increase for benefits is set based on the 
+percentage increase in the Consumer Price Index (CPI) for Urban Wage 
+Earners and Clerical Workers from the last computation quarter (the 
+third quarter of 2008 in this case) to the third quarter of the current 
+year (2009 in this case).
+    Section 215(i)(1) of the Act provides that the CPI for a cost-of-
+living computation quarter shall be the arithmetic mean of this index 
+for the 3 months in that quarter. In accordance with 20 CFR 404.275, we 
+round the arithmetic mean, if necessary, to the nearest 0.001. The CPI 
+for Urban Wage Earners and Clerical Workers for each month in the 
+quarter ending September 30, 2008, is: For July 2008, 216.304; for 
+August 2008, 215.247; and for September 2008, 214.935. The arithmetic 
+mean for that calendar quarter is 215.495. The corresponding CPI for 
+each month in the quarter ending September 30, 2009, is: For July 2009, 
+210.526; for August 2009, 211.156; and for September 2009, 211.322. The 
+arithmetic mean for this calendar quarter is 211.001. Thus, because the 
+CPI for the calendar quarter ending September 30, 2009, is not greater 
+than the CPI for the calendar quarter ending September 30, 2008, the 
+calendar quarter ending September 30, 2009, is not a cost-of-living 
+computation quarter and there is no cost-of-living increase.
+
+Other Program Amounts That Change Based on the Cost-of-Living Increase
+
+    Several other program amounts also adjust based on the cost-of-
+living increase. These include the title VIII benefit amount, the 
+student earned income exclusion, the fee for services performed by a 
+representative payee, and the attorney assessment fee. Because there 
+will be no cost-of-living increase, these program amounts will not 
+increase in 2010, but rather will remain at their 2009 levels.
+
+Program Amounts That Change Based on the Increase in the National 
+Average Wage Index, but Only When There Is a Cost-of-Living Increase
+
+    Certain other program amounts are adjusted annually based on the 
+increase in the national average wage index, rather than the CPI 
+increase, but only if there also is a cost-of-living increase in 
+benefits that year (as determined under section 215(i) of the Act). 
+These amounts include the OASDI contribution and benefit base, the 
+retirement earnings test exempt amounts, the ``old-law'' contribution 
+and benefit base, and the substantial gainful activity amount for 
+individuals who are statutorily blind. Because there is no cost-of-
+living increase this year, these amounts will not increase in 2010, but 
+rather will remain at their 2009 levels.
+
+Program Amounts That Change Based on the Increase in the National 
+Average Wage Index, Without Regard to the Cost-of-Living Increase
+
+    Some program amounts are adjusted annually based on the increase in 
+the national average wage index whether there is a cost-of-living 
+increase in that year or not. These include:
+    <bullet> The dollar amounts (``bend points'') in the formulae used 
+to compute the primary insurance amount and maximum family benefit for 
+workers who become eligible for benefits, or die before becoming 
+eligible, in 2010;
+    <bullet> The amount of taxable earnings required to earn a quarter 
+of coverage;
+    <bullet> The substantial gainful activity amount for non-blind 
+disabled individuals;
+    <bullet> The earnings threshold to establish a trial work period;
+    <bullet> The coverage threshold for election officials and election 
+workers; and
+    <bullet> The domestic employee coverage threshold.
+
+These amounts will increase in 2010 based on the increase in the 
+national average wage. In the sections that follow, we explain the 
+calculation of the percentage increase in the national average wage and 
+the corresponding increases in each of these program amounts.
+
+National Average Wage Index for 2008
+
+Computation
+
+    We have determined the national average wage index for calendar 
+year 2008 based on the 2007 national average wage index of $40,405.48 
+announced in the Federal Register on October 30, 2008 (73 FR 64651), 
+along with the percentage increase in average wages from 2007 to 2008 
+measured by annual wage data. We tabulate the annual wage data, 
+including contributions to deferred compensation plans, as required by 
+section 209(k) of the Act. The average amounts of wages calculated 
+directly from these data were $38,760.95 and $39,652.61 for 2007 and 
+2008, respectively. To determine the national average wage index for 
+2008 at a level
+
+[[Page 55616]]
+
+that is consistent with the national average wage indexing series for 
+1951 through 1977 (published December 29, 1978, at 43 FR 61016), we 
+multiply the 2007 national average wage index of $40,405.48 by the 
+percentage increase in average wages from 2007 to 2008 (based on SSA-
+tabulated wage data) as follows, with the result rounded to the nearest 
+cent.
+
+Amount
+
+    Multiplying the national average wage index for 2007 ($40,405.48) 
+by the ratio of the average wage for 2008 ($39,652.61) to that for 2007 
+($38,760.95) produces the 2008 index, $41,334.97. The national average 
+wage index for calendar year 2008 is about 2.30 percent greater than 
+the 2007 index.
+
+Computing Benefits After 1978
+
+General
+
+    The Social Security Amendments of 1977 provided a method for 
+computing benefits that generally applies when a worker first becomes 
+eligible for benefits after 1978. This method uses the worker's 
+``average indexed monthly earnings'' to compute the primary insurance 
+amount. We adjust the computation formula each year to reflect changes 
+in general wage levels, as measured by the national average wage index.
+    We also adjust, or ``index,'' a worker's earnings to reflect the 
+change in general wage levels that occurred during the worker's years 
+of employment. Such indexing ensures that a worker's future benefit 
+level will reflect the general rise in the standard of living that will 
+occur during his or her working lifetime. To compute the average 
+indexed monthly earnings, we first determine the required number of 
+years of earnings. Then we select that number of years with the highest 
+indexed earnings, add the indexed earnings, and divide the total amount 
+by the total number of months in those years. We then round the 
+resulting average amount down to the next lower dollar amount. The 
+result is the average indexed monthly earnings.
+    For example, to compute the average indexed monthly earnings for a 
+worker attaining age 62, becoming disabled before age 62, or dying 
+before attaining age 62, in 2010, we divide the national average wage 
+index for 2008, $41,334.97, by the national average wage index for each 
+year prior to 2008 in which the worker had earnings. Then we multiply 
+the actual wages and self-employment income, as defined in section 
+211(b) of the Act and credited for each year, by the corresponding 
+ratio to obtain the worker's indexed earnings for each year before 
+2008. We consider any earnings in 2008 or later at face value, without 
+indexing. We then compute the average indexed monthly earnings for 
+determining the worker's primary insurance amount for 2010.
+
+Computing the Primary Insurance Amount
+
+    The primary insurance amount is the sum of three separate 
+percentages of portions of the average indexed monthly earnings. In 
+1979 (the first year the formula was in effect), these portions were 
+the first $180, the amount between $180 and $1,085, and the amount over 
+$1,085. We call the dollar amounts in the formula governing the 
+portions of the average indexed monthly earnings the ``bend points'' of 
+the formula. Thus, the bend points for 1979 were $180 and $1,085.
+    To obtain the bend points for 2010, we multiply each of the 1979 
+bend-point amounts by the ratio of the national average wage index for 
+2008 to that average for 1977. We then round these results to the 
+nearest dollar. Multiplying the 1979 amounts of $180 and $1,085 by the 
+ratio of the national average wage index for 2008 ($41,334.97) to that 
+for 1977 ($9,779.44) produces the amounts of $760.81 and $4,585.99. We 
+round these to $761 and $4,586. Accordingly, the portions of the 
+average indexed monthly earnings to be used in 2010 are the first $761, 
+the amount between $761 and $4,586, and the amount over $4,586.
+    Consequently, for individuals who first become eligible for old-age 
+insurance benefits or disability insurance benefits in 2010, or who die 
+in 2010 before becoming eligible for benefits, their primary insurance 
+amount will be the sum of:
+    (a) 90 percent of the first $761 of their average indexed monthly 
+earnings, plus
+    (b) 32 percent of their average indexed monthly earnings over $761 
+and through $4,586, plus
+    (c) 15 percent of their average indexed monthly earnings over 
+$4,586.
+    We round this amount to the next lower multiple of $0.10 if it is 
+not already a multiple of $0.10. This formula and the rounding 
+adjustment described above are contained in section 215(a) of the Act.
+
+Maximum Benefits Payable to a Family
+
+General
+
+    The 1977 amendments continued the long established policy of 
+limiting the total monthly benefits that a worker's family may receive 
+based on his or her primary insurance amount. Those amendments also 
+continued the then existing relationship between maximum family 
+benefits and primary insurance amounts but changed the method of 
+computing the maximum amount of benefits that may be paid to a worker's 
+family. The Social Security Disability Amendments of 1980 (Pub. L. 96-
+265) established a formula for computing the maximum benefits payable 
+to the family of a disabled worker. This formula applies to the family 
+benefits of workers who first become entitled to disability insurance 
+benefits after June 30, 1980, and who first become eligible for these 
+benefits after 1978. For disabled workers initially entitled to 
+disability benefits before July 1980, or whose disability began before 
+1979, we compute the family maximum payable the same as the old-age and 
+survivor family maximum.
+
+Computing the Old-Age and Survivor Family Maximum
+
+    The formula used to compute the family maximum is similar to that 
+used to compute the primary insurance amount. It involves computing the 
+sum of four separate percentages of portions of the worker's primary 
+insurance amount. In 1979, these portions were the first $230, the 
+amount between $230 and $332, the amount between $332 and $433, and the 
+amount over $433. We refer to such dollar amounts in the formula as the 
+``bend points'' of the family-maximum formula.
+    To obtain the bend points for 2010, we multiply each of the 1979 
+bend-point amounts by the ratio of the national average wage index for 
+2008 to that average for 1977. Then we round this amount to the nearest 
+dollar. Multiplying the amounts of $230, $332, and $433 by the ratio of 
+the national average wage index for 2008 ($41,334.97) to that for 1977 
+($9,779.44) produces the amounts of $972.15, $1,403.27, and $1,830.17. 
+We round these amounts to $972, $1,403, and $1,830. Accordingly, the 
+portions of the primary insurance amounts to be used in 2010 are the 
+first $972, the amount between $972 and $1,403, the amount between 
+$1,403 and $1,830, and the amount over $1,830.
+    Consequently, for the family of a worker who becomes age 62 or dies 
+in 2010 before age 62, we will compute the total amount of benefits 
+payable to them so that it does not exceed:
+    (a) 150 percent of the first $972 of the worker's primary insurance 
+amount, plus
+    (b) 272 percent of the worker's primary insurance amount over $972 
+through $1,403, plus
+
+[[Page 55617]]
+
+    (c) 134 percent of the worker's primary insurance amount over 
+$1,403 through $1,830, plus
+    (d) 175 percent of the worker's primary insurance amount over 
+$1,830.
+    We then round this amount to the next lower multiple of $0.10 if it 
+is not already a multiple of $0.10. This formula and the rounding 
+adjustment described above are contained in section 203(a) of the Act.
+
+Quarter of Coverage Amount
+
+General
+
+    The amount of earnings required for a quarter of coverage in 2010 
+is $1,120. A quarter of coverage is the basic unit for determining 
+whether a worker is insured under the Social Security program. For 
+years before 1978, we generally credited an individual with a quarter 
+of coverage for each quarter in which wages of $50 or more were paid, 
+or with 4 quarters of coverage for every taxable year in which $400 or 
+more of self-employment income was earned. Beginning in 1978, employers 
+generally report wages on an annual basis instead of a quarterly basis. 
+With the change to annual reporting, section 352(b) of the Social 
+Security Amendments of 1977 amended section 213(d) of the Act to 
+provide that a quarter of coverage would be credited for each $250 of 
+an individual's total wages and self-employment income for calendar 
+year 1978, up to a maximum of 4 quarters of coverage for the year.
+
+Computation
+
+    Under the prescribed formula, the quarter of coverage amount for 
+2010 shall be the larger of: (1) The 1978 amount of $250 multiplied by 
+the ratio of the national average wage index for 2008 to that for 1976; 
+or (2) the current amount of $1,090. Section 213(d) further provides 
+that if the resulting amount is not a multiple of $10, it shall be 
+rounded to the nearest multiple of $10.
+
+Quarter of Coverage Amount
+
+    Multiplying the 1978 quarter of coverage amount ($250) by the ratio 
+of the national average wage index for 2008 ($41,334.97) to that for 
+1976 ($9,226.48) produces the amount of $1,120.01. We then round this 
+amount to $1,120. Because $1,120 exceeds the current amount of $1,090, 
+the quarter of coverage amount is $1,120 for 2010.
+
+Substantial Gainful Activity Amount for Non-Blind Disabled Individuals
+
+General
+
+    A finding of disability under titles II and XVI of the Act requires 
+that a person, except for a title XVI disabled child, be unable to 
+engage in substantial gainful activity (SGA). A person who is earning 
+more than a certain monthly amount (net of impairment-related work 
+expenses) is ordinarily considered to be engaging in SGA. The amount of 
+monthly earnings considered as SGA depends on the nature of a person's 
+disability. Section 223(d)(4)(A) of the Act specifies a higher SGA 
+amount for statutorily blind individuals under title II while Federal 
+regulations (20 CFR 404.1574 and 416.974) specify a lower SGA amount 
+for non-blind individuals.
+
+Computation
+
+    The monthly SGA amount for non-blind disabled individuals for 2010 
+shall be the larger of: (1) Such amount for 2000 multiplied by the 
+ratio of the national average wage index for 2008 to that for 1998; or 
+(2) such amount for 2009. In either case, if the resulting amount is 
+not a multiple of $10, it shall be rounded to the nearest multiple of 
+$10.
+
+Amount
+
+    Multiplying the 2000 monthly SGA amount for non-blind individuals 
+($700) by the ratio of the national average wage index for 2008 
+($41,334.97) to that for 1998 ($28,861.44) produces the amount of 
+$1,002.53. We then round this amount to $1,000. Because $1,000 is 
+larger than the current amount of $980, the monthly SGA amount for non-
+blind disabled individuals is $1,000 for 2010.
+
+Trial Work Period Earnings Threshold
+
+General
+
+    During a trial work period, a beneficiary receiving Social Security 
+disability benefits may test his or her ability to work and still be 
+considered disabled. We do not consider services performed during the 
+trial work period as showing that the disability has ended until 
+services have been performed in at least 9 months (not necessarily 
+consecutive) in a rolling 60-month period. In 2009, any month in which 
+earnings exceed $700 is considered a month of services for an 
+individual's trial work period. In 2010, this monthly amount increases 
+to $720.
+
+Computation
+
+    The method used to determine the new amount is set forth in our 
+regulations at 20 CFR 404.1592(b). Monthly earnings in 2010, used to 
+determine whether a month is part of a trial work period, is such 
+amount for 2001 ($530) multiplied by the ratio of the national average 
+wage index for 2008 to that for 1999, or, if larger, such amount for 
+2009. If the amount so calculated is not a multiple of $10, we round it 
+to the nearest multiple of $10.
+
+Amount
+
+    Multiplying the 2001 monthly earnings threshold ($530) by the ratio 
+of the national average wage index for 2008 ($41,334.97) to that for 
+1999 ($30,469.84) produces the amount of $718.99. We then round this 
+amount to $720. Because $720 is larger than the current amount of $700, 
+the monthly earnings threshold is $720 for 2010.
+
+Domestic Employee Coverage Threshold
+
+General
+
+    The minimum amount a domestic worker must earn so that such 
+earnings are covered under Social Security or Medicare is the domestic 
+employee coverage threshold. For 2010, this threshold is $1,700. 
+Section 3121(x) of the Internal Revenue Code provides the formula for 
+increasing the threshold.
+
+Computation
+
+    Under the formula, the domestic employee coverage threshold amount 
+for 2010 shall be equal to the 1995 amount of $1,000 multiplied by the 
+ratio of the national average wage index for 2008 to that for 1993. If 
+the resulting amount is not a multiple of $100, it shall be rounded to 
+the next lower multiple of $100.
+
+Domestic Employee Coverage Threshold Amount
+
+    Multiplying the 1995 domestic employee coverage threshold amount 
+($1,000) by the ratio of the national average wage index for 2008 
+($41,334.97) to that for 1993 ($23,132.67) produces the amount of 
+$1,786.87. We then round this amount to $1,700. Accordingly, the 
+domestic employee coverage threshold amount is $1,700 for 2010.
+
+Election Official and Election Worker Coverage Threshold
+
+General
+
+    The minimum amount an election official and election worker must 
+earn so that such earnings are covered under Social Security or 
+Medicare is the election official and election worker coverage 
+threshold. For 2010, this threshold is $1,500. Section 218(c)(8)(B) of 
+the Act provides the formula for increasing the threshold.
+
+Computation
+
+    Under the formula, the election official and election worker 
+coverage threshold amount for 2010 shall be equal to the 1999 amount of 
+$1,000
+
+[[Page 55618]]
+
+multiplied by the ratio of the national average wage index for 2008 to 
+that for 1997. If the amount so determined is not a multiple of $100, 
+it shall be rounded to the nearest multiple of $100.
+
+Election Official and Election Worker Coverage Threshold Amount
+
+    Multiplying the 1999 coverage threshold amount ($1,000) by the 
+ratio of the national average wage index for 2008 ($41,334.97) to that 
+for 1997 ($27,426.00) produces the amount of $1,507.15. We then round 
+this amount to $1,500. Accordingly, the election official and election 
+worker coverage threshold amount is $1,500 for 2010.
+
+(Catalog of Federal Domestic Assistance: Program Nos. 96.001 Social 
+Security-Disability Insurance; 96.002 Social Security-Retirement 
+Insurance; 96.004 Social Security-Survivors Insurance; 96.006 
+Supplemental Security Income)
+
+    Dated: October 20, 2009.
+Michael J. Astrue,
+Commissioner of Social Security.
+[FR Doc. E9-25930 Filed 10-27-09; 8:45 am]
+BILLING CODE 4191-02-P
+
+
+</pre></body>
+</html>
