@@ -621,6 +621,25 @@ test("1997 self-employed qualified-plan formula applies both reduced-rate and re
   assert.equal(plan.contributionComponents.employerPreTax, 24_000);
 });
 
+test("exposes the 2027 IRC 223 amounts Rev. Proc. 2026-24 publishes, and no later year", () => {
+  // Rev. Proc. 2026-24 section 3.01: $4,500 self-only and $9,000 family under
+  // IRC 223(b)(2); an HDHP deductible of at least $1,750 / $3,500 and
+  // out-of-pocket expenses of at most $8,700 / $17,400 under IRC 223(c)(2)(A).
+  // The IRC 223(b)(3)(B) age-55 amount is the statute's unindexed $1,000.
+  assert.deepEqual(U.supportedHsaTaxYears(), { minimum: 2004, maximum: 2027 });
+  const row = U.hsaParametersForYear(2027);
+  assert.deepEqual(row?.annualContributionLimit, { selfOnly: 4_500, family: 9_000 });
+  assert.deepEqual(row?.hdhp, {
+    minimumAnnualDeductible: { selfOnly: 1_750, family: 3_500 },
+    maximumAnnualOutOfPocket: { selfOnly: 8_700, family: 17_400 },
+  });
+  assert.equal(row?.additionalContributionAmountAge55, 1_000);
+  assert.ok(U.hsaSourceMetadata().some((source) => source.id === "irs-rev-proc-2026-24"));
+  assert.equal(U.hsaParametersForYear(2028), null);
+  // The scenario range is the retirement table's, which still ends at 2026.
+  assert.throws(() => U.parametersForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
+});
+
 test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it", () => {
   // The table starts where IRC 129 does, not where its dollar ceiling does: a
   // year can exist with no statutory ceiling, and that is a state rather than

@@ -16,7 +16,7 @@ npm run validate:evidence        # every corpus under evidence/
 npm run validate:evidence:hsa    # this corpus alone
 ```
 
-**230 comparisons over 2004–2026, 0 mismatches.**
+**240 comparisons over 2004–2027, 0 mismatches.**
 
 ## What is compared
 
@@ -36,9 +36,11 @@ see `_policyFlagsComment` in `primary-values.json` for the full derivation.
 
 ## Sources
 
-Twenty-six documents: the annual Rev. Proc. for every year from 2004 through
-2026, plus the statute text, which carries the 2006 amendment and
-effective-date notes the policy flags rest on. Fixed by `SHA256SUMS.txt`, which
+Thirty-one documents: the annual Rev. Proc. for every year from 2004 through
+2027, the superseded and superseding procedures for 2018, the notices the
+last-month rule and qualified HSA funding distribution rest on, and the statute
+text, which carries the 2006 amendment and effective-date notes the policy flags
+rest on. Fixed by `SHA256SUMS.txt`, which
 `npm run validate:evidence` verifies on every run — a listed file that is
 missing or has changed fails, and so does a file in `sources/` that nothing
 attests to. The manual form must run from inside `sources/`, since the manifest

@@ -25,14 +25,19 @@ USTaxAdvantagedParams.supportedTaxYears();
 // { minimum: 1975, maximum: 2026 }
 ```
 
-Health savings accounts have their own range, **2004 through 2026**, because IRC §223 was
+Health savings accounts have their own range, **2004 through 2027**, because IRC §223 was
 added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003
 effective for taxable years beginning after 2003. A year before 2004 returns an
 `unavailable` HSA result rather than an extrapolated one.
 
+The range runs a year past the retirement table because the IRS publishes the HSA Revenue
+Procedure in the spring, months before the retirement cost-of-living notice. The 2027 amounts
+from Rev. Proc. 2026-24 are available through `hsaParametersForYear(2027)`. A scenario for
+2027 still throws `UnsupportedTaxYearError` until the retirement table reaches that year.
+
 ```ts
 USTaxAdvantagedParams.supportedHsaTaxYears();
-// { minimum: 2004, maximum: 2026 }
+// { minimum: 2004, maximum: 2027 }
 ```
 
 Flexible spending arrangements have their own range, **1987 through 2026**. It starts at

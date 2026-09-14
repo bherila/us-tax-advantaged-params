@@ -8324,10 +8324,10 @@ const RAW_PARAMETERS: ParameterData = {
 const RAW_HSA_PARAMETERS: HsaParameterData = {
   "schemaVersion": 1,
   "package": "us-tax-advantaged-params",
-  "generatedThroughTaxYear": 2026,
+  "generatedThroughTaxYear": 2027,
   "supportedTaxYears": {
     "minimum": 2004,
-    "maximum": 2026
+    "maximum": 2027
   },
   "moneyUnit": "USD",
   "proration": {
@@ -8494,6 +8494,12 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
       "id": "irs-rev-proc-2025-19",
       "title": "Rev. Proc. 2025-19, 2026 health savings account amounts",
       "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2026-24",
+      "title": "Rev. Proc. 2026-24, 2027 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-26-24.pdf",
       "authority": "IRS"
     }
   ],
@@ -8978,6 +8984,27 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
         "maximumAnnualOutOfPocket": {
           "selfOnly": 8500,
           "family": 17000
+        }
+      }
+    },
+    "2027": {
+      "year": 2027,
+      "annualContributionLimit": {
+        "selfOnly": 4500,
+        "family": 9000
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1750,
+          "family": 3500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8700,
+          "family": 17400
         }
       }
     }

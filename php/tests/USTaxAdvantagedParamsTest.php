@@ -635,6 +635,27 @@ test('1997 self-employed qualified-plan formula applies reduced-rate and recogni
     assertSameValue(24000, $plan['contributionComponents']['employerPreTax']);
 });
 
+test('exposes the 2027 IRC 223 amounts Rev. Proc. 2026-24 publishes, and no later year', function (): void {
+    // Rev. Proc. 2026-24 section 3.01: $4,500 self-only and $9,000 family under
+    // IRC 223(b)(2); an HDHP deductible of at least $1,750 / $3,500 and
+    // out-of-pocket expenses of at most $8,700 / $17,400 under IRC 223(c)(2)(A).
+    // The IRC 223(b)(3)(B) age-55 amount is the statute's unindexed $1,000.
+    assertSameValue(['minimum' => 2004, 'maximum' => 2027], U::supportedHsaTaxYears());
+    $row = U::hsaParametersForYear(2027);
+    assertSameValue(['selfOnly' => 4500, 'family' => 9000], $row['annualContributionLimit']);
+    assertSameValue(
+        [
+            'minimumAnnualDeductible' => ['selfOnly' => 1750, 'family' => 3500],
+            'maximumAnnualOutOfPocket' => ['selfOnly' => 8700, 'family' => 17400],
+        ],
+        $row['hdhp'],
+    );
+    assertSameValue(1000, $row['additionalContributionAmountAge55']);
+    $ids = array_column(U::hsaSourceMetadata(), 'id');
+    assertSameValue(true, in_array('irs-rev-proc-2026-24', $ids, true));
+    assertSameValue(null, U::hsaParametersForYear(2028));
+});
+
 test('exposes the IRC 125 and IRC 129 parameter table without extrapolating it', function (): void {
     // The table starts where IRC 129 does, not where its dollar ceiling does: a
     // year can exist with no statutory ceiling, and that is a state rather than

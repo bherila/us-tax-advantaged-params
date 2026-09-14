@@ -191,10 +191,14 @@ remain outside the calculation.
 HSA dollar amounts are published in an annual **Revenue Procedure**, not in the retirement
 cost-of-living notice, so they are cited and verified separately.
 
-- **Rev. Proc. 2025-19** — 2026 HSA contribution limits and HDHP minimum deductible and
-  out-of-pocket maximum. Earlier years are cited per-year in
-  `evidence/hsa-limits/primary-values.json`, with the document for every year 2004-2026
-  committed under `evidence/hsa-limits/sources/` and fixed by `SHA256SUMS.txt`.
+- **Rev. Proc. 2026-24** — 2027 HSA contribution limits and HDHP minimum deductible and
+  out-of-pocket maximum: §3.01 states $4,500 self-only and $9,000 family under §223(b)(2),
+  a $1,750 / $3,500 minimum annual deductible and an $8,700 / $17,400 out-of-pocket maximum
+  under §223(c)(2)(A). Earlier years are cited per-year in
+  `evidence/hsa-limits/primary-values.json`, with the document for every year 2004-2027
+  committed under `evidence/hsa-limits/sources/` and fixed by `SHA256SUMS.txt`. The same
+  procedure's direct primary care service arrangement fee limits and excepted benefit HRA
+  amount are outside what the package models, as they were for earlier years.
 
 - **IRC §223** — the statute itself, for the §223(b)(3)(B) age-55 additional contribution.
   That amount is a fixed statutory table rising from $500 for 2004 to $1,000 for 2009 and
