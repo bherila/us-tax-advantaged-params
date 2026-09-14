@@ -694,6 +694,51 @@ test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it",
   assert.throws(() => U.fsaParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
+test("exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes that set it", () => {
+  // Pub. L. 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending
+  // after August 20, 1996, the table's first year.
+  assert.deepEqual(U.supportedEducationTaxYears(), { minimum: 1996, maximum: 2026 });
+  assert.equal(U.educationParametersForYear(1995), null);
+  // Pub. L. 105-34 section 213: IRC 530 applies to taxable years beginning after
+  // December 31, 1997, with a $500 limit reduced from $95,000 over $15,000, or from
+  // $150,000 over $10,000 on a joint return.
+  assert.equal(U.educationParametersForYear(1997)?.coverdellEducationSavingsAccount.state, "unavailable");
+  assert.deepEqual(U.educationParametersForYear(1998)?.coverdellEducationSavingsAccount, {
+    state: "statutory_dollar_limit",
+    annualContributionLimit: 500,
+    contributionPhaseout: { jointReturn: [150_000, 160_000], otherReturns: [95_000, 110_000] },
+  });
+  // Pub. L. 107-16 section 401(a) and (b), for taxable years beginning after
+  // December 31, 2001: $2,000, and a joint reduction from $190,000 over $30,000.
+  assert.equal(U.educationParametersForYear(2002)?.coverdellEducationSavingsAccount.annualContributionLimit, 2_000);
+  assert.deepEqual(U.educationParametersForYear(2002)?.coverdellEducationSavingsAccount.contributionPhaseout, {
+    jointReturn: [190_000, 220_000],
+    otherReturns: [95_000, 110_000],
+  });
+  // IRC 127(a)(2): $5,250.
+  assert.deepEqual(U.educationParametersForYear(2026)?.educationalAssistanceProgram, {
+    state: "statutory_dollar_limit",
+    annualExclusionLimit: 5_250,
+  });
+  // IRC 529(b)(6) states no contribution limit. Pub. L. 119-21 section 70413(b)
+  // raises the IRC 529(e)(3) amount to $20,000 for taxable years beginning after
+  // 2025; the IRC 529(c)(9)(B) $10,000 and IRC 529(c)(3)(E)(ii)(II) $35,000 apply
+  // to distributions after 2018 and after 2023.
+  assert.deepEqual(U.educationParametersForYear(2026)?.qualifiedTuitionProgram, {
+    state: "available_without_statutory_dollar_limit",
+    annualContributionLimit: null,
+    elementarySecondaryTuitionAnnualLimit: 20_000,
+    qualifiedEducationLoanLifetimeLimit: 10_000,
+    rothIraRolloverLifetimeLimit: 35_000,
+  });
+  assert.equal(U.educationParametersForYear(2025)?.qualifiedTuitionProgram.elementarySecondaryTuitionAnnualLimit, 10_000);
+  assert.equal(U.educationParametersForYear(2017)?.qualifiedTuitionProgram.elementarySecondaryTuitionAnnualLimit, null);
+  assert.equal(U.educationParametersForYear(2018)?.qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit, null);
+  assert.equal(U.educationParametersForYear(2023)?.qualifiedTuitionProgram.rothIraRolloverLifetimeLimit, null);
+  assert.ok(U.educationSourceMetadata().some((source) => source.id === "pl-119-21"));
+  assert.throws(() => U.educationParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
   assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
   assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);

@@ -22,7 +22,8 @@
     "./data/hsa-parameters.json": "./data/hsa-parameters.json",
     "./data/fsa-parameters.json": "./data/fsa-parameters.json",
     "./package.json": "./package.json",
-    "./data/payroll-tax-parameters.json": "./data/payroll-tax-parameters.json"
+    "./data/payroll-tax-parameters.json": "./data/payroll-tax-parameters.json",
+    "./data/education-parameters.json": "./data/education-parameters.json"
   },
   "files": [
     "dist",
@@ -30,6 +31,7 @@
     "data/hsa-parameters.json",
     "data/fsa-parameters.json",
     "data/payroll-tax-parameters.json",
+    "data/education-parameters.json",
     "README.md",
     "LICENSE",
     "SOURCES.md"
@@ -58,6 +60,7 @@
     "validate:evidence:retirement": "node scripts/verify-evidence.mjs retirement-limits",
     "validate:evidence:hsa": "node scripts/verify-evidence.mjs hsa-limits",
     "validate:evidence:fsa": "node scripts/verify-evidence.mjs fsa-limits",
+    "validate:evidence:education": "node scripts/verify-evidence.mjs education-limits",
     "check:attestations": "node scripts/check-attestations.mjs",
     "check:attestations:self-test": "node scripts/check-attestations.mjs --self-test",
     "test:457-invariants": "node scripts/check-section457-invariants.mjs"

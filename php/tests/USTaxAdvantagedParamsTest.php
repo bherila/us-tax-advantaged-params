@@ -715,6 +715,51 @@ test('exposes the IRC 125 and IRC 129 parameter table without extrapolating it',
     assertTrue(in_array('pl-119-21', $ids, true), 'Pub. L. 119-21 must be listed as an FSA source');
 });
 
+test('exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes that set it', function (): void {
+    // Pub. L. 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending
+    // after August 20, 1996, the table's first year.
+    assertSameValue(['minimum' => 1996, 'maximum' => 2026], U::supportedEducationTaxYears());
+    assertSameValue(null, U::educationParametersForYear(1995));
+    // Pub. L. 105-34 section 213: IRC 530 applies to taxable years beginning after
+    // December 31, 1997, with a $500 limit reduced from $95,000 over $15,000, or from
+    // $150,000 over $10,000 on a joint return.
+    assertSameValue('unavailable', U::educationParametersForYear(1997)['coverdellEducationSavingsAccount']['state']);
+    assertSameValue([
+        'state' => 'statutory_dollar_limit',
+        'annualContributionLimit' => 500,
+        'contributionPhaseout' => ['jointReturn' => [150000, 160000], 'otherReturns' => [95000, 110000]],
+    ], U::educationParametersForYear(1998)['coverdellEducationSavingsAccount']);
+    // Pub. L. 107-16 section 401(a) and (b), for taxable years beginning after
+    // December 31, 2001: $2,000, and a joint reduction from $190,000 over $30,000.
+    assertSameValue(2000, U::educationParametersForYear(2002)['coverdellEducationSavingsAccount']['annualContributionLimit']);
+    assertSameValue(
+        ['jointReturn' => [190000, 220000], 'otherReturns' => [95000, 110000]],
+        U::educationParametersForYear(2002)['coverdellEducationSavingsAccount']['contributionPhaseout'],
+    );
+    // IRC 127(a)(2): $5,250.
+    assertSameValue(
+        ['state' => 'statutory_dollar_limit', 'annualExclusionLimit' => 5250],
+        U::educationParametersForYear(2026)['educationalAssistanceProgram'],
+    );
+    // IRC 529(b)(6) states no contribution limit. Pub. L. 119-21 section 70413(b)
+    // raises the IRC 529(e)(3) amount to $20,000 for taxable years beginning after
+    // 2025; the IRC 529(c)(9)(B) $10,000 and IRC 529(c)(3)(E)(ii)(II) $35,000 apply
+    // to distributions after 2018 and after 2023.
+    assertSameValue([
+        'state' => 'available_without_statutory_dollar_limit',
+        'annualContributionLimit' => null,
+        'elementarySecondaryTuitionAnnualLimit' => 20000,
+        'qualifiedEducationLoanLifetimeLimit' => 10000,
+        'rothIraRolloverLifetimeLimit' => 35000,
+    ], U::educationParametersForYear(2026)['qualifiedTuitionProgram']);
+    assertSameValue(10000, U::educationParametersForYear(2025)['qualifiedTuitionProgram']['elementarySecondaryTuitionAnnualLimit']);
+    assertSameValue(null, U::educationParametersForYear(2017)['qualifiedTuitionProgram']['elementarySecondaryTuitionAnnualLimit']);
+    assertSameValue(null, U::educationParametersForYear(2018)['qualifiedTuitionProgram']['qualifiedEducationLoanLifetimeLimit']);
+    assertSameValue(null, U::educationParametersForYear(2023)['qualifiedTuitionProgram']['rothIraRolloverLifetimeLimit']);
+    $ids = array_column(U::educationSourceMetadata(), 'id');
+    assertTrue(in_array('pl-119-21', $ids, true), 'Pub. L. 119-21 must be listed as an education source');
+});
+
 test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));

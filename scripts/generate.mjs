@@ -114,3 +114,9 @@ await update(tsPath, "/* <generated-payroll-parameters> */", "/* </generated-pay
   `const RAW_PAYROLL_PARAMETERS: PayrollParameterData = ${JSON.stringify(payrollParameters, null, 2)} as PayrollParameterData;`);
 await update(phpPath, "/* <generated-payroll-parameters> */", "/* </generated-payroll-parameters> */",
   `private const PAYROLL_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(payrollParameters)}\nJSON;`);
+
+const educationParameters = await readCanonical("data/education-parameters.json");
+await update(tsPath, "/* <generated-education-parameters> */", "/* </generated-education-parameters> */",
+  `const RAW_EDUCATION_PARAMETERS: EducationParameterData = ${JSON.stringify(educationParameters, null, 2)} as EducationParameterData;`);
+await update(phpPath, "/* <generated-education-parameters> */", "/* </generated-education-parameters> */",
+  `private const EDUCATION_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(educationParameters)}\nJSON;`);

@@ -1,0 +1,931 @@
+{
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1996,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "The table starts at 1996, the first taxable year IRC 529 applies to (Pub. L. 104-188 section 1806(c)(1): taxable years ending after August 20, 1996). Each program carries its own state per year; a program that did not exist in a year in range is stated as unavailable rather than omitted. No future year is extrapolated.",
+    "coverdellFirstYear": "IRC 530 applies to taxable years beginning after December 31, 1997 (Pub. L. 105-34 section 213(f)), so 1996 and 1997 are unavailable. The $500 limit and the $150,000 joint phase-out start rose to $2,000 and $190,000, with the joint width from $10,000 to $30,000, for taxable years beginning after December 31, 2001 (Pub. L. 107-16 section 401). The EGTRRA sunset that would have reversed that after 2010 was moved to 2012 by Pub. L. 111-312 section 101(a)(1) and removed by Pub. L. 112-240 section 101(a).",
+    "educationalAssistanceContinuity": "IRC 127 lapsed and was retroactively reinstated repeatedly before 1996; those years are outside the table. From 1996 it applies without a gap: Pub. L. 104-188 section 1202 (taxable years beginning after 1994, through May 31, 1997), Pub. L. 105-34 section 221 (taxable years beginning after 1996, courses beginning through May 31, 2000), Pub. L. 106-170 (through December 31, 2001), and Pub. L. 107-16 section 411, which struck the termination, with its sunset removed as for IRC 530.",
+    "educationalAssistanceIndexedAfter2026": "Pub. L. 119-21 section 70412(b) indexes both $5,250 amounts in IRC 127(a)(2) for taxable years beginning after 2026, from a calendar-2025 base, rounded to the nearest $50. A 2027 row must carry the published adjusted amount; the flat $5,250 is not carried forward.",
+    "qualifiedTuitionProgramHasNoAnnualLimit": "IRC 529 sets no federal annual or aggregate contribution limit. IRC 529(b)(6) requires a program to have adequate safeguards against contributions in excess of those necessary for the beneficiary's qualified higher education expenses, which is a state-program ceiling rather than a federal figure. annualContributionLimit is null in every year for that reason, not because a figure is missing.",
+    "qualifiedTuitionProgramCaps": "Three IRC 529 dollar caps apply to distributions, not contributions, and are null before they take effect: the IRC 529(e)(3) elementary and secondary tuition limit per taxable year ($10,000 for distributions after 2017, Pub. L. 115-97 section 11032; $20,000 for taxable years beginning after 2025, Pub. L. 119-21 section 70413(b)); the IRC 529(c)(9)(B) lifetime limit on qualified education loan repayments ($10,000, distributions after 2018, Pub. L. 116-94 div. O section 302); and the IRC 529(c)(3)(E)(ii)(II) aggregate limit on rollovers to a Roth IRA ($35,000, distributions after 2023, Pub. L. 117-328 div. T section 126)."
+  },
+  "sources": [
+    {
+      "id": "usc-26-530",
+      "title": "26 U.S.C. 530, Coverdell education savings accounts (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapF-partVIII-sec530.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-127",
+      "title": "26 U.S.C. 127, educational assistance programs (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec127.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-529",
+      "title": "26 U.S.C. 529, qualified tuition programs (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapF-partVIII-sec529.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "pl-104-188",
+      "title": "Small Business Job Protection Act of 1996, Pub. L. 104-188, sections 1202 and 1806",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-104publ188/pdf/PLAW-104publ188.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-105-34",
+      "title": "Taxpayer Relief Act of 1997, Pub. L. 105-34, sections 213 and 221",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-105publ34/pdf/PLAW-105publ34.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-107-16",
+      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, sections 401 and 411",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-111-312",
+      "title": "Tax Relief, Unemployment Insurance Reauthorization, and Job Creation Act of 2010, Pub. L. 111-312, section 101(a)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-111publ312/pdf/PLAW-111publ312.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-112-240",
+      "title": "American Taxpayer Relief Act of 2012, Pub. L. 112-240, section 101(a)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-112publ240/pdf/PLAW-112publ240.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, sections 70412 and 70413",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Congress"
+    }
+  ],
+  "years": {
+    "1996": {
+      "year": 1996,
+      "coverdellEducationSavingsAccount": {
+        "state": "unavailable",
+        "annualContributionLimit": null,
+        "contributionPhaseout": null
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "1997": {
+      "year": 1997,
+      "coverdellEducationSavingsAccount": {
+        "state": "unavailable",
+        "annualContributionLimit": null,
+        "contributionPhaseout": null
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 500,
+        "contributionPhaseout": {
+          "jointReturn": [
+            150000,
+            160000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 500,
+        "contributionPhaseout": {
+          "jointReturn": [
+            150000,
+            160000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 500,
+        "contributionPhaseout": {
+          "jointReturn": [
+            150000,
+            160000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 500,
+        "contributionPhaseout": {
+          "jointReturn": [
+            150000,
+            160000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": null,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": null,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": null
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": 35000
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": 35000
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "coverdellEducationSavingsAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 2000,
+        "contributionPhaseout": {
+          "jointReturn": [
+            190000,
+            220000
+          ],
+          "otherReturns": [
+            95000,
+            110000
+          ]
+        }
+      },
+      "educationalAssistanceProgram": {
+        "state": "statutory_dollar_limit",
+        "annualExclusionLimit": 5250
+      },
+      "qualifiedTuitionProgram": {
+        "state": "available_without_statutory_dollar_limit",
+        "annualContributionLimit": null,
+        "elementarySecondaryTuitionAnnualLimit": 20000,
+        "qualifiedEducationLoanLifetimeLimit": 10000,
+        "rothIraRolloverLifetimeLimit": 35000
+      }
+    }
+  },
+  "dollarLimitStates": {
+    "unavailable": "The program did not exist for the tax year. Unlike the FSA table, a program in range is stated as unavailable explicitly, because the three programs start in different years.",
+    "available_without_statutory_dollar_limit": "The program existed but no federal statutory dollar limit on contributions applied. The amount is null.",
+    "statutory_dollar_limit": "A statutory dollar limit applies and is encoded."
+  }
+}

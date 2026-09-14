@@ -337,6 +337,43 @@ One caution specific to these documents: **Rev. Proc. 2018-18 was superseded mid
 set the 2018 family limit at $6,850; Rev. Proc. 2018-27 restored $6,900. The encoded value is
 $6,900, and both documents are committed so the sequence is auditable.
 
+## Education savings and educational assistance sources (IRC §530, §127 and §529)
+
+Every figure in `data/education-parameters.json` is statutory, so the authorities are
+enacted laws and the Code rather than annual procedures. Each is committed under
+`evidence/education-limits/sources/` and fixed by `SHA256SUMS.txt`.
+
+- **Small Business Job Protection Act of 1996, Pub. L. 104-188** — §1806 adds §529, applying
+  to taxable years ending after August 20, 1996 (§1806(c)(1)), which sets the table's first
+  year. §1202 extends §127 through May 31, 1997, for taxable years beginning after
+  December 31, 1994.
+
+- **Taxpayer Relief Act of 1997, Pub. L. 105-34** — §213 adds §530 with a $500 limit, reduced
+  for modified adjusted gross income above $95,000 over $15,000 ($150,000 over $10,000 on a
+  joint return), applying to taxable years beginning after December 31, 1997 (§213(f)). §221
+  extends §127 to courses beginning through May 31, 2000, for taxable years beginning after
+  December 31, 1996.
+
+- **Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16** — §401(a)
+  substitutes $2,000 for $500 in §530(b)(1)(A)(iii), and §401(b) substitutes $190,000 and
+  $30,000 in §530(c)(1), for taxable years beginning after December 31, 2001. §411 strikes the
+  §127(d) termination for courses beginning after December 31, 2001. The Act's §901 sunset was
+  moved to December 31, 2012 by **Pub. L. 111-312 §101(a)(1)** and struck by
+  **Pub. L. 112-240 §101(a)** for taxable years beginning after December 31, 2012.
+
+- **26 U.S.C. §§127, 529 and 530 (2024 edition)** — the current text, and the amendment and
+  effective-date notes. The notes record the Pub. L. 106-170 extension of §127 to
+  December 31, 2001, and when each §529 cap took effect: Pub. L. 115-97 §11032(b) for
+  distributions made after December 31, 2017; Pub. L. 116-94 div. O §302(c) for distributions
+  after December 31, 2018; and Pub. L. 117-328 div. T §126(d) for distributions after
+  December 31, 2023.
+
+- **Pub. L. 119-21** — §70413(b) raises the §529(e)(3) limit from $10,000 to $20,000 for taxable
+  years beginning after December 31, 2025. §70412 makes the §127(c)(1)(B) student-loan payment
+  clause permanent and adds §127(d), which indexes both $5,250 amounts for taxable years
+  beginning after 2026 from a calendar-2025 base, rounded to the nearest $50; its amendments
+  apply to payments made after December 31, 2025.
+
 ## Flexible spending arrangement sources (IRC §125 and IRC §129)
 
 Two statutes with two different publication habits. The §125(i) health FSA

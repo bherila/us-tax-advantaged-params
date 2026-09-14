@@ -7,6 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const parameterPath = join(root, "data", "retirement-parameters.json");
 const hsaPath = join(root, "data", "hsa-parameters.json");
 const fsaPath = join(root, "data", "fsa-parameters.json");
+const educationPath = join(root, "data", "education-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -99,6 +100,7 @@ function requirePositiveAmount(value, label) {
 const parameters = await parseCanonicalJson(parameterPath, "data/retirement-parameters.json");
 const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
+const education = await parseCanonicalJson(educationPath, "data/education-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -401,6 +403,88 @@ if (fsa) {
   }
 }
 
+if (education) {
+  walk(education, "education");
+  const years = validateYearSpan(education, "data/education-parameters.json");
+  // The three programs start in different years, so unlike the FSA table the
+  // unavailable state appears on rows and needs its own definition.
+  const STATES = ["unavailable", "available_without_statutory_dollar_limit", "statutory_dollar_limit"];
+  for (const state of STATES) {
+    if (typeof education.dollarLimitStates?.[state] !== "string") {
+      fail(`data/education-parameters.json dollarLimitStates.${state} must be described.`);
+    }
+  }
+  for (const year of years ?? []) {
+    const label = `Education year ${year}`;
+    const row = education.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const coverdell = row.coverdellEducationSavingsAccount;
+    const assistance = row.educationalAssistanceProgram;
+    const qtp = row.qualifiedTuitionProgram;
+    for (const [name, program] of [
+      ["coverdellEducationSavingsAccount", coverdell],
+      ["educationalAssistanceProgram", assistance],
+      ["qualifiedTuitionProgram", qtp],
+    ]) {
+      if (!STATES.includes(program?.state)) fail(`${label} ${name}.state is not a known state.`);
+    }
+    // An amount exists exactly when the state says a statutory limit does.
+    if (coverdell?.state === "statutory_dollar_limit") {
+      requirePositiveAmount(coverdell.annualContributionLimit, `${label} coverdellEducationSavingsAccount.annualContributionLimit`);
+      for (const filer of ["jointReturn", "otherReturns"]) {
+        const band = coverdell.contributionPhaseout?.[filer];
+        if (!Array.isArray(band) || band.length !== 2 || !band.every((value) => Number.isInteger(value) && value > 0) || band[0] >= band[1]) {
+          fail(`${label} coverdellEducationSavingsAccount.contributionPhaseout.${filer} must be an ascending [start, end] of whole dollars.`);
+        }
+      }
+    } else if (coverdell && (coverdell.annualContributionLimit !== null || coverdell.contributionPhaseout !== null)) {
+      fail(`${label} coverdellEducationSavingsAccount carries amounts in a state without a statutory limit.`);
+    }
+    if (assistance?.state === "statutory_dollar_limit") {
+      requirePositiveAmount(assistance.annualExclusionLimit, `${label} educationalAssistanceProgram.annualExclusionLimit`);
+    } else if (assistance && assistance.annualExclusionLimit !== null) {
+      fail(`${label} educationalAssistanceProgram carries an amount in a state without a statutory limit.`);
+    }
+    // IRC 529(b)(6) states no federal contribution limit in any year.
+    if (qtp && (qtp.state !== "available_without_statutory_dollar_limit" || qtp.annualContributionLimit !== null)) {
+      fail(`${label} qualifiedTuitionProgram must be available without a statutory contribution limit; IRC 529(b)(6) states none.`);
+    }
+    for (const field of ["elementarySecondaryTuitionAnnualLimit", "qualifiedEducationLoanLifetimeLimit", "rothIraRolloverLifetimeLimit"]) {
+      if (qtp && !(field in qtp)) {
+        fail(`${label} qualifiedTuitionProgram.${field} is required; use null before it takes effect.`);
+      } else if (qtp && !(qtp[field] === null || (Number.isInteger(qtp[field]) && qtp[field] > 0))) {
+        fail(`${label} qualifiedTuitionProgram.${field} must be null or a positive whole-dollar amount.`);
+      }
+    }
+    // Pub. L. 119-21 section 70412(b) indexes IRC 127(a)(2) for taxable years
+    // beginning after 2026, so a later row cannot copy the flat amount forward.
+    if (year > 2026 && assistance?.annualExclusionLimit === 5250) {
+      fail(`${label} educationalAssistanceProgram.annualExclusionLimit carries the unindexed $5,250; Pub. L. 119-21 section 70412(b) indexes it for taxable years beginning after 2026.`);
+    }
+  }
+
+  validateSources(education.sources, "data/education-parameters.json", ["usc-26-530", "usc-26-127", "usc-26-529", "pl-104-188", "pl-105-34", "pl-107-16", "pl-119-21"]);
+
+  // Each program's first year and each change, from the provision that sets it.
+  const row = (year) => education.years?.[String(year)];
+  if (row(1997)?.coverdellEducationSavingsAccount?.state !== "unavailable"
+    || row(1998)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 500) {
+    fail("IRC 530 must first apply in 1998, at $500 (Pub. L. 105-34 section 213(f)).");
+  }
+  if (row(2001)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 500
+    || row(2002)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 2000) {
+    fail("IRC 530 must change from $500 to $2,000 in 2002 (Pub. L. 107-16 section 401(a)).");
+  }
+  if (row(2017)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== null
+    || row(2018)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== 10000
+    || row(2026)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== 20000) {
+    fail("IRC 529(e)(3) must be null through 2017, $10,000 from 2018 and $20,000 from 2026.");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -475,6 +559,7 @@ console.log(
     `${Object.keys(hsa.years).length} contiguous HSA tax years, ` +
     `${Object.keys(fsa.years).length} contiguous FSA tax years, ` +
     `${Object.keys(payroll.years).length} contiguous payroll tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length} sources, ` +
+    `${Object.keys(education.years).length} contiguous education tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );
