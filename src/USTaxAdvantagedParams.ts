@@ -1248,6 +1248,52 @@ export interface YearParameters {
    */
   annualCompensation401a17GrandfatheredGovernmental: Money | null;
   /**
+   * IRC 414(q)(1)(B) compensation threshold in the definition of a highly
+   * compensated employee, as the annual notice publishes it. A parameter only:
+   * whether an employee is highly compensated also turns on ownership and other
+   * IRC 414(q) facts the package does not evaluate.
+   *
+   * `null` before 1997. Notice 96-55 is the first notice to state the figure,
+   * for 1997, "as amended by the Small Business Job Protection Act of 1996".
+   */
+  highlyCompensatedEmployeeCompensation414q: Money | null;
+  /**
+   * IRC 416(i)(1)(A)(i) compensation an officer must exceed to be a key employee
+   * for top-heavy purposes. A parameter only; no top-heavy determination is made.
+   *
+   * `null` before 2002. Pub. L. 107-16 section 613 inserted the $130,000
+   * threshold in clause (i), effective for years beginning after December 31,
+   * 2001, and indexed it from 2003.
+   */
+  keyEmployeeOfficerCompensation416i: Money | null;
+  /**
+   * IRC 25B retirement savings contributions credit parameters. The credit itself
+   * is not calculated.
+   *
+   * `adjustedGrossIncomeLimits` gives, for each filer, the highest adjusted gross
+   * income at which the 50, 20 and 10 percent applicable percentages of IRC
+   * 25B(b) apply; above `tenPercent` the percentage is zero. 2002 through 2006
+   * carry the fixed table Pub. L. 107-16 section 618 enacted. Pub. L. 109-280
+   * section 833(a) indexed the amounts for years after 2006.
+   *
+   * `retirementPlanAndIraContributionsQualify` records whether IRC 25B(d)(1)
+   * counts IRA contributions, elective deferrals and voluntary employee
+   * contributions. Pub. L. 117-328 div. T section 103(e)(1) strikes them for
+   * taxable years beginning after December 31, 2026, leaving only ABLE-account
+   * contributions made before January 1, 2026. It repeals neither the credit
+   * nor the IRC 25B(b) table, so a later year carries `false` here rather than a
+   * null credit.
+   *
+   * `null` before 2002, when IRC 25B did not exist.
+   */
+  saversCredit25B: {
+    adjustedGrossIncomeLimits: Record<
+      "jointReturn" | "headOfHousehold" | "allOtherTaxpayers",
+      { fiftyPercent: Money; twentyPercent: Money; tenPercent: Money }
+    >;
+    retirementPlanAndIraContributionsQualify: boolean;
+  } | null;
+  /**
    * IRC 415(b)(1)(A) dollar limitation on the annual benefit payable by a
    * defined-benefit plan. It is a ceiling on the *benefit*, published in the
    * same annual notice as every other figure here, and needs no actuary; it is
@@ -2636,6 +2682,12 @@ const RAW_PARAMETERS: ParameterData = {
       "title": "26 U.S.C. § 402A(e), pension-linked emergency savings accounts, including the § 402A(e)(3)(A)(i) limitation and its post-2024 adjustment rule",
       "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim",
       "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-25B",
+      "title": "26 U.S.C. 25B, elective deferrals and IRA contributions by certain individuals (2024 edition), including the Pub. L. 117-328 div. T section 103(e)(1) amendment of subsection (d)(1) for taxable years beginning after December 31, 2026",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartA-sec25B.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
     }
   ],
   "years": {
@@ -2662,6 +2714,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2747,6 +2802,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2832,6 +2890,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -2917,6 +2978,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3002,6 +3066,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3087,6 +3154,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3172,6 +3242,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3257,6 +3330,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3342,6 +3418,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3427,6 +3506,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3512,6 +3594,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3597,6 +3682,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": null,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3682,6 +3770,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3789,6 +3880,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": null,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -3896,6 +3990,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 200000,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4003,6 +4100,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 209200,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4110,6 +4210,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 222220,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4217,6 +4320,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 228860,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4324,6 +4430,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 235840,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4431,6 +4540,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4538,6 +4650,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4645,6 +4760,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 150000,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": null,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4752,6 +4870,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "annualCompensation401a17GrandfatheredGovernmental": null,
+      "highlyCompensatedEmployeeCompensation414q": 80000,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4859,6 +4980,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "annualCompensation401a17GrandfatheredGovernmental": 265000,
+      "highlyCompensatedEmployeeCompensation414q": 80000,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -4979,6 +5103,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 160000,
       "annualCompensation401a17GrandfatheredGovernmental": 270000,
+      "highlyCompensatedEmployeeCompensation414q": 80000,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5099,6 +5226,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "annualCompensation401a17GrandfatheredGovernmental": 275000,
+      "highlyCompensatedEmployeeCompensation414q": 85000,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5219,6 +5349,9 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 0.25,
       "annualCompensation401a17": 170000,
       "annualCompensation401a17GrandfatheredGovernmental": 285000,
+      "highlyCompensatedEmployeeCompensation414q": 85000,
+      "keyEmployeeOfficerCompensation416i": null,
+      "saversCredit25B": null,
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5339,6 +5472,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "annualCompensation401a17GrandfatheredGovernmental": 295000,
+      "highlyCompensatedEmployeeCompensation414q": 90000,
+      "keyEmployeeOfficerCompensation416i": 130000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 30000,
+            "twentyPercent": 32500,
+            "tenPercent": 50000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 22500,
+            "twentyPercent": 24375,
+            "tenPercent": 37500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15000,
+            "twentyPercent": 16250,
+            "tenPercent": 25000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5459,6 +5614,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 200000,
       "annualCompensation401a17GrandfatheredGovernmental": 300000,
+      "highlyCompensatedEmployeeCompensation414q": 90000,
+      "keyEmployeeOfficerCompensation416i": 130000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 30000,
+            "twentyPercent": 32500,
+            "tenPercent": 50000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 22500,
+            "twentyPercent": 24375,
+            "tenPercent": 37500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15000,
+            "twentyPercent": 16250,
+            "tenPercent": 25000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5579,6 +5756,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 205000,
       "annualCompensation401a17GrandfatheredGovernmental": 305000,
+      "highlyCompensatedEmployeeCompensation414q": 90000,
+      "keyEmployeeOfficerCompensation416i": 130000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 30000,
+            "twentyPercent": 32500,
+            "tenPercent": 50000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 22500,
+            "twentyPercent": 24375,
+            "tenPercent": 37500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15000,
+            "twentyPercent": 16250,
+            "tenPercent": 25000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5699,6 +5898,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 210000,
       "annualCompensation401a17GrandfatheredGovernmental": 315000,
+      "highlyCompensatedEmployeeCompensation414q": 95000,
+      "keyEmployeeOfficerCompensation416i": 135000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 30000,
+            "twentyPercent": 32500,
+            "tenPercent": 50000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 22500,
+            "twentyPercent": 24375,
+            "tenPercent": 37500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15000,
+            "twentyPercent": 16250,
+            "tenPercent": 25000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5819,6 +6040,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 220000,
       "annualCompensation401a17GrandfatheredGovernmental": 325000,
+      "highlyCompensatedEmployeeCompensation414q": 100000,
+      "keyEmployeeOfficerCompensation416i": 140000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 30000,
+            "twentyPercent": 32500,
+            "tenPercent": 50000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 22500,
+            "twentyPercent": 24375,
+            "tenPercent": 37500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15000,
+            "twentyPercent": 16250,
+            "tenPercent": 25000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -5939,6 +6182,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 225000,
       "annualCompensation401a17GrandfatheredGovernmental": 335000,
+      "highlyCompensatedEmployeeCompensation414q": 100000,
+      "keyEmployeeOfficerCompensation416i": 145000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 31000,
+            "twentyPercent": 34000,
+            "tenPercent": 52000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 23250,
+            "twentyPercent": 25500,
+            "tenPercent": 39000
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 15500,
+            "twentyPercent": 17000,
+            "tenPercent": 26000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6059,6 +6324,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 230000,
       "annualCompensation401a17GrandfatheredGovernmental": 345000,
+      "highlyCompensatedEmployeeCompensation414q": 105000,
+      "keyEmployeeOfficerCompensation416i": 150000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 32000,
+            "twentyPercent": 34500,
+            "tenPercent": 53000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 24000,
+            "twentyPercent": 25875,
+            "tenPercent": 39750
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 16000,
+            "twentyPercent": 17250,
+            "tenPercent": 26500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": null,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6179,6 +6466,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "annualCompensation401a17GrandfatheredGovernmental": 360000,
+      "highlyCompensatedEmployeeCompensation414q": 110000,
+      "keyEmployeeOfficerCompensation416i": 160000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 33000,
+            "twentyPercent": 36000,
+            "tenPercent": 55500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 24750,
+            "twentyPercent": 27000,
+            "tenPercent": 41625
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 16500,
+            "twentyPercent": 18000,
+            "tenPercent": 27750
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6299,6 +6608,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "annualCompensation401a17GrandfatheredGovernmental": 360000,
+      "highlyCompensatedEmployeeCompensation414q": 110000,
+      "keyEmployeeOfficerCompensation416i": 160000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 33500,
+            "twentyPercent": 36000,
+            "tenPercent": 55500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 25125,
+            "twentyPercent": 27000,
+            "tenPercent": 41625
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 16750,
+            "twentyPercent": 18000,
+            "tenPercent": 27750
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6419,6 +6750,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 245000,
       "annualCompensation401a17GrandfatheredGovernmental": 360000,
+      "highlyCompensatedEmployeeCompensation414q": 110000,
+      "keyEmployeeOfficerCompensation416i": 160000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 34000,
+            "twentyPercent": 36500,
+            "tenPercent": 56500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 25500,
+            "twentyPercent": 27375,
+            "tenPercent": 42375
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 17000,
+            "twentyPercent": 18250,
+            "tenPercent": 28250
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 195000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6539,6 +6892,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 250000,
       "annualCompensation401a17GrandfatheredGovernmental": 375000,
+      "highlyCompensatedEmployeeCompensation414q": 115000,
+      "keyEmployeeOfficerCompensation416i": 165000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 34500,
+            "twentyPercent": 37500,
+            "tenPercent": 57500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 25875,
+            "twentyPercent": 28125,
+            "tenPercent": 43125
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 17250,
+            "twentyPercent": 18750,
+            "tenPercent": 28750
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 200000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6659,6 +7034,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 255000,
       "annualCompensation401a17GrandfatheredGovernmental": 380000,
+      "highlyCompensatedEmployeeCompensation414q": 115000,
+      "keyEmployeeOfficerCompensation416i": 165000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 35500,
+            "twentyPercent": 38500,
+            "tenPercent": 59000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 26625,
+            "twentyPercent": 28875,
+            "tenPercent": 44250
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 17750,
+            "twentyPercent": 19250,
+            "tenPercent": 29500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 205000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6779,6 +7176,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 260000,
       "annualCompensation401a17GrandfatheredGovernmental": 385000,
+      "highlyCompensatedEmployeeCompensation414q": 115000,
+      "keyEmployeeOfficerCompensation416i": 170000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 36000,
+            "twentyPercent": 39000,
+            "tenPercent": 60000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 27000,
+            "twentyPercent": 29250,
+            "tenPercent": 45000
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 18000,
+            "twentyPercent": 19500,
+            "tenPercent": 30000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -6899,6 +7318,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "annualCompensation401a17GrandfatheredGovernmental": 395000,
+      "highlyCompensatedEmployeeCompensation414q": 120000,
+      "keyEmployeeOfficerCompensation416i": 170000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 36500,
+            "twentyPercent": 39500,
+            "tenPercent": 61000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 27375,
+            "twentyPercent": 29625,
+            "tenPercent": 45750
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 18250,
+            "twentyPercent": 19750,
+            "tenPercent": 30500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7019,6 +7460,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 265000,
       "annualCompensation401a17GrandfatheredGovernmental": 395000,
+      "highlyCompensatedEmployeeCompensation414q": 120000,
+      "keyEmployeeOfficerCompensation416i": 170000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 37000,
+            "twentyPercent": 40000,
+            "tenPercent": 61500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 27750,
+            "twentyPercent": 30000,
+            "tenPercent": 46125
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 18500,
+            "twentyPercent": 20000,
+            "tenPercent": 30750
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 210000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7139,6 +7602,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 270000,
       "annualCompensation401a17GrandfatheredGovernmental": 400000,
+      "highlyCompensatedEmployeeCompensation414q": 120000,
+      "keyEmployeeOfficerCompensation416i": 175000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 37000,
+            "twentyPercent": 40000,
+            "tenPercent": 62000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 27750,
+            "twentyPercent": 30000,
+            "tenPercent": 46500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 18500,
+            "twentyPercent": 20000,
+            "tenPercent": 31000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 215000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7259,6 +7744,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 275000,
       "annualCompensation401a17GrandfatheredGovernmental": 405000,
+      "highlyCompensatedEmployeeCompensation414q": 120000,
+      "keyEmployeeOfficerCompensation416i": 175000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 38000,
+            "twentyPercent": 41000,
+            "tenPercent": 63000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 28500,
+            "twentyPercent": 30750,
+            "tenPercent": 47250
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 19000,
+            "twentyPercent": 20500,
+            "tenPercent": 31500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 220000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7379,6 +7886,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 280000,
       "annualCompensation401a17GrandfatheredGovernmental": 415000,
+      "highlyCompensatedEmployeeCompensation414q": 125000,
+      "keyEmployeeOfficerCompensation416i": 180000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 38500,
+            "twentyPercent": 41500,
+            "tenPercent": 64000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 28875,
+            "twentyPercent": 31125,
+            "tenPercent": 48000
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 19250,
+            "twentyPercent": 20750,
+            "tenPercent": 32000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 225000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7499,6 +8028,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 285000,
       "annualCompensation401a17GrandfatheredGovernmental": 425000,
+      "highlyCompensatedEmployeeCompensation414q": 130000,
+      "keyEmployeeOfficerCompensation416i": 185000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 39000,
+            "twentyPercent": 42500,
+            "tenPercent": 65000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 29250,
+            "twentyPercent": 31875,
+            "tenPercent": 48750
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 19500,
+            "twentyPercent": 21250,
+            "tenPercent": 32500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7619,6 +8170,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 290000,
       "annualCompensation401a17GrandfatheredGovernmental": 430000,
+      "highlyCompensatedEmployeeCompensation414q": 130000,
+      "keyEmployeeOfficerCompensation416i": 185000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 39500,
+            "twentyPercent": 43000,
+            "tenPercent": 66000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 29625,
+            "twentyPercent": 32250,
+            "tenPercent": 49500
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 19750,
+            "twentyPercent": 21500,
+            "tenPercent": 33000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 230000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7739,6 +8312,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 305000,
       "annualCompensation401a17GrandfatheredGovernmental": 450000,
+      "highlyCompensatedEmployeeCompensation414q": 135000,
+      "keyEmployeeOfficerCompensation416i": 200000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 41000,
+            "twentyPercent": 44000,
+            "tenPercent": 68000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 30750,
+            "twentyPercent": 33000,
+            "tenPercent": 51000
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 20500,
+            "twentyPercent": 22000,
+            "tenPercent": 34000
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 245000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7859,6 +8454,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 330000,
       "annualCompensation401a17GrandfatheredGovernmental": 490000,
+      "highlyCompensatedEmployeeCompensation414q": 150000,
+      "keyEmployeeOfficerCompensation416i": 215000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 43500,
+            "twentyPercent": 47500,
+            "tenPercent": 73000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 32625,
+            "twentyPercent": 35625,
+            "tenPercent": 54750
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 21750,
+            "twentyPercent": 23750,
+            "tenPercent": 36500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 265000,
       "pensionLinkedEmergencySavingsBalanceCap402A": null,
       "sep": {
@@ -7979,6 +8596,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 345000,
       "annualCompensation401a17GrandfatheredGovernmental": 505000,
+      "highlyCompensatedEmployeeCompensation414q": 155000,
+      "keyEmployeeOfficerCompensation416i": 220000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 46000,
+            "twentyPercent": 50000,
+            "tenPercent": 76500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 34500,
+            "twentyPercent": 37500,
+            "tenPercent": 57375
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 23000,
+            "twentyPercent": 25000,
+            "tenPercent": 38250
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 275000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -8099,6 +8738,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 350000,
       "annualCompensation401a17GrandfatheredGovernmental": 520000,
+      "highlyCompensatedEmployeeCompensation414q": 160000,
+      "keyEmployeeOfficerCompensation416i": 230000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 47500,
+            "twentyPercent": 51000,
+            "tenPercent": 79000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 35625,
+            "twentyPercent": 38250,
+            "tenPercent": 59250
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 23750,
+            "twentyPercent": 25500,
+            "tenPercent": 39500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 280000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2500,
       "sep": {
@@ -8219,6 +8880,28 @@ const RAW_PARAMETERS: ParameterData = {
       "annualAdditionsCompensationFraction": 1,
       "annualCompensation401a17": 360000,
       "annualCompensation401a17GrandfatheredGovernmental": 535000,
+      "highlyCompensatedEmployeeCompensation414q": 160000,
+      "keyEmployeeOfficerCompensation416i": 235000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 48500,
+            "twentyPercent": 52500,
+            "tenPercent": 80500
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 36375,
+            "twentyPercent": 39375,
+            "tenPercent": 60375
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 24250,
+            "twentyPercent": 26250,
+            "tenPercent": 40250
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": true
+      },
       "definedBenefitAnnualBenefit415b": 290000,
       "pensionLinkedEmergencySavingsBalanceCap402A": 2600,
       "sep": {
@@ -8324,10 +9007,10 @@ const RAW_PARAMETERS: ParameterData = {
 const RAW_HSA_PARAMETERS: HsaParameterData = {
   "schemaVersion": 1,
   "package": "us-tax-advantaged-params",
-  "generatedThroughTaxYear": 2026,
+  "generatedThroughTaxYear": 2027,
   "supportedTaxYears": {
     "minimum": 2004,
-    "maximum": 2026
+    "maximum": 2027
   },
   "moneyUnit": "USD",
   "proration": {
@@ -8494,6 +9177,12 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
       "id": "irs-rev-proc-2025-19",
       "title": "Rev. Proc. 2025-19, 2026 health savings account amounts",
       "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2026-24",
+      "title": "Rev. Proc. 2026-24, 2027 health savings account amounts",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-26-24.pdf",
       "authority": "IRS"
     }
   ],
@@ -8978,6 +9667,27 @@ const RAW_HSA_PARAMETERS: HsaParameterData = {
         "maximumAnnualOutOfPocket": {
           "selfOnly": 8500,
           "family": 17000
+        }
+      }
+    },
+    "2027": {
+      "year": 2027,
+      "annualContributionLimit": {
+        "selfOnly": 4500,
+        "family": 9000
+      },
+      "additionalContributionAmountAge55": 1000,
+      "contributionLimitCappedByHdhpAnnualDeductible": false,
+      "lastMonthRuleAvailable": true,
+      "testingPeriodMonths": 13,
+      "hdhp": {
+        "minimumAnnualDeductible": {
+          "selfOnly": 1750,
+          "family": 3500
+        },
+        "maximumAnnualOutOfPocket": {
+          "selfOnly": 8700,
+          "family": 17400
         }
       }
     }

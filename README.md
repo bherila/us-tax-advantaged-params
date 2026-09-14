@@ -25,14 +25,19 @@ USTaxAdvantagedParams.supportedTaxYears();
 // { minimum: 1975, maximum: 2026 }
 ```
 
-Health savings accounts have their own range, **2004 through 2026**, because IRC §223 was
+Health savings accounts have their own range, **2004 through 2027**, because IRC §223 was
 added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2003
 effective for taxable years beginning after 2003. A year before 2004 returns an
 `unavailable` HSA result rather than an extrapolated one.
 
+The range runs a year past the retirement table because the IRS publishes the HSA Revenue
+Procedure in the spring, months before the retirement cost-of-living notice. The 2027 amounts
+from Rev. Proc. 2026-24 are available through `hsaParametersForYear(2027)`. A scenario for
+2027 still throws `UnsupportedTaxYearError` until the retirement table reaches that year.
+
 ```ts
 USTaxAdvantagedParams.supportedHsaTaxYears();
-// { minimum: 2004, maximum: 2026 }
+// { minimum: 2004, maximum: 2027 }
 ```
 
 Flexible spending arrangements have their own range, **1987 through 2026**. It starts at
@@ -1337,6 +1342,18 @@ SIMPLE formulas preserve their distinct treatment: the ordinary 3% matching meth
 
 Supplying `expectedEmployerContribution` bypasses formula inference because it represents a known caller-provided employer amount. The amount is still constrained by applicable annual-additions and plan-document ceilings.
 
+### Plan-status thresholds and the saver's credit table
+
+`parametersForYear` also returns three sets of figures that the annual notice publishes beside the contribution limits. The package reports them; it does not apply them.
+
+- `highlyCompensatedEmployeeCompensation414q` is the §414(q)(1)(B) compensation threshold in the definition of a highly compensated employee: $80,000 for 1997 and $160,000 for 2026. It is `null` before 1997, because Notice 96-55 is the first to state the figure "as amended by the Small Business Job Protection Act of 1996".
+- `keyEmployeeOfficerCompensation416i` is the §416(i)(1)(A)(i) compensation an officer must exceed to be a key employee for top-heavy purposes: $130,000 for 2002 and $235,000 for 2026. It is `null` before 2002, because EGTRRA §613 inserted the dollar threshold for years beginning after December 31, 2001.
+- `saversCredit25B.adjustedGrossIncomeLimits` gives the §25B(b) adjusted gross income ceilings for the 50, 20 and 10 percent credit rates, for a joint return, a head of household and all other filers. For 2026, a joint return's ceilings are $48,500, $52,500 and $80,500. 2002 through 2006 carry the fixed table EGTRRA §618 enacted; the Pension Protection Act of 2006 §833(a) indexed it from 2007. `saversCredit25B` is `null` before 2002.
+
+Whether a particular employee is highly compensated or a key employee, and the amount of the credit, are not calculated; see [Deliberate exclusions](#deliberate-exclusions).
+
+**The saver's credit is not repealed after 2026.** SECURE 2.0 (Pub. L. 117-328, div. T) §103(e)(1) rewrites §25B(d)(1) for taxable years beginning after December 31, 2026, so that the only qualified retirement savings contributions are ABLE-account contributions made before January 1, 2026. IRA contributions and elective deferrals stop qualifying, but the credit and its §25B(b) table remain. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+
 ## IRA phase-outs and spousal IRAs
 
 The package models:
@@ -1644,10 +1661,10 @@ The package does not calculate:
 - The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.
 - Whether a dependent care program meets the §129(d) written-plan and nondiscrimination requirements, the §129(c) denial for amounts paid to a related individual, and whether the individuals cared for qualify.
 - The §408(d)(9)(C) once-per-lifetime limitation on a qualified HSA funding distribution and the separate §408(d)(9)(D) testing period. The §223(b)(4)(C) reduction itself *is* applied, from the amount supplied as `persons[].qualifiedHsaFundingDistributions`, which is taken as stated.
-- The retirement savings contributions credit.
+- The §25B retirement savings contributions credit. Its §25B(b) adjusted gross income table *is* exposed as `saversCredit25B`; see [Plan-status thresholds and the saver's credit table](#plan-status-thresholds-and-the-savers-credit-table).
 - Required minimum distributions or distribution penalties.
 - Plan eligibility, vesting, loans, or distributions generally.
-- ADP, ACP, coverage, top-heavy, or other nondiscrimination testing.
+- ADP, ACP, coverage, top-heavy, or other nondiscrimination testing, including whether an employee is highly compensated under §414(q) or a key employee under §416(i). The published dollar thresholds for both *are* exposed as parameters.
 - Employer controlled-group ownership from raw entity records.
 - Full payroll processing, special SECA methods, or tax-return MAGI. Ordinary FICA/SECA on explicit facts is supported below.
 - The pre-2002 §403(b)(2) maximum exclusion allowance and the §415(c)(4) alternative elections. Both are diagnosed and the affected years return `indeterminate`; neither is computed.

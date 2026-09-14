@@ -92,16 +92,39 @@ statute text is committed as `usc-26-219.pdf` and `usc-26-408A.pdf`.
 
 The §402(g)/§457(e)(15) elective series is compared for every year it records.
 
+Three plan-status and credit figures the notices publish beside the limits are
+compared too: the §414(q)(1)(B) highly-compensated-employee threshold for
+1997–2026, the §416(i)(1)(A)(i) key-employee threshold for 2002–2026, and all
+nine §25B(b) adjusted gross income ceilings for 2002–2026, as three members for
+each of the joint, head-of-household and all-other columns. The head-of-household
+and all-other amounts are compared as printed rather than derived from the joint
+column. Each block records where a figure came from when its own source does not
+carry it:
+
+- 1997–2000 take the §414(q)(1)(B) figure from Notices 96-55, 97-58, 98-53 and
+  99-55, because those blocks cite Publication 590.
+- 2002–2006 take the §25B table from EGTRRA §618 itself, which enacted it
+  unindexed, and 2002 cites EGTRRA §613 for the $130,000 key-employee figure.
+- 2007 takes the first indexed table from Rev. Proc. 2006-53 §3.06.
+- 2013–2015 take the table from Notices 2012-67, 2013-73 and 2014-70, because the
+  IR-series releases those blocks cite print only the top ceiling.
+
+Each §25B year also records `saversCreditRetirementContributionsQualify_25Bd1` as
+`true`, cited to §25B(d)(1). SECURE 2.0 div. T §103(e)(1) removes retirement
+contributions from that definition for taxable years beginning after 2026
+without repealing the credit, which the 2024 edition of 26 U.S.C. §25B records.
+
 ## Sources
 
 The enacted texts of ERISA, the Tax Reform Act of 1976, the Revenue Act of 1978,
 and ERTA establish the 1975–86 discontinuities. The remaining sources include
-IRS COLA notices and Bulletin publications from 1996 through 2025; annual IRS
-Publication 590 editions for 1995 through 2000 and 2002; IRS CODA and SEP/SARSEP
-technical guidance; the IR-series releases that carried the figures before the
-notice format; EGTRRA's enacted text; SSA Federal Register wage-base
-determinations; and the text of 26 U.S.C. §§219, 402, 402A, 408, and 408A for
-statutory amounts the notices never print. Every file is fixed by
+IRS COLA notices and Bulletin publications from 1996 through 2025, including
+Bulletins 2012-50, 2013-49 and 2014-48 for Notices 2012-67, 2013-73 and 2014-70;
+Rev. Proc. 2006-53; annual IRS Publication 590 editions for 1995 through 2000 and
+2002; IRS CODA and SEP/SARSEP technical guidance; the IR-series releases that
+carried the figures before the notice format; EGTRRA's enacted text; SSA Federal
+Register wage-base determinations; and the text of 26 U.S.C. §§25B, 219, 402,
+402A, 408, and 408A for statutory amounts the notices never print. Every file is fixed by
 `SHA256SUMS.txt`, which
 `npm run validate:evidence` verifies in both directions: a listed file that is
 missing or has changed fails, and so does a file in `sources/` that nothing

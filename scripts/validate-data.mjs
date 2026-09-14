@@ -174,6 +174,43 @@ if (parameters) {
         fail(`Year ${year} special403b15YearCatchUp.${field} is required.`);
       }
     }
+    // The IRC 414(q)(1)(B) and 416(i)(1)(A)(i) thresholds are published amounts:
+    // present on every row, null where the clause states no amount, and
+    // otherwise a real whole-dollar figure.
+    for (const field of ["highlyCompensatedEmployeeCompensation414q", "keyEmployeeOfficerCompensation416i"]) {
+      if (row && !(field in row)) {
+        fail(`Year ${year} ${field} is required; use null where the clause states no amount.`);
+      }
+      if (row && !(row[field] === null || (Number.isInteger(row[field]) && row[field] > 0))) {
+        fail(`Year ${year} ${field} must be null or a positive whole-dollar amount.`);
+      }
+    }
+    // IRC 25B exists for taxable years beginning after December 31, 2001
+    // (Pub. L. 107-16 section 618), and nothing has repealed it since.
+    if (row && !("saversCredit25B" in row)) {
+      fail(`Year ${year} saversCredit25B is required; use null before IRC 25B existed.`);
+    }
+    if (row && (year < 2002) !== (row.saversCredit25B === null)) {
+      fail(`Year ${year} saversCredit25B must be null exactly for years before 2002.`);
+    }
+    const saver = row?.saversCredit25B;
+    if (saver) {
+      for (const filer of ["jointReturn", "headOfHousehold", "allOtherTaxpayers"]) {
+        const limits = saver.adjustedGrossIncomeLimits?.[filer];
+        for (const rate of ["fiftyPercent", "twentyPercent", "tenPercent"]) {
+          requirePositiveAmount(limits?.[rate], `Year ${year} saversCredit25B.adjustedGrossIncomeLimits.${filer}.${rate}`);
+        }
+        if (limits && !(limits.fiftyPercent < limits.twentyPercent && limits.twentyPercent < limits.tenPercent)) {
+          fail(`Year ${year} saversCredit25B ${filer} ceilings must rise from the 50 to the 10 percent rate.`);
+        }
+      }
+      // Pub. L. 117-328 div. T section 103(e)(1) strikes IRC 25B(d)(1)(A)-(C)
+      // for taxable years beginning after December 31, 2026 without repealing the
+      // credit. A later row therefore cannot copy the prior year's flag forward.
+      if (saver.retirementPlanAndIraContributionsQualify !== (year <= 2026)) {
+        fail(`Year ${year} saversCredit25B.retirementPlanAndIraContributionsQualify must be ${year <= 2026}; Pub. L. 117-328 div. T section 103(e)(1) applies to taxable years beginning after December 31, 2026.`);
+      }
+    }
   }
 
   validateSources(parameters.sources, "data/retirement-parameters.json", [
@@ -182,6 +219,7 @@ if (parameters) {
     "irs-pub-535-2001",
     "usc-26-402",
     "usc-26-402A",
+    "usc-26-25B",
   ]);
 
   const row1997 = parameters.years?.["1997"];
@@ -190,6 +228,19 @@ if (parameters) {
   }
   if (row1997?.sep?.maximumEmployerContributionRate !== 0.15) {
     fail("The 1997 SEP employer-rate regression fixture must be 0.15.");
+  }
+  // Each series opens at the first year its document states a figure.
+  if (parameters.years?.["1996"]?.highlyCompensatedEmployeeCompensation414q !== null
+    || row1997?.highlyCompensatedEmployeeCompensation414q !== 80000) {
+    fail("The IRC 414(q)(1)(B) series must open at 1997 with Notice 96-55's $80,000.");
+  }
+  const row2001 = parameters.years?.["2001"];
+  const row2002 = parameters.years?.["2002"];
+  if (row2001?.keyEmployeeOfficerCompensation416i !== null || row2002?.keyEmployeeOfficerCompensation416i !== 130000) {
+    fail("The IRC 416(i)(1)(A)(i) series must open at 2002 with Pub. L. 107-16 section 613's $130,000.");
+  }
+  if (row2002?.saversCredit25B?.adjustedGrossIncomeLimits?.jointReturn?.tenPercent !== 50000) {
+    fail("The IRC 25B series must open at 2002 with Pub. L. 107-16 section 618's $50,000 joint-return ceiling.");
   }
   // Pub. L. 117-328 section 127(g) applies IRC 402A(e) to plan years beginning
   // after December 31, 2023, and the flush text of IRC 402A(e)(3)(A) adjusts the

@@ -97,6 +97,42 @@ export default {
     ["availabilityPensionLinkedEmergencySavings_402Ae", ["availability", "pensionLinkedEmergencySavings"], "IRC 402A(e), added by Pub. L. 117-328 section 127(e)(1) for plan years beginning after December 31, 2023"],
     ["starterDeferralOnlyBase_401k16DiII_403b16DiII", ["starterDeferralOnly", "baseDeferralLimit"], "IRC 401(k)(16)(D)(i)(II), 403(b)(16)(D)(i)(II)"],
     ["starterDeferralOnlyAge50CatchUp", ["starterDeferralOnly", "age50CatchUp"], "Notice 2024-80, 2025 starter-plan age-50 increase"],
+    ["hceCompensation_414q1B", ["highlyCompensatedEmployeeCompensation414q"], "IRC 414(q)(1)(B)"],
+    ["keyEmployeeCompensation_416i1Ai", ["keyEmployeeOfficerCompensation416i"], "IRC 416(i)(1)(A)(i)"],
+    [
+      "saversCreditRetirementContributionsQualify_25Bd1",
+      ["saversCredit25B", "retirementPlanAndIraContributionsQualify"],
+      "IRC 25B(d)(1)(A)-(C); Pub. L. 117-328 div. T sec. 103(e)(1) strikes them for taxable years beginning after December 31, 2026",
+    ],
+  ],
+
+  /**
+   * The IRC 25B(b) applicable-percentage table: for each filer, the highest
+   * adjusted gross income at which the 50, 20 and 10 percent rates apply. The
+   * notices print all nine amounts, so the head-of-household and other-filer
+   * figures are compared as published rather than derived from the joint ones
+   * as 75 and 50 percent, which would verify the substitution rule instead of
+   * the notice.
+   */
+  tiered: [
+    [
+      "saversCreditAgiJointReturn_25Bb1",
+      ["saversCredit25B", "adjustedGrossIncomeLimits", "jointReturn"],
+      ["fiftyPercent", "twentyPercent", "tenPercent"],
+      "IRC 25B(b)(1)",
+    ],
+    [
+      "saversCreditAgiHeadOfHousehold_25Bb2A",
+      ["saversCredit25B", "adjustedGrossIncomeLimits", "headOfHousehold"],
+      ["fiftyPercent", "twentyPercent", "tenPercent"],
+      "IRC 25B(b)(2)(A)",
+    ],
+    [
+      "saversCreditAgiAllOtherTaxpayers_25Bb2B",
+      ["saversCredit25B", "adjustedGrossIncomeLimits", "allOtherTaxpayers"],
+      ["fiftyPercent", "twentyPercent", "tenPercent"],
+      "IRC 25B(b)(2)(B)",
+    ],
   ],
 
   /**

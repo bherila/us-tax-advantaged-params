@@ -30,7 +30,8 @@
     "rp-23-23": "Rev. Proc. 2023-23, 2024 HSA inflation adjusted amounts",
     "rp-24-25": "Rev. Proc. 2024-25, 2025 HSA inflation adjusted amounts",
     "rp-25-19": "Rev. Proc. 2025-19, 2026 HSA inflation adjusted amounts",
-    "usc-26-223": "26 U.S.C. s.223 (U.S. Government Publishing Office, 2023 edition of the United States Code)"
+    "usc-26-223": "26 U.S.C. s.223 (U.S. Government Publishing Office, 2023 edition of the United States Code)",
+    "rp-26-24": "Rev. Proc. 2026-24, 2027 HSA inflation adjusted amounts"
   },
   "_policyFlagsComment": "Three recorded fields are rules rather than published amounts, so they are cited to the Code and to the act that enacted them, never to a Rev. Proc.: (1) contributionLimitCappedByHdhpAnnualDeductible — for taxable years beginning before 2007, §223(b)(2)(A) and (B) capped each monthly limitation at 1/12 of the LESSER of the plan's annual deductible and the dollar amount; the Tax Relief and Health Care Act of 2006, Pub. L. 109-432, div. A, title III, §303(a)(1) and (2), struck those lesser-of clauses, applicable to taxable years beginning after December 31, 2006 (§303(c)). (2) lastMonthRuleAvailable — §223(b)(8), which treats an individual eligible in the last month of the year as eligible for every month of it, was added by the same act at §305(a), applicable to taxable years beginning after December 31, 2006 (§305(b)); it did not exist for earlier years. (3) testingPeriodMonths — §223(b)(8)(B)(iii) defines the testing period as beginning with the last month of the taxable year and ending on the last day of the 12th month following that month, which is 13 months; it is null for years in which §223(b)(8) did not exist. The operative text, the 2006 amendment notes, and the effective-date notes are all in usc-26-223.",
   "planYears": {
@@ -474,6 +475,25 @@
       "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
         "selfOnly": 8500,
         "family": 17000
+      }
+    },
+    "2027": {
+      "source": "rp-26-24",
+      "annualContributionLimitSelfOnly_223b2A": 4500,
+      "annualContributionLimitFamily_223b2B": 9000,
+      "additionalContributionAmount55_223b3B": 1000,
+      "additionalContributionAmount55_source": "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+      "contributionLimitCappedByHdhpAnnualDeductible_223b2": false,
+      "lastMonthRuleAvailable_223b8": true,
+      "testingPeriodMonths_223b8Biii": 13,
+      "statutoryPolicyFlags_source": "Rules for a taxable year beginning after 2006: Pub. L. 109-432 §303 removed the §223(b)(2) deductible cap and §305 added the §223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
+      "hdhpMinimumAnnualDeductible_223c2Ai": {
+        "selfOnly": 1750,
+        "family": 3500
+      },
+      "hdhpMaximumAnnualOutOfPocket_223c2Aii": {
+        "selfOnly": 8700,
+        "family": 17400
       }
     }
   }
