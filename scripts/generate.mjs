@@ -120,3 +120,9 @@ await update(tsPath, "/* <generated-education-parameters> */", "/* </generated-e
   `const RAW_EDUCATION_PARAMETERS: EducationParameterData = ${JSON.stringify(educationParameters, null, 2)} as EducationParameterData;`);
 await update(phpPath, "/* <generated-education-parameters> */", "/* </generated-education-parameters> */",
   `private const EDUCATION_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(educationParameters)}\nJSON;`);
+
+const ableParameters = await readCanonical("data/able-parameters.json");
+await update(tsPath, "/* <generated-able-parameters> */", "/* </generated-able-parameters> */",
+  `const RAW_ABLE_PARAMETERS: AbleParameterData = ${JSON.stringify(ableParameters, null, 2)} as AbleParameterData;`);
+await update(phpPath, "/* <generated-able-parameters> */", "/* </generated-able-parameters> */",
+  `private const ABLE_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(ableParameters)}\nJSON;`);

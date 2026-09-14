@@ -374,6 +374,38 @@ enacted laws and the Code rather than annual procedures. Each is committed under
   beginning after 2026 from a calendar-2025 base, rounded to the nearest $50; its amendments
   apply to payments made after December 31, 2025.
 
+## ABLE account sources (IRC §529A)
+
+Every document below is committed under `evidence/able-limits/sources/` and fixed by
+`SHA256SUMS.txt`.
+
+- **Stephen Beck, Jr., ABLE Act of 2014, Pub. L. 113-295 div. B §102** — adds §529A, applying
+  to taxable years beginning after December 31, 2014 (§102(f)(1)). As enacted, §529A(b)(2)(B)
+  rejects contributions "exceeding the amount in effect under section 2503(b) for the calendar
+  year in which the taxable year begins".
+
+- **Rev. Procs. 2014-61 through 2024-40** — each states the §2503(b) annual exclusion for gifts
+  for the following calendar year, which is that year's ABLE limit: $14,000 for 2015–2017,
+  $15,000 for 2018–2021, $16,000 for 2022, $17,000 for 2023, $18,000 for 2024 and $19,000 for
+  2025.
+
+- **Rev. Proc. 2025-32** — §4.34 states $20,000 as the §529A(b)(2)(B)(i) amount for taxable
+  years beginning in 2026. The published sentence reads "$20,000 (instead of instead of the
+  amount under provided in section 4.42(1) of this revenue procedure)" [sic]; despite the
+  drafting error, it plainly replaces the §4.42(1) figure, which is the $19,000 gift exclusion.
+
+- **Pub. L. 119-21 §70115** — (a)(1) inserts "(determined by substituting '1996' for '1997' in
+  paragraph (2)(B) thereof)" after "section 2503(b)" in §529A(b)(2)(B)(i), for taxable years
+  beginning after December 31, 2025. (a)(2) strikes "before January 1, 2026" from the
+  §529A(b)(2)(B)(ii) employed-beneficiary contribution, for contributions made after
+  December 31, 2025.
+
+- **26 U.S.C. §529A and §2503 (2024 edition)** — the current text and its notes, which record
+  Pub. L. 115-97 §11024 (the employed-beneficiary contribution, for taxable years beginning
+  after December 22, 2017) and Pub. L. 117-328 div. T §124 ("age 46" for "age 26", for taxable
+  years beginning after December 31, 2025). Pub. L. 119-21 amends only §529A(b)(2)(B), which
+  is covered above, so the edition's notes on the other provisions are not stale.
+
 ## Flexible spending arrangement sources (IRC §125 and IRC §129)
 
 Two statutes with two different publication habits. The §125(i) health FSA

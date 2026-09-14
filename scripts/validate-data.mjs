@@ -8,6 +8,7 @@ const parameterPath = join(root, "data", "retirement-parameters.json");
 const hsaPath = join(root, "data", "hsa-parameters.json");
 const fsaPath = join(root, "data", "fsa-parameters.json");
 const educationPath = join(root, "data", "education-parameters.json");
+const ablePath = join(root, "data", "able-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -101,6 +102,7 @@ const parameters = await parseCanonicalJson(parameterPath, "data/retirement-para
 const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
 const education = await parseCanonicalJson(educationPath, "data/education-parameters.json");
+const able = await parseCanonicalJson(ablePath, "data/able-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -487,6 +489,55 @@ if (education) {
   }
 }
 
+if (able) {
+  walk(able, "able");
+  const years = validateYearSpan(able, "data/able-parameters.json");
+  for (const year of years ?? []) {
+    const label = `ABLE year ${year}`;
+    const row = able.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const account = row.ableAccount;
+    if (account?.state !== "statutory_dollar_limit") {
+      fail(`${label} ableAccount.state must be statutory_dollar_limit; IRC 529A(b)(2)(B) limits contributions in every year it applies.`);
+    }
+    requirePositiveAmount(account?.annualContributionLimit, `${label} ableAccount.annualContributionLimit`);
+    requirePositiveAmount(account?.section2503bExclusion, `${label} ableAccount.section2503bExclusion`);
+    // The flag is data, not a rule: from 2026 the two amounts are indexed from
+    // different bases but each rounds down to $1,000, so they can coincide. It
+    // must only agree with the amounts it describes.
+    if (account && account.equalsSection2503bExclusion !== (account.annualContributionLimit === account.section2503bExclusion)) {
+      fail(`${label} ableAccount.equalsSection2503bExclusion disagrees with the two amounts it compares.`);
+    }
+    // Pub. L. 115-97 section 11024 added IRC 529A(b)(2)(B)(ii) for taxable years
+    // beginning after December 22, 2017; Pub. L. 119-21 section 70115(a)(2)
+    // struck its "before January 1, 2026" cutoff.
+    if (account && account.ableToWorkContributionAvailable !== (year >= 2018)) {
+      fail(`${label} ableAccount.ableToWorkContributionAvailable must be ${year >= 2018}.`);
+    }
+    // Pub. L. 117-328 div. T section 124 substitutes age 46 for age 26 in IRC
+    // 529A(e)(1)(A) for taxable years beginning after December 31, 2025.
+    if (account && account.disabilityOnsetAgeLimit !== (year >= 2026 ? 46 : 26)) {
+      fail(`${label} ableAccount.disabilityOnsetAgeLimit must be ${year >= 2026 ? 46 : 26}.`);
+    }
+  }
+
+  validateSources(able.sources, "data/able-parameters.json", ["usc-26-529A", "pl-113-295", "pl-119-21", "irs-rev-proc-2014-61", "irs-rev-proc-2025-32"]);
+
+  const account = (year) => able.years?.[String(year)]?.ableAccount;
+  if (account(2015)?.annualContributionLimit !== 14000) {
+    fail("The ABLE table must open at 2015 with the $14,000 IRC 2503(b) exclusion that Rev. Proc. 2014-61 states for 2015.");
+  }
+  if (account(2025)?.annualContributionLimit !== 19000 || account(2025)?.equalsSection2503bExclusion !== true) {
+    fail("The 2025 ABLE limit must equal the $19,000 IRC 2503(b) exclusion Rev. Proc. 2024-40 states.");
+  }
+  if (account(2026)?.annualContributionLimit !== 20000 || account(2026)?.section2503bExclusion !== 19000) {
+    fail("The 2026 ABLE limit must be the $20,000 of Rev. Proc. 2025-32 section 4.34, against the $19,000 gift exclusion of section 4.42(1).");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -562,6 +613,7 @@ console.log(
     `${Object.keys(fsa.years).length} contiguous FSA tax years, ` +
     `${Object.keys(payroll.years).length} contiguous payroll tax years, ` +
     `${Object.keys(education.years).length} contiguous education tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length} sources, ` +
+    `${Object.keys(able.years).length} contiguous ABLE tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );

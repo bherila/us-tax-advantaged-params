@@ -739,6 +739,42 @@ test("exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes
   assert.throws(() => U.educationParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
+test("exposes the IRC 529A ABLE table and its 2026 separation from the IRC 2503(b) exclusion", () => {
+  // Pub. L. 113-295 div. B section 102(f)(1): taxable years beginning after December 31, 2014.
+  assert.deepEqual(U.supportedAbleTaxYears(), { minimum: 2015, maximum: 2026 });
+  assert.equal(U.ableParametersForYear(2014), null);
+  // Rev. Proc. 2014-61: "the first $14,000 of gifts" for 2015, which IRC
+  // 529A(b)(2)(B)(i) adopts. Age 26 under IRC 529A(e)(1)(A) as enacted, and no
+  // employed-beneficiary contribution before Pub. L. 115-97 section 11024.
+  assert.deepEqual(U.ableParametersForYear(2015)?.ableAccount, {
+    state: "statutory_dollar_limit",
+    annualContributionLimit: 14_000,
+    section2503bExclusion: 14_000,
+    equalsSection2503bExclusion: true,
+    ableToWorkContributionAvailable: false,
+    disabilityOnsetAgeLimit: 26,
+  });
+  // Pub. L. 115-97 section 11024(c): taxable years beginning after December 22, 2017.
+  assert.equal(U.ableParametersForYear(2017)?.ableAccount.ableToWorkContributionAvailable, false);
+  assert.equal(U.ableParametersForYear(2018)?.ableAccount.ableToWorkContributionAvailable, true);
+  // Rev. Proc. 2024-40: $19,000 for 2025, still the gift exclusion.
+  assert.equal(U.ableParametersForYear(2025)?.ableAccount.annualContributionLimit, 19_000);
+  // Rev. Proc. 2025-32: section 4.34 states $20,000 for ABLE "instead of" the
+  // $19,000 of section 4.42(1). Pub. L. 117-328 div. T section 124 raises the
+  // onset age to 46, and Pub. L. 119-21 section 70115(a)(2) keeps the
+  // employed-beneficiary contribution.
+  assert.deepEqual(U.ableParametersForYear(2026)?.ableAccount, {
+    state: "statutory_dollar_limit",
+    annualContributionLimit: 20_000,
+    section2503bExclusion: 19_000,
+    equalsSection2503bExclusion: false,
+    ableToWorkContributionAvailable: true,
+    disabilityOnsetAgeLimit: 46,
+  });
+  assert.ok(U.ableSourceMetadata().some((source) => source.id === "irs-rev-proc-2025-32"));
+  assert.throws(() => U.ableParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
   assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
   assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);

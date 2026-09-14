@@ -10,7 +10,7 @@ The repository contains two native implementations with the same behavior:
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
 - **PHP 8.4+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
-Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax and education JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
+Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax, education and ABLE JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
 > **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, classify self-employment earnings or apply optional SECA methods, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
@@ -64,6 +64,15 @@ These figures are reported, not applied; see
 ```ts
 USTaxAdvantagedParams.supportedEducationTaxYears();
 // { minimum: 1996, maximum: 2026 }
+```
+
+ABLE accounts have their own range, **2015 through 2026**, because the ABLE Act of 2014
+applies §529A to taxable years beginning after December 31, 2014. See
+[ABLE account parameters](#able-account-parameters).
+
+```ts
+USTaxAdvantagedParams.supportedAbleTaxYears();
+// { minimum: 2015, maximum: 2026 }
 ```
 
 ## Installation
@@ -1677,6 +1686,15 @@ The §529 `annualContributionLimit` is `null` in every year because no federal l
 
 The effective date behind each change is in [SOURCES.md](SOURCES.md) and `evidence/education-limits/`.
 
+## ABLE account parameters
+
+`ableParametersForYear(taxYear)` returns the §529A figures for a year. No calculation applies them, and no account type exists for them.
+
+- `annualContributionLimit` is the §529A(b)(2)(B)(i) limit on contributions from all contributors for the taxable year: $14,000 for 2015, $19,000 for 2025 and $20,000 for 2026.
+- `section2503bExclusion` is the §2503(b) gift exclusion for the calendar year, and `equalsSection2503bExclusion` records whether the ABLE limit equals it. **Through 2025 it always does; from 2026 it need not.** Pub. L. 119-21 §70115(a)(1) indexes the ABLE limit from a 1996 base instead of the gift exclusion's 1997 base, so Rev. Proc. 2025-32 states $20,000 for ABLE against a $19,000 exclusion. Deriving the ABLE limit from the gift exclusion is right through 2025 and wrong for 2026, which is why both figures are carried. Each amount rounds down to $1,000, so the two can still coincide in a later year; the flag is recorded per year, not assumed.
+- `ableToWorkContributionAvailable` is whether §529A(b)(2)(B)(ii) lets an employed beneficiary with no employer-plan contribution add up to the lesser of their compensation and the prior year's one-person poverty line. Pub. L. 115-97 §11024 added it for taxable years beginning after December 22, 2017, and Pub. L. 119-21 §70115(a)(2) removed its 2026 end date. The additional amount itself is not encoded, because it depends on the beneficiary's compensation and the poverty guideline.
+- `disabilityOnsetAgeLimit` is the age before which §529A(e)(1)(A) requires blindness or disability to have occurred: 26, or 46 for taxable years beginning after December 31, 2025 under SECURE 2.0 (Pub. L. 117-328 div. T) §124.
+
 ## Deliberate exclusions
 
 The package does not calculate:
@@ -1686,6 +1704,7 @@ The package does not calculate:
 - Archer MSAs themselves. The §220 limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
 - Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
 - The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.
+- ABLE account eligibility and the §529A(b)(2)(B)(ii) additional contribution amount for an employed beneficiary. The §529A(b)(2)(B)(i) limit *is* exposed as a parameter.
 - Adoption assistance under §137, commuter benefits under §132(f), and the §127 educational assistance exclusion itself. Its §127(a)(2) amount *is* exposed as a parameter, alongside the §530 and §529 figures.
 - The §21 dependent care **credit**, and the §21(c) interaction whereby §129 exclusions reduce that credit's expense base. The §129 exclusion is calculated; the credit is not.
 - The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.

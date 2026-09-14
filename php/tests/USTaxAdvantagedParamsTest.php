@@ -760,6 +760,42 @@ test('exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes
     assertTrue(in_array('pl-119-21', $ids, true), 'Pub. L. 119-21 must be listed as an education source');
 });
 
+test('exposes the IRC 529A ABLE table and its 2026 separation from the IRC 2503(b) exclusion', function (): void {
+    // Pub. L. 113-295 div. B section 102(f)(1): taxable years beginning after December 31, 2014.
+    assertSameValue(['minimum' => 2015, 'maximum' => 2026], U::supportedAbleTaxYears());
+    assertSameValue(null, U::ableParametersForYear(2014));
+    // Rev. Proc. 2014-61: "the first $14,000 of gifts" for 2015, which IRC
+    // 529A(b)(2)(B)(i) adopts. Age 26 under IRC 529A(e)(1)(A) as enacted, and no
+    // employed-beneficiary contribution before Pub. L. 115-97 section 11024.
+    assertSameValue([
+        'state' => 'statutory_dollar_limit',
+        'annualContributionLimit' => 14000,
+        'section2503bExclusion' => 14000,
+        'equalsSection2503bExclusion' => true,
+        'ableToWorkContributionAvailable' => false,
+        'disabilityOnsetAgeLimit' => 26,
+    ], U::ableParametersForYear(2015)['ableAccount']);
+    // Pub. L. 115-97 section 11024(c): taxable years beginning after December 22, 2017.
+    assertSameValue(false, U::ableParametersForYear(2017)['ableAccount']['ableToWorkContributionAvailable']);
+    assertSameValue(true, U::ableParametersForYear(2018)['ableAccount']['ableToWorkContributionAvailable']);
+    // Rev. Proc. 2024-40: $19,000 for 2025, still the gift exclusion.
+    assertSameValue(19000, U::ableParametersForYear(2025)['ableAccount']['annualContributionLimit']);
+    // Rev. Proc. 2025-32: section 4.34 states $20,000 for ABLE "instead of" the
+    // $19,000 of section 4.42(1). Pub. L. 117-328 div. T section 124 raises the
+    // onset age to 46, and Pub. L. 119-21 section 70115(a)(2) keeps the
+    // employed-beneficiary contribution.
+    assertSameValue([
+        'state' => 'statutory_dollar_limit',
+        'annualContributionLimit' => 20000,
+        'section2503bExclusion' => 19000,
+        'equalsSection2503bExclusion' => false,
+        'ableToWorkContributionAvailable' => true,
+        'disabilityOnsetAgeLimit' => 46,
+    ], U::ableParametersForYear(2026)['ableAccount']);
+    $ids = array_column(U::ableSourceMetadata(), 'id');
+    assertTrue(in_array('irs-rev-proc-2025-32', $ids, true), 'Rev. Proc. 2025-32 must be listed as an ABLE source');
+});
+
 test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));
