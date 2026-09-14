@@ -10,7 +10,7 @@ The repository contains two native implementations with the same behavior:
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
 - **PHP 8.4+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
-Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax, education, ABLE and adoption JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
+Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax, education, ABLE, adoption and HRA JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
 > **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, classify self-employment earnings or apply optional SECA methods, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
@@ -82,6 +82,15 @@ after December 31, 1996. See [Adoption parameters](#adoption-parameters).
 ```ts
 USTaxAdvantagedParams.supportedAdoptionTaxYears();
 // { minimum: 1997, maximum: 2026 }
+```
+
+HRA parameters have their own range, **2017 through 2026**, because the 21st Century Cures Act
+added the §9831(d) qualified small employer HRA for years beginning after December 31, 2016.
+See [HRA parameters](#hra-parameters).
+
+```ts
+USTaxAdvantagedParams.supportedHraTaxYears();
+// { minimum: 2017, maximum: 2026 }
 ```
 
 ## Installation
@@ -1723,12 +1732,26 @@ The $40,000 phase-out width has never been indexed, and the data validator enfor
 
 **2010 is $13,170.** Rev. Proc. 2009-50 printed $12,170 before the Affordable Care Act raised it, and Rev. Proc. 2010-35 rewrote those sections. The table follows the later procedure; both are committed in `evidence/adoption-limits/`.
 
+## HRA parameters
+
+`hraParametersForYear(taxYear)` returns the figures for three health reimbursement arrangement rules. No calculation applies them. Each carries a `state` and a `yearBasis`, because the statutory arrangement is keyed by calendar year and the two regulatory ones by the year a plan year begins.
+
+| Arrangement | Field | Figures |
+|---|---|---|
+| §9831(d) qualified small employer HRA | `qualifiedSmallEmployerHra` | `selfOnlyLimit` and `familyLimit`: $4,950 and **$10,050** for 2017, rising to $6,450 and $13,100 for 2026. |
+| 26 CFR 54.9831-1(c)(3)(viii) excepted benefit HRA | `exceptedBenefitHra` | `unavailable` before 2020 plan years; `annualLimit` of $1,800 for 2020–2022, then $1,950, $2,100, $2,150 and $2,200 for 2026. |
+| 26 CFR 54.9802-4 individual coverage HRA | `individualCoverageHra` | `unavailable` before 2020 plan years; then available with no dollar limit, so `annualLimit` is `null`. |
+
+**2017's family limit is $10,050, not $10,000.** The statute indexes both limits for years after 2016, and Notice 2017-67 says that raised the family figure for 2017 while leaving $4,950 unchanged. Rev. Proc. 2017-58 recites only the unindexed statutory amounts.
+
+The 2027 excepted benefit HRA limit of $2,250 is published (Rev. Proc. 2026-24), but the table ends at 2026 until the 2027 QSEHRA figures are published, rather than carrying a row with a missing amount.
+
 ## Deliberate exclusions
 
 The package does not calculate:
 
 - State income-tax treatment.
-- HRAs of every kind — standard, ICHRA, EBHRA, QSEHRA, suspended, retiree-only — even where they interact with §223 exactly as a health FSA does. Health FSAs under §125(i), including the carryover, *are* modelled.
+- HRAs of every kind — standard, ICHRA, EBHRA, QSEHRA, suspended, retiree-only — even where they interact with §223 exactly as a health FSA does. The QSEHRA and excepted benefit HRA dollar limits, and the individual coverage HRA's lack of one, *are* exposed as parameters. Health FSAs under §125(i), including the carryover, *are* modelled.
 - Archer MSAs themselves. The §220 limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
 - Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
 - The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.

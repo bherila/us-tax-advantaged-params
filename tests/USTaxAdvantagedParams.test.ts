@@ -831,6 +831,40 @@ test("exposes the IRC 23 and IRC 137 adoption table through each statutory chang
   assert.throws(() => U.adoptionParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
+test("exposes the QSEHRA, excepted benefit HRA and individual coverage HRA table", () => {
+  // Pub. L. 114-255 section 18001: IRC 9831(d) for years beginning after December 31, 2016.
+  assert.deepEqual(U.supportedHraTaxYears(), { minimum: 2017, maximum: 2026 });
+  assert.equal(U.hraParametersForYear(2016), null);
+  // Notice 2017-67 footnote 5: indexing raised the $10,000 family limit to $10,050
+  // for 2017 and left $4,950 unchanged. T.D. 9867's rules start with 2020 plan years.
+  assert.deepEqual(U.hraParametersForYear(2017), {
+    year: 2017,
+    qualifiedSmallEmployerHra: { state: "statutory_dollar_limit", yearBasis: "calendar_year", selfOnlyLimit: 4_950, familyLimit: 10_050 },
+    exceptedBenefitHra: { state: "unavailable", yearBasis: "plan_year", annualLimit: null },
+    individualCoverageHra: { state: "unavailable", yearBasis: "plan_year", annualLimit: null },
+  });
+  // T.D. 9867: 26 CFR 54.9831-1(c)(3)(viii)(B)(1) "$1,800", and 26 CFR 54.9802-4 with
+  // no dollar limit, for plan years beginning on or after January 1, 2020.
+  assert.equal(U.hraParametersForYear(2020)?.exceptedBenefitHra.annualLimit, 1_800);
+  assert.deepEqual(U.hraParametersForYear(2020)?.individualCoverageHra, {
+    state: "available_without_statutory_dollar_limit",
+    yearBasis: "plan_year",
+    annualLimit: null,
+  });
+  // Rev. Proc. 2020-43: the indexed amount "remains $1,800" for 2021 plan years.
+  assert.equal(U.hraParametersForYear(2021)?.exceptedBenefitHra.annualLimit, 1_800);
+  // Rev. Proc. 2025-32: $6,450 ($13,100 for family coverage); Rev. Proc. 2025-19 section 2.02: $2,200.
+  assert.deepEqual(U.hraParametersForYear(2026)?.qualifiedSmallEmployerHra, {
+    state: "statutory_dollar_limit",
+    yearBasis: "calendar_year",
+    selfOnlyLimit: 6_450,
+    familyLimit: 13_100,
+  });
+  assert.equal(U.hraParametersForYear(2026)?.exceptedBenefitHra.annualLimit, 2_200);
+  assert.ok(U.hraSourceMetadata().some((source) => source.id === "td-9867"));
+  assert.throws(() => U.hraParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
   assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
   assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);

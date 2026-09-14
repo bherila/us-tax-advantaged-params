@@ -1,0 +1,139 @@
+{
+  "_comment": "Figures and rules transcribed from the documents in sources/ for data/hra-parameters.json. QSEHRA amounts are keyed by calendar year; excepted benefit HRA and individual coverage HRA rows are keyed by the year a plan year begins.",
+  "_sources": {
+    "usc-26-9831": "26 U.S.C. 9831 (2024 edition), subsection (d)(2)(B)(iii) and (D)(ii), and the Pub. L. 114-255 effective-date note",
+    "n-17-67": "IRS Notice 2017-67, footnote 5 and section D, for the indexed 2017 limits",
+    "td-9867": "T.D. 9867 (Federal Register, June 20, 2019), 26 CFR 54.9831-1(c)(3)(viii) and 54.9802-4",
+    "rp-17-58": "Rev. Proc. 2017-58, inflation adjusted items",
+    "rp-18-57": "Rev. Proc. 2018-57, inflation adjusted items",
+    "rp-19-44": "Rev. Proc. 2019-44, inflation adjusted items",
+    "rp-20-45": "Rev. Proc. 2020-45, inflation adjusted items",
+    "rp-21-45": "Rev. Proc. 2021-45, inflation adjusted items",
+    "rp-22-38": "Rev. Proc. 2022-38, inflation adjusted items",
+    "rp-23-34": "Rev. Proc. 2023-34, inflation adjusted items",
+    "rp-24-40": "Rev. Proc. 2024-40, inflation adjusted items",
+    "rp-25-32": "Rev. Proc. 2025-32, inflation adjusted items",
+    "rp-20-43": "Rev. Proc. 2020-43, inflation adjusted items",
+    "rp-21-25": "Rev. Proc. 2021-25, inflation adjusted items",
+    "rp-22-24": "Rev. Proc. 2022-24, inflation adjusted items",
+    "rp-23-23": "Rev. Proc. 2023-23, inflation adjusted items",
+    "rp-24-25": "Rev. Proc. 2024-25, inflation adjusted items",
+    "rp-25-19": "Rev. Proc. 2025-19, inflation adjusted items"
+  },
+  "planYears": {
+    "2017": {
+      "source": "n-17-67",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 4950,
+      "qsehraFamily_9831d2Biii": 10050,
+      "qsehra_source": "n-17-67 footnote 5: \"This adjustment increased the $10,000 limit to $10,050 for a QSEHRA provided in 2017; the adjustment did not increase the $4,950 limit for 2017.\" IRC 9831(d)(2)(B)(iii) states $4,950 ($10,000 for family members) and (d)(2)(D)(ii) indexes both for years beginning after 2016 from a 2015 base, rounded down to $50 (usc-26-9831)",
+      "ebhraState": "unavailable",
+      "ichraState": "unavailable",
+      "planYearHra_source": "td-9867: 26 CFR 54.9831-1(c)(3)(viii) and 54.9802-4 apply to plan years beginning on or after January 1, 2020"
+    },
+    "2018": {
+      "source": "rp-17-58",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5050,
+      "qsehraFamily_9831d2Biii": 10250,
+      "qsehra_source": "rp-17-58, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,050 ($10,250 for family coverage)\" for 2018",
+      "ebhraState": "unavailable",
+      "ichraState": "unavailable",
+      "planYearHra_source": "td-9867: 26 CFR 54.9831-1(c)(3)(viii) and 54.9802-4 apply to plan years beginning on or after January 1, 2020"
+    },
+    "2019": {
+      "source": "rp-18-57",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5150,
+      "qsehraFamily_9831d2Biii": 10450,
+      "qsehra_source": "rp-18-57, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,150 ($10,450 for family coverage)\" for 2019",
+      "ebhraState": "unavailable",
+      "ichraState": "unavailable",
+      "planYearHra_source": "td-9867: 26 CFR 54.9831-1(c)(3)(viii) and 54.9802-4 apply to plan years beginning on or after January 1, 2020"
+    },
+    "2020": {
+      "source": "rp-19-44",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5250,
+      "qsehraFamily_9831d2Biii": 10600,
+      "qsehra_source": "rp-19-44, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,250 ($10,600 for family coverage)\" for 2020",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 1800,
+      "ebhra_source": "td-9867, 26 CFR 54.9831-1(c)(3)(viii)(B)(1): amounts newly made available for each plan year \"do not exceed $1,800\", increased for plan years beginning after December 31, 2020 by the C-CPI-U over calendar year 2019 and rounded down to a multiple of $50"
+    },
+    "2021": {
+      "source": "rp-20-45",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5300,
+      "qsehraFamily_9831d2Biii": 10700,
+      "qsehra_source": "rp-20-45, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,300 ($10,700 for family coverage)\" for 2021",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 1800,
+      "ebhra_source": "rp-20-43 section 1: the indexed maximum \"will not change for plan years beginning after December 31, 2020, and before January 1, 2022, and remains $1,800\""
+    },
+    "2022": {
+      "source": "rp-21-45",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5450,
+      "qsehraFamily_9831d2Biii": 11050,
+      "qsehra_source": "rp-21-45, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,450 ($11,050 for family coverage)\" for 2022",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 1800,
+      "ebhra_source": "rp-21-25 section 2.02 or 3.02: \"For plan years beginning in 2022, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $1,800\""
+    },
+    "2023": {
+      "source": "rp-22-38",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 5850,
+      "qsehraFamily_9831d2Biii": 11800,
+      "qsehra_source": "rp-22-38, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,850 ($11,800 for family coverage)\" for 2023",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 1950,
+      "ebhra_source": "rp-22-24 section 2.02 or 3.02: \"For plan years beginning in 2023, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $1,950\""
+    },
+    "2024": {
+      "source": "rp-23-34",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 6150,
+      "qsehraFamily_9831d2Biii": 12450,
+      "qsehra_source": "rp-23-34, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,150 ($12,450 for family coverage)\" for 2024",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 2100,
+      "ebhra_source": "rp-23-23 section 2.02 or 3.02: \"For plan years beginning in 2024, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,100\""
+    },
+    "2025": {
+      "source": "rp-24-40",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 6350,
+      "qsehraFamily_9831d2Biii": 12800,
+      "qsehra_source": "rp-24-40, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,350 ($12,800 for family coverage)\" for 2025",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 2150,
+      "ebhra_source": "rp-24-25 section 2.02 or 3.02: \"For plan years beginning in 2025, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,150\""
+    },
+    "2026": {
+      "source": "rp-25-32",
+      "qsehraState": "statutory_dollar_limit",
+      "qsehraSelfOnly_9831d2Biii": 6450,
+      "qsehraFamily_9831d2Biii": 13100,
+      "qsehra_source": "rp-25-32, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,450 ($13,100 for family coverage)\" for 2026",
+      "ebhraState": "statutory_dollar_limit",
+      "ichraState": "available_without_statutory_dollar_limit",
+      "planYearHra_source": "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+      "ebhraAnnualLimit_549831c3viiiB1": 2200,
+      "ebhra_source": "rp-25-19 section 2.02 or 3.02: \"For plan years beginning in 2026, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,200\""
+    }
+  }
+}

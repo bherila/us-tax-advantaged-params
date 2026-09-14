@@ -442,6 +442,38 @@ Every document below is committed under `evidence/adoption-limits/sources/` and 
 
 - **26 U.S.C. §§23 and 137 (2024 edition)** — the current text and the amendment notes.
 
+## HRA sources (IRC §9831(d), 26 CFR 54.9831-1 and 54.9802-4)
+
+Every document below is committed under `evidence/hra-limits/sources/` and fixed by
+`SHA256SUMS.txt`.
+
+- **26 U.S.C. §9831 (2024 edition)** — §9831(d)(2)(B)(iii) limits a qualified small employer HRA
+  to "$4,950 ($10,000 in the case of an arrangement that also provides for payments or
+  reimbursements for family members of the employee)". §9831(d)(2)(D)(ii) indexes both amounts for
+  years beginning after 2016 from a calendar-2015 base, rounded down to $50. The Code's
+  effective-date note applies Pub. L. 114-255's amendment to years beginning after December 31, 2016.
+
+- **IRS Notice 2017-67** — footnote 5: "This adjustment increased the $10,000 limit to $10,050 for a
+  QSEHRA provided in 2017; the adjustment did not increase the $4,950 limit for 2017." It also states
+  $5,050 and $10,250 for 2018.
+
+- **Rev. Procs. 2017-58 through 2025-32** — the QSEHRA limits for each year from 2018 to 2026.
+  Rev. Proc. 2017-58's §2 narrative recites the unindexed statutory amounts; its §3.56 states the
+  2018 figures.
+
+- **T.D. 9867** (Federal Register, June 20, 2019) — adds 26 CFR 54.9831-1(c)(3)(viii), which limits
+  amounts newly made available under an excepted benefit HRA to $1,800. For plan years beginning after
+  December 31, 2020 that amount is indexed by the C-CPI-U over calendar year 2019, rounded down to $50.
+  The same decision adds 26 CFR 54.9802-4, the individual coverage HRA, which states no dollar limit
+  outside its examples. Both apply to plan years beginning on or after January 1, 2020.
+
+- **Rev. Proc. 2020-43** — the indexed excepted benefit HRA amount "will not change for plan years
+  beginning after December 31, 2020, and before January 1, 2022, and remains $1,800". The HSA
+  procedure for 2021 does not state it.
+
+- **Rev. Procs. 2021-25 through 2025-19** — the excepted benefit HRA amount for plan years beginning in
+  2022 through 2026, in each procedure's HRA inflation-adjusted item.
+
 ## Flexible spending arrangement sources (IRC §125 and IRC §129)
 
 Two statutes with two different publication habits. The §125(i) health FSA

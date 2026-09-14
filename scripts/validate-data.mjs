@@ -10,6 +10,7 @@ const fsaPath = join(root, "data", "fsa-parameters.json");
 const educationPath = join(root, "data", "education-parameters.json");
 const ablePath = join(root, "data", "able-parameters.json");
 const adoptionPath = join(root, "data", "adoption-parameters.json");
+const hraPath = join(root, "data", "hra-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -105,6 +106,7 @@ const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
 const education = await parseCanonicalJson(educationPath, "data/education-parameters.json");
 const able = await parseCanonicalJson(ablePath, "data/able-parameters.json");
 const adoption = await parseCanonicalJson(adoptionPath, "data/adoption-parameters.json");
+const hra = await parseCanonicalJson(hraPath, "data/hra-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -611,6 +613,54 @@ if (adoption) {
   }
 }
 
+if (hra) {
+  walk(hra, "hra");
+  const years = validateYearSpan(hra, "data/hra-parameters.json");
+  const STATES = ["unavailable", "available_without_statutory_dollar_limit", "statutory_dollar_limit"];
+  for (const state of STATES) {
+    if (typeof hra.dollarLimitStates?.[state] !== "string") fail(`data/hra-parameters.json dollarLimitStates.${state} must be described.`);
+  }
+  // IRC 9831(d)(2)(D)(ii) and 26 CFR 54.9831-1(c)(3)(viii)(B)(1) both round the
+  // indexed amount down to a multiple of $50, so any other figure is a typo.
+  const wholeFifty = (amount) => Number.isInteger(amount) && amount > 0 && amount % 50 === 0;
+  for (const year of years ?? []) {
+    const label = `HRA year ${year}`;
+    const row = hra.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const qsehra = row.qualifiedSmallEmployerHra;
+    const ebhra = row.exceptedBenefitHra;
+    const ichra = row.individualCoverageHra;
+    if (qsehra?.state !== "statutory_dollar_limit" || qsehra.yearBasis !== "calendar_year"
+      || !wholeFifty(qsehra.selfOnlyLimit) || !wholeFifty(qsehra.familyLimit) || !(qsehra.familyLimit > qsehra.selfOnlyLimit)) {
+      fail(`${label} qualifiedSmallEmployerHra must be a calendar-year statutory limit with family above self-only, in multiples of $50.`);
+    }
+    // T.D. 9867 applies both plan-year rules to plan years beginning on or after January 1, 2020.
+    const regulated = year >= 2020;
+    if (ebhra?.yearBasis !== "plan_year" || ichra?.yearBasis !== "plan_year") {
+      fail(`${label} exceptedBenefitHra and individualCoverageHra are keyed by plan year.`);
+    }
+    if (regulated ? !(ebhra?.state === "statutory_dollar_limit" && wholeFifty(ebhra.annualLimit)) : !(ebhra?.state === "unavailable" && ebhra.annualLimit === null)) {
+      fail(`${label} exceptedBenefitHra must be ${regulated ? "a statutory limit in multiples of $50" : "unavailable with a null limit"}.`);
+    }
+    if (ichra?.state !== (regulated ? "available_without_statutory_dollar_limit" : "unavailable") || ichra?.annualLimit !== null) {
+      fail(`${label} individualCoverageHra must be ${regulated ? "available without a dollar limit" : "unavailable"}, with a null limit.`);
+    }
+  }
+
+  validateSources(hra.sources, "data/hra-parameters.json", ["usc-26-9831", "irs-notice-2017-67", "td-9867", "irs-rev-proc-2020-43"]);
+
+  const row = (year) => hra.years?.[String(year)];
+  if (row(2017)?.qualifiedSmallEmployerHra?.familyLimit !== 10050) {
+    fail("The 2017 QSEHRA family limit must be Notice 2017-67's indexed $10,050, not the statutory $10,000.");
+  }
+  if (row(2020)?.exceptedBenefitHra?.annualLimit !== 1800 || row(2021)?.exceptedBenefitHra?.annualLimit !== 1800) {
+    fail("The excepted benefit HRA limit must be $1,800 for 2020 (T.D. 9867) and 2021 (Rev. Proc. 2020-43).");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -688,6 +738,7 @@ console.log(
     `${Object.keys(education.years).length} contiguous education tax years, ` +
     `${Object.keys(able.years).length} contiguous ABLE tax years, ` +
     `${Object.keys(adoption.years).length} contiguous adoption tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length + adoption.sources.length} sources, ` +
+    `${Object.keys(hra.years).length} contiguous HRA tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length + adoption.sources.length + hra.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );
