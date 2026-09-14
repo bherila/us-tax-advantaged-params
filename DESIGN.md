@@ -103,8 +103,11 @@ a place where an unenumerated reading resolved in the allocation's favour, and o
 two mutually exclusive readings were summed. A contradictory group has no legal meaning,
 so the engine no longer represents it.
 
-Existing-catch-up attribution now evaluates one reading of the participant's method,
-or two where the age is unknown: under 50, and the age method at 50. It widens the
+Existing-catch-up attribution now evaluates one reading of the participant's method. Where
+the age is unknown, it evaluates one reading per age band the age-based amount distinguishes:
+under 50, 50 (which 64 and over share), and 60 through 63. Each band selects its method by
+the ordinary comparison, so a special allowance between the two age-based amounts never
+meets a forced age-based reading it would have beaten. It widens the
 participant and plan basic pools by the most that can be ordinary in any single
 reading. It also records each account's own exposure, which reduces that account's
 plan-document deferral limit because no pool backs that limit. Plan allocations

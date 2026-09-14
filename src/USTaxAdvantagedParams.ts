@@ -12659,13 +12659,15 @@ function resolveSection457CatchUpModes(
  * seedUnresolvedCatchUpAttribution and is not widened a second time here.
  *
  * Where the participant's age is unknown the method itself is open, and each
- * reading makes different amounts ordinary. Below age 50 IRC 414(v)(5)(A) makes
- * no age-based catch-up available, so every one is unsupported. From 50 the
- * age-based method may win 26 CFR 1.457-4(c)(2)(ii)'s comparison, making every
- * special catch-up unsupported; its smallest allowance is the one at age 50,
- * which leaves the most above it. Both readings are evaluated and each pool
- * takes the larger. The basic pools take the larger *combined* figure rather
- * than the sum of two maxima, because no completion has both.
+ * reading makes different amounts ordinary. The age-based amount takes one value
+ * below 50, where IRC 414(v)(5)(A) makes none available, another from 50, and a
+ * third from 60 through 63 in a year IRC 414(v)(2)(E) applies. Each band is one
+ * reading, and each selects its method by 26 CFR 1.457-4(c)(2)(ii)'s comparison
+ * exactly as a known age would. Forcing the age-based method at 50 would invent a
+ * reading where a special allowance between the two age-based amounts cannot lose
+ * to it. Each pool takes the largest figure across readings. The basic pools take
+ * the largest *combined* figure rather than the sum of maxima, because no
+ * completion has more than one reading.
  */
 function seedUnsupportedSection457CatchUpAttribution(context: CalculationContext): void {
   const statutoryBase = context.parameters.section457b.baseDeferralLimit;
@@ -12679,13 +12681,19 @@ function seedUnsupportedSection457CatchUpAttribution(context: CalculationContext
     if (plans.length === 0) continue;
     let readings: Section457OrdinaryExposure[];
     if (resolution.mode === "indeterminate") {
-      const atFifty: NormalizedPerson = { ...person, birthYear: context.taxYear - 50 };
-      delete atFifty.birthDate;
-      readings = [
-        section457OrdinaryExposure(context, person, plans, resolution.specialAmount > 0 ? "special" : "none",
-          statutoryBase, compensationFraction),
-        section457OrdinaryExposure(context, atFifty, plans, "age", statutoryBase, compensationFraction),
-      ];
+      const atAge = (age: number): NormalizedPerson => {
+        const reading: NormalizedPerson = { ...person, birthYear: context.taxYear - age };
+        delete reading.birthDate;
+        return reading;
+      };
+      // One reading per age band the age-based amount distinguishes: below 50,
+      // 50 (which 64 and over share), and 60 through 63.
+      readings = [person, atAge(50), atAge(60)].map((reading) => {
+        const ageAmount = plans.reduce((largest, plan) => Math.max(largest,
+          section457PlanLimits(context.parameters, reading, plan, statutoryBase, compensationFraction).age), 0);
+        const mode = resolution.specialAmount > ageAmount ? "special" : ageAmount > 0 ? "age" : "none";
+        return section457OrdinaryExposure(context, reading, plans, mode, statutoryBase, compensationFraction);
+      });
     } else {
       readings = [section457OrdinaryExposure(context, person, plans, resolution.mode, statutoryBase, compensationFraction)];
     }

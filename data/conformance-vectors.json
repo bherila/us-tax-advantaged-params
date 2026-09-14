@@ -25049,6 +25049,87 @@
       }
     },
     {
+      "name": "2026 an unknown age reserves only the catch-up an attainable IRC 457 method leaves ordinary",
+      "description": "IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500, the IRC 414(v)(2)(B)(i) catch-up as $8,000, and the IRC 414(v)(2)(E) catch-up for ages 60 through 63 as $11,250. planRules.section457PlanGroupId makes the three records one eligible governmental plan with $400,000 of IRC 457(e)(5) includible compensation and $9,000 of 26 CFR 1.457-4(c)(3)(ii)(B) underutilized limitation. 26 CFR 1.457-4(c)(1)(i) gives a basic ceiling of min($24,500, $400,000) = $24,500, and the special catch-up above it is min(2 x $24,500 - $24,500, $9,000) = $9,000. Compensation leaves every age-based amount room. The second record already holds $9,000 recorded as special catch-up, and the third holds $9,000 recorded as a pre-tax age-based catch-up; $10,000 of prior-year FICA wages keeps IRC 414(v)(7)(A) from requiring it to be Roth. No birth year is supplied, and the method turns on age. Under 50, IRC 414(v)(5)(A) makes no age-based catch-up available, the special method applies, and the $9,000 age-based amount may be an ordinary deferral. From 50 through 59 and from 64, $9,000 is larger than $8,000, so 26 CFR 1.457-4(c)(2)(ii) selects the special method, IRC 414(v)(6)(C) removes the age-based catch-up, and again the $9,000 age-based amount may be ordinary. From 60 through 63, $11,250 is not smaller than $9,000, so the age-based method applies; the special amount may be ordinary and the age-based $9,000 fits within $11,250. No attainable age pairs the age-based method with the $8,000 amount, so every reading leaves exactly $9,000 possibly ordinary against the $24,500 basic ceiling. The first record takes $24,500 - $9,000 = $15,500 and is indeterminate with SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED. The records holding catch-ups under both methods receive nothing further and are indeterminate.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "compensation": {
+              "w2Compensation": 400000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 10000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "sibling",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "priority": 0,
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-p",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 9000
+              }
+            }
+          },
+          {
+            "id": "special",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "priority": 1,
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-p",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 9000
+              }
+            },
+            "existingContributions": {
+              "special457CatchUp": 9000
+            }
+          },
+          {
+            "id": "age",
+            "ownerId": "t",
+            "type": "governmental_457b",
+            "employerId": "e",
+            "priority": 2,
+            "planRules": {
+              "includibleCompensation457": 400000,
+              "section457PlanGroupId": "plan-p",
+              "section457SpecialCatchUp": {
+                "eligible": true,
+                "unusedDeferralsFromPriorYears": 9000
+              }
+            },
+            "existingContributions": {
+              "employeePreTaxCatchUp": 9000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "indeterminate",
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 15500,
+        "accounts.0.diagnostics.0.code": "SECTION_457_PLAN_BASE_CAPACITY_UNRESOLVED",
+        "accounts.1.status": "indeterminate",
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.2.status": "indeterminate",
+        "accounts.2.contributionComponents.employeePreTaxDeferral": 0
+      }
+    },
+    {
       "name": "2026 an unselected-method IRC 457 catch-up reserves the account's plan-document deferral limit",
       "description": "IRS Notice 2025-67 states the 2026 IRC 457(e)(15) applicable dollar amount as $24,500 and the IRC 414(v)(2)(B)(i) catch-up as $8,000. The participant turns 55 in 2026, so IRC 414(v)(5)(A) makes the age-based catch-up available and the IRC 414(v)(2)(E) ages 60 through 63 amount does not apply. The plan has $400,000 of IRC 457(e)(5) includible compensation and $5,000 of 26 CFR 1.457-4(c)(3)(ii)(B) underutilized limitation, so the special catch-up above the $24,500 basic ceiling is min($24,500, $5,000) = $5,000, which is not larger than the $8,000 age-based amount; 26 CFR 1.457-4(c)(2)(ii) selects the age-based method. The account already holds $3,000 recorded as special catch-up, under the method that does not apply, and SECTION_457_CATCH_UP_RECORDED_UNDER_UNSELECTED_METHOD asks the caller to record it under the limitation it was actually made under. The plan document limits employee deferrals to $10,000. That limit is the plan's own restriction rather than a statutory ceiling, and on the reading that the $3,000 was an ordinary deferral it has already spent $3,000 of it, so only $10,000 - $3,000 = $7,000 of new deferral fits the plan document under every reading.",
       "input": {

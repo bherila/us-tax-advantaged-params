@@ -13196,18 +13196,27 @@ final class Engine
                 continue;
             }
             if ($resolution['mode'] === 'indeterminate') {
-                $atFifty = $person;
-                unset($atFifty['birthDate']);
-                $atFifty['birthYear'] = $context['taxYear'] - 50;
-                $readings = [
-                    self::section457OrdinaryExposure(
-                        $context, $person, $planKeys, $resolution['specialAmount'] > 0.0 ? 'special' : 'none',
-                        (float) $statutoryBase, (float) $compensationFraction,
-                    ),
-                    self::section457OrdinaryExposure(
-                        $context, $atFifty, $planKeys, 'age', (float) $statutoryBase, (float) $compensationFraction,
-                    ),
-                ];
+                // One reading per age band the age-based amount distinguishes:
+                // below 50, 50 (which 64 and over share), and 60 through 63.
+                $readings = [];
+                foreach ([null, 50, 60] as $age) {
+                    $reading = $person;
+                    if ($age !== null) {
+                        unset($reading['birthDate']);
+                        $reading['birthYear'] = $context['taxYear'] - $age;
+                    }
+                    $ageAmount = 0.0;
+                    foreach ($planKeys as $key) {
+                        $ageAmount = max($ageAmount, self::section457PlanLimits(
+                            $context['parameters'], $reading, $context['section457Plans'][$key],
+                            (float) $statutoryBase, (float) $compensationFraction,
+                        )['age']);
+                    }
+                    $mode = $resolution['specialAmount'] > $ageAmount ? 'special' : ($ageAmount > 0.0 ? 'age' : 'none');
+                    $readings[] = self::section457OrdinaryExposure(
+                        $context, $reading, $planKeys, $mode, (float) $statutoryBase, (float) $compensationFraction,
+                    );
+                }
             } else {
                 $readings = [self::section457OrdinaryExposure(
                     $context, $person, $planKeys, $resolution['mode'], (float) $statutoryBase, (float) $compensationFraction,
