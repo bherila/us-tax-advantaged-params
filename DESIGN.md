@@ -71,8 +71,125 @@ Monetary outputs are rounded to cents, and allocation is deterministic.
 | §415(c) annual additions | Owner and controlled-employer group | Employee and employer defined-contribution additions, generally excluding catch-up |
 | 403(b) 15-year catch-up | Owner | Shared across eligible 403(b) accounts |
 | 457(b) special catch-up | Owner | Last-three-years special catch-up |
+| 457(b)(2) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(1)(i) ceiling of one eligible plan — the lesser of the §457(e)(15) amount and 100% of that plan's includible compensation |
+| 457(b)(3) plan ceiling | Owner and §457 plan group | The §1.457-4(c)(3)(i) ceiling of one eligible plan, bounding what its records absorb between them |
+| 457(e)(5) includible compensation | Owner and §457 plan group | The salary a plan's records have between them to reduce — the only bound on a §457(b)(3) catch-up, which replaces the paragraph (2) 100% term rather than reapplying it. Spent by participant deferrals only |
 
 Plans of the same controlled employer should use the same `annualAdditionsGroupId`. Unrelated employers should normally use different IDs.
+
+The owner-level and group-level §457 pools are pairs, and the distinction is between the
+statute's two levels. §1.457-5(b) aggregates the annual deferral across every eligible
+plan and §1.457-5(c) gives the participant the largest special catch-up any one plan
+provides — those are the owner pools. §1.457-4(c)(1)(i) and §1.457-4(c)(3)(i) set each
+*plan's* own ceilings — those are the group pools.
+
+Records sharing a `section457PlanGroupId` are one eligible plan — the case that matters is
+a §402A(f)(1)(C) pension-linked emergency savings account and its host — so the plan's
+§457(b)(3) provision and its §457(e)(5) includible compensation are stated once, and both
+of its ceilings bind those records together rather than each. Absent the key each account
+is its own eligible plan.
+
+A group asserts one plan, so four things must agree across its records: the §457(b)(3)
+provision, includible compensation, whether it is an eligible governmental plan (which the
+account types settle, and which §414(v)(6)(A)(ii) makes decisive for the age 50 method),
+and the sponsoring `employerId` (which §414(v)(7)(A) reads the wage figure from). Records
+that disagree are an input-contract error, `SECTION_457_PLAN_GROUP_FACTS_CONFLICT`, raised
+at account normalization. A record that names no employer takes the group's sponsor there.
+
+This was modelled rather than rejected until PR #72's ninth review round. Each reading of a
+contradictory group had to be enumerated by hand in each place it could matter: method
+selection, ceilings, existing-catch-up attribution and sponsor wage tests. Every round found
+a place where an unenumerated reading resolved in the allocation's favour, and one where
+two mutually exclusive readings were summed. A contradictory group has no legal meaning,
+so the engine no longer represents it.
+
+Existing-catch-up attribution now evaluates one reading of the participant's method. Where
+the age is unknown, it evaluates one reading per age band the age-based amount distinguishes:
+under 50, 50 (which 64 and over share), and 60 through 63. Each band selects its method by
+the ordinary comparison, so a special allowance between the two age-based amounts never
+meets a forced age-based reading it would have beaten. It widens the
+participant and plan basic pools by the most that can be ordinary in any single
+reading. It also records each account's own exposure, which reduces that account's
+plan-document deferral limit because no pool backs that limit. Plan allocations
+use the guaranteed endpoint of those intervals; where the interval can change an
+account's allocation, its result is indeterminate.
+
+The plan retains an immutable total of existing salary deferrals. That total is
+checked against plan compensation, independently of its base and special ceilings,
+so splitting an already excessive salary deferral among records cannot hide it.
+The check runs on both the normal allocation path and the PLESA early-return path.
+
+The §457(e)(5) pool is spent by the participant's own deferrals and not by nonelective
+employer contributions. Those are annual deferrals under §1.457-4(a) and are charged to the
+plan's §457(b)(2) ceiling, but they reduce no salary: §457(e)(5) takes includible
+compensation from §415(c)(3), whose subparagraph (D) adds back only amounts deferred "at
+the election of the employee", and §414(v)(2)(A)(ii) caps a catch-up at compensation over
+"any other elective deferrals".
+
+Two things are deliberately **not** group invariants. `planDocumentEmployeeDeferralLimit`
+carries the sponsor's §402A(e)(3)(A)(ii) amount on a PLESA record and a plan-document
+deferral limit elsewhere, so its meaning is per-record; and a lower value can only reduce
+an allocation, never enlarge one. The Roth and contribution-preference flags likewise
+differ legitimately, since one plan may hold both a pre-tax and a designated Roth account.
+
+The internal `Section457Plan` state (a native associative structure in PHP) owns
+its member records, resolved fact views, cached ceilings, catch-up capacities,
+and all five resource balances. It is constructed once before participant-wide
+method selection. Account lookup points to that plan; it does not own another
+copy of its balances. Because contradictory groups are rejected at input, every
+member shares one fact view, and the plan offers what any member can host.
+
+The fourth balance is the full basic-plus-special plan ceiling. Ordinary and
+special contributions both consume it, so ordinary overages reduce the remaining
+special capacity. Its usage does not depend on which of those two component
+labels ultimately applies. During the special period, an ordinary deposit above
+the basic portion does not itself invalidate the record or block special room:
+the excess diagnostic compares ordinary plus special deposits with the combined
+ceiling. True combined excess and invalid catch-up provenance still block further
+catch-up. This must hold even when every member already contains deposits.
+Ordinary employee draws also consult the salary
+balance before allocation, including salary already deferred as a special catch-up.
+Ordinary employee and employer draws also read the combined ceiling for the
+selected method. A fifth balance tracks basic-plus-age contributions, so an
+ordinary overage consumes age capacity just as it consumes special capacity.
+Both combined balances are charged by the same contribution writer for existing
+and new deposits; component attribution does not restore combined capacity.
+A combined special-period excess affects every record with ordinary or special
+contributions, including records containing only a special contribution.
+
+
+An existing catch-up whose component label the resolved method or its plan
+does not support may have been an ordinary deferral. That covers a label under
+the unselected method, a §457(b)(3) amount under a plan providing none, and an
+age 50 amount on a plan §414(v)(6)(A)(ii) does not reach. The possibly ordinary
+amount widens the participant's basic pool, the plan's basic pool, and the
+combined balance for the method that does apply. A supported label is still
+bounded twice. The first bound is the plan's own allowance under §1.457-5(c),
+taken at the smallest figure any reading of its records gives. The second is
+the participant's headroom, which §1.457-5(a) and (b) apply in aggregate.
+Anything above either bound may also have been ordinary. Each plan's basic
+pool is widened by its unsupported amount, its amount above its own allowance,
+and as much of the participant-wide overflow as that plan could hold. The
+participant's basic pool is widened once by the most that can be ordinary in
+any single completion. An IRC 414(v)(7)(A) amount is widened by its own
+attribution and is not counted twice. An account
+whose ordinary room either basic interval can change is indeterminate, whether
+the widened interval is the plan's or the participant's aggregate.
+Matching uncertainty IDs preserve its correlation with the special pools; the
+full plan ceiling and salary usage remain unchanged by that classification.
+Internal plan keys use UTF-8 byte lengths consistently in both runtimes.
+
+Participant method selection reads the plans' capacities. Allocation reads the
+same cached ceilings and continues in global ascending priority, then input
+order; it never allocates a whole group together. One contribution-classification
+function charges plan resources for both supplied contributions and new
+allocations. Ordinary employee deferrals spend base and salary, employer deposits
+spend base only, special catch-ups spend special and salary, and age catch-ups
+spend salary. Invalid employee after-tax amounts retain their existing base-only
+accounting and diagnostics. The structural invariant suite exercises record
+splitting, owner isolation, interleaved allocation order, existing versus new
+deposits, and replaying completed allocations as existing contributions in both
+runtimes. These characterize established behavior rather than changing it.
 
 ## 6. Section 401(a)(17) recognized compensation
 

@@ -54,9 +54,21 @@ const random = makeRandom(seed);
 const pick = (values) => values[Math.floor(random() * values.length)];
 const chance = (probability) => random() < probability;
 const integer = (low, high) => low + Math.floor(random() * (high - low + 1));
-/** Money-shaped values, biased toward the boundaries where limits bind. */
-const money = () => pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
-  + (chance(0.25) ? integer(0, 999) : 0);
+/**
+ * Money-shaped values, biased toward the boundaries where limits bind, with a
+ * rare excursion past the magnitude at which the two runtimes stop rendering a
+ * float the same way.
+ *
+ * PHP formats a float as text at 14 significant digits by default, so above
+ * about 1e14 two amounts a dollar apart render identically while JavaScript
+ * keeps them apart. Any grouping key, fingerprint or diagnostic string built by
+ * formatting an amount diverges there and nowhere below it, which is why the
+ * ordinary boundary-hugging values could never find it.
+ */
+const money = () => (chance(0.02)
+  ? pick([1e14, 1e14 + 1, 1e15, 1e15 + 0.01, 12345678901234.56, 99999999999999.99])
+  : pick([0, 0.01, 1, 500, 3500, 7000, 7500, 12000, 23500, 24500, 47000, 70000, 100000, 350000, 1000000])
+    + (chance(0.25) ? integer(0, 999) : 0));
 
 // Both IRC 402A(f)(1) hosts, so the IRC 402A(e)(3)(A) balance rule is
 // differentially fuzzed on each rather than only on the IRC 401(a)/403(b) one.
@@ -261,6 +273,10 @@ function randomPlanRules(type) {
   if (chance(0.8)) rules.planCompensation = money();
   if (chance(0.2)) rules.includibleCompensation457 = money();
   if (chance(0.2)) rules.annualAdditionsGroupId = pick(["g1", "g2", "0", 0, ""]);
+  // The same identifier shapes as annualAdditionsGroupId, for the same reason:
+  // 0, "0" and "" are where JavaScript and PHP most easily disagree, and this
+  // key decides which records 26 CFR 1.457-4(c) treats as one eligible plan.
+  if (chance(0.15)) rules.section457PlanGroupId = pick(["s1", "s2", "é", "税😀", "0", 0, "", null]);
   if (chance(0.15)) rules.planDocumentEmployeeDeferralLimit = money();
   if (chance(0.15)) rules.planDocumentAnnualAdditionsLimit = money();
   if (chance(0.4)) rules.permitsRothContributions = chance(0.05) ? junk() : chance(0.7);
@@ -695,8 +711,36 @@ function randomScenario() {
     // question off for a year in which it applies.
     if (section457Host && chance(0.35)) {
       const special = { eligible: chance(0.8), unusedDeferralsFromPriorYears: pick([0, 500, 5000, 20000, money()]) };
-      if (chance(0.5)) plesaRules.section457SpecialCatchUp = special;
-      else hostRules.section457SpecialCatchUp = special;
+      // Both records sometimes, so a plan group whose members state the
+      // provision differently -- the contradiction #53 diagnoses -- is reached
+      // as often as the agreeing one.
+      if (chance(0.25)) {
+        hostRules.section457SpecialCatchUp = special;
+        plesaRules.section457SpecialCatchUp = chance(0.5)
+          ? special
+          : { eligible: chance(0.8), unusedDeferralsFromPriorYears: pick([0, 500, 5000, 20000, money()]) };
+      } else if (chance(0.5)) {
+        plesaRules.section457SpecialCatchUp = special;
+      } else {
+        hostRules.section457SpecialCatchUp = special;
+      }
+    }
+    // IRC 402A(f)(1)(C) puts a pension-linked emergency savings account inside a
+    // host IRC 457(b) plan, so this pair is the shape planRules.section457PlanGroupId
+    // exists for. Generated as one plan, as two, and as a contradictory pair --
+    // the last also reaching the includible-compensation half of the conflict,
+    // since the host constrains that field whenever section457Host holds.
+    if (chance(0.4)) {
+      const shared = pick(["s1", "s2", "é", "税😀"]);
+      hostRules.section457PlanGroupId = shared;
+      // null included: an explicit null is absent, so it must separate the pair
+      // rather than joining them in a group named for it.
+      plesaRules.section457PlanGroupId = chance(0.85) ? shared : pick(["s1", "s2", "s3", null]);
+      if (chance(0.25)) plesaRules.includibleCompensation457 = pick([0, 1000, 24500, 60000, money()]);
+      // A compensation-bounded plan ceiling, which is the shape where the plan's
+      // IRC 457(b)(2) ceiling and its includible compensation bind its records
+      // together rather than each of them separately.
+      if (chance(0.3)) hostRules.includibleCompensation457 = pick([0, 500, 1000, 2600, 5000]);
     }
     // Sometimes the emergency savings account stands alone, with no host
     // account sharing the participant's base pool. That is the shape where the
@@ -706,9 +750,13 @@ function randomScenario() {
     // never occurred: the host always either spent the base pool, leaving the
     // account-local room intact, or was reached second.
     const isolatedPlesa = chance(0.2);
+    // A second employer id on the emergency savings record: one plan has one
+    // sponsor, and IRC 414(v)(7)(A) reads the wage figure from it, so a group
+    // naming two is a contradiction rather than a second wage test.
+    const plesaEmployerId = chance(0.15) ? pick(["other", employerId, "0"]) : employerId;
     const pair = [
       { id: "p0", ownerId: owner.id, type: hostType, employerId, planRules: hostRules },
-      { id: "p1", ownerId: owner.id, type: plesaType, employerId, planRules: plesaRules },
+      { id: "p1", ownerId: owner.id, type: plesaType, employerId: plesaEmployerId, planRules: plesaRules },
     ];
     if (chance(0.3)) pair[1].existingContributions = randomExisting();
     if (exhaustHost) {
@@ -723,7 +771,14 @@ function randomScenario() {
       if (chance(0.4)) account.priority = integer(1, 200);
       accounts.splice(integer(0, accounts.length), 0, account);
     });
-    if (chance(0.3)) owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+    if (chance(0.3)) {
+      owner.priorYearFicaWagesByEmployer = { [employerId]: money() };
+      // The second sponsor's figure too, so the wage test has something to read
+      // on both readings of a contradictory pair.
+      if (plesaEmployerId !== employerId && chance(0.6)) {
+        owner.priorYearFicaWagesByEmployer[plesaEmployerId] = pick([0, 200000, money()]);
+      }
+    }
   }
 
   // A second targeted shape: two ordinary IRC 457(b) accounts for one
