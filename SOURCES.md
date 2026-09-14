@@ -476,7 +476,10 @@ absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,65
 - **Rev. Proc. 2006-53 §3.06** — the first indexed §25B(b) amounts, for taxable years beginning in 2007, after the Pension Protection Act of 2006, Pub. L. 109-280 §833(a), rewrote §25B(b) with an inflation adjustment for calendar years after 2006. The same document is also committed in the HSA corpus.  
   `https://www.irs.gov/pub/irs-drop/rp-06-53.pdf`
 
-- **26 U.S.C. §25B (2024 edition)** — for the SECURE 2.0 amendment: Pub. L. 117-328 div. T §103(e)(1) rewrites §25B(d)(1), applicable to taxable years beginning after December 31, 2026, so that "qualified retirement savings contributions" means only "the amount of contributions made before January 1, 2026" to the individual's ABLE account. IRA contributions, elective deferrals and voluntary employee contributions no longer qualify. The credit and its §25B(b) table are not repealed.  
+- **Pub. L. 119-21 §70116** — rewrites §25B(d)(1), applying to taxable years ending after December 31, 2025. Under (A), contributions to the individual's ABLE account qualify. Under (B), IRA contributions, elective deferrals and voluntary employee contributions qualify only "in the case of any taxable year beginning before January 1, 2027". §70116(a)(2) repeals SECURE 2.0 (Pub. L. 117-328 div. T) §103(e)(1) "as though such paragraph were never enacted", and §70116(b) raises the §25B(a) cap from $2,000 to $2,100 for taxable years beginning after December 31, 2026. The credit and its §25B(b) table are not repealed. Committed as `evidence/retirement-limits/sources/plaw-119publ21.pdf`.  
+  `https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf`
+
+- **26 U.S.C. §25B (2024 edition)** — the §25B(b) and §25B(d)(1) text in force before Pub. L. 119-21. It predates that law, so its amendment note still describes the SECURE 2.0 §103(e)(1) change, which §70116(a)(2) later repealed. Do not rely on that note.  
   `https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartA-sec25B.pdf`
 
 ## IRA phase-outs and rounding

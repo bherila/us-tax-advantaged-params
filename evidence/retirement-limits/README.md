@@ -110,9 +110,11 @@ carry it:
   IR-series releases those blocks cite print only the top ceiling.
 
 Each §25B year also records `saversCreditRetirementContributionsQualify_25Bd1` as
-`true`, cited to §25B(d)(1). SECURE 2.0 div. T §103(e)(1) removes retirement
-contributions from that definition for taxable years beginning after 2026
-without repealing the credit, which the 2024 edition of 26 U.S.C. §25B records.
+`true`, cited to §25B(d)(1). Pub. L. 119-21 §70116(a)(1), committed as
+`plaw-119publ21.pdf`, counts retirement contributions only for taxable years
+beginning before January 1, 2027, without repealing the credit. The 2024 edition
+of 26 U.S.C. §25B predates that law. Its note still describes the SECURE 2.0
+div. T §103(e)(1) amendment, which §70116(a)(2) repealed.
 
 ## Sources
 

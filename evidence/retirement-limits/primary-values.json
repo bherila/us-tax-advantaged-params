@@ -64,7 +64,8 @@
     "n-13-73": "IRS Notice 2013-73, 2014 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2013-49",
     "n-14-70": "IRS Notice 2014-70, 2015 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2014-48",
     "rp-06-53": "Rev. Proc. 2006-53, 2007 inflation adjusted items; section 3.06 states the IRC 25B(b) applicable-percentage amounts for taxable years beginning in 2007, the first year Pub. L. 109-280 section 833(a) indexed them",
-    "usc-26-25B": "26 U.S.C. 25B (2024 edition of the United States Code), for subsection (b) and the Pub. L. 117-328 div. T section 103(e)(1) amendment of subsection (d)(1), applicable to taxable years beginning after December 31, 2026 under section 103(f)"
+    "usc-26-25B": "26 U.S.C. 25B (2024 edition of the United States Code), for subsection (b). It predates Pub. L. 119-21: its note on subsection (d)(1) describes the Pub. L. 117-328 div. T section 103(e)(1) amendment, which Pub. L. 119-21 section 70116(a)(2) repealed as though never enacted; see pl-119-21",
+    "pl-119-21": "Pub. L. 119-21, section 70116(a)(1), rewriting IRC 25B(d)(1) for taxable years ending after December 31, 2025 so that IRA contributions, elective deferrals and voluntary employee contributions count only for taxable years beginning before January 1, 2027, and section 70116(a)(2), repealing Pub. L. 117-328 div. T section 103(e)(1)"
   },
   "planYears": {
     "1975": {
@@ -701,7 +702,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2003": {
       "source": "n-02-71",
@@ -737,7 +738,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2004": {
       "source": "n-03-73",
@@ -773,7 +774,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2005": {
       "source": "n-04-72",
@@ -809,7 +810,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2006": {
       "source": "n-05-75",
@@ -848,7 +849,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2007": {
       "source": "n-06-98",
@@ -884,7 +885,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "rp-06-53",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2008": {
       "source": "n-07-87",
@@ -960,7 +961,7 @@
         "tenPercent": 26500
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2009": {
       "source": "n-08-102",
@@ -1040,7 +1041,7 @@
         "tenPercent": 27750
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2010": {
       "source": "n-09-94",
@@ -1120,7 +1121,7 @@
         "tenPercent": 27750
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2011": {
       "source": "n-10-78",
@@ -1200,7 +1201,7 @@
         "tenPercent": 28250
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2012": {
       "source": "n-11-90",
@@ -1282,7 +1283,7 @@
         "tenPercent": 28750
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2013": {
       "source": "ir-12-077",
@@ -1361,7 +1362,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "n-12-67",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2014": {
       "source": "ir-13-086",
@@ -1440,7 +1441,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "n-13-73",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2015": {
       "source": "ir-14-099",
@@ -1519,7 +1520,7 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditAgi_source": "n-14-70",
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2016": {
       "source": "n-15-75",
@@ -1597,7 +1598,7 @@
         "tenPercent": 30750
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2017": {
       "source": "n-16-62",
@@ -1675,7 +1676,7 @@
         "tenPercent": 31000
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2018": {
       "source": "n-17-64",
@@ -1753,7 +1754,7 @@
         "tenPercent": 31500
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2019": {
       "source": "n-18-83",
@@ -1833,7 +1834,7 @@
         "tenPercent": 32000
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2020": {
       "source": "n-19-59",
@@ -1911,7 +1912,7 @@
         "tenPercent": 32500
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2021": {
       "source": "n-20-79",
@@ -1989,7 +1990,7 @@
         "tenPercent": 33000
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2022": {
       "source": "n-21-61",
@@ -2067,7 +2068,7 @@
         "tenPercent": 34000
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2023": {
       "source": "n-22-55",
@@ -2147,7 +2148,7 @@
         "tenPercent": 36500
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2024": {
       "source": "n-23-75",
@@ -2238,7 +2239,7 @@
         "tenPercent": 38250
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2025": {
       "source": "n-24-80",
@@ -2324,7 +2325,7 @@
         "tenPercent": 39500
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     },
     "2026": {
       "source": "n-25-67",
@@ -2414,7 +2415,7 @@
         "tenPercent": 40250
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
-      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); see usc-26-25B for the Pub. L. 117-328 div. T section 103(e)(1) amendment that removes them for taxable years beginning after December 31, 2026"
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     }
   },
   "_electiveDeferralComment": "Section 402(g)(1) and section 457(e)(15) have been identical in every year listed. 2013 and 2014 are established by IR-2013-86 ('remains unchanged at $17,500' for 2014, which fixes 2013 at the same amount); 2015 by IR-2014-99; 2016 onward by the named notice.",

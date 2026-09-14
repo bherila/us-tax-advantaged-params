@@ -1364,7 +1364,9 @@ Supplying `expectedEmployerContribution` bypasses formula inference because it r
 
 Whether a particular employee is highly compensated or a key employee, and the amount of the credit, are not calculated; see [Deliberate exclusions](#deliberate-exclusions).
 
-**The saver's credit is not repealed after 2026.** SECURE 2.0 (Pub. L. 117-328, div. T) §103(e)(1) rewrites §25B(d)(1) for taxable years beginning after December 31, 2026, so that the only qualified retirement savings contributions are ABLE-account contributions made before January 1, 2026. IRA contributions and elective deferrals stop qualifying, but the credit and its §25B(b) table remain. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+**The saver's credit is not repealed after 2026.** Pub. L. 119-21 §70116(a)(1) rewrites §25B(d)(1) for taxable years ending after December 31, 2025. Contributions to the individual's ABLE account continue to qualify. IRA contributions, elective deferrals and voluntary employee contributions qualify only "in the case of any taxable year beginning before January 1, 2027". §70116(b) also raises the credit's contribution cap from $2,000 to $2,100 after 2026, and the §25B(b) table continues. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+
+The 2024 edition of 26 U.S.C. §25B still shows an earlier SECURE 2.0 amendment, div. T §103(e)(1), which would have left only pre-2026 ABLE contributions. §70116(a)(2) repealed it "as though such paragraph were never enacted".
 
 ## IRA phase-outs and spousal IRAs
 

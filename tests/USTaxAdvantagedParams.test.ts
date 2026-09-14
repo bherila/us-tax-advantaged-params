@@ -61,8 +61,8 @@ test("exposes the IRC 414(q), 416(i) and 25B figures from the first year each ha
       headOfHousehold: { fiftyPercent: 36_375, twentyPercent: 39_375, tenPercent: 60_375 },
       allOtherTaxpayers: { fiftyPercent: 24_250, twentyPercent: 26_250, tenPercent: 40_250 },
     },
-    // IRC 25B(d)(1) still counts retirement contributions for 2026; Pub. L. 117-328
-    // div. T section 103(e)(1) removes them only for years beginning after 2026.
+    // IRC 25B(d)(1)(B), as rewritten by Pub. L. 119-21 section 70116(a)(1), counts
+    // retirement contributions only for taxable years beginning before January 1, 2027.
     retirementPlanAndIraContributionsQualify: true,
   });
 });

@@ -206,11 +206,12 @@ if (parameters) {
           fail(`Year ${year} saversCredit25B ${filer} ceilings must rise from the 50 to the 10 percent rate.`);
         }
       }
-      // Pub. L. 117-328 div. T section 103(e)(1) strikes IRC 25B(d)(1)(A)-(C)
-      // for taxable years beginning after December 31, 2026 without repealing the
+      // Pub. L. 119-21 section 70116(a)(1) counts IRA contributions, elective
+      // deferrals and voluntary employee contributions under IRC 25B(d)(1)(B) only
+      // for taxable years beginning before January 1, 2027, without repealing the
       // credit. A later row therefore cannot copy the prior year's flag forward.
       if (saver.retirementPlanAndIraContributionsQualify !== (year <= 2026)) {
-        fail(`Year ${year} saversCredit25B.retirementPlanAndIraContributionsQualify must be ${year <= 2026}; Pub. L. 117-328 div. T section 103(e)(1) applies to taxable years beginning after December 31, 2026.`);
+        fail(`Year ${year} saversCredit25B.retirementPlanAndIraContributionsQualify must be ${year <= 2026}; Pub. L. 119-21 section 70116(a)(1) counts retirement contributions only for taxable years beginning before January 1, 2027.`);
       }
     }
   }
@@ -222,6 +223,7 @@ if (parameters) {
     "usc-26-402",
     "usc-26-402A",
     "usc-26-25B",
+    "pl-119-21",
   ]);
 
   const row1997 = parameters.years?.["1997"];

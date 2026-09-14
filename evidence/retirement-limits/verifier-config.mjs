@@ -102,7 +102,7 @@ export default {
     [
       "saversCreditRetirementContributionsQualify_25Bd1",
       ["saversCredit25B", "retirementPlanAndIraContributionsQualify"],
-      "IRC 25B(d)(1)(A)-(C); Pub. L. 117-328 div. T sec. 103(e)(1) strikes them for taxable years beginning after December 31, 2026",
+      "IRC 25B(d)(1); Pub. L. 119-21 sec. 70116(a)(1) counts them only for taxable years beginning before January 1, 2027",
     ],
   ],
 

@@ -1278,11 +1278,13 @@ export interface YearParameters {
    *
    * `retirementPlanAndIraContributionsQualify` records whether IRC 25B(d)(1)
    * counts IRA contributions, elective deferrals and voluntary employee
-   * contributions. Pub. L. 117-328 div. T section 103(e)(1) strikes them for
-   * taxable years beginning after December 31, 2026, leaving only ABLE-account
-   * contributions made before January 1, 2026. It repeals neither the credit
-   * nor the IRC 25B(b) table, so a later year carries `false` here rather than a
-   * null credit.
+   * contributions. Pub. L. 119-21 section 70116(a)(1) rewrote IRC 25B(d)(1) so
+   * that they count only "in the case of any taxable year beginning before
+   * January 1, 2027"; contributions to the individual's ABLE account continue to
+   * count. The credit and the IRC 25B(b) table continue, so a later year carries
+   * `false` here rather than a null credit. Section 70116(a)(2) repealed the
+   * Pub. L. 117-328 div. T section 103(e)(1) amendment that the 2024 edition of
+   * the Code still shows.
    *
    * `null` before 2002, when IRC 25B did not exist.
    */
@@ -2748,9 +2750,15 @@ const RAW_PARAMETERS: ParameterData = {
     },
     {
       "id": "usc-26-25B",
-      "title": "26 U.S.C. 25B, elective deferrals and IRA contributions by certain individuals (2024 edition), including the Pub. L. 117-328 div. T section 103(e)(1) amendment of subsection (d)(1) for taxable years beginning after December 31, 2026",
+      "title": "26 U.S.C. 25B, elective deferrals and IRA contributions by certain individuals (2024 edition), for subsection (b); it predates Pub. L. 119-21, so its subsection (d)(1) note describes a SECURE 2.0 amendment that Pub. L. 119-21 section 70116(a)(2) repealed",
       "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartA-sec25B.pdf",
       "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70116, which rewrites IRC 25B(d)(1) so that retirement contributions count only for taxable years beginning before January 1, 2027, and repeals Pub. L. 117-328 div. T section 103(e)(1)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Congress"
     }
   ],
   "years": {
