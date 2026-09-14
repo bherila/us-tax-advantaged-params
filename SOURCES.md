@@ -406,6 +406,42 @@ Every document below is committed under `evidence/able-limits/sources/` and fixe
   years beginning after December 31, 2025). Pub. L. 119-21 amends only §529A(b)(2)(B), which
   is covered above, so the edition's notes on the other provisions are not stale.
 
+## Adoption sources (IRC §23 and §137)
+
+Every document below is committed under `evidence/adoption-limits/sources/` and fixed by
+`SHA256SUMS.txt`.
+
+- **Small Business Job Protection Act of 1996, Pub. L. 104-188 §1807** — adds §23 and §137 for
+  taxable years beginning after December 31, 1996. Each limit is $5,000 ($6,000 for a child with
+  special needs), reduced for adjusted gross income above $75,000 over $40,000. §137(f) ends the
+  exclusion for amounts paid after December 31, 2001, and §23(d)(2)(B) limits later expenses to
+  special-needs children.
+
+- **Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16 §202** — substitutes
+  $10,000 for $5,000, drops the separate $6,000 special-needs limit, and substitutes $150,000 for
+  $75,000, all for taxable years beginning after December 31, 2001 (§202(g)(1)). §202(d) repeals
+  both 2001 terminations. The flat special-needs credit and exclusion under §202(a), and indexing
+  under §202(e), apply to taxable years beginning after December 31, 2002 (§202(g)(2)). No revenue
+  procedure states 2002: Rev. Proc. 2001-59 has no adoption section.
+
+- **Rev. Procs. 2002-70 through 2025-32** — the indexed limit, the special-needs amount and both
+  phase-out figures for every year from 2003 to 2026, stated identically for §23 (§36C in 2010 and
+  2011) and §137. Rev. Proc. 2025-32 §4.04(3) also states the $5,120 refundable portion for 2026.
+
+- **Rev. Proc. 2010-35** — modifies Rev. Proc. 2009-50's 2010 adoption sections for the
+  Affordable Care Act (Pub. L. 111-148) §10909, which redesignated §23 as §36C, made the credit
+  refundable, and raised both maximums from $12,170 to $13,170. Rev. Proc. 2010-40 §2.02
+  describes the same change for 2011.
+
+- **Pub. L. 111-312 §101(b)** — rewrites §10909(c) so that the Affordable Care Act amendments do not
+  apply to taxable years beginning after December 31, 2011.
+
+- **Pub. L. 119-21 §70402** — adds §23(a)(4), treating up to $5,000 of the credit as refundable
+  for taxable years beginning after December 31, 2024. The amount is indexed from a calendar-2024
+  base for taxable years beginning after 2025.
+
+- **26 U.S.C. §§23 and 137 (2024 edition)** — the current text and the amendment notes.
+
 ## Flexible spending arrangement sources (IRC §125 and IRC §129)
 
 Two statutes with two different publication habits. The §125(i) health FSA

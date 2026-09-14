@@ -24,7 +24,8 @@
     "./package.json": "./package.json",
     "./data/payroll-tax-parameters.json": "./data/payroll-tax-parameters.json",
     "./data/education-parameters.json": "./data/education-parameters.json",
-    "./data/able-parameters.json": "./data/able-parameters.json"
+    "./data/able-parameters.json": "./data/able-parameters.json",
+    "./data/adoption-parameters.json": "./data/adoption-parameters.json"
   },
   "files": [
     "dist",
@@ -34,6 +35,7 @@
     "data/payroll-tax-parameters.json",
     "data/education-parameters.json",
     "data/able-parameters.json",
+    "data/adoption-parameters.json",
     "README.md",
     "LICENSE",
     "SOURCES.md"
@@ -64,6 +66,7 @@
     "validate:evidence:fsa": "node scripts/verify-evidence.mjs fsa-limits",
     "validate:evidence:education": "node scripts/verify-evidence.mjs education-limits",
     "validate:evidence:able": "node scripts/verify-evidence.mjs able-limits",
+    "validate:evidence:adoption": "node scripts/verify-evidence.mjs adoption-limits",
     "check:attestations": "node scripts/check-attestations.mjs",
     "check:attestations:self-test": "node scripts/check-attestations.mjs --self-test",
     "test:457-invariants": "node scripts/check-section457-invariants.mjs"

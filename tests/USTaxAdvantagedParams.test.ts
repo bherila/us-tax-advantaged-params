@@ -775,6 +775,62 @@ test("exposes the IRC 529A ABLE table and its 2026 separation from the IRC 2503(
   assert.throws(() => U.ableParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
+test("exposes the IRC 23 and IRC 137 adoption table through each statutory change", () => {
+  // Pub. L. 104-188 section 1807: taxable years beginning after December 31, 1996,
+  // $5,000 ($6,000 for a child with special needs), reduced above $75,000 over $40,000.
+  assert.deepEqual(U.supportedAdoptionTaxYears(), { minimum: 1997, maximum: 2026 });
+  assert.equal(U.adoptionParametersForYear(1996), null);
+  assert.deepEqual(U.adoptionParametersForYear(1997)?.adoptionCredit, {
+    state: "statutory_dollar_limit",
+    codeSection: "23",
+    dollarLimit: 5_000,
+    specialNeedsDollarLimit: 6_000,
+    specialNeedsCreditAmount: null,
+    phaseout: [75_000, 115_000],
+    refundability: "nonrefundable",
+    refundablePortionLimit: null,
+  });
+  // Pub. L. 107-16 section 202(b) and (g): $10,000 and $150,000 for 2002, but the
+  // flat special-needs amount of section 202(a) only from 2003 (Rev. Proc. 2002-70: $10,160).
+  assert.equal(U.adoptionParametersForYear(2002)?.adoptionCredit.dollarLimit, 10_000);
+  assert.equal(U.adoptionParametersForYear(2002)?.adoptionCredit.specialNeedsCreditAmount, null);
+  assert.equal(U.adoptionParametersForYear(2003)?.adoptionAssistanceExclusion.specialNeedsExclusionAmount, 10_160);
+  // Rev. Proc. 2010-35: Pub. L. 111-148 section 10909 moved the credit to IRC 36C,
+  // made it refundable and raised 2010 from $12,170 to $13,170.
+  assert.equal(U.adoptionParametersForYear(2010)?.adoptionCredit.codeSection, "36C");
+  assert.equal(U.adoptionParametersForYear(2010)?.adoptionCredit.dollarLimit, 13_170);
+  assert.equal(U.adoptionParametersForYear(2010)?.adoptionCredit.refundability, "refundable");
+  // Pub. L. 111-312 section 101(b): nonrefundable IRC 23 again after 2011 (Rev. Proc. 2011-52: $12,650).
+  assert.equal(U.adoptionParametersForYear(2012)?.adoptionCredit.codeSection, "23");
+  assert.equal(U.adoptionParametersForYear(2012)?.adoptionCredit.refundability, "nonrefundable");
+  // Pub. L. 119-21 section 70402: up to $5,000 refundable for taxable years after 2024.
+  assert.equal(U.adoptionParametersForYear(2025)?.adoptionCredit.refundablePortionLimit, 5_000);
+  // Rev. Proc. 2025-32 sections 4.04 and 4.18: $17,670, phase-out from $265,080 to
+  // $305,080, and a $5,120 refundable portion.
+  assert.deepEqual(U.adoptionParametersForYear(2026), {
+    year: 2026,
+    adoptionCredit: {
+      state: "statutory_dollar_limit",
+      codeSection: "23",
+      dollarLimit: 17_670,
+      specialNeedsDollarLimit: 17_670,
+      specialNeedsCreditAmount: 17_670,
+      phaseout: [265_080, 305_080],
+      refundability: "partially_refundable",
+      refundablePortionLimit: 5_120,
+    },
+    adoptionAssistanceExclusion: {
+      state: "statutory_dollar_limit",
+      dollarLimit: 17_670,
+      specialNeedsDollarLimit: 17_670,
+      specialNeedsExclusionAmount: 17_670,
+      phaseout: [265_080, 305_080],
+    },
+  });
+  assert.ok(U.adoptionSourceMetadata().some((source) => source.id === "irs-rev-proc-2010-35"));
+  assert.throws(() => U.adoptionParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
   assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
   assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);

@@ -1561,6 +1561,58 @@ interface AbleParameterData {
   dollarLimitStates: Record<string, string>;
 }
 
+/** Whether the adoption credit could exceed the taxpayer's liability. */
+export type AdoptionCreditRefundability = "nonrefundable" | "refundable" | "partially_refundable";
+
+/** IRC 23 adoption credit amounts for one year (IRC 36C for taxable years beginning in 2010 and 2011). */
+export interface AdoptionCreditYearParameters {
+  state: DollarLimitState;
+  /** IRC 36C for 2010 and 2011, where Pub. L. 111-148 section 10909 moved the credit; IRC 23 otherwise. */
+  codeSection: "23" | "36C";
+  /** IRC 23(b)(1) limit on qualified adoption expenses for one adoption, across all taxable years. */
+  dollarLimit: Money;
+  /** The expense limit for a child with special needs: $6,000 for 1997-2001, the general limit from 2002. */
+  specialNeedsDollarLimit: Money;
+  /** IRC 23(a)(3) credit for a special-needs adoption regardless of expenses. Null before 2003. */
+  specialNeedsCreditAmount: Money | null;
+  /** IRC 23(b)(2)(A) modified adjusted gross income range, as [start, end]; the $40,000 width is statutory. */
+  phaseout: [Money, Money];
+  refundability: AdoptionCreditRefundability;
+  /** IRC 23(a)(4) refundable portion. Null unless the credit is partially refundable. */
+  refundablePortionLimit: Money | null;
+}
+
+/** IRC 137 adoption assistance program exclusion amounts for one year. */
+export interface AdoptionAssistanceExclusionYearParameters {
+  state: DollarLimitState;
+  /** IRC 137(b)(1) limit for one adoption, across all taxable years. */
+  dollarLimit: Money;
+  /** The limit for a child with special needs: $6,000 for 1997-2001, the general limit from 2002. */
+  specialNeedsDollarLimit: Money;
+  /** IRC 137(a)(2) exclusion for a special-needs adoption regardless of expenses. Null before 2003. */
+  specialNeedsExclusionAmount: Money | null;
+  /** IRC 137(b)(2)(A) modified adjusted gross income range, as [start, end]. */
+  phaseout: [Money, Money];
+}
+
+export interface AdoptionYearParameters {
+  year: number;
+  adoptionCredit: AdoptionCreditYearParameters;
+  adoptionAssistanceExclusion: AdoptionAssistanceExclusionYearParameters;
+}
+
+interface AdoptionParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, AdoptionYearParameters>;
+  dollarLimitStates: Record<string, string>;
+}
+
 /* <generated-payroll-parameters> */
 const RAW_PAYROLL_PARAMETERS: PayrollParameterData = {
   "schemaVersion": 1,
@@ -11793,6 +11845,999 @@ const RAW_ABLE_PARAMETERS: AbleParameterData = {
 } as AbleParameterData;
 /* </generated-able-parameters> */
 
+/* <generated-adoption-parameters> */
+const RAW_ADOPTION_PARAMETERS: AdoptionParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1997,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "The table starts at 1997 because Pub. L. 104-188 section 1807 added IRC 23 and IRC 137 for taxable years beginning after December 31, 1996. A year below the minimum is unavailable by absence. No future year is extrapolated.",
+    "phaseoutWidth": "The $40,000 width of each phase-out is statutory and has never been indexed; only the starting amount is. Each row's end is its start plus $40,000, which every revenue procedure's completely-phased-out amount confirms.",
+    "specialNeeds": "For 1997-2001 a child with special needs carried a higher $6,000 expense limit. Pub. L. 107-16 section 202 removed that for 2002 and, from 2003, allowed the full credit and exclusion for a special-needs adoption regardless of expenses; specialNeedsCreditAmount and specialNeedsExclusionAmount are null before 2003.",
+    "section36C": "Pub. L. 111-148 section 10909 moved the credit to IRC 36C and made it refundable for taxable years beginning in 2010 and 2011, raising the 2010 maximum from the $12,170 Rev. Proc. 2009-50 published to $13,170 (Rev. Proc. 2010-35). Pub. L. 111-312 section 101(b) ended those amendments for taxable years beginning after December 31, 2011.",
+    "refundablePortion": "Pub. L. 119-21 section 70402 makes up to $5,000 of the IRC 23 credit refundable for taxable years beginning after December 31, 2024, indexed from a calendar-2024 base from 2026 ($5,120, Rev. Proc. 2025-32)."
+  },
+  "sources": [
+    {
+      "id": "usc-26-23",
+      "title": "26 U.S.C. 23, adoption expenses (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartA-sec23.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-137",
+      "title": "26 U.S.C. 137, adoption assistance programs (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec137.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "pl-104-188",
+      "title": "Small Business Job Protection Act of 1996, Pub. L. 104-188, section 1807",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-104publ188/pdf/PLAW-104publ188.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-107-16",
+      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, section 202",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-111-312",
+      "title": "Pub. L. 111-312, section 101(b), sunset of the Pub. L. 111-148 section 10909 adoption amendments",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-111publ312/pdf/PLAW-111publ312.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70402, refundable portion of the adoption credit",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "irs-rev-proc-2002-70",
+      "title": "Rev. Proc. 2002-70",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-02-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2003-85",
+      "title": "Rev. Proc. 2003-85",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-03-85.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2004-71",
+      "title": "Rev. Proc. 2004-71",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-04-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2005-70",
+      "title": "Rev. Proc. 2005-70",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-05-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2007-66",
+      "title": "Rev. Proc. 2007-66",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-07-66.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2008-66",
+      "title": "Rev. Proc. 2008-66",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-08-66.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2009-50",
+      "title": "Rev. Proc. 2009-50",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-09-50.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-35",
+      "title": "Rev. Proc. 2010-35",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-40",
+      "title": "Rev. Proc. 2010-40",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-52",
+      "title": "Rev. Proc. 2011-52",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-52.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-15",
+      "title": "Rev. Proc. 2013-15",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-15.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-35",
+      "title": "Rev. Proc. 2013-35",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1997": {
+      "year": 1997,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ]
+      }
+    },
+    "1998": {
+      "year": 1998,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ]
+      }
+    },
+    "1999": {
+      "year": 1999,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ]
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ]
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 5000,
+        "specialNeedsDollarLimit": 6000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          75000,
+          115000
+        ]
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 10000,
+        "specialNeedsDollarLimit": 10000,
+        "specialNeedsCreditAmount": null,
+        "phaseout": [
+          150000,
+          190000
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 10000,
+        "specialNeedsDollarLimit": 10000,
+        "specialNeedsExclusionAmount": null,
+        "phaseout": [
+          150000,
+          190000
+        ]
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 10160,
+        "specialNeedsDollarLimit": 10160,
+        "specialNeedsCreditAmount": 10160,
+        "phaseout": [
+          152390,
+          192390
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 10160,
+        "specialNeedsDollarLimit": 10160,
+        "specialNeedsExclusionAmount": 10160,
+        "phaseout": [
+          152390,
+          192390
+        ]
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 10390,
+        "specialNeedsDollarLimit": 10390,
+        "specialNeedsCreditAmount": 10390,
+        "phaseout": [
+          155860,
+          195860
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 10390,
+        "specialNeedsDollarLimit": 10390,
+        "specialNeedsExclusionAmount": 10390,
+        "phaseout": [
+          155860,
+          195860
+        ]
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 10630,
+        "specialNeedsDollarLimit": 10630,
+        "specialNeedsCreditAmount": 10630,
+        "phaseout": [
+          159450,
+          199450
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 10630,
+        "specialNeedsDollarLimit": 10630,
+        "specialNeedsExclusionAmount": 10630,
+        "phaseout": [
+          159450,
+          199450
+        ]
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 10960,
+        "specialNeedsDollarLimit": 10960,
+        "specialNeedsCreditAmount": 10960,
+        "phaseout": [
+          164410,
+          204410
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 10960,
+        "specialNeedsDollarLimit": 10960,
+        "specialNeedsExclusionAmount": 10960,
+        "phaseout": [
+          164410,
+          204410
+        ]
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 11390,
+        "specialNeedsDollarLimit": 11390,
+        "specialNeedsCreditAmount": 11390,
+        "phaseout": [
+          170820,
+          210820
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 11390,
+        "specialNeedsDollarLimit": 11390,
+        "specialNeedsExclusionAmount": 11390,
+        "phaseout": [
+          170820,
+          210820
+        ]
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 11650,
+        "specialNeedsDollarLimit": 11650,
+        "specialNeedsCreditAmount": 11650,
+        "phaseout": [
+          174730,
+          214730
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 11650,
+        "specialNeedsDollarLimit": 11650,
+        "specialNeedsExclusionAmount": 11650,
+        "phaseout": [
+          174730,
+          214730
+        ]
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 12150,
+        "specialNeedsDollarLimit": 12150,
+        "specialNeedsCreditAmount": 12150,
+        "phaseout": [
+          182180,
+          222180
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 12150,
+        "specialNeedsDollarLimit": 12150,
+        "specialNeedsExclusionAmount": 12150,
+        "phaseout": [
+          182180,
+          222180
+        ]
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "36C",
+        "dollarLimit": 13170,
+        "specialNeedsDollarLimit": 13170,
+        "specialNeedsCreditAmount": 13170,
+        "phaseout": [
+          182520,
+          222520
+        ],
+        "refundability": "refundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13170,
+        "specialNeedsDollarLimit": 13170,
+        "specialNeedsExclusionAmount": 13170,
+        "phaseout": [
+          182520,
+          222520
+        ]
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "36C",
+        "dollarLimit": 13360,
+        "specialNeedsDollarLimit": 13360,
+        "specialNeedsCreditAmount": 13360,
+        "phaseout": [
+          185210,
+          225210
+        ],
+        "refundability": "refundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13360,
+        "specialNeedsDollarLimit": 13360,
+        "specialNeedsExclusionAmount": 13360,
+        "phaseout": [
+          185210,
+          225210
+        ]
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 12650,
+        "specialNeedsDollarLimit": 12650,
+        "specialNeedsCreditAmount": 12650,
+        "phaseout": [
+          189710,
+          229710
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 12650,
+        "specialNeedsDollarLimit": 12650,
+        "specialNeedsExclusionAmount": 12650,
+        "phaseout": [
+          189710,
+          229710
+        ]
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 12970,
+        "specialNeedsDollarLimit": 12970,
+        "specialNeedsCreditAmount": 12970,
+        "phaseout": [
+          194580,
+          234580
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 12970,
+        "specialNeedsDollarLimit": 12970,
+        "specialNeedsExclusionAmount": 12970,
+        "phaseout": [
+          194580,
+          234580
+        ]
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 13190,
+        "specialNeedsDollarLimit": 13190,
+        "specialNeedsCreditAmount": 13190,
+        "phaseout": [
+          197880,
+          237880
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13190,
+        "specialNeedsDollarLimit": 13190,
+        "specialNeedsExclusionAmount": 13190,
+        "phaseout": [
+          197880,
+          237880
+        ]
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 13400,
+        "specialNeedsDollarLimit": 13400,
+        "specialNeedsCreditAmount": 13400,
+        "phaseout": [
+          201010,
+          241010
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13400,
+        "specialNeedsDollarLimit": 13400,
+        "specialNeedsExclusionAmount": 13400,
+        "phaseout": [
+          201010,
+          241010
+        ]
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 13460,
+        "specialNeedsDollarLimit": 13460,
+        "specialNeedsCreditAmount": 13460,
+        "phaseout": [
+          201920,
+          241920
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13460,
+        "specialNeedsDollarLimit": 13460,
+        "specialNeedsExclusionAmount": 13460,
+        "phaseout": [
+          201920,
+          241920
+        ]
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 13570,
+        "specialNeedsDollarLimit": 13570,
+        "specialNeedsCreditAmount": 13570,
+        "phaseout": [
+          203540,
+          243540
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13570,
+        "specialNeedsDollarLimit": 13570,
+        "specialNeedsExclusionAmount": 13570,
+        "phaseout": [
+          203540,
+          243540
+        ]
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 13840,
+        "specialNeedsDollarLimit": 13840,
+        "specialNeedsCreditAmount": 13840,
+        "phaseout": [
+          207580,
+          247580
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 13840,
+        "specialNeedsDollarLimit": 13840,
+        "specialNeedsExclusionAmount": 13840,
+        "phaseout": [
+          207580,
+          247580
+        ]
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 14080,
+        "specialNeedsDollarLimit": 14080,
+        "specialNeedsCreditAmount": 14080,
+        "phaseout": [
+          211160,
+          251160
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 14080,
+        "specialNeedsDollarLimit": 14080,
+        "specialNeedsExclusionAmount": 14080,
+        "phaseout": [
+          211160,
+          251160
+        ]
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 14300,
+        "specialNeedsDollarLimit": 14300,
+        "specialNeedsCreditAmount": 14300,
+        "phaseout": [
+          214520,
+          254520
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 14300,
+        "specialNeedsDollarLimit": 14300,
+        "specialNeedsExclusionAmount": 14300,
+        "phaseout": [
+          214520,
+          254520
+        ]
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 14440,
+        "specialNeedsDollarLimit": 14440,
+        "specialNeedsCreditAmount": 14440,
+        "phaseout": [
+          216660,
+          256660
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 14440,
+        "specialNeedsDollarLimit": 14440,
+        "specialNeedsExclusionAmount": 14440,
+        "phaseout": [
+          216660,
+          256660
+        ]
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 14890,
+        "specialNeedsDollarLimit": 14890,
+        "specialNeedsCreditAmount": 14890,
+        "phaseout": [
+          223410,
+          263410
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 14890,
+        "specialNeedsDollarLimit": 14890,
+        "specialNeedsExclusionAmount": 14890,
+        "phaseout": [
+          223410,
+          263410
+        ]
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 15950,
+        "specialNeedsDollarLimit": 15950,
+        "specialNeedsCreditAmount": 15950,
+        "phaseout": [
+          239230,
+          279230
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 15950,
+        "specialNeedsDollarLimit": 15950,
+        "specialNeedsExclusionAmount": 15950,
+        "phaseout": [
+          239230,
+          279230
+        ]
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 16810,
+        "specialNeedsDollarLimit": 16810,
+        "specialNeedsCreditAmount": 16810,
+        "phaseout": [
+          252150,
+          292150
+        ],
+        "refundability": "nonrefundable",
+        "refundablePortionLimit": null
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 16810,
+        "specialNeedsDollarLimit": 16810,
+        "specialNeedsExclusionAmount": 16810,
+        "phaseout": [
+          252150,
+          292150
+        ]
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 17280,
+        "specialNeedsDollarLimit": 17280,
+        "specialNeedsCreditAmount": 17280,
+        "phaseout": [
+          259190,
+          299190
+        ],
+        "refundability": "partially_refundable",
+        "refundablePortionLimit": 5000
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 17280,
+        "specialNeedsDollarLimit": 17280,
+        "specialNeedsExclusionAmount": 17280,
+        "phaseout": [
+          259190,
+          299190
+        ]
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "adoptionCredit": {
+        "state": "statutory_dollar_limit",
+        "codeSection": "23",
+        "dollarLimit": 17670,
+        "specialNeedsDollarLimit": 17670,
+        "specialNeedsCreditAmount": 17670,
+        "phaseout": [
+          265080,
+          305080
+        ],
+        "refundability": "partially_refundable",
+        "refundablePortionLimit": 5120
+      },
+      "adoptionAssistanceExclusion": {
+        "state": "statutory_dollar_limit",
+        "dollarLimit": 17670,
+        "specialNeedsDollarLimit": 17670,
+        "specialNeedsExclusionAmount": 17670,
+        "phaseout": [
+          265080,
+          305080
+        ]
+      }
+    }
+  },
+  "dollarLimitStates": {
+    "statutory_dollar_limit": "A statutory dollar limit applies and is encoded. Every year in the table is in this state; a year before 1997 is unavailable by absence."
+  }
+} as AdoptionParameterData;
+/* </generated-adoption-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -15925,6 +16970,11 @@ function educationParametersForYear(year: number): EducationYearParameters | nul
 
 function ableParametersForYear(year: number): AbleYearParameters | null {
   const row = RAW_ABLE_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+function adoptionParametersForYear(year: number): AdoptionYearParameters | null {
+  const row = RAW_ADOPTION_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
 }
 
@@ -24183,6 +25233,22 @@ export class USTaxAdvantagedParams {
 
   public static ableSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_ABLE_PARAMETERS.sources);
+  }
+
+  /** IRC 23 and IRC 137 adoption parameters, or null for a year outside the table. */
+  public static adoptionParametersForYear(taxYear: number): AdoptionYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return adoptionParametersForYear(taxYear);
+  }
+
+  public static supportedAdoptionTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_ADOPTION_PARAMETERS.supportedTaxYears };
+  }
+
+  public static adoptionSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_ADOPTION_PARAMETERS.sources);
   }
 
   /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */

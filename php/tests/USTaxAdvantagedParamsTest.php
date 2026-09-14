@@ -796,6 +796,62 @@ test('exposes the IRC 529A ABLE table and its 2026 separation from the IRC 2503(
     assertTrue(in_array('irs-rev-proc-2025-32', $ids, true), 'Rev. Proc. 2025-32 must be listed as an ABLE source');
 });
 
+test('exposes the IRC 23 and IRC 137 adoption table through each statutory change', function (): void {
+    // Pub. L. 104-188 section 1807: taxable years beginning after December 31, 1996,
+    // $5,000 ($6,000 for a child with special needs), reduced above $75,000 over $40,000.
+    assertSameValue(['minimum' => 1997, 'maximum' => 2026], U::supportedAdoptionTaxYears());
+    assertSameValue(null, U::adoptionParametersForYear(1996));
+    assertSameValue([
+        'state' => 'statutory_dollar_limit',
+        'codeSection' => '23',
+        'dollarLimit' => 5000,
+        'specialNeedsDollarLimit' => 6000,
+        'specialNeedsCreditAmount' => null,
+        'phaseout' => [75000, 115000],
+        'refundability' => 'nonrefundable',
+        'refundablePortionLimit' => null,
+    ], U::adoptionParametersForYear(1997)['adoptionCredit']);
+    // Pub. L. 107-16 section 202(b) and (g): $10,000 and $150,000 for 2002, but the
+    // flat special-needs amount of section 202(a) only from 2003 (Rev. Proc. 2002-70: $10,160).
+    assertSameValue(10000, U::adoptionParametersForYear(2002)['adoptionCredit']['dollarLimit']);
+    assertSameValue(null, U::adoptionParametersForYear(2002)['adoptionCredit']['specialNeedsCreditAmount']);
+    assertSameValue(10160, U::adoptionParametersForYear(2003)['adoptionAssistanceExclusion']['specialNeedsExclusionAmount']);
+    // Rev. Proc. 2010-35: Pub. L. 111-148 section 10909 moved the credit to IRC 36C,
+    // made it refundable and raised 2010 from $12,170 to $13,170.
+    assertSameValue('36C', U::adoptionParametersForYear(2010)['adoptionCredit']['codeSection']);
+    assertSameValue(13170, U::adoptionParametersForYear(2010)['adoptionCredit']['dollarLimit']);
+    assertSameValue('refundable', U::adoptionParametersForYear(2010)['adoptionCredit']['refundability']);
+    // Pub. L. 111-312 section 101(b): nonrefundable IRC 23 again after 2011 (Rev. Proc. 2011-52: $12,650).
+    assertSameValue('23', U::adoptionParametersForYear(2012)['adoptionCredit']['codeSection']);
+    assertSameValue('nonrefundable', U::adoptionParametersForYear(2012)['adoptionCredit']['refundability']);
+    // Pub. L. 119-21 section 70402: up to $5,000 refundable for taxable years after 2024.
+    assertSameValue(5000, U::adoptionParametersForYear(2025)['adoptionCredit']['refundablePortionLimit']);
+    // Rev. Proc. 2025-32 sections 4.04 and 4.18: $17,670, phase-out from $265,080 to
+    // $305,080, and a $5,120 refundable portion.
+    assertSameValue([
+        'year' => 2026,
+        'adoptionCredit' => [
+            'state' => 'statutory_dollar_limit',
+            'codeSection' => '23',
+            'dollarLimit' => 17670,
+            'specialNeedsDollarLimit' => 17670,
+            'specialNeedsCreditAmount' => 17670,
+            'phaseout' => [265080, 305080],
+            'refundability' => 'partially_refundable',
+            'refundablePortionLimit' => 5120,
+        ],
+        'adoptionAssistanceExclusion' => [
+            'state' => 'statutory_dollar_limit',
+            'dollarLimit' => 17670,
+            'specialNeedsDollarLimit' => 17670,
+            'specialNeedsExclusionAmount' => 17670,
+            'phaseout' => [265080, 305080],
+        ],
+    ], U::adoptionParametersForYear(2026));
+    $ids = array_column(U::adoptionSourceMetadata(), 'id');
+    assertTrue(in_array('irs-rev-proc-2010-35', $ids, true), 'Rev. Proc. 2010-35 must be listed as an adoption source');
+});
+
 test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));
