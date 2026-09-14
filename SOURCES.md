@@ -429,6 +429,19 @@ absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,65
 - **IRS SARSEP Fix-it Guide** describes SEP/SARSEP total contribution limits as the lesser of the annual dollar limit and the applicable percentage of compensation, with compensation considered subject to the annual limit.  
   `https://www.irs.gov/retirement-plans/sarsep-fix-it-guide-total-contributions-employee-elective-deferrals-and-nonelective-employer-contributions-exceeded-the-maximum-legal-limits`
 
+## Plan-status thresholds and the saver's credit (IRC §§414(q), 416(i), 25B)
+
+- **IRS cost-of-living notices, Notice 96-55 through Notice 2025-67** — the notices that carry the contribution limits also state the §414(q)(1)(B) highly-compensated-employee threshold from 1997, the §416(i)(1)(A)(i) key-employee threshold from 2002, and all nine §25B(b) adjusted gross income ceilings from 2008. Each year's figures are recorded in `evidence/retirement-limits/primary-values.json` and compared against the data file, and each notice's "increased from" amounts match the prior year's. Notice 96-55 is the first to state the §414(q)(1)(B) figure — "as amended by the Small Business Job Protection Act of 1996, is $80,000" — so earlier years are `null`. For 2013 through 2015 the corpus held only IR-series news releases, which print just the top §25B ceiling for each filer; Notices 2012-67, 2013-73 and 2014-70 are now committed from Internal Revenue Bulletins 2012-50, 2013-49 and 2014-48 for the full table.  
+  `https://www.irs.gov/pub/irs-irbs/irb12-50.pdf`, `https://www.irs.gov/pub/irs-irbs/irb13-49.pdf`, `https://www.irs.gov/pub/irs-irbs/irb14-48.pdf`
+
+- **Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16 §§613 and 618** — §613(a)(1)(B) strikes §416(i)(1)(A)(i) and inserts "an officer of the employer having an annual compensation greater than $130,000", applying to years beginning after December 31, 2001. §618(a) enacts §25B with a fixed applicable-percentage table — $30,000 / $32,500 / $50,000 on a joint return, $22,500 / $24,375 / $37,500 for a head of household, and $15,000 / $16,250 / $25,000 in all other cases — applying to taxable years beginning after December 31, 2001. No notice states the 2002–2006 table, because it was not indexed.
+
+- **Rev. Proc. 2006-53 §3.06** — the first indexed §25B(b) amounts, for taxable years beginning in 2007, after the Pension Protection Act of 2006, Pub. L. 109-280 §833(a), rewrote §25B(b) with an inflation adjustment for calendar years after 2006. The same document is also committed in the HSA corpus.  
+  `https://www.irs.gov/pub/irs-drop/rp-06-53.pdf`
+
+- **26 U.S.C. §25B (2024 edition)** — for the SECURE 2.0 amendment: Pub. L. 117-328 div. T §103(e)(1) rewrites §25B(d)(1), applicable to taxable years beginning after December 31, 2026, so that "qualified retirement savings contributions" means only "the amount of contributions made before January 1, 2026" to the individual's ABLE account. IRA contributions, elective deferrals and voluntary employee contributions no longer qualify. The credit and its §25B(b) table are not repealed.  
+  `https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapA-partIV-subpartA-sec25B.pdf`
+
 ## IRA phase-outs and rounding
 
 Annual IRA contribution and phase-out values are encoded from the applicable IRS annual adjustment notices and IRA publications. The calculation follows the IRS reduced-contribution worksheet pattern: determine the reduction fraction, subtract it from the otherwise available contribution, round the result upward to the specified increment, apply the positive reduced minimum when applicable, and subtract other IRA contributions sharing the annual limit.

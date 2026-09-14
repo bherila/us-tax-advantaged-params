@@ -109,6 +109,42 @@ test('supports 1975 through 2026 without extrapolation', function (): void {
     }
 });
 
+test('exposes the IRC 414(q), 416(i) and 25B figures from the first year each has one', function (): void {
+    // Notice 96-55: the IRC 414(q)(1)(B) threshold "as amended by the Small
+    // Business Job Protection Act of 1996, is $80,000" for 1997.
+    assertSameValue(null, U::parametersForYear(1996)['highlyCompensatedEmployeeCompensation414q']);
+    assertSameValue(80000, U::parametersForYear(1997)['highlyCompensatedEmployeeCompensation414q']);
+    // Pub. L. 107-16 section 613 inserts the $130,000 officer threshold for years
+    // beginning after December 31, 2001.
+    assertSameValue(null, U::parametersForYear(2001)['keyEmployeeOfficerCompensation416i']);
+    assertSameValue(130000, U::parametersForYear(2002)['keyEmployeeOfficerCompensation416i']);
+    // Pub. L. 107-16 section 618 enacts IRC 25B for taxable years beginning after
+    // December 31, 2001, with a fixed head-of-household column of $22,500 / $24,375 / $37,500.
+    assertSameValue(null, U::parametersForYear(2001)['saversCredit25B']);
+    assertSameValue(
+        ['fiftyPercent' => 22500, 'twentyPercent' => 24375, 'tenPercent' => 37500],
+        U::parametersForYear(2002)['saversCredit25B']['adjustedGrossIncomeLimits']['headOfHousehold'],
+    );
+    // Notice 2025-67 for 2026: the HCE threshold "remains $160,000", the key
+    // employee threshold "is increased from $230,000 to $235,000", and the IRC
+    // 25B(b) ceilings are increased to $48,500 / $52,500 / $80,500 on a joint return,
+    // $36,375 / $39,375 / $60,375 for a head of household and $24,250 / $26,250 / $40,250
+    // for all other taxpayers.
+    $row2026 = U::parametersForYear(2026);
+    assertSameValue(160000, $row2026['highlyCompensatedEmployeeCompensation414q']);
+    assertSameValue(235000, $row2026['keyEmployeeOfficerCompensation416i']);
+    assertSameValue([
+        'adjustedGrossIncomeLimits' => [
+            'jointReturn' => ['fiftyPercent' => 48500, 'twentyPercent' => 52500, 'tenPercent' => 80500],
+            'headOfHousehold' => ['fiftyPercent' => 36375, 'twentyPercent' => 39375, 'tenPercent' => 60375],
+            'allOtherTaxpayers' => ['fiftyPercent' => 24250, 'twentyPercent' => 26250, 'tenPercent' => 40250],
+        ],
+        // IRC 25B(d)(1) still counts retirement contributions for 2026; Pub. L. 117-328
+        // div. T section 103(e)(1) removes them only for years beginning after 2026.
+        'retirementPlanAndIraContributionsQualify' => true,
+    ], $row2026['saversCredit25B']);
+});
+
 test('normalizes common aliases', function (): void {
     assertSameValue(FilingStatus::SINGLE->value, U::normalizeFilingStatus('S'));
     assertSameValue(FilingStatus::MARRIED_FILING_JOINTLY->value, U::normalizeFilingStatus('MFJ'));

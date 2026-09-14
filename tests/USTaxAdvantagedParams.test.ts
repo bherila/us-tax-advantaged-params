@@ -30,6 +30,43 @@ test("supports the first general IRA year through the generated year without ext
   assert.throws(() => U.parametersForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
 });
 
+test("exposes the IRC 414(q), 416(i) and 25B figures from the first year each has one", () => {
+  // Notice 96-55: the IRC 414(q)(1)(B) threshold "as amended by the Small
+  // Business Job Protection Act of 1996, is $80,000" for 1997.
+  assert.equal(U.parametersForYear(1996).highlyCompensatedEmployeeCompensation414q, null);
+  assert.equal(U.parametersForYear(1997).highlyCompensatedEmployeeCompensation414q, 80_000);
+  // Pub. L. 107-16 section 613 inserts the $130,000 officer threshold for years
+  // beginning after December 31, 2001.
+  assert.equal(U.parametersForYear(2001).keyEmployeeOfficerCompensation416i, null);
+  assert.equal(U.parametersForYear(2002).keyEmployeeOfficerCompensation416i, 130_000);
+  // Pub. L. 107-16 section 618 enacts IRC 25B for taxable years beginning after
+  // December 31, 2001, with a fixed head-of-household column of $22,500 / $24,375 / $37,500.
+  assert.equal(U.parametersForYear(2001).saversCredit25B, null);
+  assert.deepEqual(U.parametersForYear(2002).saversCredit25B?.adjustedGrossIncomeLimits.headOfHousehold, {
+    fiftyPercent: 22_500,
+    twentyPercent: 24_375,
+    tenPercent: 37_500,
+  });
+  // Notice 2025-67 for 2026: the HCE threshold "remains $160,000", the key
+  // employee threshold "is increased from $230,000 to $235,000", and the IRC
+  // 25B(b) ceilings are increased to $48,500 / $52,500 / $80,500 on a joint return,
+  // $36,375 / $39,375 / $60,375 for a head of household and $24,250 / $26,250 / $40,250
+  // for all other taxpayers.
+  const row2026 = U.parametersForYear(2026);
+  assert.equal(row2026.highlyCompensatedEmployeeCompensation414q, 160_000);
+  assert.equal(row2026.keyEmployeeOfficerCompensation416i, 235_000);
+  assert.deepEqual(row2026.saversCredit25B, {
+    adjustedGrossIncomeLimits: {
+      jointReturn: { fiftyPercent: 48_500, twentyPercent: 52_500, tenPercent: 80_500 },
+      headOfHousehold: { fiftyPercent: 36_375, twentyPercent: 39_375, tenPercent: 60_375 },
+      allOtherTaxpayers: { fiftyPercent: 24_250, twentyPercent: 26_250, tenPercent: 40_250 },
+    },
+    // IRC 25B(d)(1) still counts retirement contributions for 2026; Pub. L. 117-328
+    // div. T section 103(e)(1) removes them only for years beginning after 2026.
+    retirementPlanAndIraContributionsQualify: true,
+  });
+});
+
 test("normalizes common filing-status and account aliases", () => {
   assert.equal(U.normalizeFilingStatus("S"), FilingStatus.SINGLE);
   assert.equal(U.normalizeFilingStatus("MFJ"), FilingStatus.MARRIED_FILING_JOINTLY);
