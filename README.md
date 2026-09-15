@@ -113,7 +113,7 @@ USTaxAdvantagedParams.supportedCommuterTaxYears();
 npm install us-tax-advantaged-params
 ```
 
-The npm package provides ESM, CommonJS, and TypeScript declarations and supports Node.js 20 or later.
+The npm package provides ESM, CommonJS, and TypeScript declarations and supports Node.js 22 or later.
 
 ```js
 // ESM
@@ -130,6 +130,66 @@ composer require bherila/us-tax-advantaged-params
 ```
 
 The PHP package requires PHP 8.4 or later and loads the native single-file implementation through Composer.
+
+## Upgrading to 0.5.0
+
+0.5.0 removes the account-level HSA inputs that were really facts about a person or a couple, and
+it makes several result fields nullable so an unestablished figure is reported as unknown rather
+than as zero. Both engines change identically.
+
+**Inputs that are now rejected.** Each still-supplied field throws `ParameterError` /
+`ParameterException`, whether it appears on `planRules.hsa` or on `persons[].hsaCoverage`:
+
+| Remove from `planRules.hsa` | Replace with | Builder (TS and PHP) |
+|---|---|---|
+| `useLastMonthRule` | nothing; §223(b)(8) applies automatically as a greater-of | `AccountBuilder.hsaLastMonthRule()` removed |
+| `testingPeriodSatisfied` | `persons[].hsaLastMonthRuleTestingPeriod.satisfied` | `PersonBuilder.hsaTestingPeriodSatisfied()` |
+| `testingPeriodFailureByDeathOrDisability` | `persons[].hsaLastMonthRuleTestingPeriod.failureByDeathOrDisability` | moved from `AccountBuilder` to `PersonBuilder` |
+| `familyLimitShare` | `hsaFamilyLimitDivision` on the scenario | `ScenarioBuilder.hsaFamilyLimitDivision()` / `hsaFamilyLimitDivisionUnsettled()`; `AccountBuilder.hsaFamilyLimitShare()` removed |
+
+The error codes and the reasoning are in
+[The division is one fact about the couple](#the-division-is-one-fact-about-the-couple) and
+[The last-month rule is a greater-of, not an election](#the-last-month-rule-is-a-greater-of-not-an-election).
+In TypeScript, `HsaRulesInput` is now an alias of `HsaCoverageInput`.
+
+**Result fields that changed type or name:**
+
+- An account's `hsa` detail can be `null`. See [The `hsa` detail is withheld, never completed](#the-hsa-detail-is-withheld-never-completed).
+- On `HsaAccountDetail`, `proratedContributionLimit`, `contributionLimitWithoutLastMonthRule`,
+  `archerMsaLimitReduction`, `qualifiedHsaFundingLimitReduction` and
+  `amountAttributableToLastMonthRule` can be `null`. See [A share nobody established is not a zero](#a-share-nobody-established-is-not-a-zero).
+- `HsaAccountDetail.lastMonthRuleApplied` is renamed `fullContributionCandidateSelected`, because
+  nothing is elected. It is true when the December-coverage candidate set the ceiling.
+- In `sharedLimits`, `usedBeforeAccount` and `usedByAccount` can be `null` where the ceiling is
+  known but the draw against it is not. The feasible range is in the new `possibleUsedBeforeAccount`,
+  `possibleUsedByAccount` and `possibleRemainingAfterAccount` intervals.
+  See [HSA usage describes feasible attribution](#hsa-usage-describes-feasible-attribution).
+
+**Answers that can change for input that is still accepted:**
+
+- An HSA owner eligible in December gets the §223(b)(8) ceiling whenever it is greater, without
+  opting in.
+- On a married return, an owner with no stated spousal coverage is indeterminate with
+  `HSA_SPOUSE_COVERAGE_FACTS_REQUIRED` in 2004–2006 even when every month is a family month,
+  because the lowest-deductible comparison could lower the limitation. State
+  `persons[].hsaCoverage: {}` for a spouse with no HDHP coverage. See
+  [When the other spouse's coverage is required](#when-the-other-spouses-coverage-is-required).
+- A stated HDHP deductible below the year's statutory minimum is inconsistent input
+  (`HSA_HDHP_DEDUCTIBLE_BELOW_STATUTORY_MINIMUM`), not a lower ceiling.
+- An existing pre-tax age-based catch-up that §414(v)(7)(A) did not permit, given the
+  participant's prior-year FICA wages, is diagnosed. Its attribution among the shared limits is
+  reported as an interval.
+- A designated-Roth account whose rules permit a Roth catch-up no longer needs
+  `priorYearFicaWagesByEmployer`.
+
+**Additions that need no change:**
+
+- `section457PlanGroupId`, which lets a governmental §457(b) host and its PLESA share one plan
+  (records that disagree are rejected with `SECTION_457_PLAN_GROUP_FACTS_CONFLICT`).
+- The §401(a)(17) grandfathered governmental ceiling.
+- Opt-in FICA/SECA effects.
+- 2027 HSA amounts.
+- New parameter tables for education, ABLE, adoption, HRA and commuter benefits.
 
 ## TypeScript builder example
 
