@@ -1537,6 +1537,48 @@ interface EducationParameterData {
   elementarySecondaryExpenseScopes: Record<ElementarySecondaryExpenseScope, string>;
 }
 
+/** IRC 529A ABLE account amounts and rules for one year. */
+export interface AbleAccountYearParameters {
+  state: DollarLimitState;
+  /** IRC 529A(b)(2)(B)(i) limit on aggregate contributions from all contributors for the taxable year. */
+  annualContributionLimit: Money;
+  /** The IRC 2503(b) annual exclusion for gifts for the calendar year. */
+  section2503bExclusion: Money;
+  /**
+   * Whether the ABLE limit equals the gift exclusion. True through 2025, when
+   * IRC 529A(b)(2)(B)(i) adopted the IRC 2503(b) amount directly. Pub. L. 119-21
+   * section 70115(a)(1) adjusts the ABLE limit from a 1996 base for taxable years
+   * beginning after 2025, so the two differ in 2026 ($20,000 against $19,000) and
+   * may coincide again in a later year only because each rounds down to $1,000.
+   */
+  equalsSection2503bExclusion: boolean;
+  /**
+   * Whether IRC 529A(b)(2)(B)(ii) permits an employed designated beneficiary's
+   * additional contribution. The amount, the lesser of compensation and the prior
+   * year's one-person poverty line, depends on facts this table does not carry.
+   */
+  ableToWorkContributionAvailable: boolean;
+  /** IRC 529A(e)(1)(A): the age before which blindness or disability must have occurred. */
+  disabilityOnsetAgeLimit: number;
+}
+
+export interface AbleYearParameters {
+  year: number;
+  ableAccount: AbleAccountYearParameters;
+}
+
+interface AbleParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, AbleYearParameters>;
+  dollarLimitStates: Record<string, string>;
+}
+
 /* <generated-payroll-parameters> */
 const RAW_PAYROLL_PARAMETERS: PayrollParameterData = {
   "schemaVersion": 1,
@@ -11552,6 +11594,260 @@ const RAW_EDUCATION_PARAMETERS: EducationParameterData = {
 } as EducationParameterData;
 /* </generated-education-parameters> */
 
+/* <generated-able-parameters> */
+const RAW_ABLE_PARAMETERS: AbleParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 2015,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "The table starts at 2015 because Pub. L. 113-295 div. B section 102(f)(1) applies IRC 529A to taxable years beginning after December 31, 2014. A year below the minimum is unavailable by absence. No future year is extrapolated.",
+    "decouplingFrom2503b": "Through 2025 the IRC 529A(b)(2)(B)(i) limit is the IRC 2503(b) gift exclusion for the calendar year. Pub. L. 119-21 section 70115(a)(1) adjusts it for taxable years beginning after 2025 by substituting 1996 for 1997 in the IRC 2503(b)(2)(B) base, so the two separate: Rev. Proc. 2025-32 states $20,000 for ABLE in section 4.34 against a $19,000 gift exclusion in section 4.42(1). equalsSection2503bExclusion records which rule a year follows; deriving the ABLE limit from the gift exclusion is wrong from 2026.",
+    "ableToWorkNotComputed": "IRC 529A(b)(2)(B)(ii) lets an employed designated beneficiary with no employer-plan contribution add the lesser of compensation and the prior year's one-person poverty line. The flag records only whether the provision applies; the amount depends on the beneficiary's compensation and the poverty guideline, neither of which this table carries.",
+    "disabilityOnsetAge": "IRC 529A(e)(1)(A) requires blindness or disability to have occurred before the stated age: 26 as enacted, 46 for taxable years beginning after December 31, 2025 under Pub. L. 117-328 div. T section 124."
+  },
+  "sources": [
+    {
+      "id": "usc-26-529A",
+      "title": "26 U.S.C. 529A, qualified ABLE programs (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapF-partVIII-sec529A.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-2503",
+      "title": "26 U.S.C. 2503, taxable gifts (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleB-chap12-subchapA-sec2503.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "pl-113-295",
+      "title": "Stephen Beck, Jr., ABLE Act of 2014, Pub. L. 113-295 div. B, section 102",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-113publ295/pdf/PLAW-113publ295.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70115",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61, 2015 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53, 2016 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55, 2017 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58, 2018 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57, 2019 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44, 2020 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45, 2021 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45, 2022 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38, 2023 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34, 2024 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40, 2025 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32, 2026 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "2015": {
+      "year": 2015,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 14000,
+        "section2503bExclusion": 14000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": false,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 14000,
+        "section2503bExclusion": 14000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": false,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 14000,
+        "section2503bExclusion": 14000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": false,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 15000,
+        "section2503bExclusion": 15000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 15000,
+        "section2503bExclusion": 15000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 15000,
+        "section2503bExclusion": 15000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 15000,
+        "section2503bExclusion": 15000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 16000,
+        "section2503bExclusion": 16000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 17000,
+        "section2503bExclusion": 17000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 18000,
+        "section2503bExclusion": 18000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 19000,
+        "section2503bExclusion": 19000,
+        "equalsSection2503bExclusion": true,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 26
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "ableAccount": {
+        "state": "statutory_dollar_limit",
+        "annualContributionLimit": 20000,
+        "section2503bExclusion": 19000,
+        "equalsSection2503bExclusion": false,
+        "ableToWorkContributionAvailable": true,
+        "disabilityOnsetAgeLimit": 46
+      }
+    }
+  },
+  "dollarLimitStates": {
+    "statutory_dollar_limit": "A statutory dollar limit applies and is encoded. Every year in the table is in this state; a year before 2015 is unavailable by absence."
+  }
+} as AbleParameterData;
+/* </generated-able-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -15679,6 +15975,11 @@ function hsaParametersForYear(year: number): HsaYearParameters | null {
 
 function educationParametersForYear(year: number): EducationYearParameters | null {
   const row = RAW_EDUCATION_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+function ableParametersForYear(year: number): AbleYearParameters | null {
+  const row = RAW_ABLE_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
 }
 
@@ -23921,6 +24222,22 @@ export class USTaxAdvantagedParams {
 
   public static educationSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_EDUCATION_PARAMETERS.sources);
+  }
+
+  /** IRC 529A ABLE account parameters, or null for a year outside the table. */
+  public static ableParametersForYear(taxYear: number): AbleYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return ableParametersForYear(taxYear);
+  }
+
+  public static supportedAbleTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_ABLE_PARAMETERS.supportedTaxYears };
+  }
+
+  public static ableSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_ABLE_PARAMETERS.sources);
   }
 
   /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */
