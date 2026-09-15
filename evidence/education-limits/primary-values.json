@@ -1,0 +1,703 @@
+{
+  "_comment": "Figures and rules transcribed from the documents in sources/ for data/education-parameters.json. Every amount in this corpus is statutory; none is inflation adjusted through 2026, so the documents are the enacted laws and the 2024 edition of the Code with its amendment and effective-date notes.",
+  "_sources": {
+    "usc-26-530": "26 U.S.C. 530 (2024 edition of the United States Code), including the Pub. L. 107-16 amendment notes",
+    "usc-26-127": "26 U.S.C. 127 (2024 edition of the United States Code), including the Pub. L. 106-170, 107-16, 116-136 and 116-260 amendment notes",
+    "usc-26-529": "26 U.S.C. 529 (2024 edition of the United States Code), including the Pub. L. 115-97, 116-94 and 117-328 effective-date notes",
+    "pl-104-188": "Small Business Job Protection Act of 1996, Pub. L. 104-188, sections 1202 (IRC 127) and 1806 (IRC 529)",
+    "pl-105-34": "Taxpayer Relief Act of 1997, Pub. L. 105-34, sections 213 (IRC 530) and 221 (IRC 127)",
+    "pl-107-16": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, sections 401 (IRC 530) and 411 (IRC 127)",
+    "pl-111-312": "Tax Relief, Unemployment Insurance Reauthorization, and Job Creation Act of 2010, Pub. L. 111-312, section 101(a)(1) (EGTRRA sunset moved to December 31, 2012)",
+    "pl-112-240": "American Taxpayer Relief Act of 2012, Pub. L. 112-240, section 101(a) (EGTRRA title IX struck)",
+    "pl-119-21": "Pub. L. 119-21, sections 70412 (IRC 127 indexing after 2026) and 70413(b) (IRC 529 elementary and secondary limit to $20,000)"
+  },
+  "planYears": {
+    "1996": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-104-188 section 1202(a) extends IRC 127 through May 31, 1997, for taxable years beginning after December 31, 1994 (section 1202(c)(1)); the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "indeterminate",
+      "qualifiedTuitionProgram_source": "pl-104-188 section 1806(c)(1): \"The amendments made by this section shall apply to taxable years ending after the date of the enactment of this Act\" (August 20, 1996). A 1996 taxable year may end on or before that date, so whether IRC 529 applies depends on when the taxable year ends. IRC 529(b)(6) states no dollar limit; see usc-26-529.",
+      "coverdellState": "unavailable",
+      "coverdell_source": "pl-105-34 section 213(f) applies IRC 530 to taxable years beginning after December 31, 1997"
+    },
+    "1997": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "unavailable",
+      "coverdell_source": "pl-105-34 section 213(f) applies IRC 530 to taxable years beginning after December 31, 1997"
+    },
+    "1998": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 500,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 150000,
+          "end": 160000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-105-34 section 213(a), IRC 530(b)(1)(A)(iii) $500 and IRC 530(c)(1) $95,000 ($150,000 joint) over a $15,000 ($10,000 joint) width, for taxable years beginning after December 31, 1997"
+    },
+    "1999": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 500,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 150000,
+          "end": 160000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-105-34 section 213(a), IRC 530(b)(1)(A)(iii) $500 and IRC 530(c)(1) $95,000 ($150,000 joint) over a $15,000 ($10,000 joint) width, for taxable years beginning after December 31, 1997"
+    },
+    "2000": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 500,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 150000,
+          "end": 160000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-105-34 section 213(a), IRC 530(b)(1)(A)(iii) $500 and IRC 530(c)(1) $95,000 ($150,000 joint) over a $15,000 ($10,000 joint) width, for taxable years beginning after December 31, 1997"
+    },
+    "2001": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 500,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 150000,
+          "end": 160000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-105-34 section 213(a), IRC 530(b)(1)(A)(iii) $500 and IRC 530(c)(1) $95,000 ($150,000 joint) over a $15,000 ($10,000 joint) width, for taxable years beginning after December 31, 1997"
+    },
+    "2002": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2003": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2004": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2005": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2006": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2007": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2008": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2009": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2010": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2011": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2012": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2013": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2014": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2015": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2016": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2017": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530"
+    },
+    "2018": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\""
+    },
+    "2019": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
+    },
+    "2020": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
+    },
+    "2021": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
+    },
+    "2022": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
+    },
+    "2023": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
+    },
+    "2024": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
+      "qtpRothIraRolloverLifetime_529c3EiiII": 35000,
+      "qtpRothIraRolloverLifetime_source": "IRC 529(c)(3)(E)(ii)(II), added by Pub. L. 117-328 div. T section 126(a), applicable to distributions after December 31, 2023 per the usc-26-529 effective-date note"
+    },
+    "2025": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "varies_within_year",
+      "qtpElementarySecondaryExpenseScope_source": "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition through (H) educational therapies, and section 70413(a)(2) applies it \"to distributions made after the date of the enactment of this Act\" (July 4, 2025); before that date usc-26-529's tuition-only text applies",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
+      "qtpRothIraRolloverLifetime_529c3EiiII": 35000,
+      "qtpRothIraRolloverLifetime_source": "IRC 529(c)(3)(E)(ii)(II), added by Pub. L. 117-328 div. T section 126(a), applicable to distributions after December 31, 2023 per the usc-26-529 effective-date note"
+    },
+    "2026": {
+      "source": "usc-26-127",
+      "educationalAssistanceExclusion_127a2": 5250,
+      "educationalAssistanceState": "statutory_dollar_limit",
+      "educationalAssistance_source": "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
+      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "coverdellState": "statutory_dollar_limit",
+      "coverdellContributionLimit_530b1Aiii": 2000,
+      "coverdellPhaseout_530c1": {
+        "jointReturn": {
+          "start": 190000,
+          "end": 220000
+        },
+        "otherReturns": {
+          "start": 95000,
+          "end": 110000
+        }
+      },
+      "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+      "qtpElementarySecondaryExpense_529e3": 20000,
+      "qtpElementarySecondaryExpense_source": "pl-119-21 section 70413(b) substitutes $20,000 for $10,000 in the last sentence of IRC 529(e)(3), for taxable years beginning after December 31, 2025",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition_and_other_school_expenses",
+      "qtpElementarySecondaryExpenseScope_source": "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition, (B) curriculum and curricular materials, (C) books or other instructional materials, (D) online educational materials, (E) qualifying tutoring or classes outside the home, (F) examination fees, (G) dual enrollment fees and (H) educational therapies for students with disabilities; IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+      "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
+      "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
+      "qtpRothIraRolloverLifetime_529c3EiiII": 35000,
+      "qtpRothIraRolloverLifetime_source": "IRC 529(c)(3)(E)(ii)(II), added by Pub. L. 117-328 div. T section 126(a), applicable to distributions after December 31, 2023 per the usc-26-529 effective-date note"
+    }
+  }
+}

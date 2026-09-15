@@ -6,6 +6,16 @@ require_once dirname(__DIR__) . '/php/src/USTaxAdvantagedParams.php';
 
 use USTaxAdvantagedParams\USTaxAdvantagedParams;
 
+/** The public static lookup of that name, or null when PHP does not expose one. */
+function publicStaticLookup(string $name): ?ReflectionMethod
+{
+    if (!method_exists(USTaxAdvantagedParams::class, $name)) {
+        return null;
+    }
+    $method = new ReflectionMethod(USTaxAdvantagedParams::class, $name);
+    return $method->isPublic() && $method->isStatic() ? $method : null;
+}
+
 try {
     $raw = stream_get_contents(STDIN);
     if ($raw === false) {
@@ -24,7 +34,27 @@ try {
         }
         /** @var array<string,mixed> $input */
         try {
-            $results[] = (($input['__operation'] ?? null) === 'payrollTax' ? USTaxAdvantagedParams::calculatePayrollTax($input['input']) : USTaxAdvantagedParams::calculate($input));
+            $operation = $input['__operation'] ?? null;
+            if ($operation === 'tableMethods') {
+                // The same discovery rule as scripts/check-parity.mjs.
+                $methods = [];
+                foreach ((new ReflectionClass(USTaxAdvantagedParams::class))->getMethods() as $method) {
+                    if ($method->isPublic() && $method->isStatic() && preg_match('/(?:^p|P)arametersForYear$/', $method->getName()) === 1) {
+                        $methods[] = $method->getName();
+                    }
+                }
+                sort($methods, SORT_STRING);
+                $results[] = $methods;
+            } elseif ($operation === 'table') {
+                $name = (string) $input['method'];
+                $results[] = publicStaticLookup($name) === null
+                    ? ['__missing' => $name]
+                    : ['value' => USTaxAdvantagedParams::{$name}(...$input['args'])];
+            } elseif ($operation === 'payrollTax') {
+                $results[] = USTaxAdvantagedParams::calculatePayrollTax($input['input']);
+            } else {
+                $results[] = USTaxAdvantagedParams::calculate($input);
+            }
         } catch (\USTaxAdvantagedParams\ParameterException $error) {
             $results[] = ['__error' => ['code' => $error->errorCode, 'message' => $error->getMessage()]];
         }

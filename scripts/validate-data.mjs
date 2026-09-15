@@ -7,6 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const parameterPath = join(root, "data", "retirement-parameters.json");
 const hsaPath = join(root, "data", "hsa-parameters.json");
 const fsaPath = join(root, "data", "fsa-parameters.json");
+const educationPath = join(root, "data", "education-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -99,6 +100,7 @@ function requirePositiveAmount(value, label) {
 const parameters = await parseCanonicalJson(parameterPath, "data/retirement-parameters.json");
 const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
+const education = await parseCanonicalJson(educationPath, "data/education-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -204,11 +206,12 @@ if (parameters) {
           fail(`Year ${year} saversCredit25B ${filer} ceilings must rise from the 50 to the 10 percent rate.`);
         }
       }
-      // Pub. L. 117-328 div. T section 103(e)(1) strikes IRC 25B(d)(1)(A)-(C)
-      // for taxable years beginning after December 31, 2026 without repealing the
+      // Pub. L. 119-21 section 70116(a)(1) counts IRA contributions, elective
+      // deferrals and voluntary employee contributions under IRC 25B(d)(1)(B) only
+      // for taxable years beginning before January 1, 2027, without repealing the
       // credit. A later row therefore cannot copy the prior year's flag forward.
       if (saver.retirementPlanAndIraContributionsQualify !== (year <= 2026)) {
-        fail(`Year ${year} saversCredit25B.retirementPlanAndIraContributionsQualify must be ${year <= 2026}; Pub. L. 117-328 div. T section 103(e)(1) applies to taxable years beginning after December 31, 2026.`);
+        fail(`Year ${year} saversCredit25B.retirementPlanAndIraContributionsQualify must be ${year <= 2026}; Pub. L. 119-21 section 70116(a)(1) counts retirement contributions only for taxable years beginning before January 1, 2027.`);
       }
     }
   }
@@ -220,6 +223,7 @@ if (parameters) {
     "usc-26-402",
     "usc-26-402A",
     "usc-26-25B",
+    "pl-119-21",
   ]);
 
   const row1997 = parameters.years?.["1997"];
@@ -401,6 +405,109 @@ if (fsa) {
   }
 }
 
+if (education) {
+  walk(education, "education");
+  const years = validateYearSpan(education, "data/education-parameters.json");
+  // The three programs start in different years, so unlike the FSA table the
+  // unavailable state appears on rows and needs its own definition.
+  const STATES = ["unavailable", "indeterminate", "available_without_statutory_dollar_limit", "statutory_dollar_limit"];
+  for (const state of STATES) {
+    if (typeof education.dollarLimitStates?.[state] !== "string") {
+      fail(`data/education-parameters.json dollarLimitStates.${state} must be described.`);
+    }
+  }
+  for (const scope of ["tuition", "varies_within_year", "tuition_and_other_school_expenses"]) {
+    if (typeof education.elementarySecondaryExpenseScopes?.[scope] !== "string") {
+      fail(`data/education-parameters.json elementarySecondaryExpenseScopes.${scope} must be described.`);
+    }
+  }
+  for (const year of years ?? []) {
+    const label = `Education year ${year}`;
+    const row = education.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const coverdell = row.coverdellEducationSavingsAccount;
+    const assistance = row.educationalAssistanceProgram;
+    const qtp = row.qualifiedTuitionProgram;
+    for (const [name, program] of [
+      ["coverdellEducationSavingsAccount", coverdell],
+      ["educationalAssistanceProgram", assistance],
+      ["qualifiedTuitionProgram", qtp],
+    ]) {
+      if (!STATES.includes(program?.state)) fail(`${label} ${name}.state is not a known state.`);
+    }
+    // An amount exists exactly when the state says a statutory limit does.
+    if (coverdell?.state === "statutory_dollar_limit") {
+      requirePositiveAmount(coverdell.annualContributionLimit, `${label} coverdellEducationSavingsAccount.annualContributionLimit`);
+      for (const filer of ["jointReturn", "otherReturns"]) {
+        const band = coverdell.contributionPhaseout?.[filer];
+        if (!Array.isArray(band) || band.length !== 2 || !band.every((value) => Number.isInteger(value) && value > 0) || band[0] >= band[1]) {
+          fail(`${label} coverdellEducationSavingsAccount.contributionPhaseout.${filer} must be an ascending [start, end] of whole dollars.`);
+        }
+      }
+    } else if (coverdell && (coverdell.annualContributionLimit !== null || coverdell.contributionPhaseout !== null)) {
+      fail(`${label} coverdellEducationSavingsAccount carries amounts in a state without a statutory limit.`);
+    }
+    if (assistance?.state === "statutory_dollar_limit") {
+      requirePositiveAmount(assistance.annualExclusionLimit, `${label} educationalAssistanceProgram.annualExclusionLimit`);
+    } else if (assistance && assistance.annualExclusionLimit !== null) {
+      fail(`${label} educationalAssistanceProgram carries an amount in a state without a statutory limit.`);
+    }
+    // IRC 529(b)(6) states no federal contribution limit in any year. Pub. L.
+    // 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after
+    // August 20, 1996, which a 1996 lookup cannot place, so 1996 alone is
+    // indeterminate.
+    const qtpState = year === 1996 ? "indeterminate" : "available_without_statutory_dollar_limit";
+    if (qtp && (qtp.state !== qtpState || qtp.annualContributionLimit !== null)) {
+      fail(`${label} qualifiedTuitionProgram must be ${qtpState} with a null contribution limit; IRC 529(b)(6) states none and Pub. L. 104-188 section 1806(c)(1) sets the first year.`);
+    }
+    for (const field of ["elementarySecondaryExpenseAnnualLimit", "qualifiedEducationLoanLifetimeLimit", "rothIraRolloverLifetimeLimit"]) {
+      if (qtp && !(field in qtp)) {
+        fail(`${label} qualifiedTuitionProgram.${field} is required; use null before it takes effect.`);
+      } else if (qtp && !(qtp[field] === null || (Number.isInteger(qtp[field]) && qtp[field] > 0))) {
+        fail(`${label} qualifiedTuitionProgram.${field} must be null or a positive whole-dollar amount.`);
+      }
+    }
+    // The IRC 529(e)(3) cap counts expenses described in IRC 529(c)(7): tuition
+    // from Pub. L. 115-97 section 11032, widened by Pub. L. 119-21 section 70413(a)
+    // for distributions made after July 4, 2025.
+    const expectedScope = year < 2018 ? null
+      : year < 2025 ? "tuition"
+        : year === 2025 ? "varies_within_year" : "tuition_and_other_school_expenses";
+    if (qtp && qtp.elementarySecondaryExpenseScope !== expectedScope) {
+      fail(`${label} qualifiedTuitionProgram.elementarySecondaryExpenseScope must be ${JSON.stringify(expectedScope)} (IRC 529(c)(7); Pub. L. 115-97 section 11032; Pub. L. 119-21 section 70413(a)).`);
+    }
+    if (qtp && (qtp.elementarySecondaryExpenseScope === null) !== (qtp.elementarySecondaryExpenseAnnualLimit === null)) {
+      fail(`${label} qualifiedTuitionProgram states an elementary and secondary expense scope without a limit, or a limit without a scope.`);
+    }
+    // Pub. L. 119-21 section 70412(b) indexes IRC 127(a)(2) for taxable years
+    // beginning after 2026, so a later row cannot copy the flat amount forward.
+    if (year > 2026 && assistance?.annualExclusionLimit === 5250) {
+      fail(`${label} educationalAssistanceProgram.annualExclusionLimit carries the unindexed $5,250; Pub. L. 119-21 section 70412(b) indexes it for taxable years beginning after 2026.`);
+    }
+  }
+
+  validateSources(education.sources, "data/education-parameters.json", ["usc-26-530", "usc-26-127", "usc-26-529", "pl-104-188", "pl-105-34", "pl-107-16", "pl-119-21"]);
+
+  // Each program's first year and each change, from the provision that sets it.
+  const row = (year) => education.years?.[String(year)];
+  if (row(1997)?.coverdellEducationSavingsAccount?.state !== "unavailable"
+    || row(1998)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 500) {
+    fail("IRC 530 must first apply in 1998, at $500 (Pub. L. 105-34 section 213(f)).");
+  }
+  if (row(2001)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 500
+    || row(2002)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 2000) {
+    fail("IRC 530 must change from $500 to $2,000 in 2002 (Pub. L. 107-16 section 401(a)).");
+  }
+  if (row(2017)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== null
+    || row(2018)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== 10000
+    || row(2026)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== 20000) {
+    fail("IRC 529(e)(3) must be null through 2017, $10,000 from 2018 and $20,000 from 2026.");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -475,6 +582,7 @@ console.log(
     `${Object.keys(hsa.years).length} contiguous HSA tax years, ` +
     `${Object.keys(fsa.years).length} contiguous FSA tax years, ` +
     `${Object.keys(payroll.years).length} contiguous payroll tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length} sources, ` +
+    `${Object.keys(education.years).length} contiguous education tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );

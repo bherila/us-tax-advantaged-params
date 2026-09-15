@@ -10,7 +10,7 @@ The repository contains two native implementations with the same behavior:
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
 - **PHP 8.4+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
-Annual legal parameters are maintained once in `data/retirement-parameters.json` and `data/hsa-parameters.json`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
+Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax and education JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
 > **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, classify self-employment earnings or apply optional SECA methods, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
@@ -40,18 +40,32 @@ USTaxAdvantagedParams.supportedHsaTaxYears();
 // { minimum: 2004, maximum: 2027 }
 ```
 
-Flexible spending arrangements have their own range, **1987 through 2026**. It starts at
-1987 because the Tax Reform Act of 1986 §1163 added the §129(a)(2)(A) dependent care
-exclusion limitation for taxable years beginning after December 31, 1986; before that
-§129(a) carried no dollar cap. The §125(i) health FSA limit starts later, at **2013**,
-because the Affordable Care Act §9005 added it for plan years beginning after December 31,
-2012. A year between the two returns dependent care figures and a null `healthFsa`.
+Flexible spending arrangements have their own range, **1982 through 2026**. It starts at
+1982 because Pub. L. 97-34 §124 added §129 for taxable years beginning after December 31,
+1981. Each program carries a state for each year. Dependent care has no statutory dollar
+limit until 1987, when the Tax Reform Act of 1986 §1163 added the §129(a)(2)(A)
+limitation. The §125(i) health FSA limit starts at **2013**, because the Affordable Care Act
+§9005 added it for plan years beginning after December 31, 2012. A year before a program's
+limit returns the `available_without_statutory_dollar_limit` state with a null amount.
 
 ```ts
 USTaxAdvantagedParams.supportedFsaTaxYears();
-// { minimum: 1987, maximum: 2026 }
+// { minimum: 1982, maximum: 2026 }
 USTaxAdvantagedParams.fsaParametersForYear(2012)?.healthFsa;
-// null
+// { state: "available_without_statutory_dollar_limit", salaryReductionLimit: null, carryoverLimit: null }
+```
+
+Education parameters have their own range, **1996 through 2026**. It starts at 1996 because
+§529 applies to taxable years ending after August 20, 1996. A year lookup cannot say whether a
+1996 taxable year ended after that date, so §529 is `indeterminate` for 1996 and applies from
+1997. §530 Coverdell accounts are `unavailable` for 1996 and 1997, and §127 educational
+assistance applies throughout.
+These figures are reported, not applied; see
+[Education savings and educational assistance parameters](#education-savings-and-educational-assistance-parameters).
+
+```ts
+USTaxAdvantagedParams.supportedEducationTaxYears();
+// { minimum: 1996, maximum: 2026 }
 ```
 
 ## Installation
@@ -1352,7 +1366,9 @@ Supplying `expectedEmployerContribution` bypasses formula inference because it r
 
 Whether a particular employee is highly compensated or a key employee, and the amount of the credit, are not calculated; see [Deliberate exclusions](#deliberate-exclusions).
 
-**The saver's credit is not repealed after 2026.** SECURE 2.0 (Pub. L. 117-328, div. T) §103(e)(1) rewrites §25B(d)(1) for taxable years beginning after December 31, 2026, so that the only qualified retirement savings contributions are ABLE-account contributions made before January 1, 2026. IRA contributions and elective deferrals stop qualifying, but the credit and its §25B(b) table remain. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+**The saver's credit is not repealed after 2026.** Pub. L. 119-21 §70116(a)(1) rewrites §25B(d)(1) for taxable years ending after December 31, 2025. Contributions to the individual's ABLE account continue to qualify. IRA contributions, elective deferrals and voluntary employee contributions qualify only "in the case of any taxable year beginning before January 1, 2027". §70116(b) also raises the credit's contribution cap from $2,000 to $2,100 after 2026, and the §25B(b) table continues. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+
+The 2024 edition of 26 U.S.C. §25B still shows an earlier SECURE 2.0 amendment, div. T §103(e)(1), which would have left only pre-2026 ABLE contributions. §70116(a)(2) repealed it "as though such paragraph were never enacted".
 
 ## IRA phase-outs and spousal IRAs
 
@@ -1647,6 +1663,33 @@ npm run verify
 
 See [DESIGN.md](DESIGN.md), [SOURCES.md](SOURCES.md), and [CONTRIBUTING.md](CONTRIBUTING.md) before changing legal parameters or calculation semantics.
 
+## Education savings and educational assistance parameters
+
+`educationParametersForYear(taxYear)` returns the statutory amounts for three education provisions. No calculation applies them, and no account type exists for them.
+
+| Program | Field | Amounts |
+|---|---|---|
+| §530 Coverdell education savings account | `coverdellEducationSavingsAccount` | `unavailable` for 1996–1997. The §530(b)(1)(A)(iii) limit is $500 for 1998–2001 and $2,000 from 2002. The §530(c)(1) phase-out runs from $95,000 to $110,000, and on a joint return from $150,000 to $160,000 before 2002 and from $190,000 to $220,000 after. |
+| §127 educational assistance program | `educationalAssistanceProgram` | $5,250 per calendar year under §127(a)(2). |
+| §529 qualified tuition program | `qualifiedTuitionProgram` | No federal contribution limit. `indeterminate` for 1996 (see below). Three distribution caps: the §529(e)(3) limit on elementary and secondary expenses ($10,000 for 2018–2025, $20,000 from 2026), the §529(c)(9)(B) lifetime loan-repayment limit ($10,000 from 2019), and the §529(c)(3)(E) lifetime Roth IRA rollover limit ($35,000 from 2024). |
+
+The §529 `annualContributionLimit` is `null` in every year because no federal limit exists, not because a figure is missing. §529(b)(6) requires a program to have safeguards against contributions beyond what the beneficiary's education needs, and each state program sets that ceiling. The three §529 caps are `null` before the provisions that created them took effect.
+
+**The §529(e)(3) cap covers more than tuition from mid-2025.** It counts "expenses described in subsection (c)(7)", and Pub. L. 119-21 §70413(a) rewrote §529(c)(7) for distributions made after July 4, 2025. It had reached elementary and secondary tuition only; it now lists tuition, curriculum, books and instructional materials, online materials, qualifying tutoring, examination fees, dual-enrollment fees and educational therapies for students with disabilities. `elementarySecondaryExpenseScope` says which reading a year carries:
+
+| Years | `elementarySecondaryExpenseScope` |
+|---|---|
+| before 2018 | `null`, with a `null` limit |
+| 2018–2024 | `tuition` |
+| 2025 | `varies_within_year`: tuition for a distribution on or before July 4, the listed expenses after it. The Act does not say how the two combine under the year's one cap, so the table does not resolve it |
+| 2026 onward | `tuition_and_other_school_expenses` |
+
+**§529 is `indeterminate` for 1996.** Pub. L. 104-188 §1806(c)(1) applies §529 to taxable years *ending* after August 20, 1996. A 1996 taxable year can end on either side of that date, for example a short year, and a year lookup cannot say which. Every taxable year from 1997 ends after it.
+
+§127 is not carried back before 1996, because it lapsed and was retroactively reinstated several times before then; from 1996 it applies without a gap. It also stops being a flat amount after 2026: Pub. L. 119-21 §70412(b) indexes the $5,250 for taxable years beginning after 2026, so a 2027 row will carry the published figure, and the data validator rejects a copied $5,250.
+
+The effective date behind each change is in [SOURCES.md](SOURCES.md) and `evidence/education-limits/`.
+
 ## Deliberate exclusions
 
 The package does not calculate:
@@ -1656,7 +1699,7 @@ The package does not calculate:
 - Archer MSAs themselves. The §220 limitation is not calculated, so an amount supplied as `persons[].archerMsaContributions` is taken as stated and never tested against it. The HSA §223(b)(4)(A) and §223(b)(5)(B)(i) reductions *are* applied, because both take an amount paid rather than an Archer limitation.
 - Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
 - The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.
-- Adoption assistance under §137, commuter benefits under §132(f), and educational assistance under §127.
+- Adoption assistance under §137, commuter benefits under §132(f), and the §127 educational assistance exclusion itself. Its §127(a)(2) amount *is* exposed as a parameter, alongside the §530 and §529 figures.
 - The §21 dependent care **credit**, and the §21(c) interaction whereby §129 exclusions reduce that credit's expense base. The §129 exclusion is calculated; the credit is not.
 - The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.
 - Whether a dependent care program meets the §129(d) written-plan and nondiscrimination requirements, the §129(c) denial for amounts paid to a related individual, and whether the individuals cared for qualify.

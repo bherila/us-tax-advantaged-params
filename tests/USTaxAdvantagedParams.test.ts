@@ -61,8 +61,8 @@ test("exposes the IRC 414(q), 416(i) and 25B figures from the first year each ha
       headOfHousehold: { fiftyPercent: 36_375, twentyPercent: 39_375, tenPercent: 60_375 },
       allOtherTaxpayers: { fiftyPercent: 24_250, twentyPercent: 26_250, tenPercent: 40_250 },
     },
-    // IRC 25B(d)(1) still counts retirement contributions for 2026; Pub. L. 117-328
-    // div. T section 103(e)(1) removes them only for years beginning after 2026.
+    // IRC 25B(d)(1)(B), as rewritten by Pub. L. 119-21 section 70116(a)(1), counts
+    // retirement contributions only for taxable years beginning before January 1, 2027.
     retirementPlanAndIraContributionsQualify: true,
   });
 });
@@ -692,6 +692,64 @@ test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it",
   assert.equal(U.fsaParametersForYear(1981), null);
   assert.ok(U.fsaSourceMetadata().some((source) => source.id === "pl-119-21"));
   assert.throws(() => U.fsaParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
+test("exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes that set it", () => {
+  // Pub. L. 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending
+  // after August 20, 1996. A 1996 taxable year can end on either side of that
+  // date and a year lookup cannot say which, so 1996 is indeterminate; every
+  // taxable year from 1997 ends after it.
+  assert.deepEqual(U.supportedEducationTaxYears(), { minimum: 1996, maximum: 2026 });
+  assert.equal(U.educationParametersForYear(1995), null);
+  assert.equal(U.educationParametersForYear(1996)?.qualifiedTuitionProgram.state, "indeterminate");
+  assert.equal(U.educationParametersForYear(1997)?.qualifiedTuitionProgram.state, "available_without_statutory_dollar_limit");
+  // Pub. L. 105-34 section 213: IRC 530 applies to taxable years beginning after
+  // December 31, 1997, with a $500 limit reduced from $95,000 over $15,000, or from
+  // $150,000 over $10,000 on a joint return.
+  assert.equal(U.educationParametersForYear(1997)?.coverdellEducationSavingsAccount.state, "unavailable");
+  assert.deepEqual(U.educationParametersForYear(1998)?.coverdellEducationSavingsAccount, {
+    state: "statutory_dollar_limit",
+    annualContributionLimit: 500,
+    contributionPhaseout: { jointReturn: [150_000, 160_000], otherReturns: [95_000, 110_000] },
+  });
+  // Pub. L. 107-16 section 401(a) and (b), for taxable years beginning after
+  // December 31, 2001: $2,000, and a joint reduction from $190,000 over $30,000.
+  assert.equal(U.educationParametersForYear(2002)?.coverdellEducationSavingsAccount.annualContributionLimit, 2_000);
+  assert.deepEqual(U.educationParametersForYear(2002)?.coverdellEducationSavingsAccount.contributionPhaseout, {
+    jointReturn: [190_000, 220_000],
+    otherReturns: [95_000, 110_000],
+  });
+  // IRC 127(a)(2): $5,250.
+  assert.deepEqual(U.educationParametersForYear(2026)?.educationalAssistanceProgram, {
+    state: "statutory_dollar_limit",
+    annualExclusionLimit: 5_250,
+  });
+  // IRC 529(b)(6) states no contribution limit. The IRC 529(e)(3) cap counts
+  // "expenses described in subsection (c)(7)". Pub. L. 115-97 section 11032 added
+  // both for distributions after 2017, with (c)(7) reaching tuition only. Pub. L.
+  // 119-21 section 70413(a) rewrote (c)(7) to eight categories, tuition among
+  // them, for distributions after July 4, 2025, and section 70413(b) raised the
+  // cap to $20,000 for taxable years beginning after 2025. The IRC 529(c)(9)(B)
+  // $10,000 and IRC 529(c)(3)(E)(ii)(II) $35,000 apply to distributions after
+  // 2018 and after 2023.
+  assert.deepEqual(U.educationParametersForYear(2026)?.qualifiedTuitionProgram, {
+    state: "available_without_statutory_dollar_limit",
+    annualContributionLimit: null,
+    elementarySecondaryExpenseAnnualLimit: 20_000,
+    elementarySecondaryExpenseScope: "tuition_and_other_school_expenses",
+    qualifiedEducationLoanLifetimeLimit: 10_000,
+    rothIraRolloverLifetimeLimit: 35_000,
+  });
+  assert.equal(U.educationParametersForYear(2025)?.qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit, 10_000);
+  assert.equal(U.educationParametersForYear(2025)?.qualifiedTuitionProgram.elementarySecondaryExpenseScope, "varies_within_year");
+  assert.equal(U.educationParametersForYear(2024)?.qualifiedTuitionProgram.elementarySecondaryExpenseScope, "tuition");
+  assert.equal(U.educationParametersForYear(2018)?.qualifiedTuitionProgram.elementarySecondaryExpenseScope, "tuition");
+  assert.equal(U.educationParametersForYear(2017)?.qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit, null);
+  assert.equal(U.educationParametersForYear(2017)?.qualifiedTuitionProgram.elementarySecondaryExpenseScope, null);
+  assert.equal(U.educationParametersForYear(2018)?.qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit, null);
+  assert.equal(U.educationParametersForYear(2023)?.qualifiedTuitionProgram.rothIraRolloverLifetimeLimit, null);
+  assert.ok(U.educationSourceMetadata().some((source) => source.id === "pl-119-21"));
+  assert.throws(() => U.educationParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
