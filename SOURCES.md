@@ -345,7 +345,8 @@ enacted laws and the Code rather than annual procedures. Each is committed under
 
 - **Small Business Job Protection Act of 1996, Pub. L. 104-188** — §1806 adds §529, applying
   to taxable years ending after August 20, 1996 (§1806(c)(1)), which sets the table's first
-  year. §1202 extends §127 through May 31, 1997, for taxable years beginning after
+  year. Because a 1996 taxable year can end on either side of that date, §529's 1996 state is
+  `indeterminate`; every taxable year from 1997 ends after it. §1202 extends §127 through May 31, 1997, for taxable years beginning after
   December 31, 1994.
 
 - **Taxpayer Relief Act of 1997, Pub. L. 105-34** — §213 adds §530 with a $500 limit, reduced
@@ -369,7 +370,11 @@ enacted laws and the Code rather than annual procedures. Each is committed under
   December 31, 2023.
 
 - **Pub. L. 119-21** — §70413(b) raises the §529(e)(3) limit from $10,000 to $20,000 for taxable
-  years beginning after December 31, 2025. §70412 makes the §127(c)(1)(B) student-loan payment
+  years beginning after December 31, 2025. §70413(a) rewrites §529(c)(7), which the §529(e)(3)
+  cap counts, from elementary and secondary tuition alone to eight listed categories of
+  expenses, for distributions made after July 4, 2025 (§70413(a)(2)). That is why
+  `elementarySecondaryExpenseScope` is `tuition` through 2024, `varies_within_year` for 2025
+  and `tuition_and_other_school_expenses` from 2026. §70412 makes the §127(c)(1)(B) student-loan payment
   clause permanent and adds §127(d), which indexes both $5,250 amounts for taxable years
   beginning after 2026 from a calendar-2025 base, rounded to the nearest $50; its amendments
   apply to payments made after December 31, 2025.
@@ -423,6 +428,16 @@ Every document below is committed under `evidence/adoption-limits/sources/` and 
   both 2001 terminations. The flat special-needs credit and exclusion under §202(a), and indexing
   under §202(e), apply to taxable years beginning after December 31, 2002 (§202(g)(2)). No revenue
   procedure states 2002: Rev. Proc. 2001-59 has no adoption section.
+
+- **Job Creation and Worker Assistance Act of 2002, Pub. L. 107-147 §411(c)** — corrects §202 before
+  it took effect. As enacted, §202 made the special-needs amount a separate §23(a)(1)(B) credit and
+  confined the §23(b)(1) limit to other children. §411(c)(1) instead rewrites §23(a)(1) as a single
+  expense credit, adds §23(a)(3), which treats a special-needs adopter as having paid qualified
+  adoption expenses up to the dollar amount, and restores "subsection (a)" in §23(b)(1); §411(c)(2)
+  corrects §137 the same way. §411(c)(3) applies the §23(b)(1) and §137(b) restorations to taxable
+  years beginning after December 31, 2001, and the rest after December 31, 2002. So the limit covers
+  every adoption from 2002, and the special-needs amount is a §23(a)(1) credit, which is the credit
+  Pub. L. 119-21 §70402's refundable portion reaches.
 
 - **Rev. Procs. 2002-70 through 2025-32** — the indexed limit, the special-needs amount and both
   phase-out figures for every year from 2003 to 2026, stated identically for §23 (§36C in 2010 and
