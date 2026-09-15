@@ -865,6 +865,45 @@ test("exposes the QSEHRA, excepted benefit HRA and individual coverage HRA table
   assert.throws(() => U.hraParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
 });
 
+test("exposes the IRC 132(f) commuter table with every retroactive correction applied", () => {
+  // Pub. L. 105-178 section 9010(b): $65 and $175 for taxable years beginning after 1998.
+  assert.deepEqual(U.supportedCommuterTaxYears(), { minimum: 1999, maximum: 2026 });
+  assert.equal(U.commuterParametersForYear(1998), null);
+  assert.deepEqual(U.commuterParametersForYear(1999), {
+    year: 1999,
+    transitAndVanpool: { state: "statutory_dollar_limit", monthlyLimit: 65, monthlyLimitsByMonth: null },
+    parking: { state: "statutory_dollar_limit", monthlyLimit: 175 },
+    bicycleCommuting: { state: "unavailable", monthlyAmount: null },
+  });
+  // Pub. L. 105-178 section 9010(c): $100 transit from 2002 (Rev. Proc. 2001-59).
+  assert.equal(U.commuterParametersForYear(2002)?.transitAndVanpool.monthlyLimit, 100);
+  // Rev. Proc. 2008-66 printed $120; Pub. L. 111-5 section 1151 applies the $230 parking
+  // amount to months beginning on or after February 17, 2009. Pub. L. 110-343 section 211
+  // adds the $20 bicycle amount for taxable years after 2008.
+  assert.deepEqual(U.commuterParametersForYear(2009)?.transitAndVanpool, {
+    state: "statutory_dollar_limit_varies_within_year",
+    monthlyLimit: null,
+    monthlyLimitsByMonth: [120, 120, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230],
+  });
+  assert.equal(U.commuterParametersForYear(2009)?.bicycleCommuting.monthlyAmount, 20);
+  // Rev. Proc. 2013-15 section 3 corrects 2012 to $240 after Pub. L. 112-240 section 203.
+  assert.equal(U.commuterParametersForYear(2012)?.transitAndVanpool.monthlyLimit, 240);
+  // Notice 2016-6: $255 for both in 2016, not Rev. Proc. 2015-53's $130 transit.
+  assert.equal(U.commuterParametersForYear(2016)?.transitAndVanpool.monthlyLimit, 255);
+  // Pub. L. 115-97 section 11047 suspends bicycle commuting for 2018-2025.
+  assert.equal(U.commuterParametersForYear(2017)?.bicycleCommuting.state, "statutory_dollar_limit");
+  assert.equal(U.commuterParametersForYear(2018)?.bicycleCommuting.state, "unavailable");
+  // Rev. Proc. 2025-32: $340 for both; Pub. L. 119-21 section 70112(a) repeals bicycle commuting.
+  assert.deepEqual(U.commuterParametersForYear(2026), {
+    year: 2026,
+    transitAndVanpool: { state: "statutory_dollar_limit", monthlyLimit: 340, monthlyLimitsByMonth: null },
+    parking: { state: "statutory_dollar_limit", monthlyLimit: 340 },
+    bicycleCommuting: { state: "unavailable", monthlyAmount: null },
+  });
+  assert.ok(U.commuterSourceMetadata().some((source) => source.id === "pl-114-113"));
+  assert.throws(() => U.commuterParametersForYear(2026.5), (error: unknown) => error instanceof ParameterError);
+});
+
 test("rejects a bare FSA account type but accepts each unambiguous spelling", () => {
   assert.equal(U.normalizeAccountType("health fsa"), AccountType.HEALTH_FSA);
   assert.equal(U.normalizeAccountType("Medical-FSA"), AccountType.HEALTH_FSA);

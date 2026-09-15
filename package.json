@@ -26,7 +26,8 @@
     "./data/education-parameters.json": "./data/education-parameters.json",
     "./data/able-parameters.json": "./data/able-parameters.json",
     "./data/adoption-parameters.json": "./data/adoption-parameters.json",
-    "./data/hra-parameters.json": "./data/hra-parameters.json"
+    "./data/hra-parameters.json": "./data/hra-parameters.json",
+    "./data/commuter-parameters.json": "./data/commuter-parameters.json"
   },
   "files": [
     "dist",
@@ -38,6 +39,7 @@
     "data/able-parameters.json",
     "data/adoption-parameters.json",
     "data/hra-parameters.json",
+    "data/commuter-parameters.json",
     "README.md",
     "LICENSE",
     "SOURCES.md"
@@ -70,6 +72,7 @@
     "validate:evidence:able": "node scripts/verify-evidence.mjs able-limits",
     "validate:evidence:adoption": "node scripts/verify-evidence.mjs adoption-limits",
     "validate:evidence:hra": "node scripts/verify-evidence.mjs hra-limits",
+    "validate:evidence:commuter": "node scripts/verify-evidence.mjs commuter-limits",
     "check:attestations": "node scripts/check-attestations.mjs",
     "check:attestations:self-test": "node scripts/check-attestations.mjs --self-test",
     "test:457-invariants": "node scripts/check-section457-invariants.mjs"

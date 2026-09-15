@@ -10,7 +10,7 @@ The repository contains two native implementations with the same behavior:
 - **TypeScript** for npm, exported as `USTaxAdvantagedParams`.
 - **PHP 8.4+** for Packagist, in the `USTaxAdvantagedParams` namespace.
 
-Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax, education, ABLE, adoption and HRA JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
+Annual legal parameters are maintained once, in the retirement, HSA, FSA, payroll-tax, education, ABLE, adoption, HRA and commuter JSON files under `data/`, and generated into each single-file runtime. Shared conformance vectors and a full-output parity check keep the TypeScript and PHP engines synchronized.
 
 > **Tax-software scope, not tax advice.** This package calculates statutory parameters from caller-supplied facts. It does not determine whether a plan document permits a contribution, perform ERISA nondiscrimination testing, classify self-employment earnings or apply optional SECA methods, replace Form 8606, provide an actuarial valuation, or prepare a tax return. Review material results against the governing plan document and current primary authority.
 
@@ -91,6 +91,16 @@ See [HRA parameters](#hra-parameters).
 ```ts
 USTaxAdvantagedParams.supportedHraTaxYears();
 // { minimum: 2017, maximum: 2026 }
+```
+
+Commuter parameters have their own range, **1999 through 2026**. It starts at the first year of
+the §132(f)(2) amounts set by the Transportation Equity Act for the 21st Century. §132(f) itself
+is older, so in this table alone a year before 1999 is not encoded, rather than unavailable. See
+[Commuter parameters](#commuter-parameters).
+
+```ts
+USTaxAdvantagedParams.supportedCommuterTaxYears();
+// { minimum: 1999, maximum: 2026 }
 ```
 
 ## Installation
@@ -1746,6 +1756,26 @@ The $40,000 phase-out width has never been indexed, and the data validator enfor
 
 The 2027 excepted benefit HRA limit of $2,250 is published (Rev. Proc. 2026-24), but the table ends at 2026 until the 2027 QSEHRA figures are published, rather than carrying a row with a missing amount.
 
+## Commuter parameters
+
+`commuterParametersForYear(taxYear)` returns the §132(f) qualified transportation fringe figures for a year: `transitAndVanpool`, `parking` and `bicycleCommuting`. No calculation applies them.
+
+**Every amount is the one the law finally applied, not the one first printed.** Several annual revenue procedures were overtaken by later legislation:
+
+| Year | Printed transit limit | Applied | Why |
+|---|---|---|---|
+| 2009 | $120 | $120 for January–February, $230 from March | ARRA §1151 gave transit parking parity for months beginning on or after February 17, 2009 |
+| 2012 | $125 | $240 | Pub. L. 112-240 §203, retroactively; Rev. Proc. 2013-15 reissued the figure |
+| 2014 | $130 | $250 | Pub. L. 113-295 §103, retroactively |
+| 2015 | $130 | $250 | Pub. L. 114-113 §105 made parity permanent; Notice 2016-6 |
+| 2016 | $130 | $255 | Notice 2016-6 |
+
+From 2010 the transit limit equals the parking limit in every year, and the data validator enforces it. 2009 is the only row in the `statutory_dollar_limit_varies_within_year` state: `monthlyLimit` is `null`, and `monthlyLimitsByMonth` lists January through December.
+
+`bicycleCommuting` is $20 per qualified bicycle commuting month for 2009–2017 under §132(f)(1)(D), and it was never indexed. It is `unavailable` before 2009, for 2018–2025, when Pub. L. 115-97 §11047 suspended it, and from 2026, when Pub. L. 119-21 §70112(a) repealed it.
+
+Pub. L. 119-21 §70112(b) also moves the §132(f)(6) indexing base year from 1998 to 1997 for taxable years beginning after 2025. A 2027 figure therefore cannot be projected from the earlier indexing.
+
 ## Deliberate exclusions
 
 The package does not calculate:
@@ -1756,7 +1786,7 @@ The package does not calculate:
 - Cafeteria plan qualification and nondiscrimination testing under §125(b)–(d), the §414(b)/(c)/(m) controlled-group determination that §125(g)(4) applies to the health FSA limit, the Notice 2012-40 proration of a short plan year, and the uniform-coverage and run-out-period mechanics.
 - The §214 relief of the Consolidated Appropriations Act, 2021. It is entirely a plan option; a carryover computed out of 2020 or 2021 carries a diagnostic saying so.
 - ABLE account eligibility and the §529A(b)(2)(B)(ii) additional contribution amount for an employed beneficiary. The §529A(b)(2)(B)(i) limit *is* exposed as a parameter.
-- The §23 adoption credit and §137 adoption assistance exclusion themselves, commuter benefits under §132(f), and the §127 educational assistance exclusion itself. The §23 and §137 amounts *are* exposed as parameters. Its §127(a)(2) amount *is* exposed as a parameter, alongside the §530 and §529 figures.
+- The §23 adoption credit and §137 adoption assistance exclusion themselves, commuter benefits under §132(f), and the §127 educational assistance exclusion itself. The §23, §137 and §132(f) amounts *are* exposed as parameters. Its §127(a)(2) amount *is* exposed as a parameter, alongside the §530 and §529 figures.
 - The §21 dependent care **credit**, and the §21(c) interaction whereby §129 exclusions reduce that credit's expense base. The §129 exclusion is calculated; the credit is not.
 - The §21(d)(2) deemed-earned-income schedule that §129(b)(2) applies to a student or incapacitated spouse. The §129(b)(1) limitation itself *is* applied, from the earned income supplied on `planRules.dependentCareFsa`.
 - Whether a dependent care program meets the §129(d) written-plan and nondiscrimination requirements, the §129(c) denial for amounts paid to a related individual, and whether the individuals cared for qualify.

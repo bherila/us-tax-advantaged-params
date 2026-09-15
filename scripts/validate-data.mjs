@@ -11,6 +11,7 @@ const educationPath = join(root, "data", "education-parameters.json");
 const ablePath = join(root, "data", "able-parameters.json");
 const adoptionPath = join(root, "data", "adoption-parameters.json");
 const hraPath = join(root, "data", "hra-parameters.json");
+const commuterPath = join(root, "data", "commuter-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -107,6 +108,7 @@ const education = await parseCanonicalJson(educationPath, "data/education-parame
 const able = await parseCanonicalJson(ablePath, "data/able-parameters.json");
 const adoption = await parseCanonicalJson(adoptionPath, "data/adoption-parameters.json");
 const hra = await parseCanonicalJson(hraPath, "data/hra-parameters.json");
+const commuter = await parseCanonicalJson(commuterPath, "data/commuter-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -661,6 +663,60 @@ if (hra) {
   }
 }
 
+if (commuter) {
+  walk(commuter, "commuter");
+  const years = validateYearSpan(commuter, "data/commuter-parameters.json");
+  // IRC 132(f)(6)(B) rounds every increase down to a multiple of $5.
+  const fiveDollar = (amount) => Number.isInteger(amount) && amount > 0 && amount % 5 === 0;
+  for (const year of years ?? []) {
+    const label = `Commuter year ${year}`;
+    const row = commuter.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const transit = row.transitAndVanpool;
+    const parking = row.parking;
+    const bicycle = row.bicycleCommuting;
+    if (parking?.state !== "statutory_dollar_limit" || !fiveDollar(parking.monthlyLimit)) {
+      fail(`${label} parking must be a statutory monthly limit in multiples of $5.`);
+    }
+    // Pub. L. 111-5 section 1151 changed the transit limit from March 2009, so
+    // 2009 alone carries a monthly schedule.
+    if (year === 2009) {
+      const months = transit?.monthlyLimitsByMonth;
+      if (transit?.state !== "statutory_dollar_limit_varies_within_year" || transit.monthlyLimit !== null
+        || !Array.isArray(months) || months.length !== 12 || !months.every(fiveDollar)
+        || months[0] !== months[1] || !months.slice(2).every((amount) => amount === parking?.monthlyLimit) || !(months[1] < months[2])) {
+        fail(`${label} transitAndVanpool must vary within the year: January and February at the published amount, March through December at the parking amount.`);
+      }
+    } else if (transit?.state !== "statutory_dollar_limit" || !fiveDollar(transit.monthlyLimit) || transit.monthlyLimitsByMonth !== null) {
+      fail(`${label} transitAndVanpool must be a whole-year statutory monthly limit in multiples of $5.`);
+    }
+    // Temporary parity sentences cover 2010-2014 (Pub. L. 111-5, 111-312, 112-240,
+    // 113-295) and Pub. L. 114-113 section 105 made parity permanent from 2015.
+    if (year >= 2010 && transit?.monthlyLimit !== parking?.monthlyLimit) {
+      fail(`${label} transit must equal parking; transit parity has applied to every month since 2010.`);
+    }
+    // Pub. L. 110-343 section 211 (taxable years after 2008); suspended from 2018 by
+    // Pub. L. 115-97 section 11047 and struck from 2026 by Pub. L. 119-21 section 70112(a).
+    const bicycleAvailable = year >= 2009 && year <= 2017;
+    if (bicycleAvailable ? !(bicycle?.state === "statutory_dollar_limit" && bicycle.monthlyAmount === 20) : !(bicycle?.state === "unavailable" && bicycle.monthlyAmount === null)) {
+      fail(`${label} bicycleCommuting must be ${bicycleAvailable ? "$20 a month" : "unavailable"}.`);
+    }
+  }
+
+  validateSources(commuter.sources, "data/commuter-parameters.json", ["usc-26-132", "pl-105-178", "pl-111-5", "pl-114-113", "pl-115-97", "pl-119-21", "irs-notice-2016-6", "irs-rev-proc-2013-15"]);
+
+  const row = (year) => commuter.years?.[String(year)];
+  if (row(1999)?.transitAndVanpool?.monthlyLimit !== 65 || row(1999)?.parking?.monthlyLimit !== 175) {
+    fail("The 1999 commuter row must carry Pub. L. 105-178 section 9010(b)'s $65 and $175.");
+  }
+  if (row(2012)?.transitAndVanpool?.monthlyLimit !== 240 || row(2016)?.transitAndVanpool?.monthlyLimit !== 255) {
+    fail("The 2012 and 2016 transit limits must be the as-corrected $240 and $255, not the $125 and $130 first published.");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -739,6 +795,7 @@ console.log(
     `${Object.keys(able.years).length} contiguous ABLE tax years, ` +
     `${Object.keys(adoption.years).length} contiguous adoption tax years, ` +
     `${Object.keys(hra.years).length} contiguous HRA tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length + adoption.sources.length + hra.sources.length} sources, ` +
+    `${Object.keys(commuter.years).length} contiguous commuter tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length + adoption.sources.length + hra.sources.length + commuter.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );
