@@ -876,7 +876,7 @@ final class ScenarioBuilder
 final class USTaxAdvantagedParams
 {
     public const PACKAGE_NAME = 'us-tax-advantaged-params';
-    public const ENGINE_VERSION = '0.4.1';
+    public const ENGINE_VERSION = '0.5.0';
 
     private static ?array $parameters = null;
 
