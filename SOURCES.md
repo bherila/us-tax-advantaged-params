@@ -345,7 +345,8 @@ enacted laws and the Code rather than annual procedures. Each is committed under
 
 - **Small Business Job Protection Act of 1996, Pub. L. 104-188** — §1806 adds §529, applying
   to taxable years ending after August 20, 1996 (§1806(c)(1)), which sets the table's first
-  year. §1202 extends §127 through May 31, 1997, for taxable years beginning after
+  year. Because a 1996 taxable year can end on either side of that date, §529's 1996 state is
+  `indeterminate`; every taxable year from 1997 ends after it. §1202 extends §127 through May 31, 1997, for taxable years beginning after
   December 31, 1994.
 
 - **Taxpayer Relief Act of 1997, Pub. L. 105-34** — §213 adds §530 with a $500 limit, reduced
@@ -369,7 +370,11 @@ enacted laws and the Code rather than annual procedures. Each is committed under
   December 31, 2023.
 
 - **Pub. L. 119-21** — §70413(b) raises the §529(e)(3) limit from $10,000 to $20,000 for taxable
-  years beginning after December 31, 2025. §70412 makes the §127(c)(1)(B) student-loan payment
+  years beginning after December 31, 2025. §70413(a) rewrites §529(c)(7), which the §529(e)(3)
+  cap counts, from elementary and secondary tuition alone to eight listed categories of
+  expenses, for distributions made after July 4, 2025 (§70413(a)(2)). That is why
+  `elementarySecondaryExpenseScope` is `tuition` through 2024, `varies_within_year` for 2025
+  and `tuition_and_other_school_expenses` from 2026. §70412 makes the §127(c)(1)(B) student-loan payment
   clause permanent and adds §127(d), which indexes both $5,250 amounts for taxable years
   beginning after 2026 from a calendar-2025 base, rounded to the nearest $50; its amendments
   apply to payments made after December 31, 2025.

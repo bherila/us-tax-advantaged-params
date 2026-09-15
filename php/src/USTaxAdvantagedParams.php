@@ -9953,12 +9953,12 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
   },
   "moneyUnit": "USD",
   "historicalCoveragePolicy": {
-    "description": "The table starts at 1996, the first taxable year IRC 529 applies to (Pub. L. 104-188 section 1806(c)(1): taxable years ending after August 20, 1996). Each program carries its own state per year; a program that did not exist in a year in range is stated as unavailable rather than omitted. No future year is extrapolated.",
+    "description": "The table starts at 1996. Pub. L. 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996, so a 1996 taxable year may end on either side of that date; a year lookup cannot say which, so IRC 529\u0027s 1996 state is indeterminate, and every taxable year from 1997 ends after it. Each program carries its own state per year; a program that did not exist in a year in range is stated as unavailable rather than omitted. No future year is extrapolated.",
     "coverdellFirstYear": "IRC 530 applies to taxable years beginning after December 31, 1997 (Pub. L. 105-34 section 213(f)), so 1996 and 1997 are unavailable. The $500 limit and the $150,000 joint phase-out start rose to $2,000 and $190,000, with the joint width from $10,000 to $30,000, for taxable years beginning after December 31, 2001 (Pub. L. 107-16 section 401). The EGTRRA sunset that would have reversed that after 2010 was moved to 2012 by Pub. L. 111-312 section 101(a)(1) and removed by Pub. L. 112-240 section 101(a).",
     "educationalAssistanceContinuity": "IRC 127 lapsed and was retroactively reinstated repeatedly before 1996; those years are outside the table. From 1996 it applies without a gap: Pub. L. 104-188 section 1202 (taxable years beginning after 1994, through May 31, 1997), Pub. L. 105-34 section 221 (taxable years beginning after 1996, courses beginning through May 31, 2000), Pub. L. 106-170 (through December 31, 2001), and Pub. L. 107-16 section 411, which struck the termination, with its sunset removed as for IRC 530.",
     "educationalAssistanceIndexedAfter2026": "Pub. L. 119-21 section 70412(b) indexes both $5,250 amounts in IRC 127(a)(2) for taxable years beginning after 2026, from a calendar-2025 base, rounded to the nearest $50. A 2027 row must carry the published adjusted amount; the flat $5,250 is not carried forward.",
     "qualifiedTuitionProgramHasNoAnnualLimit": "IRC 529 sets no federal annual or aggregate contribution limit. IRC 529(b)(6) requires a program to have adequate safeguards against contributions in excess of those necessary for the beneficiary\u0027s qualified higher education expenses, which is a state-program ceiling rather than a federal figure. annualContributionLimit is null in every year for that reason, not because a figure is missing.",
-    "qualifiedTuitionProgramCaps": "Three IRC 529 dollar caps apply to distributions, not contributions, and are null before they take effect: the IRC 529(e)(3) elementary and secondary tuition limit per taxable year ($10,000 for distributions after 2017, Pub. L. 115-97 section 11032; $20,000 for taxable years beginning after 2025, Pub. L. 119-21 section 70413(b)); the IRC 529(c)(9)(B) lifetime limit on qualified education loan repayments ($10,000, distributions after 2018, Pub. L. 116-94 div. O section 302); and the IRC 529(c)(3)(E)(ii)(II) aggregate limit on rollovers to a Roth IRA ($35,000, distributions after 2023, Pub. L. 117-328 div. T section 126)."
+    "qualifiedTuitionProgramCaps": "Three IRC 529 dollar caps apply to distributions, not contributions, and are null before they take effect: the IRC 529(e)(3) per-taxable-year limit on expenses described in IRC 529(c)(7) ($10,000 for distributions after 2017, Pub. L. 115-97 section 11032; $20,000 for taxable years beginning after 2025, Pub. L. 119-21 section 70413(b)); the IRC 529(c)(9)(B) lifetime limit on qualified education loan repayments ($10,000, distributions after 2018, Pub. L. 116-94 div. O section 302); and the IRC 529(c)(3)(E)(ii)(II) aggregate limit on rollovers to a Roth IRA ($35,000, distributions after 2023, Pub. L. 117-328 div. T section 126). IRC 529(c)(7) reached elementary and secondary tuition only until Pub. L. 119-21 section 70413(a) rewrote it, for distributions made after July 4, 2025, to eight listed categories of elementary and secondary expenses; elementarySecondaryExpenseScope records which reading applies to the year, and is null exactly when the limit is."
   },
   "sources": [
     {
@@ -10029,9 +10029,10 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
         "annualExclusionLimit": 5250
       },
       "qualifiedTuitionProgram": {
-        "state": "available_without_statutory_dollar_limit",
+        "state": "indeterminate",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10050,7 +10051,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10078,7 +10080,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10106,7 +10109,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10134,7 +10138,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10162,7 +10167,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10190,7 +10196,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10218,7 +10225,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10246,7 +10254,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10274,7 +10283,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10302,7 +10312,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10330,7 +10341,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10358,7 +10370,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10386,7 +10399,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10414,7 +10428,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10442,7 +10457,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10470,7 +10486,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10498,7 +10515,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10526,7 +10544,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10554,7 +10573,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10582,7 +10602,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10610,7 +10631,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": null,
+        "elementarySecondaryExpenseAnnualLimit": null,
+        "elementarySecondaryExpenseScope": null,
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10638,7 +10660,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": null,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10666,7 +10689,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10694,7 +10718,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10722,7 +10747,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10750,7 +10776,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10778,7 +10805,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": null
       }
@@ -10806,7 +10834,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "tuition",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": 35000
       }
@@ -10834,7 +10863,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 10000,
+        "elementarySecondaryExpenseAnnualLimit": 10000,
+        "elementarySecondaryExpenseScope": "varies_within_year",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": 35000
       }
@@ -10862,7 +10892,8 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
       "qualifiedTuitionProgram": {
         "state": "available_without_statutory_dollar_limit",
         "annualContributionLimit": null,
-        "elementarySecondaryTuitionAnnualLimit": 20000,
+        "elementarySecondaryExpenseAnnualLimit": 20000,
+        "elementarySecondaryExpenseScope": "tuition_and_other_school_expenses",
         "qualifiedEducationLoanLifetimeLimit": 10000,
         "rothIraRolloverLifetimeLimit": 35000
       }
@@ -10870,8 +10901,14 @@ private const EDUCATION_PARAMETER_JSON = <<<'JSON'
   },
   "dollarLimitStates": {
     "unavailable": "The program did not exist for the tax year. Unlike the FSA table, a program in range is stated as unavailable explicitly, because the three programs start in different years.",
+    "indeterminate": "Whether the program applies to the tax year turns on a fact a year lookup does not carry. Only IRC 529 in 1996 is in this state: Pub. L. 104-188 section 1806(c)(1) applies it to taxable years ending after August 20, 1996, and a 1996 taxable year may end on either side of that date.",
     "available_without_statutory_dollar_limit": "The program existed but no federal statutory dollar limit on contributions applied. The amount is null.",
     "statutory_dollar_limit": "A statutory dollar limit applies and is encoded."
+  },
+  "elementarySecondaryExpenseScopes": {
+    "tuition": "IRC 529(c)(7) as added by Pub. L. 115-97 section 11032(a)(1): expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school.",
+    "varies_within_year": "2025 only. Pub. L. 119-21 section 70413(a) rewrote IRC 529(c)(7) for distributions made after July 4, 2025: tuition alone for a distribution on or before that date, the eight listed categories after it. The Act does not say how the year\u0027s two kinds of distribution combine under the one IRC 529(e)(3) cap, so the scope is stated as varying rather than resolved.",
+    "tuition_and_other_school_expenses": "IRC 529(c)(7) as amended by Pub. L. 119-21 section 70413(a): tuition; curriculum and curricular materials; books or other instructional materials; online educational materials; tuition for tutoring or educational classes outside the home by a qualifying instructor; fees for standardized achievement, advanced placement and college admission examinations; fees for dual enrollment in an institution of higher education; and educational therapies for students with disabilities."
   }
 }
 JSON;
