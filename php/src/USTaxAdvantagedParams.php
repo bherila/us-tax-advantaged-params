@@ -11153,7 +11153,7 @@ private const ADOPTION_PARAMETER_JSON = <<<'JSON'
   "historicalCoveragePolicy": {
     "description": "The table starts at 1997 because Pub. L. 104-188 section 1807 added IRC 23 and IRC 137 for taxable years beginning after December 31, 1996. A year below the minimum is unavailable by absence. No future year is extrapolated.",
     "phaseoutWidth": "The $40,000 width of each phase-out is statutory and has never been indexed; only the starting amount is. Each row\u0027s end is its start plus $40,000, which every revenue procedure\u0027s completely-phased-out amount confirms.",
-    "specialNeeds": "For 1997-2001 a child with special needs carried a higher $6,000 expense limit. Pub. L. 107-16 section 202 removed that for 2002 and, from 2003, allowed the full credit and exclusion for a special-needs adoption regardless of expenses; specialNeedsCreditAmount and specialNeedsExclusionAmount are null before 2003.",
+    "specialNeeds": "For 1997-2001 a child with special needs carried a higher $6,000 expense limit. Pub. L. 107-16 section 202 removed that for 2002 and, from 2003, allowed the full credit and exclusion for a special-needs adoption regardless of expenses; specialNeedsCreditAmount and specialNeedsExclusionAmount are null before 2003. As enacted, section 202 split IRC 23(a)(1) into an expense credit and a separate $10,000 special-needs credit and confined the IRC 23(b)(1) dollar limit to other children. Pub. L. 107-147 section 411(c) replaced that for the same taxable years: IRC 23(a)(3) instead treats a special-needs adopter as having paid qualified adoption expenses up to the dollar amount, so the special-needs amount is the IRC 23(a)(1) credit, the IRC 23(b)(1) limit again covers every adoption (section 411(c)(1)(D), taxable years beginning after December 31, 2001, per section 411(c)(3)), and the IRC 23(a)(4) refundable portion, which reaches the credit allowed under paragraph (1), includes it. Section 411(c)(2) corrects IRC 137 the same way. That is why specialNeedsDollarLimit equals dollarLimit from 2002.",
     "section36C": "Pub. L. 111-148 section 10909 moved the credit to IRC 36C and made it refundable for taxable years beginning in 2010 and 2011, raising the 2010 maximum from the $12,170 Rev. Proc. 2009-50 published to $13,170 (Rev. Proc. 2010-35). Pub. L. 111-312 section 101(b) ended those amendments for taxable years beginning after December 31, 2011.",
     "refundablePortion": "Pub. L. 119-21 section 70402 makes up to $5,000 of the IRC 23 credit refundable for taxable years beginning after December 31, 2024, indexed from a calendar-2024 base from 2026 ($5,120, Rev. Proc. 2025-32)."
   },
@@ -11180,6 +11180,12 @@ private const ADOPTION_PARAMETER_JSON = <<<'JSON'
       "id": "pl-107-16",
       "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, section 202",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-107-147",
+      "title": "Job Creation and Worker Assistance Act of 2002, Pub. L. 107-147, section 411(c)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ147/pdf/PLAW-107publ147.pdf",
       "authority": "U.S. Congress"
     },
     {

@@ -1713,7 +1713,7 @@ Both provisions carry a `dollarLimit` per adoption, a `specialNeedsDollarLimit`,
 | Years | Limit | Phase-out start | Notes |
 |---|---|---|---|
 | 1997–2001 | $5,000 ($6,000 special needs) | $75,000 | Pub. L. 104-188 §1807 |
-| 2002 | $10,000 | $150,000 | Pub. L. 107-16 §202(b); no flat special-needs amount yet |
+| 2002 | $10,000 | $150,000 | Pub. L. 107-16 §202(b), as corrected by Pub. L. 107-147 §411(c); no flat special-needs amount yet |
 | 2003–2009 | indexed, $10,160 → $12,150 | indexed | flat special-needs amount equals the limit |
 | 2010–2011 | $13,170, $13,360 | indexed | §36C and fully refundable under the Affordable Care Act §10909 |
 | 2012–2024 | indexed, $12,650 → $16,810 | indexed | nonrefundable §23 again, after Pub. L. 111-312 §101(b) |

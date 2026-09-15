@@ -424,6 +424,16 @@ Every document below is committed under `evidence/adoption-limits/sources/` and 
   under §202(e), apply to taxable years beginning after December 31, 2002 (§202(g)(2)). No revenue
   procedure states 2002: Rev. Proc. 2001-59 has no adoption section.
 
+- **Job Creation and Worker Assistance Act of 2002, Pub. L. 107-147 §411(c)** — corrects §202 before
+  it took effect. As enacted, §202 made the special-needs amount a separate §23(a)(1)(B) credit and
+  confined the §23(b)(1) limit to other children. §411(c)(1) instead rewrites §23(a)(1) as a single
+  expense credit, adds §23(a)(3), which treats a special-needs adopter as having paid qualified
+  adoption expenses up to the dollar amount, and restores "subsection (a)" in §23(b)(1); §411(c)(2)
+  corrects §137 the same way. §411(c)(3) applies the §23(b)(1) and §137(b) restorations to taxable
+  years beginning after December 31, 2001, and the rest after December 31, 2002. So the limit covers
+  every adoption from 2002, and the special-needs amount is a §23(a)(1) credit, which is the credit
+  Pub. L. 119-21 §70402's refundable portion reaches.
+
 - **Rev. Procs. 2002-70 through 2025-32** — the indexed limit, the special-needs amount and both
   phase-out figures for every year from 2003 to 2026, stated identically for §23 (§36C in 2010 and
   2011) and §137. Rev. Proc. 2025-32 §4.04(3) also states the $5,120 refundable portion for 2026.

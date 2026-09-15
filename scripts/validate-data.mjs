@@ -594,7 +594,7 @@ if (adoption) {
     }
   }
 
-  validateSources(adoption.sources, "data/adoption-parameters.json", ["usc-26-23", "usc-26-137", "pl-104-188", "pl-107-16", "pl-111-312", "pl-119-21", "irs-rev-proc-2010-35"]);
+  validateSources(adoption.sources, "data/adoption-parameters.json", ["usc-26-23", "usc-26-137", "pl-104-188", "pl-107-16", "pl-107-147", "pl-111-312", "pl-119-21", "irs-rev-proc-2010-35"]);
 
   const credit = (year) => adoption.years?.[String(year)]?.adoptionCredit;
   if (credit(1997)?.dollarLimit !== 5000 || String(credit(1997)?.phaseout) !== "75000,115000") {
