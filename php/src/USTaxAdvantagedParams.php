@@ -898,6 +898,9 @@ final class USTaxAdvantagedParams
     /** @var array<string,mixed>|null */
     private static ?array $hraParameters = null;
 
+    /** @var array<string,mixed>|null */
+    private static ?array $commuterParameters = null;
+
     /* <generated-payroll-parameters> */
 private const PAYROLL_PARAMETER_JSON = <<<'JSON'
 {
@@ -12509,6 +12512,734 @@ private const HRA_PARAMETER_JSON = <<<'JSON'
 JSON;
 /* </generated-hra-parameters> */
 
+    /* <generated-commuter-parameters> */
+private const COMMUTER_PARAMETER_JSON = <<<'JSON'
+{
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 1999,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "The table starts at 1999, the first year of the Transportation Equity Act for the 21st Century\u0027s IRC 132(f)(2) amounts. IRC 132(f) itself is older (1993); the earlier years are not encoded, so for this table alone a year below the minimum means not encoded rather than unavailable. No future year is extrapolated.",
+    "asCorrectedValues": "Every amount is the one the law finally applied, not the one first printed. Congress retroactively raised transit to parking parity after the annual revenue procedure for 2012, 2014 and 2015 was published, and again for 2016; the as-printed figures are kept in evidence/commuter-limits and reconciled to these values.",
+    "transit2009": "ARRA section 1151 applies parity to months beginning on or after its February 17, 2009 enactment, so no single transit figure is correct for 2009: January and February are $120, March through December $230. That year alone is in the statutory_dollar_limit_varies_within_year state with a twelve-month schedule.",
+    "parity": "From 2010 every transit figure equals the parking figure: by temporary parity sentences for 2010-2014 (Pub. L. 111-5, 111-312, 112-240, 113-295) and permanently from 2015, when Pub. L. 114-113 set the transit base to the same $175 as parking.",
+    "bicycleCommuting": "The IRC 132(f)(1)(D) bicycle commuting reimbursement, $20 per qualified bicycle commuting month and never indexed, applies to 2009-2017. Pub. L. 115-97 section 11047 suspended it for taxable years 2018-2025; Pub. L. 119-21 section 70112(a) struck it for taxable years beginning after 2025. Both periods are unavailable; the first was a suspension, the second a repeal.",
+    "indexingBase": "Pub. L. 119-21 section 70112(b) substitutes 1997 for 1998 as the IRC 132(f)(6)(A)(ii) base year for taxable years beginning after 2025, so a 2026 or later amount cannot be reproduced by carrying the pre-2026 indexing forward."
+  },
+  "sources": [
+    {
+      "id": "usc-26-132",
+      "title": "26 U.S.C. 132, certain fringe benefits (2024 edition), subsection (f)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleA-chap1-subchapB-partIII-sec132.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "irs-notice-2016-6",
+      "title": "IRS Notice 2016-6, retroactive transit parity for 2015 and the 2016 amount",
+      "url": "https://www.irs.gov/pub/irs-drop/n-16-06.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "pl-105-178",
+      "title": "Transportation Equity Act for the 21st Century, Pub. L. 105-178, section 9010",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-105publ178/pdf/PLAW-105publ178.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-110-343",
+      "title": "Emergency Economic Stabilization Act of 2008, Pub. L. 110-343, div. B section 211 (bicycle commuting)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-110publ343/pdf/PLAW-110publ343.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-111-5",
+      "title": "American Recovery and Reinvestment Act of 2009, Pub. L. 111-5, section 1151 (transit parity)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-111publ5/pdf/PLAW-111publ5.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-111-312",
+      "title": "Pub. L. 111-312, section 727 (transit parity through 2011)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-111publ312/pdf/PLAW-111publ312.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-112-240",
+      "title": "American Taxpayer Relief Act of 2012, Pub. L. 112-240, section 203 (transit parity through 2013)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-112publ240/pdf/PLAW-112publ240.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-113-295",
+      "title": "Tax Increase Prevention Act of 2014, Pub. L. 113-295 div. A, section 103 (transit parity through 2014)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-113publ295/pdf/PLAW-113publ295.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-114-113",
+      "title": "Protecting Americans from Tax Hikes Act of 2015, Pub. L. 114-113 div. Q, section 105 (permanent parity)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-114publ113/pdf/PLAW-114publ113.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-115-97",
+      "title": "Pub. L. 115-97, section 11047 (bicycle commuting suspension)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-115publ97/pdf/PLAW-115publ97.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-119-21",
+      "title": "Pub. L. 119-21, section 70112 (bicycle commuting repeal and indexing base)",
+      "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "irs-rev-proc-1999-42",
+      "title": "Rev. Proc. 1999-42",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-99-42.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2001-13",
+      "title": "Rev. Proc. 2001-13",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-01-13.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2001-59",
+      "title": "Rev. Proc. 2001-59",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-01-59.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2002-70",
+      "title": "Rev. Proc. 2002-70",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-02-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2003-85",
+      "title": "Rev. Proc. 2003-85",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-03-85.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2004-71",
+      "title": "Rev. Proc. 2004-71",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-04-71.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2005-70",
+      "title": "Rev. Proc. 2005-70",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-05-70.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2007-66",
+      "title": "Rev. Proc. 2007-66",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-07-66.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2008-66",
+      "title": "Rev. Proc. 2008-66",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-08-66.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2009-50",
+      "title": "Rev. Proc. 2009-50",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-09-50.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2010-40",
+      "title": "Rev. Proc. 2010-40",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-10-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-12",
+      "title": "Rev. Proc. 2011-12",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-12.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2011-52",
+      "title": "Rev. Proc. 2011-52",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-11-52.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-15",
+      "title": "Rev. Proc. 2013-15",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-15.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2013-35",
+      "title": "Rev. Proc. 2013-35",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-13-35.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2014-61",
+      "title": "Rev. Proc. 2014-61",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-14-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2015-53",
+      "title": "Rev. Proc. 2015-53",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-15-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2016-55",
+      "title": "Rev. Proc. 2016-55",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-16-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "1999": {
+      "year": 1999,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 65,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 175
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2000": {
+      "year": 2000,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 65,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 175
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2001": {
+      "year": 2001,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 65,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 180
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2002": {
+      "year": 2002,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 100,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 185
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2003": {
+      "year": 2003,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 100,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 190
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2004": {
+      "year": 2004,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 100,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 195
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2005": {
+      "year": 2005,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 105,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 200
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2006": {
+      "year": 2006,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 105,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 205
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2007": {
+      "year": 2007,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 110,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 215
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2008": {
+      "year": 2008,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 115,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 220
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2009": {
+      "year": 2009,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit_varies_within_year",
+        "monthlyLimit": null,
+        "monthlyLimitsByMonth": [
+          120,
+          120,
+          230,
+          230,
+          230,
+          230,
+          230,
+          230,
+          230,
+          230,
+          230,
+          230
+        ]
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 230
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2010": {
+      "year": 2010,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 230,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 230
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2011": {
+      "year": 2011,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 230,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 230
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2012": {
+      "year": 2012,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 240,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 240
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2013": {
+      "year": 2013,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 245,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 245
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2014": {
+      "year": 2014,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 250,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 250
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2015": {
+      "year": 2015,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 250,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 250
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2016": {
+      "year": 2016,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 255,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 255
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2017": {
+      "year": 2017,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 255,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 255
+      },
+      "bicycleCommuting": {
+        "state": "statutory_dollar_limit",
+        "monthlyAmount": 20
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 260,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 260
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 265,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 265
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 270,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 270
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 270,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 270
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 280,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 280
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 300,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 300
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 315,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 315
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 325,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 325
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "transitAndVanpool": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 340,
+        "monthlyLimitsByMonth": null
+      },
+      "parking": {
+        "state": "statutory_dollar_limit",
+        "monthlyLimit": 340
+      },
+      "bicycleCommuting": {
+        "state": "unavailable",
+        "monthlyAmount": null
+      }
+    }
+  },
+  "dollarLimitStates": {
+    "unavailable": "The benefit was not available for the year: bicycle commuting before 2009, during its 2018-2025 suspension, and after its 2026 repeal.",
+    "available_without_statutory_dollar_limit": "Not used by this table.",
+    "statutory_dollar_limit": "A statutory monthly dollar limit applies for the whole year and is encoded.",
+    "statutory_dollar_limit_varies_within_year": "A statutory monthly limit applies but changes during the year, so monthlyLimit is null and monthlyLimitsByMonth gives January through December. Used only by 2009 transit."
+  }
+}
+JSON;
+/* </generated-commuter-parameters> */
+
     public static function forTaxYear(int $taxYear): ScenarioBuilder
     {
         return ScenarioBuilder::forTaxYear($taxYear);
@@ -12712,6 +13443,27 @@ JSON;
         return Engine::copy(self::hraData()['sources']);
     }
 
+    /** IRC 132(f) qualified transportation fringe parameters, or null for a year outside the table.
+     *  @return array<string,mixed>|null
+     */
+    public static function commuterParametersForYear(int $taxYear): ?array
+    {
+        return Engine::commuterParametersForYear(self::commuterData(), $taxYear);
+    }
+
+    /** @return array{minimum:int,maximum:int} */
+    public static function supportedCommuterTaxYears(): array
+    {
+        $supported = self::commuterData()['supportedTaxYears'];
+        return ['minimum' => (int) $supported['minimum'], 'maximum' => (int) $supported['maximum']];
+    }
+
+    /** @return list<array<string,string>> */
+    public static function commuterSourceMetadata(): array
+    {
+        return Engine::copy(self::commuterData()['sources']);
+    }
+
     /** @return array<string,mixed> */
     private static function data(): array
     {
@@ -12801,6 +13553,19 @@ JSON;
             }
         }
         return self::$hraParameters;
+    }
+
+    /** @return array<string,mixed> */
+    private static function commuterData(): array
+    {
+        if (self::$commuterParameters === null) {
+            try {
+                self::$commuterParameters = json_decode(self::COMMUTER_PARAMETER_JSON, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $exception) {
+                throw new RuntimeException('Embedded commuter parameter JSON is invalid.', 0, $exception);
+            }
+        }
+        return self::$commuterParameters;
     }
 }
 
@@ -16969,6 +17734,15 @@ final class Engine
     public static function hraParametersForYear(array $hraData, int $taxYear): ?array
     {
         $row = $hraData['years'][(string) $taxYear] ?? null;
+        return is_array($row) ? self::copy($row) : null;
+    }
+
+    /** @param array<string,mixed> $commuterData
+     *  @return array<string,mixed>|null
+     */
+    public static function commuterParametersForYear(array $commuterData, int $taxYear): ?array
+    {
+        $row = $commuterData['years'][(string) $taxYear] ?? null;
         return is_array($row) ? self::copy($row) : null;
     }
 

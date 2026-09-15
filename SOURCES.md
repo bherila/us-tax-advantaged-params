@@ -489,6 +489,51 @@ Every document below is committed under `evidence/hra-limits/sources/` and fixed
 - **Rev. Procs. 2021-25 through 2025-19** — the excepted benefit HRA amount for plan years beginning in
   2022 through 2026, in each procedure's HRA inflation-adjusted item.
 
+## Commuter sources (IRC §132(f))
+
+Every document below is committed under `evidence/commuter-limits/sources/` and fixed by
+`SHA256SUMS.txt`. The table records the amounts the law finally applied; where a later statute
+changed a printed figure, the evidence keeps the printed one and the verifier reconciles it.
+
+- **Transportation Equity Act for the 21st Century, Pub. L. 105-178 §9010**
+  - §9010(b) sets $65 (transit) and $175 (parking) for taxable years beginning after December 31,
+    1998, indexed for taxable years beginning in a calendar year after 1999 and rounded down to $5.
+    Rev. Proc. 98-61 states no §132(f) figure for 1999.
+  - §9010(c) raises transit to $100 for taxable years beginning after December 31, 2001, indexed from
+    a calendar-2001 base.
+
+- **Rev. Procs. 99-42 through 2025-32** — the monthly transit and parking limits for 2000–2026.
+  Rev. Proc. 2010-40 defers the 2011 amounts to Rev. Proc. 2011-12. Rev. Proc. 2013-15 states 2013
+  and, in §3, reissues 2012 at $240.
+
+- **Emergency Economic Stabilization Act of 2008, Pub. L. 110-343 div. B §211** — adds the qualified
+  bicycle commuting reimbursement, "the product of $20 multiplied by the number of qualified bicycle
+  commuting months", for taxable years beginning after December 31, 2008.
+
+- **American Recovery and Reinvestment Act of 2009, Pub. L. 111-5 §1151** — adds to §132(f)(2): "In the
+  case of any month beginning on or after the date of the enactment of this sentence and before
+  January 1, 2011, subparagraph (A) shall be applied as if the dollar amount therein were the same as
+  the dollar amount in effect for such month under subparagraph (B)."
+
+- **Parity extensions**
+  - Pub. L. 111-312 §727: through 2011, for months after December 31, 2010.
+  - Pub. L. 112-240 §203: through 2013, for months after December 31, 2011.
+  - Pub. L. 113-295 div. A §103: through 2014, for months after December 31, 2013.
+
+- **Protecting Americans from Tax Hikes Act of 2015, Pub. L. 114-113 div. Q §105** — substitutes $175
+  for $100 in §132(f)(2)(A) and strikes the temporary parity sentence, for months after December 31,
+  2014. **IRS Notice 2016-6** applies it: 2015 transit is $250 "for the period from January 1, 2015,
+  through December 31, 2015", and 2016 is $255 for both.
+
+- **Pub. L. 115-97 §11047** — adds §132(f)(8), suspending the bicycle commuting reimbursement for any
+  taxable year beginning after December 31, 2017, and before January 1, 2026.
+
+- **Pub. L. 119-21 §70112** — (a) strikes the bicycle commuting reimbursement and §132(f)(8), and
+  (b) substitutes 1997 for 1998 as the §132(f)(6)(A)(ii) base year, both for taxable years beginning
+  after December 31, 2025.
+
+- **26 U.S.C. §132 (2024 edition)** — the pre-2026 text of subsection (f) and its amendment notes.
+
 ## Flexible spending arrangement sources (IRC §125 and IRC §129)
 
 Two statutes with two different publication habits. The §125(i) health FSA

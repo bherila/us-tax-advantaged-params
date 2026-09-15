@@ -138,3 +138,9 @@ await update(tsPath, "/* <generated-hra-parameters> */", "/* </generated-hra-par
   `const RAW_HRA_PARAMETERS: HraParameterData = ${JSON.stringify(hraParameters, null, 2)} as HraParameterData;`);
 await update(phpPath, "/* <generated-hra-parameters> */", "/* </generated-hra-parameters> */",
   `private const HRA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(hraParameters)}\nJSON;`);
+
+const commuterParameters = await readCanonical("data/commuter-parameters.json");
+await update(tsPath, "/* <generated-commuter-parameters> */", "/* </generated-commuter-parameters> */",
+  `const RAW_COMMUTER_PARAMETERS: CommuterParameterData = ${JSON.stringify(commuterParameters, null, 2)} as CommuterParameterData;`);
+await update(phpPath, "/* <generated-commuter-parameters> */", "/* </generated-commuter-parameters> */",
+  `private const COMMUTER_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(commuterParameters)}\nJSON;`);

@@ -896,6 +896,45 @@ test('exposes the QSEHRA, excepted benefit HRA and individual coverage HRA table
     assertTrue(in_array('td-9867', $ids, true), 'T.D. 9867 must be listed as an HRA source');
 });
 
+test('exposes the IRC 132(f) commuter table with every retroactive correction applied', function (): void {
+    // Pub. L. 105-178 section 9010(b): $65 and $175 for taxable years beginning after 1998.
+    assertSameValue(['minimum' => 1999, 'maximum' => 2026], U::supportedCommuterTaxYears());
+    assertSameValue(null, U::commuterParametersForYear(1998));
+    assertSameValue([
+        'year' => 1999,
+        'transitAndVanpool' => ['state' => 'statutory_dollar_limit', 'monthlyLimit' => 65, 'monthlyLimitsByMonth' => null],
+        'parking' => ['state' => 'statutory_dollar_limit', 'monthlyLimit' => 175],
+        'bicycleCommuting' => ['state' => 'unavailable', 'monthlyAmount' => null],
+    ], U::commuterParametersForYear(1999));
+    // Pub. L. 105-178 section 9010(c): $100 transit from 2002 (Rev. Proc. 2001-59).
+    assertSameValue(100, U::commuterParametersForYear(2002)['transitAndVanpool']['monthlyLimit']);
+    // Rev. Proc. 2008-66 printed $120; Pub. L. 111-5 section 1151 applies the $230 parking
+    // amount to months beginning on or after February 17, 2009. Pub. L. 110-343 section 211
+    // adds the $20 bicycle amount for taxable years after 2008.
+    assertSameValue([
+        'state' => 'statutory_dollar_limit_varies_within_year',
+        'monthlyLimit' => null,
+        'monthlyLimitsByMonth' => [120, 120, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230],
+    ], U::commuterParametersForYear(2009)['transitAndVanpool']);
+    assertSameValue(20, U::commuterParametersForYear(2009)['bicycleCommuting']['monthlyAmount']);
+    // Rev. Proc. 2013-15 section 3 corrects 2012 to $240 after Pub. L. 112-240 section 203.
+    assertSameValue(240, U::commuterParametersForYear(2012)['transitAndVanpool']['monthlyLimit']);
+    // Notice 2016-6: $255 for both in 2016, not Rev. Proc. 2015-53's $130 transit.
+    assertSameValue(255, U::commuterParametersForYear(2016)['transitAndVanpool']['monthlyLimit']);
+    // Pub. L. 115-97 section 11047 suspends bicycle commuting for 2018-2025.
+    assertSameValue('statutory_dollar_limit', U::commuterParametersForYear(2017)['bicycleCommuting']['state']);
+    assertSameValue('unavailable', U::commuterParametersForYear(2018)['bicycleCommuting']['state']);
+    // Rev. Proc. 2025-32: $340 for both; Pub. L. 119-21 section 70112(a) repeals bicycle commuting.
+    assertSameValue([
+        'year' => 2026,
+        'transitAndVanpool' => ['state' => 'statutory_dollar_limit', 'monthlyLimit' => 340, 'monthlyLimitsByMonth' => null],
+        'parking' => ['state' => 'statutory_dollar_limit', 'monthlyLimit' => 340],
+        'bicycleCommuting' => ['state' => 'unavailable', 'monthlyAmount' => null],
+    ], U::commuterParametersForYear(2026));
+    $ids = array_column(U::commuterSourceMetadata(), 'id');
+    assertTrue(in_array('pl-114-113', $ids, true), 'Pub. L. 114-113 must be listed as a commuter source');
+});
+
 test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));
