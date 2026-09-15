@@ -1,0 +1,814 @@
+{
+  "_comment": "Figures and rules transcribed from the documents in sources/ for data/adoption-parameters.json. 1997-2002 are statutory; 2003 onward are the annual revenue procedures, whose credit and exclusion amounts are identical in every year.",
+  "_sources": {
+    "usc-26-23": "26 U.S.C. 23 (2024 edition), including the Pub. L. 107-16 and Pub. L. 111-148 amendment notes",
+    "usc-26-137": "26 U.S.C. 137 (2024 edition), including the Pub. L. 107-16 and Pub. L. 111-148 amendment notes",
+    "pl-104-188": "Small Business Job Protection Act of 1996, Pub. L. 104-188, section 1807 (IRC 23 and 137 as enacted)",
+    "pl-107-16": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, section 202",
+    "pl-107-147": "Job Creation and Worker Assistance Act of 2002, Pub. L. 107-147, section 411(c)",
+    "pl-111-312": "Pub. L. 111-312, section 101(b) (sunset of Pub. L. 111-148 section 10909 after 2011)",
+    "pl-119-21": "Pub. L. 119-21, section 70402 (IRC 23(a)(4) refundable portion)",
+    "rp-02-70": "Rev. Proc. 2002-70, inflation adjusted items",
+    "rp-03-85": "Rev. Proc. 2003-85, inflation adjusted items",
+    "rp-04-71": "Rev. Proc. 2004-71, inflation adjusted items",
+    "rp-05-70": "Rev. Proc. 2005-70, inflation adjusted items",
+    "rp-06-53": "Rev. Proc. 2006-53, inflation adjusted items",
+    "rp-07-66": "Rev. Proc. 2007-66, inflation adjusted items",
+    "rp-08-66": "Rev. Proc. 2008-66, inflation adjusted items",
+    "rp-09-50": "Rev. Proc. 2009-50, 2010 inflation adjusted items as first published; its adoption sections were modified by Rev. Proc. 2010-35",
+    "rp-10-35": "Rev. Proc. 2010-35, modifying Rev. Proc. 2009-50's 2010 adoption credit and exclusion for Pub. L. 111-148",
+    "rp-10-40": "Rev. Proc. 2010-40, inflation adjusted items",
+    "rp-11-52": "Rev. Proc. 2011-52, inflation adjusted items",
+    "rp-13-15": "Rev. Proc. 2013-15, inflation adjusted items",
+    "rp-13-35": "Rev. Proc. 2013-35, inflation adjusted items",
+    "rp-14-61": "Rev. Proc. 2014-61, inflation adjusted items",
+    "rp-15-53": "Rev. Proc. 2015-53, inflation adjusted items",
+    "rp-16-55": "Rev. Proc. 2016-55, inflation adjusted items",
+    "rp-17-58": "Rev. Proc. 2017-58, inflation adjusted items",
+    "rp-18-57": "Rev. Proc. 2018-57, inflation adjusted items",
+    "rp-19-44": "Rev. Proc. 2019-44, inflation adjusted items",
+    "rp-20-45": "Rev. Proc. 2020-45, inflation adjusted items",
+    "rp-21-45": "Rev. Proc. 2021-45, inflation adjusted items",
+    "rp-22-38": "Rev. Proc. 2022-38, inflation adjusted items",
+    "rp-23-34": "Rev. Proc. 2023-34, inflation adjusted items",
+    "rp-24-40": "Rev. Proc. 2024-40, inflation adjusted items",
+    "rp-25-32": "Rev. Proc. 2025-32, inflation adjusted items"
+  },
+  "planYears": {
+    "1997": {
+      "source": "pl-104-188",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 5000,
+      "creditSpecialNeedsDollarLimit_23b1": 6000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "exclusionDollarLimit_137b1": 5000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 6000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "amounts_source": "pl-104-188 section 1807(a) and (b): IRC 23(b)(1) and 137(b)(1) $5,000 ($6,000 for a child with special needs); IRC 23(b)(2)(A) and 137(b)(2) reduction for adjusted gross income over $75,000 across $40,000; taxable years beginning after December 31, 1996. The width is statutory, so the end is $115,000"
+    },
+    "1998": {
+      "source": "pl-104-188",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 5000,
+      "creditSpecialNeedsDollarLimit_23b1": 6000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "exclusionDollarLimit_137b1": 5000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 6000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "amounts_source": "pl-104-188 section 1807(a) and (b): IRC 23(b)(1) and 137(b)(1) $5,000 ($6,000 for a child with special needs); IRC 23(b)(2)(A) and 137(b)(2) reduction for adjusted gross income over $75,000 across $40,000; taxable years beginning after December 31, 1996. The width is statutory, so the end is $115,000"
+    },
+    "1999": {
+      "source": "pl-104-188",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 5000,
+      "creditSpecialNeedsDollarLimit_23b1": 6000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "exclusionDollarLimit_137b1": 5000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 6000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "amounts_source": "pl-104-188 section 1807(a) and (b): IRC 23(b)(1) and 137(b)(1) $5,000 ($6,000 for a child with special needs); IRC 23(b)(2)(A) and 137(b)(2) reduction for adjusted gross income over $75,000 across $40,000; taxable years beginning after December 31, 1996. The width is statutory, so the end is $115,000"
+    },
+    "2000": {
+      "source": "pl-104-188",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 5000,
+      "creditSpecialNeedsDollarLimit_23b1": 6000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "exclusionDollarLimit_137b1": 5000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 6000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "amounts_source": "pl-104-188 section 1807(a) and (b): IRC 23(b)(1) and 137(b)(1) $5,000 ($6,000 for a child with special needs); IRC 23(b)(2)(A) and 137(b)(2) reduction for adjusted gross income over $75,000 across $40,000; taxable years beginning after December 31, 1996. The width is statutory, so the end is $115,000"
+    },
+    "2001": {
+      "source": "pl-104-188",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 5000,
+      "creditSpecialNeedsDollarLimit_23b1": 6000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "exclusionDollarLimit_137b1": 5000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 6000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 75000,
+          "end": 115000
+        }
+      },
+      "amounts_source": "pl-104-188 section 1807(a) and (b): IRC 23(b)(1) and 137(b)(1) $5,000 ($6,000 for a child with special needs); IRC 23(b)(2)(A) and 137(b)(2) reduction for adjusted gross income over $75,000 across $40,000; taxable years beginning after December 31, 1996. The width is statutory, so the end is $115,000"
+    },
+    "2002": {
+      "source": "pl-107-16",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 10000,
+      "creditSpecialNeedsDollarLimit_23b1": 10000,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 150000,
+          "end": 190000
+        }
+      },
+      "exclusionDollarLimit_137b1": 10000,
+      "exclusionSpecialNeedsDollarLimit_137b1": 10000,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 150000,
+          "end": 190000
+        }
+      },
+      "amounts_source": "pl-107-16 section 202(b): $10,000 and $150,000, applicable to taxable years beginning after December 31, 2001 (section 202(g)(1)); the flat special-needs amounts of section 202(a) and indexing under section 202(e) apply to taxable years beginning after December 31, 2002, so 2002 has a special-needs expense limit equal to the general one; pl-107-147 section 411(c)(1)(D) restores \"subsection (a)\" in IRC 23(b)(1) for taxable years beginning after December 31, 2001 (section 411(c)(3)), so that limit covers every adoption and no flat amount. No revenue procedure states 2002 (Rev. Proc. 2001-59 has no adoption section)"
+    },
+    "2003": {
+      "source": "rp-02-70",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 10160,
+      "creditSpecialNeedsDollarLimit_23b1": 10160,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 152390,
+          "end": 192390
+        }
+      },
+      "exclusionDollarLimit_137b1": 10160,
+      "exclusionSpecialNeedsDollarLimit_137b1": 10160,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 152390,
+          "end": 192390
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 10160,
+      "exclusionSpecialNeedsAmount_137a2": 10160,
+      "amounts_source": "rp-02-70, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2003; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2004": {
+      "source": "rp-03-85",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 10390,
+      "creditSpecialNeedsDollarLimit_23b1": 10390,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 155860,
+          "end": 195860
+        }
+      },
+      "exclusionDollarLimit_137b1": 10390,
+      "exclusionSpecialNeedsDollarLimit_137b1": 10390,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 155860,
+          "end": 195860
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 10390,
+      "exclusionSpecialNeedsAmount_137a2": 10390,
+      "amounts_source": "rp-03-85, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2004; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2005": {
+      "source": "rp-04-71",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 10630,
+      "creditSpecialNeedsDollarLimit_23b1": 10630,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 159450,
+          "end": 199450
+        }
+      },
+      "exclusionDollarLimit_137b1": 10630,
+      "exclusionSpecialNeedsDollarLimit_137b1": 10630,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 159450,
+          "end": 199450
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 10630,
+      "exclusionSpecialNeedsAmount_137a2": 10630,
+      "amounts_source": "rp-04-71, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2005; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2006": {
+      "source": "rp-05-70",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 10960,
+      "creditSpecialNeedsDollarLimit_23b1": 10960,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 164410,
+          "end": 204410
+        }
+      },
+      "exclusionDollarLimit_137b1": 10960,
+      "exclusionSpecialNeedsDollarLimit_137b1": 10960,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 164410,
+          "end": 204410
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 10960,
+      "exclusionSpecialNeedsAmount_137a2": 10960,
+      "amounts_source": "rp-05-70, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2006; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2007": {
+      "source": "rp-06-53",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 11390,
+      "creditSpecialNeedsDollarLimit_23b1": 11390,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 170820,
+          "end": 210820
+        }
+      },
+      "exclusionDollarLimit_137b1": 11390,
+      "exclusionSpecialNeedsDollarLimit_137b1": 11390,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 170820,
+          "end": 210820
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 11390,
+      "exclusionSpecialNeedsAmount_137a2": 11390,
+      "amounts_source": "rp-06-53, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2007; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2008": {
+      "source": "rp-07-66",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 11650,
+      "creditSpecialNeedsDollarLimit_23b1": 11650,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 174730,
+          "end": 214730
+        }
+      },
+      "exclusionDollarLimit_137b1": 11650,
+      "exclusionSpecialNeedsDollarLimit_137b1": 11650,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 174730,
+          "end": 214730
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 11650,
+      "exclusionSpecialNeedsAmount_137a2": 11650,
+      "amounts_source": "rp-07-66, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2008; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2009": {
+      "source": "rp-08-66",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 12150,
+      "creditSpecialNeedsDollarLimit_23b1": 12150,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 182180,
+          "end": 222180
+        }
+      },
+      "exclusionDollarLimit_137b1": 12150,
+      "exclusionSpecialNeedsDollarLimit_137b1": 12150,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 182180,
+          "end": 222180
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 12150,
+      "exclusionSpecialNeedsAmount_137a2": 12150,
+      "amounts_source": "rp-08-66, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2009; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2010": {
+      "source": "rp-10-35",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "36C",
+      "creditRefundability": "refundable",
+      "creditDollarLimit_23b1": 13170,
+      "creditSpecialNeedsDollarLimit_23b1": 13170,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 182520,
+          "end": 222520
+        }
+      },
+      "exclusionDollarLimit_137b1": 13170,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13170,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 182520,
+          "end": 222520
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13170,
+      "exclusionSpecialNeedsAmount_137a2": 13170,
+      "amounts_source": "rp-10-35, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2010; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start",
+      "codeSection_source": "rp-10-35 modifies Rev. Proc. 2009-50 sections 3.03 and 3.14 for Pub. L. 111-148 section 10909, which redesignated IRC 23 as IRC 36C, made the credit refundable and raised both maximums from $12,170 to $13,170 for taxable years beginning in 2010; rp-09-50 is committed to show the superseded figure"
+    },
+    "2011": {
+      "source": "rp-10-40",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "36C",
+      "creditRefundability": "refundable",
+      "creditDollarLimit_23b1": 13360,
+      "creditSpecialNeedsDollarLimit_23b1": 13360,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 185210,
+          "end": 225210
+        }
+      },
+      "exclusionDollarLimit_137b1": 13360,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13360,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 185210,
+          "end": 225210
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13360,
+      "exclusionSpecialNeedsAmount_137a2": 13360,
+      "amounts_source": "rp-10-40, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2011; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start",
+      "codeSection_source": "rp-10-40 section 2.02 (IRC 36C refundable credit); pl-111-312 section 101(b) applies the section 10909 sunset to taxable years beginning after December 31, 2011"
+    },
+    "2012": {
+      "source": "rp-11-52",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 12650,
+      "creditSpecialNeedsDollarLimit_23b1": 12650,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 189710,
+          "end": 229710
+        }
+      },
+      "exclusionDollarLimit_137b1": 12650,
+      "exclusionSpecialNeedsDollarLimit_137b1": 12650,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 189710,
+          "end": 229710
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 12650,
+      "exclusionSpecialNeedsAmount_137a2": 12650,
+      "amounts_source": "rp-11-52, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2012; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start",
+      "codeSection_source": "pl-111-312 section 101(b): the Pub. L. 111-148 section 10909 amendments do not apply to taxable years beginning after December 31, 2011, so the credit returns to a nonrefundable IRC 23"
+    },
+    "2013": {
+      "source": "rp-13-15",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 12970,
+      "creditSpecialNeedsDollarLimit_23b1": 12970,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 194580,
+          "end": 234580
+        }
+      },
+      "exclusionDollarLimit_137b1": 12970,
+      "exclusionSpecialNeedsDollarLimit_137b1": 12970,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 194580,
+          "end": 234580
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 12970,
+      "exclusionSpecialNeedsAmount_137a2": 12970,
+      "amounts_source": "rp-13-15, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2013; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2014": {
+      "source": "rp-13-35",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 13190,
+      "creditSpecialNeedsDollarLimit_23b1": 13190,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 197880,
+          "end": 237880
+        }
+      },
+      "exclusionDollarLimit_137b1": 13190,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13190,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 197880,
+          "end": 237880
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13190,
+      "exclusionSpecialNeedsAmount_137a2": 13190,
+      "amounts_source": "rp-13-35, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2014; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2015": {
+      "source": "rp-14-61",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 13400,
+      "creditSpecialNeedsDollarLimit_23b1": 13400,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 201010,
+          "end": 241010
+        }
+      },
+      "exclusionDollarLimit_137b1": 13400,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13400,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 201010,
+          "end": 241010
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13400,
+      "exclusionSpecialNeedsAmount_137a2": 13400,
+      "amounts_source": "rp-14-61, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2015; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2016": {
+      "source": "rp-15-53",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 13460,
+      "creditSpecialNeedsDollarLimit_23b1": 13460,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 201920,
+          "end": 241920
+        }
+      },
+      "exclusionDollarLimit_137b1": 13460,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13460,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 201920,
+          "end": 241920
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13460,
+      "exclusionSpecialNeedsAmount_137a2": 13460,
+      "amounts_source": "rp-15-53, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2016; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2017": {
+      "source": "rp-16-55",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 13570,
+      "creditSpecialNeedsDollarLimit_23b1": 13570,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 203540,
+          "end": 243540
+        }
+      },
+      "exclusionDollarLimit_137b1": 13570,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13570,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 203540,
+          "end": 243540
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13570,
+      "exclusionSpecialNeedsAmount_137a2": 13570,
+      "amounts_source": "rp-16-55, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2017; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2018": {
+      "source": "rp-17-58",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 13840,
+      "creditSpecialNeedsDollarLimit_23b1": 13840,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 207580,
+          "end": 247580
+        }
+      },
+      "exclusionDollarLimit_137b1": 13840,
+      "exclusionSpecialNeedsDollarLimit_137b1": 13840,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 207580,
+          "end": 247580
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 13840,
+      "exclusionSpecialNeedsAmount_137a2": 13840,
+      "amounts_source": "rp-17-58, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2018; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2019": {
+      "source": "rp-18-57",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 14080,
+      "creditSpecialNeedsDollarLimit_23b1": 14080,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 211160,
+          "end": 251160
+        }
+      },
+      "exclusionDollarLimit_137b1": 14080,
+      "exclusionSpecialNeedsDollarLimit_137b1": 14080,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 211160,
+          "end": 251160
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 14080,
+      "exclusionSpecialNeedsAmount_137a2": 14080,
+      "amounts_source": "rp-18-57, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2019; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2020": {
+      "source": "rp-19-44",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 14300,
+      "creditSpecialNeedsDollarLimit_23b1": 14300,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 214520,
+          "end": 254520
+        }
+      },
+      "exclusionDollarLimit_137b1": 14300,
+      "exclusionSpecialNeedsDollarLimit_137b1": 14300,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 214520,
+          "end": 254520
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 14300,
+      "exclusionSpecialNeedsAmount_137a2": 14300,
+      "amounts_source": "rp-19-44, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2020; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2021": {
+      "source": "rp-20-45",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 14440,
+      "creditSpecialNeedsDollarLimit_23b1": 14440,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 216660,
+          "end": 256660
+        }
+      },
+      "exclusionDollarLimit_137b1": 14440,
+      "exclusionSpecialNeedsDollarLimit_137b1": 14440,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 216660,
+          "end": 256660
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 14440,
+      "exclusionSpecialNeedsAmount_137a2": 14440,
+      "amounts_source": "rp-20-45, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2021; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2022": {
+      "source": "rp-21-45",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 14890,
+      "creditSpecialNeedsDollarLimit_23b1": 14890,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 223410,
+          "end": 263410
+        }
+      },
+      "exclusionDollarLimit_137b1": 14890,
+      "exclusionSpecialNeedsDollarLimit_137b1": 14890,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 223410,
+          "end": 263410
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 14890,
+      "exclusionSpecialNeedsAmount_137a2": 14890,
+      "amounts_source": "rp-21-45, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2022; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2023": {
+      "source": "rp-22-38",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 15950,
+      "creditSpecialNeedsDollarLimit_23b1": 15950,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 239230,
+          "end": 279230
+        }
+      },
+      "exclusionDollarLimit_137b1": 15950,
+      "exclusionSpecialNeedsDollarLimit_137b1": 15950,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 239230,
+          "end": 279230
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 15950,
+      "exclusionSpecialNeedsAmount_137a2": 15950,
+      "amounts_source": "rp-22-38, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2023; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2024": {
+      "source": "rp-23-34",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "nonrefundable",
+      "creditDollarLimit_23b1": 16810,
+      "creditSpecialNeedsDollarLimit_23b1": 16810,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 252150,
+          "end": 292150
+        }
+      },
+      "exclusionDollarLimit_137b1": 16810,
+      "exclusionSpecialNeedsDollarLimit_137b1": 16810,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 252150,
+          "end": 292150
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 16810,
+      "exclusionSpecialNeedsAmount_137a2": 16810,
+      "amounts_source": "rp-23-34, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2024; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start"
+    },
+    "2025": {
+      "source": "rp-24-40",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "partially_refundable",
+      "creditDollarLimit_23b1": 17280,
+      "creditSpecialNeedsDollarLimit_23b1": 17280,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 259190,
+          "end": 299190
+        }
+      },
+      "exclusionDollarLimit_137b1": 17280,
+      "exclusionSpecialNeedsDollarLimit_137b1": 17280,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 259190,
+          "end": 299190
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 17280,
+      "exclusionSpecialNeedsAmount_137a2": 17280,
+      "creditRefundablePortion_23a4": 5000,
+      "amounts_source": "rp-24-40, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2025; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start",
+      "refundablePortion_source": "pl-119-21 section 70402(a) adds IRC 23(a)(4): so much of the credit as does not exceed $5,000 is refundable, for taxable years beginning after December 31, 2024 (section 70402(d))"
+    },
+    "2026": {
+      "source": "rp-25-32",
+      "adoptionCreditState": "statutory_dollar_limit",
+      "adoptionAssistanceState": "statutory_dollar_limit",
+      "creditCodeSection": "23",
+      "creditRefundability": "partially_refundable",
+      "creditDollarLimit_23b1": 17670,
+      "creditSpecialNeedsDollarLimit_23b1": 17670,
+      "creditPhaseout_23b2A": {
+        "phaseout": {
+          "start": 265080,
+          "end": 305080
+        }
+      },
+      "exclusionDollarLimit_137b1": 17670,
+      "exclusionSpecialNeedsDollarLimit_137b1": 17670,
+      "exclusionPhaseout_137b2A": {
+        "phaseout": {
+          "start": 265080,
+          "end": 305080
+        }
+      },
+      "creditSpecialNeedsAmount_23a3": 17670,
+      "exclusionSpecialNeedsAmount_137a2": 17670,
+      "creditRefundablePortion_23a4": 5120,
+      "amounts_source": "rp-25-32, Adoption Credit and Adoption Assistance Programs sections for taxable years beginning in 2026; the end of each phase-out is the published \"completely phased out\" amount, $40,000 above the start",
+      "refundablePortion_source": "rp-25-32 section 4.04(3): \"the amount used in § 23(a)(4) to determine the amount of the credit under § 23 that may be refundable is $5,120\""
+    }
+  }
+}

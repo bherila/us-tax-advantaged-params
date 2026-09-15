@@ -126,3 +126,9 @@ await update(tsPath, "/* <generated-able-parameters> */", "/* </generated-able-p
   `const RAW_ABLE_PARAMETERS: AbleParameterData = ${JSON.stringify(ableParameters, null, 2)} as AbleParameterData;`);
 await update(phpPath, "/* <generated-able-parameters> */", "/* </generated-able-parameters> */",
   `private const ABLE_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(ableParameters)}\nJSON;`);
+
+const adoptionParameters = await readCanonical("data/adoption-parameters.json");
+await update(tsPath, "/* <generated-adoption-parameters> */", "/* </generated-adoption-parameters> */",
+  `const RAW_ADOPTION_PARAMETERS: AdoptionParameterData = ${JSON.stringify(adoptionParameters, null, 2)} as AdoptionParameterData;`);
+await update(phpPath, "/* <generated-adoption-parameters> */", "/* </generated-adoption-parameters> */",
+  `private const ADOPTION_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(adoptionParameters)}\nJSON;`);

@@ -9,6 +9,7 @@ const hsaPath = join(root, "data", "hsa-parameters.json");
 const fsaPath = join(root, "data", "fsa-parameters.json");
 const educationPath = join(root, "data", "education-parameters.json");
 const ablePath = join(root, "data", "able-parameters.json");
+const adoptionPath = join(root, "data", "adoption-parameters.json");
 const vectorPath = join(root, "data", "conformance-vectors.json");
 const errors = [];
 
@@ -103,6 +104,7 @@ const hsa = await parseCanonicalJson(hsaPath, "data/hsa-parameters.json");
 const fsa = await parseCanonicalJson(fsaPath, "data/fsa-parameters.json");
 const education = await parseCanonicalJson(educationPath, "data/education-parameters.json");
 const able = await parseCanonicalJson(ablePath, "data/able-parameters.json");
+const adoption = await parseCanonicalJson(adoptionPath, "data/adoption-parameters.json");
 const payroll = await parseCanonicalJson(join(root, "data/payroll-tax-parameters.json"), "data/payroll-tax-parameters.json");
 const conformance = await parseCanonicalJson(vectorPath, "data/conformance-vectors.json");
 
@@ -559,6 +561,77 @@ if (able) {
   }
 }
 
+if (adoption) {
+  walk(adoption, "adoption");
+  const years = validateYearSpan(adoption, "data/adoption-parameters.json");
+  const band = (value) => Array.isArray(value) && value.length === 2 && value.every((amount) => Number.isInteger(amount) && amount > 0);
+  for (const year of years ?? []) {
+    const label = `Adoption year ${year}`;
+    const row = adoption.years?.[String(year)];
+    if (!row || row.year !== year) {
+      fail(`${label} row is missing or has a mismatched year field.`);
+      continue;
+    }
+    const credit = row.adoptionCredit;
+    const exclusion = row.adoptionAssistanceExclusion;
+    for (const [name, program, flat] of [["adoptionCredit", credit, "specialNeedsCreditAmount"], ["adoptionAssistanceExclusion", exclusion, "specialNeedsExclusionAmount"]]) {
+      if (program?.state !== "statutory_dollar_limit") fail(`${label} ${name}.state must be statutory_dollar_limit.`);
+      requirePositiveAmount(program?.dollarLimit, `${label} ${name}.dollarLimit`);
+      requirePositiveAmount(program?.specialNeedsDollarLimit, `${label} ${name}.specialNeedsDollarLimit`);
+      // The IRC 23(b)(2)(A)(ii) and 137(b)(2)(B) width of $40,000 has never
+      // been indexed; only the starting amount is.
+      if (!band(program?.phaseout) || program.phaseout[1] - program.phaseout[0] !== 40000) {
+        fail(`${label} ${name}.phaseout must be [start, start + 40000] in whole dollars.`);
+      }
+      // Pub. L. 104-188 section 1807 gave a special-needs child a $6,000 limit;
+      // Pub. L. 107-16 section 202(b) removed it for 2002, and section 202(a)'s
+      // flat amount applies only to taxable years beginning after 2002.
+      if (program && program.specialNeedsDollarLimit !== (year <= 2001 ? 6000 : program.dollarLimit)) {
+        fail(`${label} ${name}.specialNeedsDollarLimit must be ${year <= 2001 ? "6000" : "the general dollar limit"}.`);
+      }
+      if (program && (year < 2003 ? program[flat] !== null : program[flat] !== program.dollarLimit)) {
+        fail(`${label} ${name}.${flat} must be ${year < 2003 ? "null before 2003" : "the dollar limit from 2003"}.`);
+      }
+    }
+    // The two provisions are indexed in parallel and every procedure prints the same amounts.
+    if (credit && exclusion && (credit.dollarLimit !== exclusion.dollarLimit || String(credit.phaseout) !== String(exclusion.phaseout))) {
+      fail(`${label} adoptionCredit and adoptionAssistanceExclusion amounts disagree.`);
+    }
+    // Pub. L. 111-148 section 10909 (IRC 36C, refundable) for 2010 and 2011, sunset by
+    // Pub. L. 111-312 section 101(b); Pub. L. 119-21 section 70402 (IRC 23(a)(4)) from 2025.
+    const acaYear = year === 2010 || year === 2011;
+    const expectedRefundability = acaYear ? "refundable" : year >= 2025 ? "partially_refundable" : "nonrefundable";
+    if (credit && credit.codeSection !== (acaYear ? "36C" : "23")) {
+      fail(`${label} adoptionCredit.codeSection must be ${acaYear ? "36C" : "23"}.`);
+    }
+    if (credit && credit.refundability !== expectedRefundability) {
+      fail(`${label} adoptionCredit.refundability must be ${expectedRefundability}.`);
+    }
+    if (credit && (expectedRefundability === "partially_refundable") !== (credit.refundablePortionLimit !== null)) {
+      fail(`${label} adoptionCredit.refundablePortionLimit must be set exactly when the credit is partially refundable.`);
+    }
+    if (credit && credit.refundablePortionLimit !== null) {
+      requirePositiveAmount(credit.refundablePortionLimit, `${label} adoptionCredit.refundablePortionLimit`);
+    }
+  }
+
+  validateSources(adoption.sources, "data/adoption-parameters.json", ["usc-26-23", "usc-26-137", "pl-104-188", "pl-107-16", "pl-107-147", "pl-111-312", "pl-119-21", "irs-rev-proc-2010-35"]);
+
+  const credit = (year) => adoption.years?.[String(year)]?.adoptionCredit;
+  if (credit(1997)?.dollarLimit !== 5000 || String(credit(1997)?.phaseout) !== "75000,115000") {
+    fail("The 1997 adoption row must carry Pub. L. 104-188 section 1807's $5,000 limit and $75,000 phase-out start.");
+  }
+  if (credit(2002)?.dollarLimit !== 10000 || credit(2002)?.specialNeedsCreditAmount !== null) {
+    fail("The 2002 adoption row must carry Pub. L. 107-16 section 202(b)'s $10,000 and no flat special-needs amount.");
+  }
+  if (credit(2010)?.dollarLimit !== 13170) {
+    fail("The 2010 adoption credit must be Rev. Proc. 2010-35's $13,170, not the $12,170 Rev. Proc. 2009-50 published before Pub. L. 111-148.");
+  }
+  if (credit(2025)?.refundablePortionLimit !== 5000 || credit(2026)?.refundablePortionLimit !== 5120) {
+    fail("The IRC 23(a)(4) refundable portion must be $5,000 for 2025 and $5,120 for 2026.");
+  }
+}
+
 if (conformance) {
   walk(conformance, "conformance");
   if (!Number.isInteger(conformance.schemaVersion) || conformance.schemaVersion < 1) {
@@ -635,6 +708,7 @@ console.log(
     `${Object.keys(payroll.years).length} contiguous payroll tax years, ` +
     `${Object.keys(education.years).length} contiguous education tax years, ` +
     `${Object.keys(able.years).length} contiguous ABLE tax years, ` +
-    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length} sources, ` +
+    `${Object.keys(adoption.years).length} contiguous adoption tax years, ` +
+    `${parameters.sources.length + hsa.sources.length + fsa.sources.length + payroll.sources.length + education.sources.length + able.sources.length + adoption.sources.length} sources, ` +
     `${conformance.vectors.length} conformance vectors.`,
 );
