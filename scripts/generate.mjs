@@ -132,3 +132,9 @@ await update(tsPath, "/* <generated-adoption-parameters> */", "/* </generated-ad
   `const RAW_ADOPTION_PARAMETERS: AdoptionParameterData = ${JSON.stringify(adoptionParameters, null, 2)} as AdoptionParameterData;`);
 await update(phpPath, "/* <generated-adoption-parameters> */", "/* </generated-adoption-parameters> */",
   `private const ADOPTION_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(adoptionParameters)}\nJSON;`);
+
+const hraParameters = await readCanonical("data/hra-parameters.json");
+await update(tsPath, "/* <generated-hra-parameters> */", "/* </generated-hra-parameters> */",
+  `const RAW_HRA_PARAMETERS: HraParameterData = ${JSON.stringify(hraParameters, null, 2)} as HraParameterData;`);
+await update(phpPath, "/* <generated-hra-parameters> */", "/* </generated-hra-parameters> */",
+  `private const HRA_PARAMETER_JSON = <<<'JSON'\n${phpEmbed(hraParameters)}\nJSON;`);

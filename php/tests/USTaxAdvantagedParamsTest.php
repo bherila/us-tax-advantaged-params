@@ -865,6 +865,37 @@ test('exposes the IRC 23 and IRC 137 adoption table through each statutory chang
     assertTrue(in_array('irs-rev-proc-2010-35', $ids, true), 'Rev. Proc. 2010-35 must be listed as an adoption source');
 });
 
+test('exposes the QSEHRA, excepted benefit HRA and individual coverage HRA table', function (): void {
+    // Pub. L. 114-255 section 18001: IRC 9831(d) for years beginning after December 31, 2016.
+    assertSameValue(['minimum' => 2017, 'maximum' => 2026], U::supportedHraTaxYears());
+    assertSameValue(null, U::hraParametersForYear(2016));
+    // Notice 2017-67 footnote 5: indexing raised the $10,000 family limit to $10,050
+    // for 2017 and left $4,950 unchanged. T.D. 9867's rules start with 2020 plan years.
+    assertSameValue([
+        'year' => 2017,
+        'qualifiedSmallEmployerHra' => ['state' => 'statutory_dollar_limit', 'yearBasis' => 'calendar_year', 'selfOnlyLimit' => 4950, 'familyLimit' => 10050],
+        'exceptedBenefitHra' => ['state' => 'unavailable', 'yearBasis' => 'plan_year', 'annualLimit' => null],
+        'individualCoverageHra' => ['state' => 'unavailable', 'yearBasis' => 'plan_year', 'annualLimit' => null],
+    ], U::hraParametersForYear(2017));
+    // T.D. 9867: 26 CFR 54.9831-1(c)(3)(viii)(B)(1) "$1,800", and 26 CFR 54.9802-4 with
+    // no dollar limit, for plan years beginning on or after January 1, 2020.
+    assertSameValue(1800, U::hraParametersForYear(2020)['exceptedBenefitHra']['annualLimit']);
+    assertSameValue(
+        ['state' => 'available_without_statutory_dollar_limit', 'yearBasis' => 'plan_year', 'annualLimit' => null],
+        U::hraParametersForYear(2020)['individualCoverageHra'],
+    );
+    // Rev. Proc. 2020-43: the indexed amount "remains $1,800" for 2021 plan years.
+    assertSameValue(1800, U::hraParametersForYear(2021)['exceptedBenefitHra']['annualLimit']);
+    // Rev. Proc. 2025-32: $6,450 ($13,100 for family coverage); Rev. Proc. 2025-19 section 2.02: $2,200.
+    assertSameValue(
+        ['state' => 'statutory_dollar_limit', 'yearBasis' => 'calendar_year', 'selfOnlyLimit' => 6450, 'familyLimit' => 13100],
+        U::hraParametersForYear(2026)['qualifiedSmallEmployerHra'],
+    );
+    assertSameValue(2200, U::hraParametersForYear(2026)['exceptedBenefitHra']['annualLimit']);
+    $ids = array_column(U::hraSourceMetadata(), 'id');
+    assertTrue(in_array('td-9867', $ids, true), 'T.D. 9867 must be listed as an HRA source');
+});
+
 test('rejects a bare FSA account type but accepts each unambiguous spelling', function (): void {
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('health fsa'));
     assertSameValue(AccountType::HEALTH_FSA->value, U::normalizeAccountType('Medical-FSA'));

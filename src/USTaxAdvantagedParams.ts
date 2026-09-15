@@ -1631,6 +1631,56 @@ interface AdoptionParameterData {
   dollarLimitStates: Record<string, string>;
 }
 
+/** An HRA rule's state for a year: it may not yet exist, exist without a limit, or carry one. */
+export type HraProgramState = DollarLimitState | "unavailable";
+
+/**
+ * IRC 9831(d)(2)(B)(iii) qualified small employer HRA limits for a calendar year,
+ * as indexed under IRC 9831(d)(2)(D)(ii).
+ */
+export interface QualifiedSmallEmployerHraYearParameters {
+  state: HraProgramState;
+  yearBasis: "calendar_year";
+  selfOnlyLimit: Money;
+  /** $10,050 for 2017, not the statutory $10,000: indexing already applied (Notice 2017-67). */
+  familyLimit: Money;
+}
+
+/** 26 CFR 54.9831-1(c)(3)(viii) excepted benefit HRA limit for plan years beginning in the year. */
+export interface ExceptedBenefitHraYearParameters {
+  state: HraProgramState;
+  yearBasis: "plan_year";
+  /** Maximum amount newly made available for the plan year. Null before plan years beginning in 2020. */
+  annualLimit: Money | null;
+}
+
+/** 26 CFR 54.9802-4 individual coverage HRA for plan years beginning in the year. */
+export interface IndividualCoverageHraYearParameters {
+  state: HraProgramState;
+  yearBasis: "plan_year";
+  /** Always null: the rule states no dollar limit. */
+  annualLimit: null;
+}
+
+export interface HraYearParameters {
+  year: number;
+  qualifiedSmallEmployerHra: QualifiedSmallEmployerHraYearParameters;
+  exceptedBenefitHra: ExceptedBenefitHraYearParameters;
+  individualCoverageHra: IndividualCoverageHraYearParameters;
+}
+
+interface HraParameterData {
+  schemaVersion: number;
+  package: string;
+  generatedThroughTaxYear: number;
+  supportedTaxYears: { minimum: number; maximum: number };
+  moneyUnit: "USD";
+  historicalCoveragePolicy: Record<string, string>;
+  sources: Array<Record<string, string>>;
+  years: Record<string, HraYearParameters>;
+  dollarLimitStates: Record<HraProgramState, string>;
+}
+
 /* <generated-payroll-parameters> */
 const RAW_PAYROLL_PARAMETERS: PayrollParameterData = {
   "schemaVersion": 1,
@@ -12899,6 +12949,333 @@ const RAW_ADOPTION_PARAMETERS: AdoptionParameterData = {
 } as AdoptionParameterData;
 /* </generated-adoption-parameters> */
 
+/* <generated-hra-parameters> */
+const RAW_HRA_PARAMETERS: HraParameterData = {
+  "schemaVersion": 1,
+  "package": "us-tax-advantaged-params",
+  "generatedThroughTaxYear": 2026,
+  "supportedTaxYears": {
+    "minimum": 2017,
+    "maximum": 2026
+  },
+  "moneyUnit": "USD",
+  "historicalCoveragePolicy": {
+    "description": "The table starts at 2017 because Pub. L. 114-255 section 18001 added the IRC 9831(d) qualified small employer HRA for years beginning after December 31, 2016. A year below the minimum is unavailable by absence; the two plan-year arrangements that began later are stated as unavailable on their rows. No future year is extrapolated.",
+    "yearBasis": "QSEHRA limits apply to a calendar year (the revenue procedures state them for taxable years beginning in the year). Excepted benefit HRA and individual coverage HRA rules apply to plan years beginning in the year. yearBasis records which on every row, because a non-calendar plan year crosses two of this table's years.",
+    "qsehra2017": "The 2017 family limit is $10,050, not the statutory $10,000 that Rev. Proc. 2017-58 recites: IRC 9831(d)(2)(D)(ii) indexes both amounts for years beginning after 2016, and Notice 2017-67 states that the adjustment raised the family amount to $10,050 for 2017 while leaving $4,950 unchanged.",
+    "exceptedBenefitHra": "T.D. 9867 added 26 CFR 54.9831-1(c)(3)(viii) for plan years beginning on or after January 1, 2020, capping amounts newly made available at $1,800 and indexing that for plan years beginning after 2020 by the C-CPI-U, rounded down to $50. The indexed amount stayed $1,800 for 2021 (Rev. Proc. 2020-43) and 2022 (Rev. Proc. 2021-25).",
+    "individualCoverageHraHasNoDollarLimit": "26 CFR 54.9802-4, added by T.D. 9867 for plan years beginning on or after January 1, 2020, integrates an HRA with individual health insurance coverage without any dollar limit; every dollar figure in the section is inside an example. annualLimit is null for that reason, not because a figure is missing."
+  },
+  "sources": [
+    {
+      "id": "usc-26-9831",
+      "title": "26 U.S.C. 9831, general exceptions (2024 edition), subsection (d) qualified small employer health reimbursement arrangements",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/pdf/USCODE-2024-title26-subtitleK-chap100-subchapC-sec9831.pdf",
+      "authority": "U.S. House Office of the Law Revision Counsel"
+    },
+    {
+      "id": "irs-notice-2017-67",
+      "title": "IRS Notice 2017-67, qualified small employer health reimbursement arrangements",
+      "url": "https://www.irs.gov/pub/irs-drop/n-17-67.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "td-9867",
+      "title": "T.D. 9867, Health Reimbursement Arrangements and Other Account-Based Group Health Plans (Federal Register, June 20, 2019)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2019-06-20/pdf/2019-12571.pdf",
+      "authority": "Department of the Treasury"
+    },
+    {
+      "id": "irs-rev-proc-2017-58",
+      "title": "Rev. Proc. 2017-58",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-17-58.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2018-57",
+      "title": "Rev. Proc. 2018-57",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-18-57.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2019-44",
+      "title": "Rev. Proc. 2019-44",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-19-44.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-45",
+      "title": "Rev. Proc. 2020-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-45",
+      "title": "Rev. Proc. 2021-45",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-38",
+      "title": "Rev. Proc. 2022-38",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-38.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-34",
+      "title": "Rev. Proc. 2023-34",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-34.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-40",
+      "title": "Rev. Proc. 2024-40",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-32",
+      "title": "Rev. Proc. 2025-32",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2020-43",
+      "title": "Rev. Proc. 2020-43",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-20-43.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2021-25",
+      "title": "Rev. Proc. 2021-25",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-21-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2022-24",
+      "title": "Rev. Proc. 2022-24",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-22-24.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2023-23",
+      "title": "Rev. Proc. 2023-23",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-23-23.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2024-25",
+      "title": "Rev. Proc. 2024-25",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-24-25.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2025-19",
+      "title": "Rev. Proc. 2025-19",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-25-19.pdf",
+      "authority": "IRS"
+    }
+  ],
+  "years": {
+    "2017": {
+      "year": 2017,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 4950,
+        "familyLimit": 10050
+      },
+      "exceptedBenefitHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      },
+      "individualCoverageHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2018": {
+      "year": 2018,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5050,
+        "familyLimit": 10250
+      },
+      "exceptedBenefitHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      },
+      "individualCoverageHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2019": {
+      "year": 2019,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5150,
+        "familyLimit": 10450
+      },
+      "exceptedBenefitHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      },
+      "individualCoverageHra": {
+        "state": "unavailable",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2020": {
+      "year": 2020,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5250,
+        "familyLimit": 10600
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 1800
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2021": {
+      "year": 2021,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5300,
+        "familyLimit": 10700
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 1800
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2022": {
+      "year": 2022,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5450,
+        "familyLimit": 11050
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 1800
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2023": {
+      "year": 2023,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 5850,
+        "familyLimit": 11800
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 1950
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2024": {
+      "year": 2024,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 6150,
+        "familyLimit": 12450
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 2100
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2025": {
+      "year": 2025,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 6350,
+        "familyLimit": 12800
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 2150
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    },
+    "2026": {
+      "year": 2026,
+      "qualifiedSmallEmployerHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "calendar_year",
+        "selfOnlyLimit": 6450,
+        "familyLimit": 13100
+      },
+      "exceptedBenefitHra": {
+        "state": "statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": 2200
+      },
+      "individualCoverageHra": {
+        "state": "available_without_statutory_dollar_limit",
+        "yearBasis": "plan_year",
+        "annualLimit": null
+      }
+    }
+  },
+  "dollarLimitStates": {
+    "unavailable": "The arrangement did not exist for the year. The plan-year arrangements in this table began in 2020, after the table's first year, so their earlier rows state it explicitly.",
+    "available_without_statutory_dollar_limit": "The arrangement existed but no federal dollar limit applied. The amount is null.",
+    "statutory_dollar_limit": "A published dollar limit applies and is encoded."
+  }
+} as HraParameterData;
+/* </generated-hra-parameters> */
+
 export class ParameterError extends Error {
   public readonly code: string;
 
@@ -17036,6 +17413,11 @@ function ableParametersForYear(year: number): AbleYearParameters | null {
 
 function adoptionParametersForYear(year: number): AdoptionYearParameters | null {
   const row = RAW_ADOPTION_PARAMETERS.years[String(year)];
+  return row ? deepClone(row) : null;
+}
+
+function hraParametersForYear(year: number): HraYearParameters | null {
+  const row = RAW_HRA_PARAMETERS.years[String(year)];
   return row ? deepClone(row) : null;
 }
 
@@ -25310,6 +25692,22 @@ export class USTaxAdvantagedParams {
 
   public static adoptionSourceMetadata(): Array<Record<string, string>> {
     return deepClone(RAW_ADOPTION_PARAMETERS.sources);
+  }
+
+  /** QSEHRA, excepted benefit HRA and individual coverage HRA parameters, or null for a year outside the table. */
+  public static hraParametersForYear(taxYear: number): HraYearParameters | null {
+    if (!Number.isInteger(taxYear)) {
+      throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+    }
+    return hraParametersForYear(taxYear);
+  }
+
+  public static supportedHraTaxYears(): { minimum: number; maximum: number } {
+    return { ...RAW_HRA_PARAMETERS.supportedTaxYears };
+  }
+
+  public static hraSourceMetadata(): Array<Record<string, string>> {
+    return deepClone(RAW_HRA_PARAMETERS.sources);
   }
 
   /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */

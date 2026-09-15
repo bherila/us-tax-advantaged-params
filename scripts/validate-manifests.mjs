@@ -63,7 +63,7 @@ if (packageJson.exports?.["."]?.require?.types !== "./dist/types/USTaxAdvantaged
 if (packageJson.exports?.["./data/retirement-parameters.json"] !== "./data/retirement-parameters.json") {
   fail("data file export target is incorrect");
 }
-for (const dataFile of ["hsa-parameters.json", "fsa-parameters.json", "payroll-tax-parameters.json", "education-parameters.json", "able-parameters.json", "adoption-parameters.json"]) {
+for (const dataFile of ["hsa-parameters.json", "fsa-parameters.json", "payroll-tax-parameters.json", "education-parameters.json", "able-parameters.json", "adoption-parameters.json", "hra-parameters.json"]) {
   if (packageJson.exports?.[`./data/${dataFile}`] !== `./data/${dataFile}`) {
     fail(`data/${dataFile} export target is incorrect`);
   }
@@ -140,6 +140,7 @@ const requiredSourceFiles = [
   "data/education-parameters.json",
   "data/able-parameters.json",
   "data/adoption-parameters.json",
+  "data/hra-parameters.json",
   "data/conformance-vectors.json",
   "scripts/generate.mjs",
   "scripts/validate-data.mjs",
@@ -158,6 +159,9 @@ const requiredSourceFiles = [
   "evidence/adoption-limits/verifier-config.mjs",
   "evidence/adoption-limits/primary-values.json",
   "evidence/adoption-limits/SHA256SUMS.txt",
+  "evidence/hra-limits/verifier-config.mjs",
+  "evidence/hra-limits/primary-values.json",
+  "evidence/hra-limits/SHA256SUMS.txt",
   "scripts/check-parity.mjs",
   "scripts/php-parity-runner.php",
   "scripts/smoke-imports.mjs",
