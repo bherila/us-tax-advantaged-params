@@ -50,9 +50,9 @@ amount under §202(a), and indexing, only after 2002. No Revenue Procedure state
 
 ## Sources
 
-Thirty-one documents:
+Thirty-two documents:
 - Rev. Procs. 2002-70 through 2025-32: one for each year from 2003 to 2026, plus Rev. Proc. 2010-35 for 2010 and the superseded Rev. Proc. 2009-50;
-- Pub. L. 104-188, 107-16, 111-312 and 119-21;
+- Pub. L. 104-188, 107-16, 107-147, 111-312 and 119-21;
 - the 2024 edition of 26 U.S.C. §§23 and 137.
 
 Several are also committed in other corpora. They are repeated here so that this

@@ -29,10 +29,14 @@ For every year 1996–2026:
   beginning after December 31, 1997.
 - **§127 educational assistance programs:** the state and the §127(a)(2)
   exclusion limit.
-- **§529 qualified tuition programs:** the state, which is
-  `available_without_statutory_dollar_limit` in every year because §529(b)(6)
-  states no dollar limit, and each of the three §529 distribution caps from the
-  year it takes effect.
+- **§529 qualified tuition programs:** the state, and each of the three §529
+  distribution caps from the year it takes effect. The state is
+  `available_without_statutory_dollar_limit` from 1997 because §529(b)(6) states
+  no dollar limit. It is `indeterminate` for 1996 because Pub. L. 104-188
+  §1806(c)(1) reaches only taxable years ending after August 20, 1996. For the
+  §529(e)(3) cap the corpus also records which expenses §529(c)(7) describes:
+  tuition through 2024, a change for distributions after July 4, 2025
+  (Pub. L. 119-21 §70413(a)), and eight categories from 2026.
 
 Each year block records, per figure, the provision and the effective-date text
 it rests on.
