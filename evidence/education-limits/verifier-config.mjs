@@ -27,9 +27,14 @@ export default {
     ["educationalAssistanceExclusion_127a2", ["educationalAssistanceProgram", "annualExclusionLimit"], "IRC 127(a)(2)"],
     ["qualifiedTuitionProgramState", ["qualifiedTuitionProgram", "state"], "IRC 529(b)(6)"],
     [
-      "qtpElementarySecondaryTuition_529e3",
-      ["qualifiedTuitionProgram", "elementarySecondaryTuitionAnnualLimit"],
+      "qtpElementarySecondaryExpense_529e3",
+      ["qualifiedTuitionProgram", "elementarySecondaryExpenseAnnualLimit"],
       "IRC 529(e)(3)",
+    ],
+    [
+      "qtpElementarySecondaryExpenseScope_529c7",
+      ["qualifiedTuitionProgram", "elementarySecondaryExpenseScope"],
+      "IRC 529(c)(7); Pub. L. 119-21 sec. 70413(a)",
     ],
     [
       "qtpQualifiedEducationLoanLifetime_529c9B",

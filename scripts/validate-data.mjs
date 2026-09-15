@@ -412,10 +412,15 @@ if (education) {
   const years = validateYearSpan(education, "data/education-parameters.json");
   // The three programs start in different years, so unlike the FSA table the
   // unavailable state appears on rows and needs its own definition.
-  const STATES = ["unavailable", "available_without_statutory_dollar_limit", "statutory_dollar_limit"];
+  const STATES = ["unavailable", "indeterminate", "available_without_statutory_dollar_limit", "statutory_dollar_limit"];
   for (const state of STATES) {
     if (typeof education.dollarLimitStates?.[state] !== "string") {
       fail(`data/education-parameters.json dollarLimitStates.${state} must be described.`);
+    }
+  }
+  for (const scope of ["tuition", "varies_within_year", "tuition_and_other_school_expenses"]) {
+    if (typeof education.elementarySecondaryExpenseScopes?.[scope] !== "string") {
+      fail(`data/education-parameters.json elementarySecondaryExpenseScopes.${scope} must be described.`);
     }
   }
   for (const year of years ?? []) {
@@ -452,16 +457,32 @@ if (education) {
     } else if (assistance && assistance.annualExclusionLimit !== null) {
       fail(`${label} educationalAssistanceProgram carries an amount in a state without a statutory limit.`);
     }
-    // IRC 529(b)(6) states no federal contribution limit in any year.
-    if (qtp && (qtp.state !== "available_without_statutory_dollar_limit" || qtp.annualContributionLimit !== null)) {
-      fail(`${label} qualifiedTuitionProgram must be available without a statutory contribution limit; IRC 529(b)(6) states none.`);
+    // IRC 529(b)(6) states no federal contribution limit in any year. Pub. L.
+    // 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after
+    // August 20, 1996, which a 1996 lookup cannot place, so 1996 alone is
+    // indeterminate.
+    const qtpState = year === 1996 ? "indeterminate" : "available_without_statutory_dollar_limit";
+    if (qtp && (qtp.state !== qtpState || qtp.annualContributionLimit !== null)) {
+      fail(`${label} qualifiedTuitionProgram must be ${qtpState} with a null contribution limit; IRC 529(b)(6) states none and Pub. L. 104-188 section 1806(c)(1) sets the first year.`);
     }
-    for (const field of ["elementarySecondaryTuitionAnnualLimit", "qualifiedEducationLoanLifetimeLimit", "rothIraRolloverLifetimeLimit"]) {
+    for (const field of ["elementarySecondaryExpenseAnnualLimit", "qualifiedEducationLoanLifetimeLimit", "rothIraRolloverLifetimeLimit"]) {
       if (qtp && !(field in qtp)) {
         fail(`${label} qualifiedTuitionProgram.${field} is required; use null before it takes effect.`);
       } else if (qtp && !(qtp[field] === null || (Number.isInteger(qtp[field]) && qtp[field] > 0))) {
         fail(`${label} qualifiedTuitionProgram.${field} must be null or a positive whole-dollar amount.`);
       }
+    }
+    // The IRC 529(e)(3) cap counts expenses described in IRC 529(c)(7): tuition
+    // from Pub. L. 115-97 section 11032, widened by Pub. L. 119-21 section 70413(a)
+    // for distributions made after July 4, 2025.
+    const expectedScope = year < 2018 ? null
+      : year < 2025 ? "tuition"
+        : year === 2025 ? "varies_within_year" : "tuition_and_other_school_expenses";
+    if (qtp && qtp.elementarySecondaryExpenseScope !== expectedScope) {
+      fail(`${label} qualifiedTuitionProgram.elementarySecondaryExpenseScope must be ${JSON.stringify(expectedScope)} (IRC 529(c)(7); Pub. L. 115-97 section 11032; Pub. L. 119-21 section 70413(a)).`);
+    }
+    if (qtp && (qtp.elementarySecondaryExpenseScope === null) !== (qtp.elementarySecondaryExpenseAnnualLimit === null)) {
+      fail(`${label} qualifiedTuitionProgram states an elementary and secondary expense scope without a limit, or a limit without a scope.`);
     }
     // Pub. L. 119-21 section 70412(b) indexes IRC 127(a)(2) for taxable years
     // beginning after 2026, so a later row cannot copy the flat amount forward.
@@ -482,9 +503,9 @@ if (education) {
     || row(2002)?.coverdellEducationSavingsAccount?.annualContributionLimit !== 2000) {
     fail("IRC 530 must change from $500 to $2,000 in 2002 (Pub. L. 107-16 section 401(a)).");
   }
-  if (row(2017)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== null
-    || row(2018)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== 10000
-    || row(2026)?.qualifiedTuitionProgram?.elementarySecondaryTuitionAnnualLimit !== 20000) {
+  if (row(2017)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== null
+    || row(2018)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== 10000
+    || row(2026)?.qualifiedTuitionProgram?.elementarySecondaryExpenseAnnualLimit !== 20000) {
     fail("IRC 529(e)(3) must be null through 2017, $10,000 from 2018 and $20,000 from 2026.");
   }
 }

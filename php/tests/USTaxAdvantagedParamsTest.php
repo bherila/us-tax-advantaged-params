@@ -717,9 +717,13 @@ test('exposes the IRC 125 and IRC 129 parameter table without extrapolating it',
 
 test('exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes that set it', function (): void {
     // Pub. L. 104-188 section 1806(c)(1) applies IRC 529 to taxable years ending
-    // after August 20, 1996, the table's first year.
+    // after August 20, 1996. A 1996 taxable year can end on either side of that
+    // date and a year lookup cannot say which, so 1996 is indeterminate; every
+    // taxable year from 1997 ends after it.
     assertSameValue(['minimum' => 1996, 'maximum' => 2026], U::supportedEducationTaxYears());
     assertSameValue(null, U::educationParametersForYear(1995));
+    assertSameValue('indeterminate', U::educationParametersForYear(1996)['qualifiedTuitionProgram']['state']);
+    assertSameValue('available_without_statutory_dollar_limit', U::educationParametersForYear(1997)['qualifiedTuitionProgram']['state']);
     // Pub. L. 105-34 section 213: IRC 530 applies to taxable years beginning after
     // December 31, 1997, with a $500 limit reduced from $95,000 over $15,000, or from
     // $150,000 over $10,000 on a joint return.
@@ -741,19 +745,28 @@ test('exposes the IRC 530, IRC 127 and IRC 529 parameter table from the statutes
         ['state' => 'statutory_dollar_limit', 'annualExclusionLimit' => 5250],
         U::educationParametersForYear(2026)['educationalAssistanceProgram'],
     );
-    // IRC 529(b)(6) states no contribution limit. Pub. L. 119-21 section 70413(b)
-    // raises the IRC 529(e)(3) amount to $20,000 for taxable years beginning after
-    // 2025; the IRC 529(c)(9)(B) $10,000 and IRC 529(c)(3)(E)(ii)(II) $35,000 apply
-    // to distributions after 2018 and after 2023.
+    // IRC 529(b)(6) states no contribution limit. The IRC 529(e)(3) cap counts
+    // "expenses described in subsection (c)(7)". Pub. L. 115-97 section 11032 added
+    // both for distributions after 2017, with (c)(7) reaching tuition only. Pub. L.
+    // 119-21 section 70413(a) rewrote (c)(7) to eight categories, tuition among
+    // them, for distributions after July 4, 2025, and section 70413(b) raised the
+    // cap to $20,000 for taxable years beginning after 2025. The IRC 529(c)(9)(B)
+    // $10,000 and IRC 529(c)(3)(E)(ii)(II) $35,000 apply to distributions after
+    // 2018 and after 2023.
     assertSameValue([
         'state' => 'available_without_statutory_dollar_limit',
         'annualContributionLimit' => null,
-        'elementarySecondaryTuitionAnnualLimit' => 20000,
+        'elementarySecondaryExpenseAnnualLimit' => 20000,
+        'elementarySecondaryExpenseScope' => 'tuition_and_other_school_expenses',
         'qualifiedEducationLoanLifetimeLimit' => 10000,
         'rothIraRolloverLifetimeLimit' => 35000,
     ], U::educationParametersForYear(2026)['qualifiedTuitionProgram']);
-    assertSameValue(10000, U::educationParametersForYear(2025)['qualifiedTuitionProgram']['elementarySecondaryTuitionAnnualLimit']);
-    assertSameValue(null, U::educationParametersForYear(2017)['qualifiedTuitionProgram']['elementarySecondaryTuitionAnnualLimit']);
+    assertSameValue(10000, U::educationParametersForYear(2025)['qualifiedTuitionProgram']['elementarySecondaryExpenseAnnualLimit']);
+    assertSameValue('varies_within_year', U::educationParametersForYear(2025)['qualifiedTuitionProgram']['elementarySecondaryExpenseScope']);
+    assertSameValue('tuition', U::educationParametersForYear(2024)['qualifiedTuitionProgram']['elementarySecondaryExpenseScope']);
+    assertSameValue('tuition', U::educationParametersForYear(2018)['qualifiedTuitionProgram']['elementarySecondaryExpenseScope']);
+    assertSameValue(null, U::educationParametersForYear(2017)['qualifiedTuitionProgram']['elementarySecondaryExpenseAnnualLimit']);
+    assertSameValue(null, U::educationParametersForYear(2017)['qualifiedTuitionProgram']['elementarySecondaryExpenseScope']);
     assertSameValue(null, U::educationParametersForYear(2018)['qualifiedTuitionProgram']['qualifiedEducationLoanLifetimeLimit']);
     assertSameValue(null, U::educationParametersForYear(2023)['qualifiedTuitionProgram']['rothIraRolloverLifetimeLimit']);
     $ids = array_column(U::educationSourceMetadata(), 'id');
