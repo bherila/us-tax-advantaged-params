@@ -17,8 +17,8 @@
       "educationalAssistanceExclusion_127a2": 5250,
       "educationalAssistanceState": "statutory_dollar_limit",
       "educationalAssistance_source": "pl-104-188 section 1202(a) extends IRC 127 through May 31, 1997, for taxable years beginning after December 31, 1994 (section 1202(c)(1)); the $5,250 is IRC 127(a)(2), usc-26-127",
-      "qualifiedTuitionProgramState": "available_without_statutory_dollar_limit",
-      "qualifiedTuitionProgram_source": "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+      "qualifiedTuitionProgramState": "indeterminate",
+      "qualifiedTuitionProgram_source": "pl-104-188 section 1806(c)(1): \"The amendments made by this section shall apply to taxable years ending after the date of the enactment of this Act\" (August 20, 1996). A 1996 taxable year may end on or before that date, so whether IRC 529 applies depends on when the taxable year ends. IRC 529(b)(6) states no dollar limit; see usc-26-529.",
       "coverdellState": "unavailable",
       "coverdell_source": "pl-105-34 section 213(f) applies IRC 530 to taxable years beginning after December 31, 1997"
     },
@@ -472,8 +472,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)"
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\""
     },
     "2019": {
       "source": "usc-26-127",
@@ -495,8 +497,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
     },
@@ -520,8 +524,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
     },
@@ -545,8 +551,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
     },
@@ -570,8 +578,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
     },
@@ -595,8 +605,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note"
     },
@@ -620,8 +632,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition",
+      "qtpElementarySecondaryExpenseScope_source": "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
       "qtpRothIraRolloverLifetime_529c3EiiII": 35000,
@@ -647,8 +661,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 10000,
-      "qtpElementarySecondaryTuition_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpense_529e3": 10000,
+      "qtpElementarySecondaryExpense_source": "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+      "qtpElementarySecondaryExpenseScope_529c7": "varies_within_year",
+      "qtpElementarySecondaryExpenseScope_source": "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition through (H) educational therapies, and section 70413(a)(2) applies it \"to distributions made after the date of the enactment of this Act\" (July 4, 2025); before that date usc-26-529's tuition-only text applies",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
       "qtpRothIraRolloverLifetime_529c3EiiII": 35000,
@@ -674,8 +690,10 @@
         }
       },
       "coverdell_source": "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
-      "qtpElementarySecondaryTuition_529e3": 20000,
-      "qtpElementarySecondaryTuition_source": "pl-119-21 section 70413(b) substitutes $20,000 for $10,000 in the last sentence of IRC 529(e)(3), for taxable years beginning after December 31, 2025",
+      "qtpElementarySecondaryExpense_529e3": 20000,
+      "qtpElementarySecondaryExpense_source": "pl-119-21 section 70413(b) substitutes $20,000 for $10,000 in the last sentence of IRC 529(e)(3), for taxable years beginning after December 31, 2025",
+      "qtpElementarySecondaryExpenseScope_529c7": "tuition_and_other_school_expenses",
+      "qtpElementarySecondaryExpenseScope_source": "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition, (B) curriculum and curricular materials, (C) books or other instructional materials, (D) online educational materials, (E) qualifying tutoring or classes outside the home, (F) examination fees, (G) dual enrollment fees and (H) educational therapies for students with disabilities; IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
       "qtpQualifiedEducationLoanLifetime_529c9B": 10000,
       "qtpQualifiedEducationLoanLifetime_source": "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
       "qtpRothIraRolloverLifetime_529c3EiiII": 35000,

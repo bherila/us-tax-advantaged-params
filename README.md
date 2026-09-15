@@ -55,9 +55,11 @@ USTaxAdvantagedParams.fsaParametersForYear(2012)?.healthFsa;
 // { state: "available_without_statutory_dollar_limit", salaryReductionLimit: null, carryoverLimit: null }
 ```
 
-Education parameters have their own range, **1996 through 2026**. It starts at 1996, the
-first taxable year §529 applies to. §530 Coverdell accounts are `unavailable` for 1996 and
-1997, and §127 educational assistance and §529 qualified tuition programs apply throughout.
+Education parameters have their own range, **1996 through 2026**. It starts at 1996 because
+§529 applies to taxable years ending after August 20, 1996. A year lookup cannot say whether a
+1996 taxable year ended after that date, so §529 is `indeterminate` for 1996 and applies from
+1997. §530 Coverdell accounts are `unavailable` for 1996 and 1997, and §127 educational
+assistance applies throughout.
 These figures are reported, not applied; see
 [Education savings and educational assistance parameters](#education-savings-and-educational-assistance-parameters).
 
@@ -1687,9 +1689,20 @@ See [DESIGN.md](DESIGN.md), [SOURCES.md](SOURCES.md), and [CONTRIBUTING.md](CONT
 |---|---|---|
 | §530 Coverdell education savings account | `coverdellEducationSavingsAccount` | `unavailable` for 1996–1997. The §530(b)(1)(A)(iii) limit is $500 for 1998–2001 and $2,000 from 2002. The §530(c)(1) phase-out runs from $95,000 to $110,000, and on a joint return from $150,000 to $160,000 before 2002 and from $190,000 to $220,000 after. |
 | §127 educational assistance program | `educationalAssistanceProgram` | $5,250 per calendar year under §127(a)(2). |
-| §529 qualified tuition program | `qualifiedTuitionProgram` | No federal contribution limit. Three distribution caps: the §529(e)(3) elementary and secondary tuition limit ($10,000 for 2018–2025, $20,000 from 2026), the §529(c)(9)(B) lifetime loan-repayment limit ($10,000 from 2019), and the §529(c)(3)(E) lifetime Roth IRA rollover limit ($35,000 from 2024). |
+| §529 qualified tuition program | `qualifiedTuitionProgram` | No federal contribution limit. `indeterminate` for 1996 (see below). Three distribution caps: the §529(e)(3) limit on elementary and secondary expenses ($10,000 for 2018–2025, $20,000 from 2026), the §529(c)(9)(B) lifetime loan-repayment limit ($10,000 from 2019), and the §529(c)(3)(E) lifetime Roth IRA rollover limit ($35,000 from 2024). |
 
 The §529 `annualContributionLimit` is `null` in every year because no federal limit exists, not because a figure is missing. §529(b)(6) requires a program to have safeguards against contributions beyond what the beneficiary's education needs, and each state program sets that ceiling. The three §529 caps are `null` before the provisions that created them took effect.
+
+**The §529(e)(3) cap covers more than tuition from mid-2025.** It counts "expenses described in subsection (c)(7)", and Pub. L. 119-21 §70413(a) rewrote §529(c)(7) for distributions made after July 4, 2025. It had reached elementary and secondary tuition only; it now lists tuition, curriculum, books and instructional materials, online materials, qualifying tutoring, examination fees, dual-enrollment fees and educational therapies for students with disabilities. `elementarySecondaryExpenseScope` says which reading a year carries:
+
+| Years | `elementarySecondaryExpenseScope` |
+|---|---|
+| before 2018 | `null`, with a `null` limit |
+| 2018–2024 | `tuition` |
+| 2025 | `varies_within_year`: tuition for a distribution on or before July 4, the listed expenses after it. The Act does not say how the two combine under the year's one cap, so the table does not resolve it |
+| 2026 onward | `tuition_and_other_school_expenses` |
+
+**§529 is `indeterminate` for 1996.** Pub. L. 104-188 §1806(c)(1) applies §529 to taxable years *ending* after August 20, 1996. A 1996 taxable year can end on either side of that date, for example a short year, and a year lookup cannot say which. Every taxable year from 1997 ends after it.
 
 §127 is not carried back before 1996, because it lapsed and was retroactively reinstated several times before then; from 1996 it applies without a gap. It also stops being a flat amount after 2026: Pub. L. 119-21 §70412(b) indexes the $5,250 for taxable years beginning after 2026, so a 2027 row will carry the published figure, and the data validator rejects a copied $5,250.
 
