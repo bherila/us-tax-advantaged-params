@@ -33,6 +33,21 @@ function assertConformanceEqual(mixed $expected, mixed $actual, string $message)
     );
 }
 
+/** @param array<string,mixed> $vector */
+function invokeConformanceVector(array $vector): mixed
+{
+    $operation = $vector['operation'] ?? null;
+    if ($operation === 'payrollTax') return U::calculatePayrollTax($vector['input']);
+    if ($operation === 'tableLookup') {
+        $method = $vector['input']['method'] ?? null;
+        if (!is_string($method) || preg_match('/(?:^p|P)arametersForYear$/', $method) !== 1 || !is_callable([U::class, $method])) {
+            throw new RuntimeException("{$vector['name']}: tableLookup.method must name a parameter-table lookup.");
+        }
+        return U::{$method}($vector['input']['taxYear'] ?? null);
+    }
+    return U::calculate($vector['input']);
+}
+
 $path = dirname(__DIR__, 2) . '/data/conformance-vectors.json';
 $decoded = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
 $failed = 0;
@@ -40,7 +55,7 @@ foreach ($decoded['vectors'] as $vector) {
     try {
         if (isset($vector['expectError'])) {
             try {
-                (($vector['operation'] ?? null) === 'payrollTax' ? U::calculatePayrollTax($vector['input']) : U::calculate($vector['input']));
+                invokeConformanceVector($vector);
                 throw new RuntimeException("{$vector['name']}: expected error {$vector['expectError']['code']} was not thrown");
             } catch (USTaxAdvantagedParams\ParameterException $error) {
                 if ($error->errorCode !== $vector['expectError']['code']) {
@@ -52,7 +67,7 @@ foreach ($decoded['vectors'] as $vector) {
             fwrite(STDOUT, "ok - {$vector['name']}\n");
             continue;
         }
-        $result = (($vector['operation'] ?? null) === 'payrollTax' ? U::calculatePayrollTax($vector['input']) : U::calculate($vector['input']));
+        $result = invokeConformanceVector($vector);
         foreach ($vector['expect'] ?? [] as $resultPath => $expected) {
             assertConformanceEqual(
                 $expected,
@@ -60,7 +75,9 @@ foreach ($decoded['vectors'] as $vector) {
                 "{$vector['name']}: {$resultPath}",
             );
         }
-        $codes = array_column($result['diagnostics'], 'code');
+        $codes = ($vector['operation'] ?? null) === 'tableLookup'
+            ? []
+            : array_column($result['diagnostics'], 'code');
         foreach ($vector['expectDiagnosticCodes'] ?? [] as $code) {
             if (!in_array($code, $codes, true)) {
                 throw new RuntimeException("{$vector['name']}: missing diagnostic {$code}");

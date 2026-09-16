@@ -15152,8 +15152,17 @@ interface AllocationOutcome {
   dependentCareDetail?: DependentCareFsaAccountDetail;
 }
 
+/**
+ * Annual tables use a portable signed 32-bit year contract.  That is wider
+ * than any plausible tax year while remaining representable as a PHP integer
+ * on every supported build.
+ */
+function isValidTaxYear(year: number): boolean {
+  return Number.isSafeInteger(year) && year >= -2147483648 && year <= 2147483647;
+}
+
 function getParametersForYear(year: number): YearParameters {
-  if (!Number.isInteger(year)) {
+  if (!isValidTaxYear(year)) {
     throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
   }
   const { minimum, maximum } = RAW_PARAMETERS.supportedTaxYears;
@@ -25410,7 +25419,7 @@ function calculateIraConversionGroup(
 
 /** Exact published row; missing years are unknown, including unannounced future years. */
 export function payrollParametersForYear(taxYear: number): PayrollYearParameters | null {
-  if (!Number.isInteger(taxYear)) throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
+  if (!isValidTaxYear(taxYear)) throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
   const row = RAW_PAYROLL_PARAMETERS.years[String(taxYear)];
   return row === undefined ? null : deepClone(row);
 }
@@ -26428,7 +26437,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 223 parameters, or null for a year with no encoded revenue procedure. */
   public static hsaParametersForYear(taxYear: number): HsaYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return hsaParametersForYear(taxYear);
@@ -26455,7 +26464,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 530, IRC 127 and IRC 529 parameters, or null for a year outside the table. */
   public static educationParametersForYear(taxYear: number): EducationYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return educationParametersForYear(taxYear);
@@ -26471,7 +26480,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 529A ABLE account parameters, or null for a year outside the table. */
   public static ableParametersForYear(taxYear: number): AbleYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return ableParametersForYear(taxYear);
@@ -26487,7 +26496,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 23 and IRC 137 adoption parameters, or null for a year outside the table. */
   public static adoptionParametersForYear(taxYear: number): AdoptionYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return adoptionParametersForYear(taxYear);
@@ -26503,7 +26512,7 @@ export class USTaxAdvantagedParams {
 
   /** QSEHRA, excepted benefit HRA and individual coverage HRA parameters, or null for a year outside the table. */
   public static hraParametersForYear(taxYear: number): HraYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return hraParametersForYear(taxYear);
@@ -26519,7 +26528,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 132(f) qualified transportation fringe parameters, or null for a year outside the table. */
   public static commuterParametersForYear(taxYear: number): CommuterYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return commuterParametersForYear(taxYear);
@@ -26535,7 +26544,7 @@ export class USTaxAdvantagedParams {
 
   /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures. */
   public static fsaParametersForYear(taxYear: number): FsaYearParameters | null {
-    if (!Number.isInteger(taxYear)) {
+    if (!isValidTaxYear(taxYear)) {
       throw new ParameterError("INVALID_TAX_YEAR", "taxYear must be an integer.");
     }
     return fsaParametersForYear(taxYear);
