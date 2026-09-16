@@ -10,10 +10,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const vectors = JSON.parse(
   await readFile(join(root, "data/conformance-vectors.json"), "utf8"),
 ).vectors;
-const cases = vectors.map((vector) => ({
-  name: vector.name,
-  input: vector.operation === "payrollTax" ? { __operation: "payrollTax", input: vector.input } : vector.input,
-}));
+function parityInput(vector) {
+  if (vector.operation === "payrollTax") return { __operation: "payrollTax", input: vector.input };
+  if (vector.operation === "tableLookup") return {
+    __operation: "table",
+    method: vector.input.method,
+    args: [vector.input.taxYear],
+  };
+  return vector.input;
+}
+
+const cases = vectors.map((vector) => ({ name: vector.name, input: parityInput(vector) }));
 
 // Every parameter-table lookup is compared too. The lookups are discovered from
 // the class rather than listed here, so a table added later is covered without
@@ -37,6 +44,16 @@ for (const method of tableMethods) {
   for (let year = range.minimum - 1; year <= range.maximum + 1; year += 1) {
     cases.push({ name: `${method}(${year})`, input: { __operation: "table", method, args: [year] } });
   }
+  for (const year of [range.minimum - 0.5, 3000000000, Number.MAX_SAFE_INTEGER + 1, { __number: "NaN" }, { __number: "Infinity" }, { __number: "-Infinity" }]) {
+    cases.push({ name: `${method}(${typeof year === "number" ? year : year.__number})`, input: { __operation: "table", method, args: [year] } });
+  }
+}
+
+function reviveTableArgument(argument) {
+  if (argument && typeof argument === "object" && !Array.isArray(argument) && "__number" in argument) {
+    return Number(argument.__number);
+  }
+  return argument;
 }
 
 function runTypeScript(input) {
@@ -45,7 +62,7 @@ function runTypeScript(input) {
     if (input.__operation === "table") {
       const lookup = USTaxAdvantagedParams[input.method];
       return typeof lookup === "function"
-        ? { value: lookup.apply(USTaxAdvantagedParams, input.args) }
+        ? { value: lookup.apply(USTaxAdvantagedParams, input.args.map(reviveTableArgument)) }
         : { __missing: input.method };
     }
     return input.__operation === "payrollTax" ? USTaxAdvantagedParams.calculatePayrollTax(input.input) : USTaxAdvantagedParams.calculate(input);

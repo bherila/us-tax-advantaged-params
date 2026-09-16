@@ -781,12 +781,20 @@ if (conformance) {
           }
         }
       }
-      if (vector.operation !== undefined && vector.operation !== "payrollTax") fail(`${prefix}.operation is unknown.`);
+      if (vector.operation !== undefined && vector.operation !== "payrollTax" && vector.operation !== "tableLookup") {
+        fail(`${prefix}.operation is unknown.`);
+      }
+      if (vector.operation === "tableLookup") {
+        if (typeof vector?.input?.method !== "string" || !/(?:^p|P)arametersForYear$/.test(vector.input.method)) {
+          fail(`${prefix}.input.method must name a parameter-table lookup.`);
+        }
+        if (typeof vector?.input?.taxYear !== "number") fail(`${prefix}.input.taxYear must be a number.`);
+      }
       if (!hasExpectError) {
         const year = vector?.input?.taxYear;
         const minimum = parameters?.supportedTaxYears?.minimum;
         const maximum = parameters?.supportedTaxYears?.maximum;
-        if (!Number.isInteger(year) || (vector.operation !== "payrollTax" && Number.isInteger(minimum) && (year < minimum || year > maximum))) {
+        if (!Number.isInteger(year) || (vector.operation !== "payrollTax" && vector.operation !== "tableLookup" && Number.isInteger(minimum) && (year < minimum || year > maximum))) {
           fail(`${prefix}.input.taxYear is outside the supported range.`);
         }
       }

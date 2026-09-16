@@ -16,6 +16,17 @@ function publicStaticLookup(string $name): ?ReflectionMethod
     return $method->isPublic() && $method->isStatic() ? $method : null;
 }
 
+function reviveTableArgument(mixed $argument): mixed
+{
+    if (!is_array($argument) || !isset($argument['__number']) || !is_string($argument['__number'])) return $argument;
+    return match ($argument['__number']) {
+        'NaN' => NAN,
+        'Infinity' => INF,
+        '-Infinity' => -INF,
+        default => $argument,
+    };
+}
+
 try {
     $raw = stream_get_contents(STDIN);
     if ($raw === false) {
@@ -47,9 +58,10 @@ try {
                 $results[] = $methods;
             } elseif ($operation === 'table') {
                 $name = (string) $input['method'];
+                $args = array_map(reviveTableArgument(...), $input['args']);
                 $results[] = publicStaticLookup($name) === null
                     ? ['__missing' => $name]
-                    : ['value' => USTaxAdvantagedParams::{$name}(...$input['args'])];
+                    : ['value' => USTaxAdvantagedParams::{$name}(...$args)];
             } elseif ($operation === 'payrollTax') {
                 $results[] = USTaxAdvantagedParams::calculatePayrollTax($input['input']);
             } else {

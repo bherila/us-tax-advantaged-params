@@ -29227,6 +29227,170 @@
       "expectError": {
         "code": "INVALID_PRIORITY"
       }
+    },
+    {
+      "name": "Parameter lookup: 2026 retirement limits",
+      "description": "IRS Notice 2025-67 states the 2026 IRA contribution limit is $7,500, the IRC 402(g) elective-deferral limit is $24,500, and the IRC 415(c) annual-additions limit is $72,000. The retirement lookup returns those published amounts.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "ira.baseContributionLimit": 7500,
+        "electiveDeferral402g": 24500,
+        "annualAdditions415c": 72000
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 HSA limits",
+      "description": "IRS Rev. Proc. 2025-19 sets the 2026 IRC 223 annual HSA contribution limits at $4,400 for self-only coverage and $8,750 for family coverage, with a $1,000 additional contribution for an eligible individual age 55 or older.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "hsaParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "annualContributionLimit.selfOnly": 4400,
+        "annualContributionLimit.family": 8750,
+        "additionalContributionAmountAge55": 1000
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 FSA limits",
+      "description": "IRS Rev. Proc. 2025-32 sets the 2026 IRC 125 health FSA salary-reduction limit at $3,400 and its carryover amount at $680; the same procedure sets the IRC 129 dependent-care exclusion at $7,500 ($3,750 for a married individual filing separately).",
+      "operation": "tableLookup",
+      "input": {
+        "method": "fsaParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "healthFsa.salaryReductionLimit": 3400,
+        "healthFsa.carryoverLimit": 680,
+        "dependentCare.exclusionLimit": 7500,
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": 3750
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 payroll limits",
+      "description": "The Social Security Administration's 2026 contribution-and-benefit-base notice sets the OASDI wage base at $184,500. IRS Publication 15 applies the statutory 6.2% employee and employer OASDI rates and the 1.45% Hospital Insurance rates returned by this lookup.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "payrollParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "contributionAndBenefitBase": 184500,
+        "oasdiRateEmployeePercent": 6.2,
+        "hiRateEmployeePercent": 1.45
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 education limits",
+      "description": "IRC 530(b)(1)(A) limits a Coverdell ESA beneficiary's annual contributions to $2,000. Pub. L. 119-21 section 70413 raises the IRC 529 elementary-and-secondary expense limit to $20,000 for taxable years beginning in 2026 and expands the covered expense scope beyond tuition.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "educationParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": 2000,
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": 20000,
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": "tuition_and_other_school_expenses"
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 ABLE limits",
+      "description": "IRS Rev. Proc. 2025-32 sets the 2026 annual exclusion under IRC 2503(b) at $19,000. IRC 529A(b)(2)(B) makes the ABLE annual limit that amount plus the indexed excess permitted by the statutory exception; the published 2026 ABLE limit is $20,000. Pub. L. 119-21 raises the IRC 529A disability-onset age to 46 for 2026.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "ableParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "ableAccount.annualContributionLimit": 20000,
+        "ableAccount.section2503bExclusion": 19000,
+        "ableAccount.disabilityOnsetAgeLimit": 46
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 adoption limits",
+      "description": "IRS Rev. Proc. 2025-32 sets the 2026 IRC 23 adoption-credit dollar limit and IRC 137 adoption-assistance exclusion at $17,670, with the credit phaseout beginning at $265,080. Pub. L. 119-21 sets the $5,120 refundable portion for 2026.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "adoptionParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "adoptionCredit.dollarLimit": 17670,
+        "adoptionCredit.phaseout.0": 265080,
+        "adoptionCredit.refundablePortionLimit": 5120,
+        "adoptionAssistanceExclusion.dollarLimit": 17670
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 HRA limits",
+      "description": "IRS Rev. Proc. 2025-19 sets the 2026 IRC 9831(d) QSEHRA maximum permitted benefit at $6,450 for self-only coverage and $13,100 for family coverage. IRS Rev. Proc. 2025-32 sets the 2026 excepted-benefit HRA annual limit at $2,200.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "hraParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "qualifiedSmallEmployerHra.selfOnlyLimit": 6450,
+        "qualifiedSmallEmployerHra.familyLimit": 13100,
+        "exceptedBenefitHra.annualLimit": 2200
+      }
+    },
+    {
+      "name": "Parameter lookup: 2026 commuter limits",
+      "description": "IRS Rev. Proc. 2025-32 sets the 2026 IRC 132(f)(2) monthly exclusion at $340 for both qualified transportation and qualified parking. IRC 132(f)(8) leaves the bicycle commuting exclusion unavailable.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "commuterParametersForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "transitAndVanpool.monthlyLimit": 340,
+        "parking.monthlyLimit": 340,
+        "bicycleCommuting.state": "unavailable"
+      }
+    },
+    {
+      "name": "Parameter lookup: fractional year is rejected",
+      "description": "A parameter-table year identifies a statutory annual row, so the public input contract requires an integer. A fractional year cannot identify a published annual parameter and both runtimes reject it with INVALID_TAX_YEAR rather than coercing it to an adjacent row.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parametersForYear",
+        "taxYear": 2026.5
+      },
+      "expectError": {
+        "code": "INVALID_TAX_YEAR"
+      }
+    },
+    {
+      "name": "Parameter lookup: unsafe integer year is rejected",
+      "description": "A JavaScript number above 9007199254740991 cannot identify an exact integer tax year, and PHP may narrow it differently from TypeScript. The shared input contract therefore rejects 9007199254740992 with INVALID_TAX_YEAR before either runtime selects or reports an annual row.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parametersForYear",
+        "taxYear": 9007199254740992
+      },
+      "expectError": {
+        "code": "INVALID_TAX_YEAR"
+      }
+    },
+    {
+      "name": "Parameter lookup: nonportable integer year is rejected",
+      "description": "A parameter-table year is portable across the TypeScript and PHP public APIs only when it fits every supported PHP integer build. 3000000000 is an exact JavaScript integer but exceeds a signed 32-bit PHP integer, so both runtimes reject it with INVALID_TAX_YEAR before PHP could narrow it to a different year.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parametersForYear",
+        "taxYear": 3000000000
+      },
+      "expectError": {
+        "code": "INVALID_TAX_YEAR"
+      }
     }
   ]
 }

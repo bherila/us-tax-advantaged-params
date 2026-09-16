@@ -13254,8 +13254,9 @@ JSON;
     }
 
     /** @return array<string,mixed> */
-    public static function parametersForYear(int $taxYear): array
+    public static function parametersForYear(int|float $taxYear): array
     {
+        $taxYear = self::validatedTaxYear($taxYear);
         $data = self::data();
         $minimum = (int) $data['supportedTaxYears']['minimum'];
         $maximum = (int) $data['supportedTaxYears']['maximum'];
@@ -13297,9 +13298,9 @@ JSON;
     /** IRC 223 parameters, or null for a year with no encoded revenue procedure.
      *  @return array<string,mixed>|null
      */
-    public static function hsaParametersForYear(int $taxYear): ?array
+    public static function hsaParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::hsaParametersForYear(self::hsaData(), $taxYear);
+        return Engine::hsaParametersForYear(self::hsaData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13318,9 +13319,9 @@ JSON;
     /** IRC 125 and IRC 129 parameters, or null for a year with no encoded figures.
      *  @return array<string,mixed>|null
      */
-    public static function fsaParametersForYear(int $taxYear): ?array
+    public static function fsaParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::fsaParametersForYear(self::fsaData(), $taxYear);
+        return Engine::fsaParametersForYear(self::fsaData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13332,7 +13333,7 @@ JSON;
 
     public static function payrollParametersForYear(int|float $taxYear): ?array
     {
-        if (!is_finite((float) $taxYear) || floor((float) $taxYear) !== (float) $taxYear) throw new ParameterException('INVALID_TAX_YEAR', 'taxYear must be an integer.');
+        $taxYear = self::validatedTaxYear($taxYear);
         $data = self::payrollData();
         return $data['years'][(string) $taxYear] ?? null;
     }
@@ -13362,9 +13363,9 @@ JSON;
     /** IRC 530, IRC 127 and IRC 529 parameters, or null for a year outside the table.
      *  @return array<string,mixed>|null
      */
-    public static function educationParametersForYear(int $taxYear): ?array
+    public static function educationParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::educationParametersForYear(self::educationData(), $taxYear);
+        return Engine::educationParametersForYear(self::educationData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13383,9 +13384,9 @@ JSON;
     /** IRC 529A ABLE account parameters, or null for a year outside the table.
      *  @return array<string,mixed>|null
      */
-    public static function ableParametersForYear(int $taxYear): ?array
+    public static function ableParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::ableParametersForYear(self::ableData(), $taxYear);
+        return Engine::ableParametersForYear(self::ableData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13404,9 +13405,9 @@ JSON;
     /** IRC 23 and IRC 137 adoption parameters, or null for a year outside the table.
      *  @return array<string,mixed>|null
      */
-    public static function adoptionParametersForYear(int $taxYear): ?array
+    public static function adoptionParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::adoptionParametersForYear(self::adoptionData(), $taxYear);
+        return Engine::adoptionParametersForYear(self::adoptionData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13425,9 +13426,9 @@ JSON;
     /** QSEHRA, excepted benefit HRA and individual coverage HRA parameters, or null for a year outside the table.
      *  @return array<string,mixed>|null
      */
-    public static function hraParametersForYear(int $taxYear): ?array
+    public static function hraParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::hraParametersForYear(self::hraData(), $taxYear);
+        return Engine::hraParametersForYear(self::hraData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13446,9 +13447,9 @@ JSON;
     /** IRC 132(f) qualified transportation fringe parameters, or null for a year outside the table.
      *  @return array<string,mixed>|null
      */
-    public static function commuterParametersForYear(int $taxYear): ?array
+    public static function commuterParametersForYear(int|float $taxYear): ?array
     {
-        return Engine::commuterParametersForYear(self::commuterData(), $taxYear);
+        return Engine::commuterParametersForYear(self::commuterData(), self::validatedTaxYear($taxYear));
     }
 
     /** @return array{minimum:int,maximum:int} */
@@ -13462,6 +13463,15 @@ JSON;
     public static function commuterSourceMetadata(): array
     {
         return Engine::copy(self::commuterData()['sources']);
+    }
+
+    private static function validatedTaxYear(int|float $taxYear): int
+    {
+        $numericYear = (float) $taxYear;
+        if (!is_finite($numericYear) || floor($numericYear) !== $numericYear || $numericYear < -2147483648 || $numericYear > 2147483647 || $numericYear < PHP_INT_MIN || $numericYear > PHP_INT_MAX) {
+            throw new ParameterException('INVALID_TAX_YEAR', 'taxYear must be an integer.');
+        }
+        return (int) $taxYear;
     }
 
     /** @return array<string,mixed> */

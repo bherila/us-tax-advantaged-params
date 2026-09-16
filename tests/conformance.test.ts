@@ -5,12 +5,30 @@ import USTaxAdvantagedParams from "../src/USTaxAdvantagedParams.js";
 
 interface ConformanceVector {
   name: string;
-  operation?: "payrollTax";
-  input: Parameters<typeof USTaxAdvantagedParams.calculate>[0];
+  operation?: "payrollTax" | "tableLookup";
+  input: Record<string, unknown>;
   expect?: Record<string, unknown>;
   expectDiagnosticCodes?: string[];
   expectAbsentDiagnosticCodes?: string[];
   expectError?: { code: string };
+}
+
+const TABLE_LOOKUP = /(?:^p|P)arametersForYear$/;
+
+function invoke(vector: ConformanceVector): unknown {
+  if (vector.operation === "payrollTax") {
+    return USTaxAdvantagedParams.calculatePayrollTax(vector.input as unknown as Parameters<typeof USTaxAdvantagedParams.calculatePayrollTax>[0]);
+  }
+  if (vector.operation === "tableLookup") {
+    const method = vector.input.method;
+    if (typeof method !== "string" || !TABLE_LOOKUP.test(method)) {
+      throw new Error(`${vector.name}: tableLookup.method must name a parameter-table lookup.`);
+    }
+    const lookup = (USTaxAdvantagedParams as unknown as Record<string, unknown>)[method];
+    if (typeof lookup !== "function") throw new Error(`${vector.name}: unknown lookup ${method}.`);
+    return lookup.call(USTaxAdvantagedParams, vector.input.taxYear);
+  }
+  return USTaxAdvantagedParams.calculate(vector.input as unknown as Parameters<typeof USTaxAdvantagedParams.calculate>[0]);
 }
 
 interface ConformanceFile {
@@ -34,9 +52,7 @@ function readPath(value: unknown, path: string): unknown {
 }
 
 for (const vector of conformance.vectors) {
-  const calculate = () => vector.operation === "payrollTax"
-    ? USTaxAdvantagedParams.calculatePayrollTax(vector.input as unknown as Parameters<typeof USTaxAdvantagedParams.calculatePayrollTax>[0])
-    : USTaxAdvantagedParams.calculate(vector.input);
+  const calculate = () => invoke(vector);
   test(`conformance: ${vector.name}`, () => {
     if (vector.expectError) {
       assert.throws(
@@ -51,7 +67,9 @@ for (const vector of conformance.vectors) {
     for (const [path, expected] of Object.entries(vector.expect ?? {})) {
       assert.deepEqual(readPath(result, path), expected, `${vector.name}: ${path}`);
     }
-    const codes = new Set(result.diagnostics.map((entry) => entry.code));
+    const codes = new Set(vector.operation === "tableLookup"
+      ? []
+      : (result as { diagnostics: Array<{ code: string }> }).diagnostics.map((entry) => entry.code));
     for (const expectedCode of vector.expectDiagnosticCodes ?? []) {
       assert.ok(codes.has(expectedCode), `${vector.name}: missing diagnostic ${expectedCode}`);
     }
