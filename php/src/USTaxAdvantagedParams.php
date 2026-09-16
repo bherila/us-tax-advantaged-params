@@ -383,7 +383,7 @@ final class AccountBuilder
         return $this;
     }
 
-    public function priority(int $priority): self
+    public function priority(int|float $priority): self
     {
         $this->value['priority'] = $priority;
         return $this;
@@ -13641,16 +13641,16 @@ final class Engine
             foreach ($person['wages'] as $wage) {
                 $ssWages = self::roundMoney($ssWages + $wage['socialSecurityWages']);
                 $hiWages = self::roundMoney($hiWages + $wage['medicareWages']);
-                $totals['employerSocialSecurity'] = self::roundMoney($totals['employerSocialSecurity'] + self::roundMoney(min($wage['socialSecurityWages'], $p['contributionAndBenefitBase']) * $p['oasdiRateEmployerPercent'] / 100));
-                $totals['employerMedicare'] = self::roundMoney($totals['employerMedicare'] + self::roundMoney(min($wage['medicareWages'], $p['hospitalInsuranceWageBase'] ?? $wage['medicareWages']) * $p['hiRateEmployerPercent'] / 100));
-                if ($p['additionalMedicareRatePercent'] !== null) $totals['additionalMedicareWithholding'] = self::roundMoney($totals['additionalMedicareWithholding'] + self::roundMoney(self::nonnegative($wage['medicareWages'] - $p['additionalMedicareWithholdingThreshold']) * $p['additionalMedicareRatePercent'] / 100));
+                $totals['employerSocialSecurity'] = self::roundMoney($totals['employerSocialSecurity'] + self::roundPayrollRate(min($wage['socialSecurityWages'], $p['contributionAndBenefitBase']), $p['oasdiRateEmployerPercent']));
+                $totals['employerMedicare'] = self::roundMoney($totals['employerMedicare'] + self::roundPayrollRate(min($wage['medicareWages'], $p['hospitalInsuranceWageBase'] ?? $wage['medicareWages']), $p['hiRateEmployerPercent']));
+                if ($p['additionalMedicareRatePercent'] !== null) $totals['additionalMedicareWithholding'] = self::roundMoney($totals['additionalMedicareWithholding'] + self::roundPayrollRate(self::nonnegative($wage['medicareWages'] - $p['additionalMedicareWithholdingThreshold']), $p['additionalMedicareRatePercent']));
             }
-            $totals['employeeSocialSecurity'] = self::roundMoney($totals['employeeSocialSecurity'] + self::roundMoney(min($ssWages, $p['contributionAndBenefitBase']) * $p['oasdiRateEmployeePercent'] / 100));
-            $totals['employeeMedicare'] = self::roundMoney($totals['employeeMedicare'] + self::roundMoney(min($hiWages, $p['hospitalInsuranceWageBase'] ?? $hiWages) * $p['hiRateEmployeePercent'] / 100));
+            $totals['employeeSocialSecurity'] = self::roundMoney($totals['employeeSocialSecurity'] + self::roundPayrollRate(min($ssWages, $p['contributionAndBenefitBase']), $p['oasdiRateEmployeePercent']));
+            $totals['employeeMedicare'] = self::roundMoney($totals['employeeMedicare'] + self::roundPayrollRate(min($hiWages, $p['hospitalInsuranceWageBase'] ?? $hiWages), $p['hiRateEmployeePercent']));
             $adjusted = self::roundMoney(self::nonnegative($person['netEarningsBeforeAdjustment']) * $factor);
             $earnings = $adjusted < $p['selfEmploymentMinimumNetEarnings'] ? 0.0 : $adjusted;
-            $ssTax = self::roundMoney(min($earnings, self::nonnegative($p['contributionAndBenefitBase'] - $ssWages)) * $p['secaOasdiRatePercent'] / 100);
-            $hiTax = self::roundMoney(min($earnings, $p['hospitalInsuranceWageBase'] === null ? $earnings : self::nonnegative($p['hospitalInsuranceWageBase'] - $hiWages)) * $p['secaHiRatePercent'] / 100);
+            $ssTax = self::roundPayrollRate(min($earnings, self::nonnegative($p['contributionAndBenefitBase'] - $ssWages)), $p['secaOasdiRatePercent']);
+            $hiTax = self::roundPayrollRate(min($earnings, $p['hospitalInsuranceWageBase'] === null ? $earnings : self::nonnegative($p['hospitalInsuranceWageBase'] - $hiWages)), $p['secaHiRatePercent']);
             $totals['selfEmploymentSocialSecurity'] = self::roundMoney($totals['selfEmploymentSocialSecurity'] + $ssTax);
             $totals['selfEmploymentMedicare'] = self::roundMoney($totals['selfEmploymentMedicare'] + $hiTax);
             $totals['selfEmploymentTaxDeduction'] = self::roundMoney($totals['selfEmploymentTaxDeduction'] + self::roundMoney($ssTax * $p['secaOasdiDeductionFraction'] + $hiTax * $p['secaHiDeductionFraction']));
@@ -13660,8 +13660,8 @@ final class Engine
         }
         if ($p['additionalMedicareRatePercent'] !== null) {
             $threshold = $joint ? $p['additionalMedicareJointThreshold'] : ($filingStatus === FilingStatus::MARRIED_FILING_SEPARATELY->value ? $p['additionalMedicareJointThreshold'] * $p['additionalMedicareSeparateThresholdFraction'] : $p['additionalMedicareOtherThreshold']);
-            $totals['additionalMedicareWageLiability'] = self::roundMoney(self::nonnegative($householdMedicareWages - $threshold) * $p['additionalMedicareRatePercent'] / 100);
-            $totals['additionalMedicareSelfEmploymentLiability'] = self::roundMoney(self::nonnegative($householdSelfEmployment - self::nonnegative($threshold - $householdMedicareWages)) * $p['additionalMedicareRatePercent'] / 100);
+            $totals['additionalMedicareWageLiability'] = self::roundPayrollRate(self::nonnegative($householdMedicareWages - $threshold), $p['additionalMedicareRatePercent']);
+            $totals['additionalMedicareSelfEmploymentLiability'] = self::roundPayrollRate(self::nonnegative($householdSelfEmployment - self::nonnegative($threshold - $householdMedicareWages)), $p['additionalMedicareRatePercent']);
         }
         $totals['additionalMedicareLiability'] = self::roundMoney($totals['additionalMedicareWageLiability'] + $totals['additionalMedicareSelfEmploymentLiability']);
         $totals['employeeTotalLiability'] = self::roundMoney($totals['employeeSocialSecurity'] + $totals['employeeMedicare'] + $totals['additionalMedicareWageLiability']);
@@ -14555,6 +14555,30 @@ final class Engine
         return ($scaled - $floor >= 0.5 ? $floor + 1.0 : $floor) / 100;
     }
 
+    /** Exact half-up cents rounding of a cents-normalized payroll amount at a published percentage rate. */
+    private static function roundPayrollRate(float $amount, float $percent): float
+    {
+        $scaled = $amount * 100;
+        // Match JavaScript's safe-integer boundary. At larger magnitudes the
+        // public float result already cannot retain cent precision, so preserve
+        // the prior floating path rather than overflowing a native integer.
+        if (!is_finite($scaled) || abs($scaled) > 9007199254740991 || floor($scaled) !== $scaled) {
+            return self::roundMoney($amount * $percent / 100);
+        }
+        $amountCents = (int) $scaled;
+        $basisPoints = (int) round($percent * 100);
+        $numerator = self::hsaIntegerMultiply((string) $amountCents, (string) $basisPoints);
+        $denominator = '10000';
+        // The floating product supplies a nearby cents candidate. Exact decimal
+        // integer comparisons then choose the quotient and the half-cent tie.
+        $cents = (int) floor($amount * $percent);
+        while (self::hsaIntegerCompare($numerator, self::hsaIntegerMultiplySmall($denominator, $cents)) < 0) --$cents;
+        while (self::hsaIntegerCompare($numerator, self::hsaIntegerMultiplySmall($denominator, $cents + 1)) >= 0) ++$cents;
+        if (self::hsaIntegerCompare(self::hsaIntegerMultiplySmall($numerator, 2),
+            self::hsaIntegerMultiplySmall($denominator, 2 * $cents + 1)) >= 0) ++$cents;
+        return $cents / 100;
+    }
+
     private static function floorMoney(float $value): float
     {
         return floor(($value + PHP_FLOAT_EPSILON) * 100) / 100;
@@ -15395,7 +15419,13 @@ final class Engine
                 $input['type'] ?? null,
                 array_key_exists('type', $input),
             );
-            $normalized['priority'] = isset($input['priority']) ? (int) $input['priority'] : 100;
+            if (!isset($input['priority'])) {
+                $normalized['priority'] = 100.0;
+            } elseif ((!is_int($input['priority']) && !is_float($input['priority'])) || !is_finite((float) $input['priority'])) {
+                throw new ParameterException('INVALID_PRIORITY', 'priority must be a finite number.');
+            } else {
+                $normalized['priority'] = (float) $input['priority'];
+            }
             $normalized['planRules'] = $planRules;
             $normalized['existingContributions'] = self::components(
                 is_array($input['existingContributions'] ?? null) ? $input['existingContributions'] : [],

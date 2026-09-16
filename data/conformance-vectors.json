@@ -29084,6 +29084,149 @@
       "expectDiagnosticCodes": [
         "SECTION_457_EXISTING_DEFERRALS_EXCEED_PLAN_CEILING"
       ]
+    },
+    {
+      "name": "Payroll: numeric-key wage object is the same JSON list in both runtimes",
+      "description": "A JSON object with precisely the consecutive keys 0 through n-1 becomes a PHP list after json_decode(..., true), so the input contract treats it as the same list in both engines. The one supplied wage record gives employee and employer FICA of 10000 x (6.2% + 1.45%) = 765 under IRC 3101(a), 3101(b)(1), 3111(a), and 3111(b)(1).",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "taxpayer",
+            "wages": {
+              "0": {
+                "employerId": "employer",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            }
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeTotalLiability": 765,
+        "totals.employerTotal": 765
+      }
+    },
+    {
+      "name": "Payroll: numeric-key person object is the same JSON list in both runtimes",
+      "description": "A JSON object with precisely the consecutive keys 0 through n-1 becomes a PHP list after json_decode(..., true), so the input contract treats it as the same list in both engines. The one supplied wage record gives employee and employer FICA of 10000 x (6.2% + 1.45%) = 765 under IRC 3101(a), 3101(b)(1), 3111(a), and 3111(b)(1).",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": {
+          "0": {
+            "id": "taxpayer",
+            "wages": [
+              {
+                "employerId": "employer",
+                "socialSecurityWages": 10000,
+                "medicareWages": 10000
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "totals.employeeTotalLiability": 765,
+        "totals.employerTotal": 765
+      }
+    },
+    {
+      "name": "Payroll: exact decimal Social Security half-cent rounds up",
+      "description": "IRC 3101(a) and 3111(a) apply the 6.2% OASDI rate. The input wage is cents-normalized: 16250 cents x 62 / 1000 = 1007.5 cents, which rounds half up to 1008 cents, or 10.08, on both the employee and employer sides. IRC 3101(b)(1) and 3111(b)(1) give 162.50 x 1.45% = 2.35625, or 2.36, of Medicare tax; each total is 12.44.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "taxpayer",
+            "wages": [
+              {
+                "employerId": "employer",
+                "socialSecurityWages": 162.5,
+                "medicareWages": 162.5
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "totals.employeeSocialSecurity": 10.08,
+        "totals.employerSocialSecurity": 10.08,
+        "totals.employeeTotalLiability": 12.44,
+        "totals.employerTotal": 12.44
+      }
+    },
+    {
+      "name": "Fractional priorities retain their ordering",
+      "description": "Allocation is deterministic in ascending numeric priority and then input order. The second governmental 457(b) account's priority 1.1 precedes the first account's 1.9; Notice 2025-67 sets the 2026 IRC 457(e)(15) basic deferral amount at 24500, so the second account receives it all and the first receives zero.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "taxpayer",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "first",
+            "ownerId": "taxpayer",
+            "type": "governmental_457b",
+            "employerId": "employer",
+            "priority": 1.9
+          },
+          {
+            "id": "second",
+            "ownerId": "taxpayer",
+            "type": "governmental_457b",
+            "employerId": "employer",
+            "priority": 1.1
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 0,
+        "accounts.1.contributionComponents.employeePreTaxDeferral": 24500
+      }
+    },
+    {
+      "name": "Priority must be a finite number",
+      "description": "The input contract declares priority as a number. A string priority would otherwise be coerced differently by TypeScript and PHP, so both native engines reject it with INVALID_PRIORITY before deterministic allocation can begin.",
+      "input": {
+        "taxYear": 2026,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "taxpayer",
+            "birthYear": 1990,
+            "compensation": {
+              "w2Compensation": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "account",
+            "ownerId": "taxpayer",
+            "type": "governmental_457b",
+            "employerId": "employer",
+            "priority": "1"
+          }
+        ]
+      },
+      "expectError": {
+        "code": "INVALID_PRIORITY"
+      }
     }
   ]
 }

@@ -14708,6 +14708,21 @@ function roundMoney(value: number): Money {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+/** Exact half-up cents rounding of a cents-normalized payroll amount at a published percentage rate. */
+function roundPayrollRate(amount: Money, percent: number): Money {
+  const cents = amount * 100;
+  // The public result is a number. Preserve the prior floating path when cents
+  // cannot be represented as a safe integer; exact integer arithmetic cannot
+  // improve those already-imprecise magnitudes.
+  if (!Number.isSafeInteger(cents)) return roundMoney(amount * percent / 100);
+  const amountCents = BigInt(cents);
+  // Published payroll percentages are encoded to hundredths of a percentage point:
+  // 6.2% is 620 basis points, so amountCents * 620 / 10000 is tax cents.
+  const basisPoints = BigInt(Math.round(percent * 100));
+  const denominator = 10_000n;
+  return Number((2n * amountCents * basisPoints + denominator) / (2n * denominator)) / 100;
+}
+
 function floorMoney(value: number): Money {
   return Math.floor((value + Number.EPSILON) * 100) / 100;
 }
@@ -15304,13 +15319,21 @@ function normalizeAccounts(
       ownerId,
       employerId,
       type: parseAccountType(input.type, input.type !== undefined),
-      priority: input.priority ?? 100,
+      priority: normalizePriority(input.priority),
       planRules,
       existingContributions: cloneComponents(input.existingContributions),
       inputIndex: index,
     };
   });
   return validateSection457PlanGroups(normalized, persons);
+}
+
+function normalizePriority(value: unknown): number {
+  if (value === undefined || value === null) return 100;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new ParameterError("INVALID_PRIORITY", "priority must be a finite number.");
+  }
+  return value;
 }
 
 /**
@@ -25396,17 +25419,18 @@ function payrollInputError(): never {
 }
 type NormalizedPayrollPerson = Omit<PayrollPersonInput, "wages"> & { wages: PayrollWageInput[] };
 function normalizePayrollPersons(input: unknown): NormalizedPayrollPerson[] {
-  if (!Array.isArray(input) || input.length === 0) payrollInputError();
+  const personList = toInputList(input);
+  if (personList === null || personList.length === 0) payrollInputError();
   const ids = new Set<string>();
-  return input.map((person: PayrollPersonInput) => {
+  return personList.map((entry) => {
+    const person = entry as PayrollPersonInput;
     if (person === null || typeof person !== "object" || typeof person.id !== "string" || person.id.trim() === "" || ids.has(person.id)) payrollInputError();
-    // PHP arrays represent both an empty JSON map and an empty list. Both
-    // explicitly state no wages; nonempty maps are not employer records.
-    const wageInput = person.wages;
-    const wageList = Array.isArray(wageInput) ? wageInput : wageInput !== null && typeof wageInput === "object" && Object.keys(wageInput).length === 0 ? [] : payrollInputError();
+    const wageList = toInputList(person.wages);
+    if (wageList === null) payrollInputError();
     ids.add(person.id);
     const employers = new Set<string>();
-    const wages = wageList.map((wage) => {
+    const wages = wageList.map((entry) => {
+      const wage = entry as PayrollWageInput;
       if (wage === null || typeof wage !== "object" || typeof wage.employerId !== "string" || wage.employerId.trim() === "" || employers.has(wage.employerId)) payrollInputError();
       employers.add(wage.employerId);
       for (const value of [wage.socialSecurityWages, wage.medicareWages]) {
@@ -25455,16 +25479,16 @@ export function calculatePayrollTax(input: PayrollCalculationInput): PayrollTaxR
     for (const wage of person.wages) {
       ssWages = roundMoney(ssWages + wage.socialSecurityWages);
       hiWages = roundMoney(hiWages + wage.medicareWages);
-      totals.employerSocialSecurity = roundMoney(totals.employerSocialSecurity + roundMoney(Math.min(wage.socialSecurityWages, p.contributionAndBenefitBase) * p.oasdiRateEmployerPercent / 100));
-      totals.employerMedicare = roundMoney(totals.employerMedicare + roundMoney(Math.min(wage.medicareWages, p.hospitalInsuranceWageBase ?? wage.medicareWages) * p.hiRateEmployerPercent / 100));
-      if (p.additionalMedicareRatePercent !== null) totals.additionalMedicareWithholding = roundMoney(totals.additionalMedicareWithholding + roundMoney(nonnegative(wage.medicareWages - p.additionalMedicareWithholdingThreshold!) * p.additionalMedicareRatePercent / 100));
+      totals.employerSocialSecurity = roundMoney(totals.employerSocialSecurity + roundPayrollRate(Math.min(wage.socialSecurityWages, p.contributionAndBenefitBase), p.oasdiRateEmployerPercent));
+      totals.employerMedicare = roundMoney(totals.employerMedicare + roundPayrollRate(Math.min(wage.medicareWages, p.hospitalInsuranceWageBase ?? wage.medicareWages), p.hiRateEmployerPercent));
+      if (p.additionalMedicareRatePercent !== null) totals.additionalMedicareWithholding = roundMoney(totals.additionalMedicareWithholding + roundPayrollRate(nonnegative(wage.medicareWages - p.additionalMedicareWithholdingThreshold!), p.additionalMedicareRatePercent));
     }
-    totals.employeeSocialSecurity = roundMoney(totals.employeeSocialSecurity + roundMoney(Math.min(ssWages, p.contributionAndBenefitBase) * p.oasdiRateEmployeePercent / 100));
-    totals.employeeMedicare = roundMoney(totals.employeeMedicare + roundMoney(Math.min(hiWages, p.hospitalInsuranceWageBase ?? hiWages) * p.hiRateEmployeePercent / 100));
+    totals.employeeSocialSecurity = roundMoney(totals.employeeSocialSecurity + roundPayrollRate(Math.min(ssWages, p.contributionAndBenefitBase), p.oasdiRateEmployeePercent));
+    totals.employeeMedicare = roundMoney(totals.employeeMedicare + roundPayrollRate(Math.min(hiWages, p.hospitalInsuranceWageBase ?? hiWages), p.hiRateEmployeePercent));
     const adjusted = roundMoney(nonnegative(person.netEarningsBeforeAdjustment!) * factor);
     const earnings = adjusted < p.selfEmploymentMinimumNetEarnings ? 0 : adjusted;
-    const ssTax = roundMoney(Math.min(earnings, nonnegative(p.contributionAndBenefitBase - ssWages)) * p.secaOasdiRatePercent / 100);
-    const hiTax = roundMoney(Math.min(earnings, p.hospitalInsuranceWageBase === null ? earnings : nonnegative(p.hospitalInsuranceWageBase - hiWages)) * p.secaHiRatePercent / 100);
+    const ssTax = roundPayrollRate(Math.min(earnings, nonnegative(p.contributionAndBenefitBase - ssWages)), p.secaOasdiRatePercent);
+    const hiTax = roundPayrollRate(Math.min(earnings, p.hospitalInsuranceWageBase === null ? earnings : nonnegative(p.hospitalInsuranceWageBase - hiWages)), p.secaHiRatePercent);
     totals.selfEmploymentSocialSecurity = roundMoney(totals.selfEmploymentSocialSecurity + ssTax);
     totals.selfEmploymentMedicare = roundMoney(totals.selfEmploymentMedicare + hiTax);
     totals.selfEmploymentTaxDeduction = roundMoney(totals.selfEmploymentTaxDeduction + roundMoney(ssTax * p.secaOasdiDeductionFraction + hiTax * p.secaHiDeductionFraction));
@@ -25475,8 +25499,8 @@ export function calculatePayrollTax(input: PayrollCalculationInput): PayrollTaxR
   if (p.additionalMedicareRatePercent !== null) {
     const threshold = joint ? p.additionalMedicareJointThreshold! : filingStatus === FilingStatus.MARRIED_FILING_SEPARATELY
       ? p.additionalMedicareJointThreshold! * p.additionalMedicareSeparateThresholdFraction! : p.additionalMedicareOtherThreshold!;
-    totals.additionalMedicareWageLiability = roundMoney(nonnegative(householdMedicareWages - threshold) * p.additionalMedicareRatePercent / 100);
-    totals.additionalMedicareSelfEmploymentLiability = roundMoney(nonnegative(householdSelfEmployment - nonnegative(threshold - householdMedicareWages)) * p.additionalMedicareRatePercent / 100);
+    totals.additionalMedicareWageLiability = roundPayrollRate(nonnegative(householdMedicareWages - threshold), p.additionalMedicareRatePercent);
+    totals.additionalMedicareSelfEmploymentLiability = roundPayrollRate(nonnegative(householdSelfEmployment - nonnegative(threshold - householdMedicareWages)), p.additionalMedicareRatePercent);
   }
   totals.additionalMedicareLiability = roundMoney(totals.additionalMedicareWageLiability + totals.additionalMedicareSelfEmploymentLiability);
   totals.employeeTotalLiability = roundMoney(totals.employeeSocialSecurity + totals.employeeMedicare + totals.additionalMedicareWageLiability);
