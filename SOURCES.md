@@ -6,6 +6,17 @@ Retirement parameters are maintained from primary federal sources whenever avail
 
 Source metadata documents provenance; it is not fetched at runtime. Calculations are deterministic and network-free.
 
+Every source record's `url` was checked when it was added: the document
+downloaded from that URL hashes identically to the copy in the corpus's
+`sources/` directory or, where the publisher re-renders the file (the US Code
+HTML), its text matches. A record with no stored copy is checked to be the
+cited document by its content.
+
+Per-figure provenance, which document published each figure in each year, is
+returned by the `*ParameterSourcesForYear` lookups. It is derived from the
+evidence corpora into `data/<table>-figure-sources.json`; see "Where each figure
+came from" in README.md.
+
 ## Core annual-limit sources
 
 - **IRS Notice 2025-67 / Internal Revenue Bulletin 2025-49** — 2026 retirement-plan and IRA cost-of-living adjustments, including §402(g), IRA, SIMPLE, catch-up, §415(c), §401(a)(17), SEP eligibility, and phase-out figures.  

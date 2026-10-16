@@ -1,0 +1,369 @@
+{
+  "figureCitations": {
+    "exceptedBenefitHra.annualLimit": "26 CFR 54.9831-1(c)(3)(viii)(B)(1)",
+    "exceptedBenefitHra.state": "26 CFR 54.9831-1(c)(3)(viii); T.D. 9867",
+    "individualCoverageHra.state": "26 CFR 54.9802-4; T.D. 9867",
+    "qualifiedSmallEmployerHra.familyLimit": "IRC 9831(d)(2)(B)(iii), (D)(ii)",
+    "qualifiedSmallEmployerHra.selfOnlyLimit": "IRC 9831(d)(2)(B)(iii), (D)(ii)",
+    "qualifiedSmallEmployerHra.state": "IRC 9831(d); Pub. L. 114-255 sec. 18001"
+  },
+  "figureNotes": [
+    "td-9867: 26 CFR 54.9831-1(c)(3)(viii) and 54.9802-4 apply to plan years beginning on or after January 1, 2020",
+    "n-17-67 footnote 5: \"This adjustment increased the $10,000 limit to $10,050 for a QSEHRA provided in 2017; the adjustment did not increase the $4,950 limit for 2017.\" IRC 9831(d)(2)(B)(iii) states $4,950 ($10,000 for family members) and (d)(2)(D)(ii) indexes both for years beginning after 2016 from a 2015 base, rounded down to $50 (usc-26-9831)",
+    "rp-17-58, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,050 ($10,250 for family coverage)\" for 2018",
+    "rp-18-57, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,150 ($10,450 for family coverage)\" for 2019",
+    "td-9867, 26 CFR 54.9831-1(c)(3)(viii)(B)(1): amounts newly made available for each plan year \"do not exceed $1,800\", increased for plan years beginning after December 31, 2020 by the C-CPI-U over calendar year 2019 and rounded down to a multiple of $50",
+    "td-9867: 26 CFR 54.9802-4 applies to plan years beginning on or after January 1, 2020 and states no dollar limit outside its examples",
+    "rp-19-44, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,250 ($10,600 for family coverage)\" for 2020",
+    "rp-20-43 section 1: the indexed maximum \"will not change for plan years beginning after December 31, 2020, and before January 1, 2022, and remains $1,800\"",
+    "rp-20-45, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,300 ($10,700 for family coverage)\" for 2021",
+    "rp-21-25 section 2.02 or 3.02: \"For plan years beginning in 2022, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $1,800\"",
+    "rp-21-45, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,450 ($11,050 for family coverage)\" for 2022",
+    "rp-22-24 section 2.02 or 3.02: \"For plan years beginning in 2023, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $1,950\"",
+    "rp-22-38, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $5,850 ($11,800 for family coverage)\" for 2023",
+    "rp-23-23 section 2.02 or 3.02: \"For plan years beginning in 2024, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,100\"",
+    "rp-23-34, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,150 ($12,450 for family coverage)\" for 2024",
+    "rp-24-25 section 2.02 or 3.02: \"For plan years beginning in 2025, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,150\"",
+    "rp-24-40, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,350 ($12,800 for family coverage)\" for 2025",
+    "rp-25-19 section 2.02 or 3.02: \"For plan years beginning in 2026, the maximum amount that may be made newly available for the plan year for an excepted benefit HRA under § 54.9831-1(c)(3)(viii) is $2,200\"",
+    "rp-25-32, Qualified Small Employer Health Reimbursement Arrangement: the arrangement \"cannot exceed $6,450 ($13,100 for family coverage)\" for 2026"
+  ],
+  "figureSets": [
+    []
+  ],
+  "figureSources": {
+    "2017": {
+      "sources": [
+        "irs-notice-2017-67",
+        "usc-26-9831"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 1
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 1
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 1
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "irs-rev-proc-2017-58"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 2
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 2
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 2
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "irs-rev-proc-2018-57"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 0
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 3
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 3
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 3
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "td-9867"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "note": 4
+        },
+        "exceptedBenefitHra.state": {
+          "note": 4
+        },
+        "individualCoverageHra.state": {
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "sources": [
+            "irs-rev-proc-2019-44"
+          ],
+          "note": 6
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "sources": [
+            "irs-rev-proc-2019-44"
+          ],
+          "note": 6
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "sources": [
+            "irs-rev-proc-2019-44"
+          ],
+          "note": 6
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "irs-rev-proc-2020-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2020-43"
+          ],
+          "note": 7
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2020-43"
+          ],
+          "note": 7
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 8
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 8
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 8
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "irs-rev-proc-2021-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2021-25"
+          ],
+          "note": 9
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2021-25"
+          ],
+          "note": 9
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 10
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 10
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 10
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "irs-rev-proc-2022-38"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2022-24"
+          ],
+          "note": 11
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2022-24"
+          ],
+          "note": 11
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 12
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 12
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 12
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "irs-rev-proc-2023-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2023-23"
+          ],
+          "note": 13
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2023-23"
+          ],
+          "note": 13
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 14
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 14
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 14
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "irs-rev-proc-2024-40"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2024-25"
+          ],
+          "note": 15
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2024-25"
+          ],
+          "note": 15
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 16
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 16
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 16
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "irs-rev-proc-2025-32"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "exceptedBenefitHra.annualLimit": {
+          "sources": [
+            "irs-rev-proc-2025-19"
+          ],
+          "note": 17
+        },
+        "exceptedBenefitHra.state": {
+          "sources": [
+            "irs-rev-proc-2025-19"
+          ],
+          "note": 17
+        },
+        "individualCoverageHra.state": {
+          "sources": [
+            "td-9867"
+          ],
+          "note": 5
+        },
+        "qualifiedSmallEmployerHra.familyLimit": {
+          "note": 18
+        },
+        "qualifiedSmallEmployerHra.selfOnlyLimit": {
+          "note": 18
+        },
+        "qualifiedSmallEmployerHra.state": {
+          "note": 18
+        }
+      }
+    }
+  }
+}

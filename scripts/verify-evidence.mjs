@@ -36,21 +36,8 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, join } from "node:path";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const readJson = (p) => JSON.parse(readFileSync(join(root, p), "utf8"));
-
-/**
- * Non-figure keys in a year block: provenance and commentary, not amounts to
- * compare. Everything else must be either compared or explicitly declared
- * unmodelled, or the run fails with UNCOVERED.
- */
-const METADATA = /^(source|_.*|.*_note|.*_source)$/;
-
-/** Resolve `path` against `obj`, tolerating a null or missing intermediate. */
-const at = (obj, path) => path.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+import { join } from "node:path";
+import { METADATA, at, figures, loadCorpora, readJson, root } from "./lib/evidence-corpus.mjs";
 
 /**
  * Verify a corpus's source documents against its SHA256SUMS.txt.
@@ -110,28 +97,6 @@ function verifyDigests(corpusId) {
   return { problems, documents: recorded.size };
 }
 
-/** Load every corpus config under evidence/, sorted by directory name. */
-async function loadCorpora() {
-  const dirs = readdirSync(join(root, "evidence"), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
-  const corpora = [];
-  for (const dir of dirs) {
-    const configPath = join(root, "evidence", dir, "verifier-config.mjs");
-    let module;
-    try {
-      module = await import(pathToFileURL(configPath).href);
-    } catch (error) {
-      throw new Error(
-        `evidence/${dir} has no loadable verifier-config.mjs, so its figures would never be checked: ${error.message}`,
-      );
-    }
-    corpora.push({ id: dir, ...module.default });
-  }
-  return corpora;
-}
-
 /**
  * Compare one corpus's transcription against its data file.
  *
@@ -172,61 +137,34 @@ function verifyCorpus(config) {
     results.push({ year, label, expected, actual, citation, ok: expected === actual });
   };
 
-  for (const [yearKey, rawBlock] of Object.entries(blocks)) {
-    const year = parameters.years[yearKey];
-    if (!year) {
-      results.push({ year: yearKey, label: "(year block)", expected: "present", actual: "missing", citation: "-", ok: false });
-      continue;
-    }
-
-    /** Field names differ between transcription and data in a few places. */
-    const block = {};
-    for (const [key, value] of Object.entries(rawBlock)) block[aliases.get(key) ?? key] = value;
-
-    for (const [field, path, citation] of config.scalars ?? []) {
-      if (!(field in block)) continue;
-      // A deliberate evidence-vs-data divergence is asserted against the
-      // reconciled value, never skipped: if the data stops matching that value,
-      // that is still a failure.
-      const override = reconciled.get(`${yearKey}:${field}`);
-      const expected = override ? override.value : block[field];
-      const label = override ? `${field} (${override.why})` : field;
-      record(yearKey, field, label, expected, at(year, path) ?? null, citation);
-    }
-
-    for (const [field, path, members, citation] of config.tiered ?? []) {
-      const recorded = block[field];
-      if (!recorded) continue;
-      for (const member of members) {
-        if (!(member in recorded)) continue;
-        record(yearKey, field, `${field}.${member}`, recorded[member], at(year, [...path, member]) ?? null, citation);
+  for (const item of figures(config, parameters, primary)) {
+    const { yearKey, field, citation } = item;
+    switch (item.kind) {
+      case "missingYear":
+        results.push({ year: yearKey, label: "(year block)", expected: "present", actual: "missing", citation: "-", ok: false });
+        break;
+      case "scalar": {
+        // A deliberate evidence-vs-data divergence is asserted against the
+        // reconciled value, never skipped: if the data stops matching that value,
+        // that is still a failure.
+        const override = reconciled.get(`${yearKey}:${field}`);
+        const expected = override ? override.value : item.value;
+        const label = override ? `${field} (${override.why})` : field;
+        record(yearKey, field, label, expected, at(item.year, item.path) ?? null, citation);
+        break;
       }
-    }
-
-    for (const [field, path, members, citation] of config.bands ?? []) {
-      const recorded = block[field];
-      if (!recorded) continue;
-      for (const [evidenceMember, target] of Object.entries(members)) {
-        const expected = recorded[evidenceMember];
-        if (!expected) continue;
-        const dataMember = typeof target === "string" ? target : target.data;
-        const memberCitation = typeof target === "string" ? citation : target.citation;
-        const actual = at(year, [...path, dataMember]);
-        record(yearKey, field, `${field}.${evidenceMember}.start`, expected.start, actual?.[0], memberCitation);
-        record(yearKey, field, `${field}.${evidenceMember}.end`, expected.end, actual?.[1], memberCitation);
+      case "tiered":
+        record(yearKey, field, `${field}.${item.member}`, item.value, at(item.year, item.path) ?? null, citation);
+        break;
+      case "band": {
+        const actual = at(item.year, item.path);
+        record(yearKey, field, `${field}.${item.member}.start`, item.value.start, actual?.[0], citation);
+        record(yearKey, field, `${field}.${item.member}.end`, item.value.end, actual?.[1], citation);
+        break;
       }
-    }
-  }
-
-  // Sections recorded outside the year blocks, typically because they span more
-  // years than those blocks do.
-  for (const series of config.series ?? []) {
-    for (const [yearKey, entry] of Object.entries(primary[series.section] ?? {})) {
-      const year = parameters.years[yearKey];
-      if (!year) continue;
-      for (const [label, evidencePath, dataPath, citation] of series.comparisons) {
-        record(yearKey, null, label, at(entry, evidencePath), at(year, dataPath), citation);
-      }
+      case "series":
+        record(yearKey, null, item.label, item.value, at(item.year, item.path), citation);
+        break;
     }
   }
 

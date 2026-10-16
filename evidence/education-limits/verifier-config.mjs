@@ -61,4 +61,22 @@ export default {
       "IRC 530(c)(1)",
     ],
   ],
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // The §127 amount and state.
+      ["educationalAssistance_source", /^educationalAssistance(?:Exclusion_127a2|State)$/],
+      // Only the §529 state; every qtp* cap has its own prefix key.
+      ["qualifiedTuitionProgram_source", /^qualifiedTuitionProgramState$/],
+      // Every §530 field: state, limit and both phase-out bands.
+      ["coverdell_source", /^coverdell(?:State|ContributionLimit_530b1Aiii|Phaseout_530c1)$/],
+    ],
+  },
 };

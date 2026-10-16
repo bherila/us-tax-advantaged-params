@@ -1700,6 +1700,63 @@ other than 403(b) are untouched: a 2001 401(k) is still `determinate_with_assump
 
 Do not discard diagnostics. They are part of the calculation contract. A non-error status may still contain warnings about missing plan terms, historical uncertainty, employer aggregation, Roth catch-up classification, or caller assumptions.
 
+## Where each figure came from
+
+Every parameter-table lookup has a twin that returns the provenance of the
+figures it returns, nested exactly like the row:
+
+| Table | Lookup | Provenance |
+|---|---|---|
+| Retirement | `parametersForYear` | `parameterSourcesForYear` |
+| HSA | `hsaParametersForYear` | `hsaParameterSourcesForYear` |
+| FSA and dependent care | `fsaParametersForYear` | `fsaParameterSourcesForYear` |
+| Payroll tax | `payrollParametersForYear` | `payrollParameterSourcesForYear` |
+| Education | `educationParametersForYear` | `educationParameterSourcesForYear` |
+| ABLE | `ableParametersForYear` | `ableParameterSourcesForYear` |
+| Adoption | `adoptionParametersForYear` | `adoptionParameterSourcesForYear` |
+| HRA | `hraParametersForYear` | `hraParameterSourcesForYear` |
+| Commuter | `commuterParametersForYear` | `commuterParameterSourcesForYear` |
+
+```ts
+const limits = USTaxAdvantagedParams.parametersForYear(2026);
+const sources = USTaxAdvantagedParams.parameterSourcesForYear(2026);
+
+limits.electiveDeferral402g;          // 24500
+sources.figures.electiveDeferral402g;
+// {
+//   citation: "IRC 402(g)(1)",
+//   sources: [{ id: "irs-notice-2025-67", title: "Notice 2025-67, ...", url: "https://...", authority: "IRS" }],
+//   note: null,
+// }
+```
+
+Each figure carries:
+
+- `citation`: the provision the figure is set under.
+- `sources`: the primary documents that publish or fix it, as full records from
+  the table's source metadata.
+- `note`: the evidence corpus's own explanation, where the figure is not printed
+  verbatim in those documents. For example, a statutory amount no annual notice
+  states, or a figure derived from a published one.
+
+A figure appears only for a year the evidence corpus under `evidence/`
+transcribes it. A figure the corpus does not cover that year has no entry: it
+is unattributed, never defaulted to that year's notice. A note can also cite no
+document at all, when the evidence explains the figure without one.
+
+Each provenance lookup accepts the same years as its table: it returns `null`
+where the table returns `null`, and throws where the table throws.
+
+The attribution is derived, not hand-written. `npm run derive:sources` reads
+each corpus's year `source`, its per-figure `*_source` keys, and the
+`sources` declarations in its `verifier-config.mjs`, then writes the result to
+`data/<table>-figure-sources.json` beside each data file, which the engines
+embed. CI fails if the sidecars fall out of step (`npm run
+derive:sources:check`). Prose source notes are never parsed for citations. Each
+distinct note is reviewed once and recorded under `notes` in its corpus's
+`figure-sources.json`, and a new or changed note fails the check until it has been
+reviewed.
+
 ## Native TypeScript/PHP parity
 
 The DRY boundary is the statutory data and behavioral specification, not a cross-language runtime dependency:

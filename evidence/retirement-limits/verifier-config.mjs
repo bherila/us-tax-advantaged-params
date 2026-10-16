@@ -222,4 +222,36 @@ export default {
     "2024:rothCatchUpWageThreshold_414v7A": { value: null, why: "Notice 2023-62 transition period" },
     "2025:rothCatchUpWageThreshold_414v7A": { value: null, why: "Notice 2023-62 transition period" },
   },
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // 2006 only; the two §402A availability flags EGTRRA §617 opened.
+      ["availabilityDesignatedRoth_source", /^availabilityDesignatedRoth(?:401k|403b)_402A$/],
+      // 2024 only; the starter-plan amounts, which Notice 2023-75 (the year source) does not state.
+      ["starterDeferralOnly_source", /^starterDeferralOnly(?:Base_401k16DiII_403b16DiII|Age50CatchUp)$/],
+      // The three statutory §402(g)(7) 15-year catch-up figures.
+      ["special403bCatchUp_source", /^special403b(?:AnnualCatchUp_402g7Ai|LifetimeCatchUp_402g7Aii|ServiceLimit_402g7Aiii)$/],
+      // The nine §25B(b) AGI thresholds; saversCreditRetirementContributionsQualify has its own prefix key.
+      ["saversCreditAgi_source", /^saversCreditAgi(?:JointReturn_25Bb1|HeadOfHousehold_25Bb2A|AllOtherTaxpayers_25Bb2B)$/],
+      // 1997 only; the two SBJPA SARSEP transition flags.
+      ["sarsep_source", /^(?:newSarsepMayBeEstablished|grandfatheredSarsepMayOperate)_408k6A$/],
+      // 1979 only; usc-26-457 fixes only the two §457 availability flags, while availabilitySepIra_408k stays with the Revenue Act of 1978 (year source).
+      ["availability_source", /^availability(?:Governmental|Nongovernmental)457b_457$/],
+      // 2002 only; the two 100-percent fractions EGTRRA §632 set, which IR-2001-115 (the year source) does not state; every dollar limit IR-2001-115 prints stays with it.
+      ["statutoryLimits_source", /^(?:annualAdditionsCompensationFraction_415c1B|section457bIncludibleCompensationFraction_457b2B)$/],
+      // 2002-2008: the EGTRRA IRA limit and catch-up; in 2002 (p590-2002) also the SEP 25% rate and the three IRA phase-out bands, which IR-2001-115 does not state (2003-2007 have no bands; 2008's carry their own keys).
+      ["iraLimits_source", /^(?:ira(?:Contribution_219b5A|CatchUp50_219b5Bii)|sepMaximumEmployerContributionRate|traditionalCoveredPhaseout|traditionalSpouseCoveredPhaseout_219g7A|rothPhaseout_408Ac3)$/],
+      // 1995-2000: the plan dollar limits the IRM table and the COLA notices print; the IRA figures, phase-outs, 25% fraction and 15% SEP rate stay with the year's Publication 590.
+      ["planLimits_source", /^(?:electiveDeferral_402g1|annualAdditions_415c1A|compensationLimit_401a17|simpleSalaryReduction_408p2A|section457b_457b2AndC1|sepCompensation_408k2C)$/],
+      // 1977: the ERISA IRA rules; 1981: those plus the Revenue Act of 1978 SEP/§457/§401(k) fields; 1997: the Roth flag. Spousal and one-earner fields are excluded so they keep the year source (pl-94-455, irs-soi-ira-1983, p590-1997), which is the right document in each of those years.
+      ["iraPolicy_source", /^(?:ira(?:Contribution_219b1|CompensationFraction_219b1|UniversalEligibility_219b2|TraditionalContributionAge70HalfRestriction_219b3|RothAvailable_408A)|traditionalIraAvailable_219And408|sep(?:Available_408k|MaximumEmployerContributionRate_404h1C)|section457b(?:Available_457|_457b2A|IncludibleCompensationFraction_457b2B|SpecialLastThreeYearsMaximum_457b3A)|traditional401kAvailable_401k)$/],
+    ],
+  },
 };

@@ -50,7 +50,7 @@ try {
                 // The same discovery rule as scripts/check-parity.mjs.
                 $methods = [];
                 foreach ((new ReflectionClass(USTaxAdvantagedParams::class))->getMethods() as $method) {
-                    if ($method->isPublic() && $method->isStatic() && preg_match('/(?:^p|P)arametersForYear$/', $method->getName()) === 1) {
+                    if ($method->isPublic() && $method->isStatic() && preg_match('/(?:^p|P)arameter(?:s|Sources)ForYear$/', $method->getName()) === 1) {
                         $methods[] = $method->getName();
                     }
                 }

@@ -13,7 +13,7 @@ interface ConformanceVector {
   expectError?: { code: string };
 }
 
-const TABLE_LOOKUP = /(?:^p|P)arametersForYear$/;
+const TABLE_LOOKUP = /(?:^p|P)arameter(?:s|Sources)ForYear$/;
 
 function invoke(vector: ConformanceVector): unknown {
   if (vector.operation === "payrollTax") {

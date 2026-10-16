@@ -31,4 +31,22 @@ export default {
     ["creditPhaseout_23b2A", ["adoptionCredit"], { phaseout: "phaseout" }, "IRC 23(b)(2)(A)"],
     ["exclusionPhaseout_137b2A", ["adoptionAssistanceExclusion"], { phaseout: "phaseout" }, "IRC 137(b)(2)(A)"],
   ],
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // 2025-2026 only; the §23(a)(4) portion and the resulting 'partially_refundable' status, which the pre-enactment Rev. Proc. 2024-40 cannot fix.
+      ["refundablePortion_source", /^creditRefundab(?:lePortion_23a4|ility)$/],
+      // 2010-2012 only; the §36C redesignation, its refundability and the 2012 return to §23.
+      ["codeSection_source", /^credit(?:CodeSection|Refundability)$/],
+      // Every dollar amount and phase-out in the Adoption Credit / Assistance sections; the state, code-section and refundability fields stay with the year source or the narrower groups.
+      ["amounts_source", /^(?:credit(?:DollarLimit|SpecialNeedsDollarLimit)_23b1|creditSpecialNeedsAmount_23a3|creditPhaseout_23b2A|exclusion(?:DollarLimit|SpecialNeedsDollarLimit)_137b1|exclusionSpecialNeedsAmount_137a2|exclusionPhaseout_137b2A)$/],
+    ],
+  },
 };

@@ -1,0 +1,364 @@
+{
+  "figureCitations": {
+    "ableAccount.ableToWorkContributionAvailable": "IRC 529A(b)(2)(B)(ii); Pub. L. 115-97 sec. 11024; Pub. L. 119-21 sec. 70115(a)(2)",
+    "ableAccount.annualContributionLimit": "IRC 529A(b)(2)(B)(i)",
+    "ableAccount.disabilityOnsetAgeLimit": "IRC 529A(e)(1)(A); Pub. L. 117-328 div. T sec. 124",
+    "ableAccount.section2503bExclusion": "IRC 2503(b)",
+    "ableAccount.state": "IRC 529A; Pub. L. 113-295 div. B sec. 102(f)(1)"
+  },
+  "figureNotes": [
+    "IRC 529A(b)(2)(B)(ii) was added by Pub. L. 115-97 section 11024(a), applicable to taxable years beginning after December 22, 2017 (usc-26-529A effective-date note)",
+    "IRC 529A(b)(2)(B)(i) is the amount in effect under section 2503(b) for the calendar year (pl-113-295 div. B section 102(a), as amended by Pub. L. 115-97 section 11024 without changing clause (i)); usc-26-529A",
+    "IRC 529A(e)(1)(A), blindness or disability occurring before age 26, as enacted by pl-113-295 div. B section 102(a)",
+    "rp-14-61, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2015, the first $14,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-15-53, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2016, the first $14,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-16-55, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2017, the first $14,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "IRC 529A(b)(2)(B)(ii), Pub. L. 115-97 section 11024(a), for contributions before January 1, 2026 (usc-26-529A)",
+    "rp-17-58, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2018, the first $15,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-18-57, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2019, the first $15,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-19-44, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2020, the first $15,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-20-45, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2021, the first $15,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-21-45, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2022, the first $16,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-22-38, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2023, the first $17,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-23-34, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2024, the first $18,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "rp-24-40, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2025, the first $19,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\"",
+    "pl-119-21 section 70115(a)(2) strikes \"before January 1, 2026\" from IRC 529A(b)(2)(B)(ii), for contributions made after December 31, 2025",
+    "rp-25-32 section 4.34, verbatim: \"For taxable years beginning in 2026, $20,000 (instead of instead of the amount under provided in section 4.42(1) of this revenue procedure) is included in the aggregate limitation on contributions to ABLE accounts under § 529A(b)(2)(B)(i).\" [sic; the doubled words are in the published procedure, and the sentence still displaces the section 4.42(1) gift exclusion]. pl-119-21 section 70115(a)(1) substitutes 1996 for 1997 in the 2503(b)(2)(B) adjustment for this purpose, for taxable years beginning after December 31, 2025",
+    "Pub. L. 117-328 div. T section 124(a) substitutes \"age 46\" for \"age 26\" in IRC 529A(e)(1)(A) and (2)(A)(i)(II), applicable to taxable years beginning after December 31, 2025 under section 124(b), quoted in the usc-26-529A notes",
+    "rp-25-32, Annual Exclusion for Gifts, paragraph (1): \"For calendar year 2026, the first $19,000 of gifts to any person ... are not included in the total amount of taxable gifts under § 2503\""
+  ],
+  "figureSets": [
+    [
+      "ableAccount.state"
+    ]
+  ],
+  "figureSources": {
+    "2015": {
+      "sources": [
+        "irs-rev-proc-2014-61"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 0
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 3
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "irs-rev-proc-2015-53"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 0
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 4
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "irs-rev-proc-2016-55"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 0
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 5
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "irs-rev-proc-2017-58"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 7
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "irs-rev-proc-2018-57"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 8
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "irs-rev-proc-2019-44"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 9
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "irs-rev-proc-2020-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 10
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "irs-rev-proc-2021-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 11
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "irs-rev-proc-2022-38"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 12
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "irs-rev-proc-2023-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 13
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "irs-rev-proc-2024-40"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 6
+        },
+        "ableAccount.annualContributionLimit": {
+          "note": 1
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "pl-113-295",
+            "usc-26-529A"
+          ],
+          "note": 2
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 14
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "irs-rev-proc-2025-32"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ableAccount.ableToWorkContributionAvailable": {
+          "sources": [
+            "pl-119-21"
+          ],
+          "note": 15
+        },
+        "ableAccount.annualContributionLimit": {
+          "sources": [
+            "irs-rev-proc-2025-32",
+            "pl-119-21"
+          ],
+          "note": 16
+        },
+        "ableAccount.disabilityOnsetAgeLimit": {
+          "sources": [
+            "usc-26-529A"
+          ],
+          "note": 17
+        },
+        "ableAccount.section2503bExclusion": {
+          "note": 18
+        }
+      }
+    }
+  }
+}

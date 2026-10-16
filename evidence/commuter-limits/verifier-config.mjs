@@ -33,4 +33,24 @@ export default {
     "2015:transitMonthly_132f2A": { value: 250, why: "Pub. L. 114-113 div. Q sec. 105; Notice 2016-6" },
     "2016:transitMonthly_132f2A": { value: 255, why: "Pub. L. 114-113 div. Q sec. 105; Notice 2016-6" },
   },
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // 2009, 2012, 2014-2016: the data carries the as-corrected transit amount (and 2009's within-year state), which the printed Rev. Proc. did not publish; transitMonthlyJanuary2009 keeps the printed $120 and is excluded.
+      ["transitCorrection_source", /^(?:transitState|transitMonthly(?:Corrected|March2009)?_132f2A)$/],
+      // 2002 only; the statutory $100 transit amount. It shadows amounts_source (rp-01-59) for that one figure.
+      ["transitIncrease_source", /^transitMonthly_132f2A$/],
+      // Every bicycle field; the Rev. Procs. never state the unindexed $20 or the suspension and repeal.
+      ["bicycle_source", /^bicycle(?:State|Monthly_132f5Fii)$/],
+      // The Qualified Transportation Fringe item: printed transit and parking amounts and their states, in years no correction overrides.
+      ["amounts_source", /^(?:transitState|parkingState|transitMonthly(?:January2009)?_132f2A|parkingMonthly_132f2B)$/],
+    ],
+  },
 };

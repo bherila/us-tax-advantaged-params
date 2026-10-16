@@ -1,0 +1,895 @@
+{
+  "figureCitations": {
+    "bicycleCommuting.monthlyAmount": "IRC 132(f)(5)(F)(ii)",
+    "bicycleCommuting.state": "IRC 132(f)(1)(D), (8); Pub. L. 119-21 sec. 70112(a)",
+    "parking.monthlyLimit": "IRC 132(f)(2)(B)",
+    "parking.state": "IRC 132(f)(2)(B)",
+    "transitAndVanpool.monthlyLimit": "IRC 132(f)(2)(A)",
+    "transitAndVanpool.monthlyLimitsByMonth.0": "IRC 132(f)(2)(A) before Pub. L. 111-5 sec. 1151",
+    "transitAndVanpool.monthlyLimitsByMonth.2": "IRC 132(f)(2) parity sentence, Pub. L. 111-5 sec. 1151",
+    "transitAndVanpool.state": "IRC 132(f)(2)(A)"
+  },
+  "figureNotes": [
+    "IRC 132(f)(1)(D) was added by pl-110-343 div. B section 211 for taxable years beginning after December 31, 2008",
+    "pl-105-178 section 9010(b)(2) substitutes $65 and $175 in IRC 132(f)(2)(A) and (B) for taxable years beginning after December 31, 1998, and indexes them only for taxable years beginning in a calendar year after 1999; Rev. Proc. 98-61 has no IRC 132(f) item",
+    "rp-99-42, Qualified Transportation Fringe item for 2000",
+    "rp-01-13, Qualified Transportation Fringe item for 2001",
+    "rp-01-59, Qualified Transportation Fringe item for 2002",
+    "pl-105-178 section 9010(c): $100 for taxable years beginning after December 31, 2001, indexed from a calendar-2001 base after 2002",
+    "rp-02-70, Qualified Transportation Fringe item for 2003",
+    "rp-03-85, Qualified Transportation Fringe item for 2004",
+    "rp-04-71, Qualified Transportation Fringe item for 2005",
+    "rp-05-70, Qualified Transportation Fringe item for 2006",
+    "rp-06-53, Qualified Transportation Fringe item for 2007",
+    "rp-07-66, Qualified Transportation Fringe item for 2008",
+    "pl-110-343 div. B section 211: \"the product of $20 multiplied by the number of qualified bicycle commuting months\", for taxable years beginning after December 31, 2008; not inflation adjusted",
+    "rp-08-66, Qualified Transportation Fringe item for 2009",
+    "pl-111-5 section 1151 adds a flush sentence to IRC 132(f)(2): for months beginning on or after the date of enactment (February 17, 2009), subparagraph (A) is applied as if its amount were the parking amount. January and February 2009 keep the published $120; March through December take $230 The data carries null rather than the transcribed figure: Pub. L. 111-5 sec. 1151 changed transit from March 2009; the year carries a monthly schedule.",
+    "pl-111-5 section 1151 adds a flush sentence to IRC 132(f)(2): for months beginning on or after the date of enactment (February 17, 2009), subparagraph (A) is applied as if its amount were the parking amount. January and February 2009 keep the published $120; March through December take $230",
+    "rp-09-50, Qualified Transportation Fringe item for 2010",
+    "rp-11-12, Qualified Transportation Fringe item for 2011",
+    "rp-11-52, Qualified Transportation Fringe item for 2012",
+    "pl-112-240 section 203 extends the parity sentence to months before January 1, 2014, effective for months after December 31, 2011; rp-13-15 section 3 modifies Rev. Proc. 2011-52 to state $240 for 2012 The data carries 240 rather than the transcribed figure: Pub. L. 112-240 sec. 203 parity; Rev. Proc. 2013-15 sec. 3. pl-112-240 section 203 extends the parity sentence to months before January 1, 2014, effective for months after December 31, 2011; rp-13-15 section 3 modifies Rev. Proc. 2011-52 to state $240 for 2012",
+    "pl-112-240 section 203 extends the parity sentence to months before January 1, 2014, effective for months after December 31, 2011; rp-13-15 section 3 modifies Rev. Proc. 2011-52 to state $240 for 2012",
+    "rp-13-15, Qualified Transportation Fringe item for 2013",
+    "rp-13-35, Qualified Transportation Fringe item for 2014",
+    "pl-113-295 div. A section 103 extends the parity sentence to months before January 1, 2015, effective for months after December 31, 2013, so transit takes the $250 parking amount The data carries 250 rather than the transcribed figure: Pub. L. 113-295 div. A sec. 103 parity.",
+    "pl-113-295 div. A section 103 extends the parity sentence to months before January 1, 2015, effective for months after December 31, 2013, so transit takes the $250 parking amount",
+    "rp-14-61, Qualified Transportation Fringe item for 2015",
+    "pl-114-113 div. Q section 105 substitutes $175 for $100 in IRC 132(f)(2)(A), effective for months after December 31, 2014; n-16-06: the transit exclusion \"increased from $130 per participating employee to $250 per participating employee for the period from January 1, 2015, through December 31, 2015\" The data carries 250 rather than the transcribed figure: Pub. L. 114-113 div. Q sec. 105; Notice 2016-6. pl-114-113 div. Q section 105 substitutes $175 for $100 in IRC 132(f)(2)(A), effective for months after December 31, 2014; n-16-06: the transit exclusion \"increased from $130 per participating employee to $250 per participating employee for the period from January 1, 2015, through December 31, 2015\"",
+    "pl-114-113 div. Q section 105 substitutes $175 for $100 in IRC 132(f)(2)(A), effective for months after December 31, 2014; n-16-06: the transit exclusion \"increased from $130 per participating employee to $250 per participating employee for the period from January 1, 2015, through December 31, 2015\"",
+    "rp-15-53, Qualified Transportation Fringe item for 2016",
+    "n-16-06: \"For 2016, the monthly exclusion under both §132(f)(2)(A) ... and § 132(f)(2)(B) (qualified parking) is $255\", after pl-114-113 div. Q section 105 The data carries 255 rather than the transcribed figure: Pub. L. 114-113 div. Q sec. 105; Notice 2016-6. n-16-06: \"For 2016, the monthly exclusion under both §132(f)(2)(A) ... and § 132(f)(2)(B) (qualified parking) is $255\", after pl-114-113 div. Q section 105",
+    "n-16-06: \"For 2016, the monthly exclusion under both §132(f)(2)(A) ... and § 132(f)(2)(B) (qualified parking) is $255\", after pl-114-113 div. Q section 105",
+    "rp-16-55, Qualified Transportation Fringe item for 2017",
+    "pl-115-97 section 11047 adds IRC 132(f)(8): paragraph (1)(D) \"shall not apply to any taxable year beginning after December 31, 2017, and before January 1, 2026\"",
+    "rp-17-58, Qualified Transportation Fringe item for 2018",
+    "rp-18-57, Qualified Transportation Fringe item for 2019",
+    "rp-19-44, Qualified Transportation Fringe item for 2020",
+    "rp-20-45, Qualified Transportation Fringe item for 2021",
+    "rp-21-45, Qualified Transportation Fringe item for 2022",
+    "rp-22-38, Qualified Transportation Fringe item for 2023",
+    "rp-23-34, Qualified Transportation Fringe item for 2024",
+    "rp-24-40, Qualified Transportation Fringe item for 2025",
+    "pl-119-21 section 70112(a) strikes IRC 132(f)(1)(D), (2)(C), (5)(F) and (8) for taxable years beginning after December 31, 2025: the benefit is repealed, not suspended",
+    "rp-25-32, Qualified Transportation Fringe item for 2026"
+  ],
+  "figureSets": [
+    []
+  ],
+  "figureSources": {
+    "1999": {
+      "sources": [
+        "pl-105-178"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 1
+        },
+        "parking.state": {
+          "note": 1
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 1
+        },
+        "transitAndVanpool.state": {
+          "note": 1
+        }
+      }
+    },
+    "2000": {
+      "sources": [
+        "irs-rev-proc-1999-42"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 2
+        },
+        "parking.state": {
+          "note": 2
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 2
+        },
+        "transitAndVanpool.state": {
+          "note": 2
+        }
+      }
+    },
+    "2001": {
+      "sources": [
+        "irs-rev-proc-2001-13"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 3
+        },
+        "parking.state": {
+          "note": 3
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 3
+        },
+        "transitAndVanpool.state": {
+          "note": 3
+        }
+      }
+    },
+    "2002": {
+      "sources": [
+        "irs-rev-proc-2001-59"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 4
+        },
+        "parking.state": {
+          "note": 4
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "pl-105-178"
+          ],
+          "note": 5
+        },
+        "transitAndVanpool.state": {
+          "note": 4
+        }
+      }
+    },
+    "2003": {
+      "sources": [
+        "irs-rev-proc-2002-70"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 6
+        },
+        "parking.state": {
+          "note": 6
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 6
+        },
+        "transitAndVanpool.state": {
+          "note": 6
+        }
+      }
+    },
+    "2004": {
+      "sources": [
+        "irs-rev-proc-2003-85"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 7
+        },
+        "parking.state": {
+          "note": 7
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 7
+        },
+        "transitAndVanpool.state": {
+          "note": 7
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "irs-rev-proc-2004-71"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 8
+        },
+        "parking.state": {
+          "note": 8
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 8
+        },
+        "transitAndVanpool.state": {
+          "note": 8
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "irs-rev-proc-2005-70"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 9
+        },
+        "parking.state": {
+          "note": 9
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 9
+        },
+        "transitAndVanpool.state": {
+          "note": 9
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "irs-rev-proc-2006-53"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 10
+        },
+        "parking.state": {
+          "note": 10
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 10
+        },
+        "transitAndVanpool.state": {
+          "note": 10
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "irs-rev-proc-2007-66"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 0
+        },
+        "parking.monthlyLimit": {
+          "note": 11
+        },
+        "parking.state": {
+          "note": 11
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 11
+        },
+        "transitAndVanpool.state": {
+          "note": 11
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "irs-rev-proc-2008-66"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "note": 13
+        },
+        "parking.state": {
+          "note": 13
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "pl-111-5"
+          ],
+          "note": 14
+        },
+        "transitAndVanpool.monthlyLimitsByMonth.0": {
+          "note": 13
+        },
+        "transitAndVanpool.monthlyLimitsByMonth.2": {
+          "sources": [
+            "pl-111-5"
+          ],
+          "note": 15
+        },
+        "transitAndVanpool.state": {
+          "sources": [
+            "pl-111-5"
+          ],
+          "note": 15
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "irs-rev-proc-2009-50"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "note": 16
+        },
+        "parking.state": {
+          "note": 16
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 16
+        },
+        "transitAndVanpool.state": {
+          "note": 16
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "irs-rev-proc-2011-12"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "note": 17
+        },
+        "parking.state": {
+          "note": 17
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 17
+        },
+        "transitAndVanpool.state": {
+          "note": 17
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "pl-110-343"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "sources": [
+            "irs-rev-proc-2011-52"
+          ],
+          "note": 18
+        },
+        "parking.state": {
+          "sources": [
+            "irs-rev-proc-2011-52"
+          ],
+          "note": 18
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "pl-112-240",
+            "irs-rev-proc-2013-15"
+          ],
+          "citation": "IRC 132(f)(2)(A); IRC 132(f)(2)(A), as corrected",
+          "note": 19
+        },
+        "transitAndVanpool.state": {
+          "sources": [
+            "pl-112-240",
+            "irs-rev-proc-2013-15"
+          ],
+          "note": 20
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "irs-rev-proc-2013-15"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "note": 21
+        },
+        "parking.state": {
+          "note": 21
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 21
+        },
+        "transitAndVanpool.state": {
+          "note": 21
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "pl-110-343"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "sources": [
+            "irs-rev-proc-2013-35"
+          ],
+          "note": 22
+        },
+        "parking.state": {
+          "sources": [
+            "irs-rev-proc-2013-35"
+          ],
+          "note": 22
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "pl-113-295"
+          ],
+          "note": 23
+        },
+        "transitAndVanpool.state": {
+          "sources": [
+            "pl-113-295"
+          ],
+          "note": 24
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "pl-110-343"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "sources": [
+            "irs-rev-proc-2014-61"
+          ],
+          "note": 25
+        },
+        "parking.state": {
+          "sources": [
+            "irs-rev-proc-2014-61"
+          ],
+          "note": 25
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "pl-114-113",
+            "irs-notice-2016-6"
+          ],
+          "citation": "IRC 132(f)(2)(A); IRC 132(f)(2)(A), as corrected",
+          "note": 26
+        },
+        "transitAndVanpool.state": {
+          "sources": [
+            "pl-114-113",
+            "irs-notice-2016-6"
+          ],
+          "note": 27
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "pl-110-343"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "sources": [
+            "irs-rev-proc-2015-53"
+          ],
+          "note": 28
+        },
+        "parking.state": {
+          "sources": [
+            "irs-rev-proc-2015-53"
+          ],
+          "note": 28
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "sources": [
+            "irs-notice-2016-6",
+            "pl-114-113"
+          ],
+          "citation": "IRC 132(f)(2)(A); IRC 132(f)(2)(A), as corrected",
+          "note": 29
+        },
+        "transitAndVanpool.state": {
+          "sources": [
+            "irs-notice-2016-6",
+            "pl-114-113"
+          ],
+          "note": 30
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "irs-rev-proc-2016-55"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.monthlyAmount": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-110-343"
+          ],
+          "note": 12
+        },
+        "parking.monthlyLimit": {
+          "note": 31
+        },
+        "parking.state": {
+          "note": 31
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 31
+        },
+        "transitAndVanpool.state": {
+          "note": 31
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "irs-rev-proc-2017-58"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 33
+        },
+        "parking.state": {
+          "note": 33
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 33
+        },
+        "transitAndVanpool.state": {
+          "note": 33
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "irs-rev-proc-2018-57"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 34
+        },
+        "parking.state": {
+          "note": 34
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 34
+        },
+        "transitAndVanpool.state": {
+          "note": 34
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "irs-rev-proc-2019-44"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 35
+        },
+        "parking.state": {
+          "note": 35
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 35
+        },
+        "transitAndVanpool.state": {
+          "note": 35
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "irs-rev-proc-2020-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 36
+        },
+        "parking.state": {
+          "note": 36
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 36
+        },
+        "transitAndVanpool.state": {
+          "note": 36
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "irs-rev-proc-2021-45"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 37
+        },
+        "parking.state": {
+          "note": 37
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 37
+        },
+        "transitAndVanpool.state": {
+          "note": 37
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "irs-rev-proc-2022-38"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 38
+        },
+        "parking.state": {
+          "note": 38
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 38
+        },
+        "transitAndVanpool.state": {
+          "note": 38
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "irs-rev-proc-2023-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 39
+        },
+        "parking.state": {
+          "note": 39
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 39
+        },
+        "transitAndVanpool.state": {
+          "note": 39
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "irs-rev-proc-2024-40"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-115-97"
+          ],
+          "note": 32
+        },
+        "parking.monthlyLimit": {
+          "note": 40
+        },
+        "parking.state": {
+          "note": 40
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 40
+        },
+        "transitAndVanpool.state": {
+          "note": 40
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "irs-rev-proc-2025-32"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "bicycleCommuting.state": {
+          "sources": [
+            "pl-119-21"
+          ],
+          "note": 41
+        },
+        "parking.monthlyLimit": {
+          "note": 42
+        },
+        "parking.state": {
+          "note": 42
+        },
+        "transitAndVanpool.monthlyLimit": {
+          "note": 42
+        },
+        "transitAndVanpool.state": {
+          "note": 42
+        }
+      }
+    }
+  }
+}

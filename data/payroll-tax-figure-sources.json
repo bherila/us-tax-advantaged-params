@@ -1,0 +1,4364 @@
+{
+  "figureCitations": {
+    "additionalMedicareJointThreshold": "IRC 3101(b)(2)(A), 1401(b)(2)(A)",
+    "additionalMedicareOtherThreshold": "IRC 3101(b)(2)(C), 1401(b)(2)(A)",
+    "additionalMedicareRatePercent": "IRC 3101(b)(2), 1401(b)(2)(A)",
+    "additionalMedicareSeparateThresholdFraction": "IRC 3101(b)(2)(B), 1401(b)(2)(A)",
+    "additionalMedicareWithholdingThreshold": "IRC 3102(f)(1)",
+    "contributionAndBenefitBase": "Social Security Act 230 (42 U.S.C. 430); IRC 3121(a)(1), 1402(b)(1)",
+    "hiRateEmployeePercent": "IRC 3101(b)(1)",
+    "hiRateEmployerPercent": "IRC 3111(b)",
+    "hospitalInsuranceWageBase": "IRC 3121(a)(1) and 1402(b)(1) as in effect before 1994; Pub. L. 103-66 section 13207 repealed the HI cap",
+    "netEarningsDeductionFraction": "IRC 1402(a)(12)",
+    "netEarningsHiRateBasisPercent": "IRC 1402(a)(12)",
+    "netEarningsOasdiRateBasisPercent": "IRC 1402(a)(12)",
+    "oasdiRateEmployeePercent": "IRC 3101(a)",
+    "oasdiRateEmployerPercent": "IRC 3111(a)",
+    "secaHiDeductionFraction": "IRC 164(f)",
+    "secaHiRatePercent": "IRC 1401(b)(1)",
+    "secaOasdiDeductionFraction": "IRC 164(f)",
+    "secaOasdiRatePercent": "IRC 1401(a)",
+    "selfEmploymentMinimumNetEarnings": "IRC 1402(b)(2)"
+  },
+  "figureNotes": [
+    "IRC 1402(a)(12), 1402(b)(2), 164(f); Additional Medicare: 3101(b)(2), 3102(f), 1401(b)(2), effective from 2013.",
+    "IRC 3101(a)-(b), 3111(a)-(b), 1401(a)-(b); ordinary statutory rates",
+    "IRC 3101(a)-(b), 3111(a)-(b), 1401(a)-(b); Pub. L. 111-312 s.601 and Pub. L. 112-96 s.1001"
+  ],
+  "figureSets": [
+    [
+      "contributionAndBenefitBase",
+      "hospitalInsuranceWageBase"
+    ]
+  ],
+  "figureSources": {
+    "1991": {
+      "sources": [
+        "p15--1991"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1992": {
+      "sources": [
+        "p15--1992"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1993": {
+      "sources": [
+        "p15--1993"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1994": {
+      "sources": [
+        "p15--1994"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1995": {
+      "sources": [
+        "fr-95-26426"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1996": {
+      "sources": [
+        "fr-95-26426"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1997": {
+      "sources": [
+        "fr-96-27414"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1998": {
+      "sources": [
+        "fr-97-28496"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1999": {
+      "sources": [
+        "fr-98-28988"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2000": {
+      "sources": [
+        "fr-99-27865"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2001": {
+      "sources": [
+        "fr-00-27249"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2002": {
+      "sources": [
+        "fr-01-26911"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2003": {
+      "sources": [
+        "fr-02-27203"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2004": {
+      "sources": [
+        "fr-03-26642"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "fr-04-23915"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "fr-05-21272"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "fr-E6-17939"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "fr-E7-21070"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "fr-E8-25905"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "fr-E9-25930"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "fr-2010-26983"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 2
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 2
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101",
+            "pl-111publ312"
+          ],
+          "note": 2
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 2
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 2
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401",
+            "pl-111publ312"
+          ],
+          "note": 2
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "fr-2011-27496"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 2
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 2
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101",
+            "pl-111publ312",
+            "pl-112publ96"
+          ],
+          "note": 2
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 2
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 2
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401",
+            "pl-111publ312",
+            "pl-112publ96"
+          ],
+          "note": 2
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "fr-2012-26663"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "fr-2014-25802"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "fr-2014-25802"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "fr-2015-27828"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "fr-2016-26026"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "fr-2017-27105"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "fr-2018-23193"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "fr-2019-22921"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "fr-2020-23442"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "fr-2021-23031"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "fr-2022-23073"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "fr-2023-23317"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "fr-2024-24871"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "fr-2025-19763"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalMedicareJointThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareOtherThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareRatePercent": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareSeparateThresholdFraction": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "additionalMedicareWithholdingThreshold": {
+          "sources": [
+            "usc-26-3101",
+            "usc-26-3102",
+            "usc-26-1401"
+          ],
+          "note": 0
+        },
+        "hiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "hiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "netEarningsDeductionFraction": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsHiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "netEarningsOasdiRateBasisPercent": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        },
+        "oasdiRateEmployeePercent": {
+          "sources": [
+            "usc-26-3101"
+          ],
+          "note": 1
+        },
+        "oasdiRateEmployerPercent": {
+          "sources": [
+            "usc-26-3111"
+          ],
+          "note": 1
+        },
+        "secaHiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaHiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "secaOasdiDeductionFraction": {
+          "sources": [
+            "usc-26-164"
+          ],
+          "note": 0
+        },
+        "secaOasdiRatePercent": {
+          "sources": [
+            "usc-26-1401"
+          ],
+          "note": 1
+        },
+        "selfEmploymentMinimumNetEarnings": {
+          "sources": [
+            "usc-26-1402"
+          ],
+          "note": 0
+        }
+      }
+    }
+  }
+}

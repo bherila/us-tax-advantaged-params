@@ -72,6 +72,49 @@ function validateSources(sources, label, requiredIds = []) {
 }
 
 /**
+ * The derived attribution block (scripts/derive-figure-sources.mjs): every
+ * index resolves, every cited id is a listed source, and every attributed path
+ * names a figure the year's row actually has. Its agreement with the evidence
+ * is checked by `derive-figure-sources.mjs --check`.
+ */
+function validateFigureSources(file, label) {
+  const { figureCitations, figureNotes, figureSets, figureSources } = file;
+  if (figureSources === undefined) {
+    fail(`${label}: figureSources is missing; run node scripts/derive-figure-sources.mjs.`);
+    return;
+  }
+  if (figureCitations === null || typeof figureCitations !== "object" || !Array.isArray(figureNotes) || !Array.isArray(figureSets)) {
+    fail(`${label}: figureCitations, figureNotes and figureSets must accompany figureSources.`);
+    return;
+  }
+  const ids = new Set((file.sources ?? []).map((source) => source.id));
+  const resolves = (row, path) => path.split(".").reduce((node, key) => (node !== null && typeof node === "object" && key in node ? node[key] : undefined), row) !== undefined;
+  for (const [yearKey, year] of Object.entries(figureSources)) {
+    const prefix = `${label} figureSources.${yearKey}`;
+    const row = file.years?.[yearKey];
+    if (!row) fail(`${prefix}: no such year in the table.`);
+    const cite = (list, where) => {
+      if (!Array.isArray(list)) return fail(`${where} must be an array of source ids.`);
+      for (const id of list) if (!ids.has(id)) fail(`${where} cites ${id}, which sources does not list.`);
+    };
+    cite(year.sources, `${prefix}.sources`);
+    const set = figureSets[year.figures];
+    if (!Array.isArray(set)) fail(`${prefix}.figures is not a figureSets index.`);
+    const paths = [...(set ?? []), ...Object.keys(year.exceptions ?? {})];
+    for (const path of paths) {
+      if (!(path in figureCitations)) fail(`${prefix}: ${path} has no figureCitations entry.`);
+      if (row && !resolves(row, path)) fail(`${prefix}: ${path} is not a figure in that year's row.`);
+    }
+    for (const [path, exception] of Object.entries(year.exceptions ?? {})) {
+      if (exception.sources !== undefined) cite(exception.sources, `${prefix}.exceptions.${path}.sources`);
+      if (exception.note !== undefined && typeof figureNotes[exception.note] !== "string") {
+        fail(`${prefix}.exceptions.${path}.note is not a figureNotes index.`);
+      }
+    }
+  }
+}
+
+/**
  * Contiguity of the year table against the declared supported range, shared by
  * both parameter files. Returns the year list when it is usable, else null.
  */
@@ -785,7 +828,7 @@ if (conformance) {
         fail(`${prefix}.operation is unknown.`);
       }
       if (vector.operation === "tableLookup") {
-        if (typeof vector?.input?.method !== "string" || !/(?:^p|P)arametersForYear$/.test(vector.input.method)) {
+        if (typeof vector?.input?.method !== "string" || !/(?:^p|P)arameter(?:s|Sources)ForYear$/.test(vector.input.method)) {
           fail(`${prefix}.input.method must name a parameter-table lookup.`);
         }
         if (typeof vector?.input?.taxYear !== "number") fail(`${prefix}.input.taxYear must be a number.`);
@@ -808,6 +851,31 @@ if (conformance) {
       if (!names.has(required)) fail(`Required §401(a)(17) conformance vector is missing: ${required}`);
     }
   }
+}
+
+/** The derived sidecar beside a data file, merged in for validation. */
+async function withFigureSources(file, label) {
+  const sidecar = label.replace(/-parameters\.json$/, "-figure-sources.json");
+  try {
+    return { ...file, ...JSON.parse(await readFile(join(root, sidecar), "utf8")) };
+  } catch (error) {
+    if (error && error.code === "ENOENT") return file;
+    throw error;
+  }
+}
+
+for (const [table, label] of [
+  [parameters, "data/retirement-parameters.json"],
+  [hsa, "data/hsa-parameters.json"],
+  [fsa, "data/fsa-parameters.json"],
+  [payroll, "data/payroll-tax-parameters.json"],
+  [education, "data/education-parameters.json"],
+  [able, "data/able-parameters.json"],
+  [adoption, "data/adoption-parameters.json"],
+  [hra, "data/hra-parameters.json"],
+  [commuter, "data/commuter-parameters.json"],
+]) {
+  validateFigureSources(await withFigureSources(table, label), label);
 }
 
 if (errors.length > 0) {

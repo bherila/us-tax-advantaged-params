@@ -28,4 +28,20 @@ export default {
       "IRC 529A(e)(1)(A); Pub. L. 117-328 div. T sec. 124",
     ],
   ],
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // Quotes the Rev. Proc. gift-exclusion paragraph; only the §2503(b) figure.
+      ["gift_source", /^giftExclusion_2503b$/],
+      // Only the §529A(b)(2)(B)(ii) availability flag; ableState is left to the year source.
+      ["ableToWork_source", /^ableToWorkAvailable_529Ab2Bii$/],
+    ],
+  },
 };

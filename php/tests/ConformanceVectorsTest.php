@@ -40,7 +40,7 @@ function invokeConformanceVector(array $vector): mixed
     if ($operation === 'payrollTax') return U::calculatePayrollTax($vector['input']);
     if ($operation === 'tableLookup') {
         $method = $vector['input']['method'] ?? null;
-        if (!is_string($method) || preg_match('/(?:^p|P)arametersForYear$/', $method) !== 1 || !is_callable([U::class, $method])) {
+        if (!is_string($method) || preg_match('/(?:^p|P)arameter(?:s|Sources)ForYear$/', $method) !== 1 || !is_callable([U::class, $method])) {
             throw new RuntimeException("{$vector['name']}: tableLookup.method must name a parameter-table lookup.");
         }
         return U::{$method}($vector['input']['taxYear'] ?? null);

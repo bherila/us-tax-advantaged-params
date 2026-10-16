@@ -1,0 +1,239 @@
+{
+  "ids": {
+    "rp-02-70": "irs-rev-proc-2002-70",
+    "rp-03-85": "irs-rev-proc-2003-85",
+    "rp-04-71": "irs-rev-proc-2004-71",
+    "rp-05-70": "irs-rev-proc-2005-70",
+    "rp-06-53": "irs-rev-proc-2006-53",
+    "rp-07-66": "irs-rev-proc-2007-66",
+    "rp-08-66": "irs-rev-proc-2008-66",
+    "rp-09-50": "irs-rev-proc-2009-50",
+    "rp-10-35": "irs-rev-proc-2010-35",
+    "rp-10-40": "irs-rev-proc-2010-40",
+    "rp-11-52": "irs-rev-proc-2011-52",
+    "rp-13-15": "irs-rev-proc-2013-15",
+    "rp-13-35": "irs-rev-proc-2013-35",
+    "rp-14-61": "irs-rev-proc-2014-61",
+    "rp-15-53": "irs-rev-proc-2015-53",
+    "rp-16-55": "irs-rev-proc-2016-55",
+    "rp-17-58": "irs-rev-proc-2017-58",
+    "rp-18-57": "irs-rev-proc-2018-57",
+    "rp-19-44": "irs-rev-proc-2019-44",
+    "rp-20-45": "irs-rev-proc-2020-45",
+    "rp-21-45": "irs-rev-proc-2021-45",
+    "rp-22-38": "irs-rev-proc-2022-38",
+    "rp-23-34": "irs-rev-proc-2023-34",
+    "rp-24-40": "irs-rev-proc-2024-40",
+    "rp-25-32": "irs-rev-proc-2025-32"
+  },
+  "notes": {
+    "2132155875": {
+      "cites": [
+        "rp-19-44"
+      ],
+      "why": "Rev. Proc. 2019-44 publishes the 2020 adoption amounts."
+    },
+    "01bc05e648": {
+      "cites": [
+        "rp-20-45"
+      ],
+      "why": "Rev. Proc. 2020-45 publishes the 2021 adoption amounts."
+    },
+    "09ba3031d0": {
+      "cites": [
+        "rp-10-35"
+      ],
+      "why": "Rev. Proc. 2010-35 publishes the 2010 adoption amounts as modified for the ACA."
+    },
+    "0a986cf215": {
+      "cites": [
+        "pl-111-312"
+      ],
+      "negated": [
+        "usc-26-23"
+      ],
+      "why": "Pub. L. 111-312 §101(b) sunsets §10909 after 2011, returning the credit to a nonrefundable §23."
+    },
+    "16678a12cb": {
+      "cites": [
+        "rp-13-15"
+      ],
+      "why": "Rev. Proc. 2013-15 publishes the 2013 adoption amounts."
+    },
+    "22aa098371": {
+      "cites": [
+        "rp-22-38"
+      ],
+      "why": "Rev. Proc. 2022-38 publishes the 2023 adoption amounts."
+    },
+    "2df1733de2": {
+      "cites": [
+        "rp-21-45"
+      ],
+      "why": "Rev. Proc. 2021-45 publishes the 2022 adoption amounts."
+    },
+    "3bd5478d15": {
+      "cites": [
+        "rp-13-35"
+      ],
+      "why": "Rev. Proc. 2013-35 publishes the 2014 adoption amounts."
+    },
+    "4f9b28e87a": {
+      "cites": [
+        "rp-03-85"
+      ],
+      "why": "Rev. Proc. 2003-85 publishes the 2004 adoption amounts."
+    },
+    "50569c186d": {
+      "cites": [
+        "rp-18-57"
+      ],
+      "why": "Rev. Proc. 2018-57 publishes the 2019 adoption amounts."
+    },
+    "523680ce55": {
+      "cites": [
+        "rp-16-55"
+      ],
+      "why": "Rev. Proc. 2016-55 publishes the 2017 adoption amounts."
+    },
+    "539b37cb4a": {
+      "cites": [
+        "rp-24-40"
+      ],
+      "why": "Rev. Proc. 2024-40 publishes the 2025 adoption amounts."
+    },
+    "54525926bc": {
+      "cites": [
+        "rp-17-58"
+      ],
+      "why": "Rev. Proc. 2017-58 publishes the 2018 adoption amounts."
+    },
+    "5ba253295d": {
+      "cites": [
+        "rp-02-70"
+      ],
+      "why": "Rev. Proc. 2002-70 publishes the 2003 adoption amounts."
+    },
+    "6c4f02041e": {
+      "cites": [
+        "rp-06-53"
+      ],
+      "why": "Rev. Proc. 2006-53 publishes the 2007 adoption amounts."
+    },
+    "75114ed1a9": {
+      "cites": [
+        "rp-15-53"
+      ],
+      "why": "Rev. Proc. 2015-53 publishes the 2016 adoption amounts."
+    },
+    "7adda9c0ab": {
+      "cites": [
+        "rp-14-61"
+      ],
+      "why": "Rev. Proc. 2014-61 publishes the 2015 adoption amounts."
+    },
+    "86431e7172": {
+      "cites": [
+        "rp-11-52"
+      ],
+      "why": "Rev. Proc. 2011-52 publishes the 2012 adoption amounts."
+    },
+    "8a48d23a1c": {
+      "cites": [
+        "rp-04-71"
+      ],
+      "why": "Rev. Proc. 2004-71 publishes the 2005 adoption amounts."
+    },
+    "9647d2cd6f": {
+      "cites": [
+        "pl-104-188"
+      ],
+      "negated": [
+        "usc-26-23",
+        "usc-26-137"
+      ],
+      "why": "SBJPA §1807 enacted the $5,000/$6,000 limits and the $75,000 start over a $40,000 width; the 2024 editions of §§23 and 137 print the later indexed amounts."
+    },
+    "9a17a7c421": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-23"
+      ],
+      "why": "Pub. L. 119-21 §70402 adds the $5,000 refundable portion from 2025; the 2024 edition of §23 predates it."
+    },
+    "9aa6120655": {
+      "cites": [
+        "rp-10-35"
+      ],
+      "negated": [
+        "rp-09-50",
+        "usc-26-23"
+      ],
+      "why": "Rev. Proc. 2010-35 restates 2010 for ACA §10909 (§36C, refundable); Rev. Proc. 2009-50 is kept only to show the superseded figure."
+    },
+    "9bf3b32256": {
+      "cites": [
+        "rp-25-32"
+      ],
+      "negated": [
+        "usc-26-23"
+      ],
+      "why": "Rev. Proc. 2025-32 §4.04(3) states the $5,120 refundable portion; the § 23(a)(4) inside the quotation is not the 2024 Code edition."
+    },
+    "9c9d09dd65": {
+      "cites": [
+        "rp-08-66"
+      ],
+      "why": "Rev. Proc. 2008-66 publishes the 2009 adoption amounts."
+    },
+    "a6400148f1": {
+      "cites": [
+        "rp-10-40"
+      ],
+      "why": "Rev. Proc. 2010-40 publishes the 2011 adoption amounts."
+    },
+    "ada8a19c8f": {
+      "cites": [
+        "rp-10-40",
+        "pl-111-312"
+      ],
+      "why": "Rev. Proc. 2010-40 §2.02 states the refundable §36C credit for 2011, and Pub. L. 111-312 §101(b) keeps §10909 in force through 2011."
+    },
+    "bdeef326f6": {
+      "cites": [
+        "rp-23-34"
+      ],
+      "why": "Rev. Proc. 2023-34 publishes the 2024 adoption amounts."
+    },
+    "c4a345e55d": {
+      "cites": [
+        "pl-107-16",
+        "pl-107-147"
+      ],
+      "negated": [
+        "usc-26-23"
+      ],
+      "why": "EGTRRA §202(b) sets $10,000/$150,000 for 2002 and JCWAA §411(c) removes the flat special-needs amount; no revenue procedure states 2002."
+    },
+    "e321eca738": {
+      "cites": [
+        "rp-07-66"
+      ],
+      "why": "Rev. Proc. 2007-66 publishes the 2008 adoption amounts."
+    },
+    "f1dba48274": {
+      "cites": [
+        "rp-05-70"
+      ],
+      "why": "Rev. Proc. 2005-70 publishes the 2006 adoption amounts."
+    },
+    "f4d306a3bb": {
+      "cites": [
+        "rp-25-32"
+      ],
+      "why": "Rev. Proc. 2025-32 publishes the 2026 adoption amounts."
+    }
+  }
+}

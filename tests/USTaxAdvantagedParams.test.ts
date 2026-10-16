@@ -1179,3 +1179,68 @@ test("payroll parameter and scenario builder snapshots are detached", () => {
   assert.ok(Array.isArray(wages));
   assert.equal(wages[0]!.medicareWages, 10000);
 });
+
+const PROVENANCE_TABLES = [
+  ["parametersForYear", "parameterSourcesForYear", "supportedTaxYears", "sourceMetadata"],
+  ["hsaParametersForYear", "hsaParameterSourcesForYear", "supportedHsaTaxYears", "hsaSourceMetadata"],
+  ["fsaParametersForYear", "fsaParameterSourcesForYear", "supportedFsaTaxYears", "fsaSourceMetadata"],
+  ["payrollParametersForYear", "payrollParameterSourcesForYear", "supportedPayrollTaxYears", "payrollSourceMetadata"],
+  ["educationParametersForYear", "educationParameterSourcesForYear", "supportedEducationTaxYears", "educationSourceMetadata"],
+  ["ableParametersForYear", "ableParameterSourcesForYear", "supportedAbleTaxYears", "ableSourceMetadata"],
+  ["adoptionParametersForYear", "adoptionParameterSourcesForYear", "supportedAdoptionTaxYears", "adoptionSourceMetadata"],
+  ["hraParametersForYear", "hraParameterSourcesForYear", "supportedHraTaxYears", "hraSourceMetadata"],
+  ["commuterParametersForYear", "commuterParameterSourcesForYear", "supportedCommuterTaxYears", "commuterSourceMetadata"],
+] as const;
+
+test("every attributed figure exists in its row and cites listed sources", () => {
+  const api = U as unknown as Record<string, (...args: unknown[]) => unknown>;
+  for (const [rowLookup, sourceLookup, rangeLookup, metadataLookup] of PROVENANCE_TABLES) {
+    const range = api[rangeLookup]!() as { minimum: number; maximum: number };
+    const listed = new Set((api[metadataLookup]!() as Array<{ id: string }>).map((source) => source.id));
+    let attributed = 0;
+    for (let year = range.minimum; year <= range.maximum; year += 1) {
+      const row = api[rowLookup]!(year) as Record<string, unknown> | null;
+      const sources = api[sourceLookup]!(year) as { taxYear: number; figures: Record<string, unknown> } | null;
+      assert.equal(sources === null, row === null, `${sourceLookup}(${year}) and ${rowLookup}(${year}) disagree on null`);
+      if (row === null || sources === null) continue;
+      assert.equal(sources.taxYear, year);
+      const visit = (node: Record<string, unknown>, value: unknown, path: string[]): void => {
+        if (Array.isArray(node.sources)) {
+          attributed += 1;
+          assert.notEqual(value, undefined, `${sourceLookup}(${year}) attributes ${path.join(".")}, which the row does not have`);
+          assert.equal(typeof node.citation, "string");
+          assert.ok(node.note === null || typeof node.note === "string");
+          for (const source of node.sources as Array<Record<string, string>>) {
+            for (const key of ["id", "title", "url", "authority"]) assert.equal(typeof source[key], "string", `${path.join(".")} source ${key}`);
+            assert.ok(source.url!.startsWith("https://"));
+            assert.ok(listed.has(source.id!), `${source.id} is not in ${metadataLookup}()`);
+          }
+          return;
+        }
+        for (const [key, child] of Object.entries(node)) {
+          visit(child as Record<string, unknown>, (value as Record<string, unknown> | undefined)?.[key], [...path, key]);
+        }
+      };
+      visit(sources.figures, row, []);
+    }
+    assert.ok(attributed > 0, `${sourceLookup} attributes no figure in any year`);
+  }
+});
+
+test("provenance lookups refuse the years their tables refuse", () => {
+  assert.throws(() => U.parameterSourcesForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
+  assert.throws(() => U.parameterSourcesForYear(2026.5), (error: unknown) => error instanceof ParameterError && error.code === "INVALID_TAX_YEAR");
+  assert.equal(U.payrollParameterSourcesForYear(1990), null);
+  assert.throws(() => U.hsaParameterSourcesForYear(Number.NaN), (error: unknown) => error instanceof ParameterError && error.code === "INVALID_TAX_YEAR");
+});
+
+test("provenance snapshots are detached from the embedded table", () => {
+  const first = U.parameterSourcesForYear(2026);
+  const leaf = first.figures.electiveDeferral402g as { sources: Array<Record<string, string>> };
+  leaf.sources[0]!.title = "changed";
+  leaf.sources.length = 0;
+  const again = U.parameterSourcesForYear(2026).figures.electiveDeferral402g as { sources: Array<Record<string, string>> };
+  assert.ok(again.sources.length > 0);
+  assert.notEqual(again.sources[0]!.title, "changed");
+  assert.notEqual(U.sourceMetadata().find((source) => source.id === again.sources[0]!.id)?.title, "changed");
+});

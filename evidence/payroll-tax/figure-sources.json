@@ -1,0 +1,173 @@
+{
+  "ids": {
+    "LINKED, not committed here: evidence/retirement-limits/sources/fr-2023-23317.txt": "fr-2023-23317",
+    "LINKED, not committed here: evidence/retirement-limits/sources/fr-2024-24871.txt": "fr-2024-24871",
+    "LINKED, not committed here: evidence/retirement-limits/sources/fr-2025-19763.txt": "fr-2025-19763",
+    "f1040sse--2011.pdf": "f1040sse--2011",
+    "f1040sse--2012.pdf": "f1040sse--2012",
+    "fr-00-27249.txt": "fr-00-27249",
+    "fr-01-26911.txt": "fr-01-26911",
+    "fr-02-27203.txt": "fr-02-27203",
+    "fr-03-26642.txt": "fr-03-26642",
+    "fr-04-23915.txt": "fr-04-23915",
+    "fr-05-21272.txt": "fr-05-21272",
+    "fr-2010-26983.txt": "fr-2010-26983",
+    "fr-2011-27496.txt": "fr-2011-27496",
+    "fr-2012-26663.txt": "fr-2012-26663",
+    "fr-2014-25802.txt": "fr-2014-25802",
+    "fr-2015-27828.txt": "fr-2015-27828",
+    "fr-2016-26026.txt": "fr-2016-26026",
+    "fr-2017-23522.txt": "fr-2017-23522",
+    "fr-2017-27105.txt": "fr-2017-27105",
+    "fr-2018-23193.txt": "fr-2018-23193",
+    "fr-2019-22921.txt": "fr-2019-22921",
+    "fr-2020-23442.txt": "fr-2020-23442",
+    "fr-2021-23031.txt": "fr-2021-23031",
+    "fr-2022-23073.txt": "fr-2022-23073",
+    "fr-95-26426.txt": "fr-95-26426",
+    "fr-96-27414.txt": "fr-96-27414",
+    "fr-97-28496.txt": "fr-97-28496",
+    "fr-98-28988.txt": "fr-98-28988",
+    "fr-99-27865.txt": "fr-99-27865",
+    "fr-E6-17939.txt": "fr-E6-17939",
+    "fr-E7-21070.txt": "fr-E7-21070",
+    "fr-E8-25905.txt": "fr-E8-25905",
+    "fr-E9-25930.txt": "fr-E9-25930",
+    "p15--1991.pdf": "p15--1991",
+    "p15--1992.pdf": "p15--1992",
+    "p15--1993.pdf": "p15--1993",
+    "p15--1994.pdf": "p15--1994",
+    "pl-111publ312.pdf": "pl-111publ312",
+    "pl-112publ96.pdf": "pl-112publ96",
+    "usc-26-1401.html": "usc-26-1401",
+    "usc-26-1402.html": "usc-26-1402",
+    "usc-26-164.html": "usc-26-164",
+    "usc-26-3101.html": "usc-26-3101",
+    "usc-26-3102.html": "usc-26-3102",
+    "usc-26-3111.html": "usc-26-3111",
+    "usc-26-3121.html": "usc-26-3121"
+  },
+  "notes": {
+    "324a4f1c60": {
+      "cites": [],
+      "byField": [
+        {
+          "pattern": "^netEarningsOasdiRateBasisPercent$",
+          "years": [
+            2011,
+            2012
+          ],
+          "cites": [
+            "usc-26-1402.html",
+            "usc-26-1401.html"
+          ]
+        },
+        {
+          "pattern": "^secaOasdiDeductionFraction$",
+          "years": [
+            2011,
+            2012
+          ],
+          "cites": [
+            "usc-26-1401.html"
+          ]
+        },
+        {
+          "pattern": "^netEarnings(?:Oasdi|Hi)RateBasisPercent$|^netEarningsDeductionFraction$|^selfEmploymentMinimumNetEarnings$",
+          "cites": [
+            "usc-26-1402.html"
+          ]
+        },
+        {
+          "pattern": "^seca(?:Oasdi|Hi)DeductionFraction$",
+          "cites": [
+            "usc-26-164.html"
+          ]
+        },
+        {
+          "pattern": "^additionalMedicare",
+          "cites": [
+            "usc-26-3101.html",
+            "usc-26-3102.html",
+            "usc-26-1401.html"
+          ]
+        }
+      ],
+      "why": "The mechanics are spread across §§1402, 164, 3101, 3102 and 1401, each fixing only its own figures."
+    },
+    "6d8a8504ff": {
+      "cites": [],
+      "byField": [
+        {
+          "pattern": "^oasdiRateEmployeePercent$|^hiRateEmployeePercent$",
+          "cites": [
+            "usc-26-3101.html"
+          ]
+        },
+        {
+          "pattern": "^oasdiRateEmployerPercent$|^hiRateEmployerPercent$",
+          "cites": [
+            "usc-26-3111.html"
+          ]
+        },
+        {
+          "pattern": "^seca(?:Oasdi|Hi)RatePercent$",
+          "cites": [
+            "usc-26-1401.html"
+          ]
+        }
+      ],
+      "why": "The ordinary rates are in §3101, §3111 and §1401, each fixing only its own rates."
+    },
+    "ef80777e83": {
+      "cites": [],
+      "byField": [
+        {
+          "pattern": "^oasdiRateEmployeePercent$",
+          "cites": [
+            "usc-26-3101.html",
+            "pl-111publ312.pdf"
+          ],
+          "citesInYears": {
+            "pl-112publ96.pdf": [
+              2012,
+              2012
+            ]
+          }
+        },
+        {
+          "pattern": "^secaOasdiRatePercent$",
+          "cites": [
+            "usc-26-1401.html",
+            "pl-111publ312.pdf"
+          ],
+          "citesInYears": {
+            "pl-112publ96.pdf": [
+              2012,
+              2012
+            ]
+          }
+        },
+        {
+          "pattern": "^hiRateEmployeePercent$",
+          "cites": [
+            "usc-26-3101.html"
+          ]
+        },
+        {
+          "pattern": "^oasdiRateEmployerPercent$|^hiRateEmployerPercent$",
+          "cites": [
+            "usc-26-3111.html"
+          ]
+        },
+        {
+          "pattern": "^secaHiRatePercent$",
+          "cites": [
+            "usc-26-1401.html"
+          ]
+        }
+      ],
+      "why": "The 2011-2012 holiday cuts only employee and SECA OASDI (Pub. L. 111-312 §601, extended to 2012 by Pub. L. 112-96 §1001, set out under §1401); the other rates are the ordinary Code rates."
+    }
+  }
+}

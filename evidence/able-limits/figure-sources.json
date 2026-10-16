@@ -1,0 +1,178 @@
+{
+  "ids": {
+    "rp-14-61": "irs-rev-proc-2014-61",
+    "rp-15-53": "irs-rev-proc-2015-53",
+    "rp-16-55": "irs-rev-proc-2016-55",
+    "rp-17-58": "irs-rev-proc-2017-58",
+    "rp-18-57": "irs-rev-proc-2018-57",
+    "rp-19-44": "irs-rev-proc-2019-44",
+    "rp-20-45": "irs-rev-proc-2020-45",
+    "rp-21-45": "irs-rev-proc-2021-45",
+    "rp-22-38": "irs-rev-proc-2022-38",
+    "rp-23-34": "irs-rev-proc-2023-34",
+    "rp-24-40": "irs-rev-proc-2024-40",
+    "rp-25-32": "irs-rev-proc-2025-32"
+  },
+  "notes": {
+    "14a4e2afc2": {
+      "cites": [
+        "pl-113-295",
+        "usc-26-529A"
+      ],
+      "useYearSource": true,
+      "why": "The ABLE Act and §529A fix the limit as the §2503(b) amount, and that year's Rev. Proc. (the year source) publishes the dollar figure."
+    },
+    "1b5df51040": {
+      "cites": [
+        "rp-22-38"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2022-38 publishes the 2023 gift exclusion."
+    },
+    "435a592799": {
+      "cites": [
+        "rp-17-58"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2017-58 publishes the 2018 gift exclusion."
+    },
+    "4b95b98d49": {
+      "cites": [
+        "usc-26-529A"
+      ],
+      "why": "Availability 2018-2025 is §529A(b)(2)(B)(ii) as printed in usc-26-529A, with its before-2026 limit."
+    },
+    "5636bdfe32": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-529A"
+      ],
+      "why": "Pub. L. 119-21 §70115(a)(2) keeps ABLE-to-work available after 2025; the 2024 edition of §529A still ends it before 2026."
+    },
+    "5ffb144245": {
+      "cites": [
+        "rp-20-45"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2020-45 publishes the 2021 gift exclusion."
+    },
+    "6286d4dc75": {
+      "cites": [
+        "rp-15-53"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2015-53 publishes the 2016 gift exclusion."
+    },
+    "67354e2191": {
+      "cites": [
+        "rp-16-55"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2016-55 publishes the 2017 gift exclusion."
+    },
+    "67dd295706": {
+      "cites": [
+        "rp-24-40"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2024-40 publishes the 2025 gift exclusion."
+    },
+    "83a5a6b782": {
+      "cites": [
+        "rp-19-44"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2019-44 publishes the 2020 gift exclusion."
+    },
+    "9395f6af4f": {
+      "cites": [
+        "rp-18-57"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2018-57 publishes the 2019 gift exclusion."
+    },
+    "995dcc4dbc": {
+      "cites": [
+        "usc-26-529A"
+      ],
+      "why": "Unavailability for 2015-2017 rests on the Pub. L. 115-97 effective-date note carried in usc-26-529A; Pub. L. 115-97 is not in the corpus."
+    },
+    "9d4f06fe83": {
+      "cites": [
+        "usc-26-529A"
+      ],
+      "why": "Age 46 rests on Pub. L. 117-328 div. T §124 as quoted in the usc-26-529A notes; Pub. L. 117-328 is not in the corpus."
+    },
+    "9e3f196e66": {
+      "cites": [
+        "rp-21-45"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2021-45 publishes the 2022 gift exclusion."
+    },
+    "b49ccb8331": {
+      "cites": [
+        "rp-23-34"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2023-34 publishes the 2024 gift exclusion."
+    },
+    "c6755a677c": {
+      "cites": [
+        "pl-113-295",
+        "usc-26-529A"
+      ],
+      "why": "Age 26 is the §529A(e)(1)(A) text as enacted by the ABLE Act, still printed in the 2024 edition (the age-46 amendment is effective only from 2026)."
+    },
+    "ce7a3d9af4": {
+      "cites": [
+        "rp-25-32",
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-529A"
+      ],
+      "why": "Rev. Proc. 2025-32 §4.34 states $20,000 under the Pub. L. 119-21 §70115 base; the 2024 edition of §529A still ties the limit to the gift exclusion, so it does not fix $20,000."
+    },
+    "d6e49f013b": {
+      "cites": [
+        "rp-14-61"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2014-61 publishes the 2015 gift exclusion; the § 2503 inside its quotation is not the 2024 Code edition."
+    },
+    "f7c27bb424": {
+      "cites": [
+        "rp-25-32"
+      ],
+      "negated": [
+        "usc-26-2503"
+      ],
+      "why": "Rev. Proc. 2025-32 publishes the 2026 gift exclusion."
+    }
+  }
+}

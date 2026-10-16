@@ -1,0 +1,64 @@
+{
+  "ids": {
+    "irb18-10": "irs-rev-proc-2018-18",
+    "irb19-22": "irs-rev-proc-2019-25",
+    "n-04-02": "irs-notice-2004-2",
+    "n-04-50": "irs-notice-2004-50",
+    "n-08-52": "irs-notice-2008-52",
+    "n-08-59": "irs-notice-2008-59",
+    "rp-04-71": "irs-rev-proc-2004-71",
+    "rp-05-70": "irs-rev-proc-2005-70",
+    "rp-06-53": "irs-rev-proc-2006-53",
+    "rp-07-36": "irs-rev-proc-2007-36",
+    "rp-08-29": "irs-rev-proc-2008-29",
+    "rp-09-29": "irs-rev-proc-2009-29",
+    "rp-10-22": "irs-rev-proc-2010-22",
+    "rp-11-32": "irs-rev-proc-2011-32",
+    "rp-12-26": "irs-rev-proc-2012-26",
+    "rp-13-25": "irs-rev-proc-2013-25",
+    "rp-14-30": "irs-rev-proc-2014-30",
+    "rp-15-30": "irs-rev-proc-2015-30",
+    "rp-16-28": "irs-rev-proc-2016-28",
+    "rp-17-37": "irs-rev-proc-2017-37",
+    "rp-18-27": "irs-rev-proc-2018-27",
+    "rp-18-30": "irs-rev-proc-2018-30",
+    "rp-20-32": "irs-rev-proc-2020-32",
+    "rp-21-25": "irs-rev-proc-2021-25",
+    "rp-22-24": "irs-rev-proc-2022-24",
+    "rp-23-23": "irs-rev-proc-2023-23",
+    "rp-24-25": "irs-rev-proc-2024-25",
+    "rp-25-19": "irs-rev-proc-2025-19",
+    "rp-26-24": "irs-rev-proc-2026-24",
+    "rr-05-25": "irs-rev-rul-2005-25"
+  },
+  "notes": {
+    "08dc27ec75": {
+      "cites": [
+        "usc-26-223"
+      ],
+      "why": "Pre-2007 rules (deductible cap in force, no §223(b)(8)) as recorded in usc-26-223 and its 2006 amendment notes."
+    },
+    "22bce965a1": {
+      "cites": [
+        "rp-06-53"
+      ],
+      "negated": [
+        "rp-07-36"
+      ],
+      "why": "Rev. Proc. 2006-53 §3.24 states the 2007 HDHP figures; Rev. Proc. 2007-36 is named only for the 2007 contribution limits."
+    },
+    "4d20b94f4d": {
+      "cites": [
+        "usc-26-223",
+        "n-04-02"
+      ],
+      "why": "The statutory §223(b)(3)(B) catch-up table, also scheduled in Notice 2004-2 A-14."
+    },
+    "eb4732e9c8": {
+      "cites": [
+        "usc-26-223"
+      ],
+      "why": "Post-2006 rules (Pub. L. 109-432 §§303, 305) as recorded in usc-26-223; Pub. L. 109-432 is not in the corpus."
+    }
+  }
+}

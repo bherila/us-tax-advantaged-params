@@ -1,0 +1,140 @@
+{
+  "ids": {},
+  "notes": {
+    "2080af8c4e": {
+      "cites": [
+        "usc-26-529"
+      ],
+      "why": "§529(e)(3)'s $10,000, with the Pub. L. 115-97 effective date quoted in usc-26-529; Pub. L. 115-97 is not in the corpus."
+    },
+    "27e9e38f67": {
+      "cites": [
+        "usc-26-529"
+      ],
+      "why": "§529(c)(3)(E)(ii)(II), with the Pub. L. 117-328 effective date in the usc-26-529 notes."
+    },
+    "62793db515": {
+      "cites": [
+        "pl-112-240",
+        "usc-26-127"
+      ],
+      "why": "ATRA §101(a) removes the EGTRRA sunset and §127(a)(2) fixes $5,250."
+    },
+    "64124cd0f8": {
+      "cites": [
+        "pl-105-34"
+      ],
+      "negated": [
+        "usc-26-530"
+      ],
+      "why": "TRA 1997 §213(a) enacts the $500 limit and the $95,000/$150,000 phase-outs; the 2024 edition of §530 prints the EGTRRA amounts."
+    },
+    "68cbd4d1b4": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-529"
+      ],
+      "why": "Pub. L. 119-21 §70413(a)(1) rewrites §529(c)(7) into eight categories; the 2024 edition of §529 has only tuition."
+    },
+    "7b24fe4a8b": {
+      "cites": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "citesInYears": {
+        "pl-111-312": [
+          2011,
+          2012
+        ],
+        "pl-112-240": [
+          2013,
+          2026
+        ]
+      },
+      "why": "EGTRRA §401 sets $2,000 and the $190,000/$30,000 joint band, as printed in usc-26-530; Pub. L. 111-312 carries it through 2011-2012 and ATRA from 2013."
+    },
+    "8f64a16fa6": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-529"
+      ],
+      "why": "Pub. L. 119-21 §70413(b) sets $20,000 from 2026; the 2024 edition of §529 prints $10,000."
+    },
+    "93d075e63e": {
+      "cites": [
+        "pl-104-188",
+        "usc-26-127"
+      ],
+      "why": "SBJPA §1202 keeps §127 in force for 1996 and §127(a)(2) (usc-26-127) fixes $5,250."
+    },
+    "a3d0907cb2": {
+      "cites": [
+        "pl-119-21",
+        "usc-26-529"
+      ],
+      "why": "Pub. L. 119-21 §70413(a) widens the scope from July 4, 2025, and the usc-26-529 tuition-only text governs before that date."
+    },
+    "b50c8f390f": {
+      "cites": [
+        "usc-26-529",
+        "pl-104-188"
+      ],
+      "why": "§529(b)(6) states no dollar limit, and SBJPA §1806(c)(1) makes §529 apply."
+    },
+    "c60f42fd3c": {
+      "cites": [
+        "usc-26-127"
+      ],
+      "citesInYears": {
+        "pl-105-34": [
+          1997,
+          2000
+        ]
+      },
+      "why": "§127 (with its Pub. L. 106-170 note) fixes 1997-2001 at $5,250; TRA 1997 §221 only extends it to courses beginning by May 31, 2000."
+    },
+    "c90938969f": {
+      "cites": [
+        "pl-107-16",
+        "usc-26-127"
+      ],
+      "citesInYears": {
+        "pl-111-312": [
+          2011,
+          2012
+        ]
+      },
+      "why": "EGTRRA §411(a) makes §127 permanent from 2002 and §127(a)(2) fixes $5,250; Pub. L. 111-312 matters only for 2011-2012, after the original sunset."
+    },
+    "cf17882c5a": {
+      "cites": [
+        "pl-105-34",
+        "usc-26-530"
+      ],
+      "why": "TRA 1997 §213(f), whose effective date usc-26-530 also records, applies §530 only to years after 1997, so 1996-1997 are unavailable."
+    },
+    "d02371eb7a": {
+      "cites": [
+        "pl-104-188",
+        "usc-26-529"
+      ],
+      "why": "SBJPA §1806(c)(1)'s taxable-year-ending date makes 1996 indeterminate, and §529(b)(6) states no limit."
+    },
+    "e326069104": {
+      "cites": [
+        "usc-26-529"
+      ],
+      "why": "Tuition-only scope is the §529(c)(7) text in usc-26-529."
+    },
+    "fdeedb4fac": {
+      "cites": [
+        "usc-26-529"
+      ],
+      "why": "§529(c)(9)(B), with the Pub. L. 116-94 effective date in the usc-26-529 notes."
+    }
+  }
+}
