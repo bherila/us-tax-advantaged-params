@@ -131,6 +131,31 @@ composer require bherila/us-tax-advantaged-params
 
 The PHP package requires PHP 8.4 or later and loads the native single-file implementation through Composer.
 
+## Upgrading to 0.6.0
+
+0.6.0 adds provenance and changes no calculation result. Nothing needs to change in existing code.
+
+**Additions:**
+
+- Every parameter-table lookup has a provenance twin, such as `parameterSourcesForYear` and
+  `hsaParameterSourcesForYear`. For each figure it returns the provision it is set under, the
+  primary documents that publish or fix it, and the evidence's note where those documents don't
+  print it. See [Where each figure came from](#where-each-figure-came-from).
+- `payrollSourceMetadata()`, matching the other tables.
+
+**Source metadata changes:**
+
+- The retirement source list gains the 51 documents its evidence cites.
+- Records that pointed at `uscode.house.gov` now point at the matching govinfo editions.
+- Payroll records that were titled with file names now carry their Federal Register titles.
+
+**Fixes since 0.5.0:**
+
+- PHP validates a table-lookup year before coercing it, as TypeScript does. A fractional or
+  non-finite year now throws `INVALID_TAX_YEAR` in both engines.
+- Payroll results normalize numeric-key lists identically in both engines.
+- Cents-normalized payroll rate products round exactly at half-cent ties.
+
 ## Upgrading to 0.5.0
 
 0.5.0 removes the account-level HSA inputs that were really facts about a person or a couple, and
