@@ -1,0 +1,290 @@
+{
+  "ids": {
+    "n-16-06": "irs-notice-2016-6",
+    "rp-01-13": "irs-rev-proc-2001-13",
+    "rp-01-59": "irs-rev-proc-2001-59",
+    "rp-02-70": "irs-rev-proc-2002-70",
+    "rp-03-85": "irs-rev-proc-2003-85",
+    "rp-04-71": "irs-rev-proc-2004-71",
+    "rp-05-70": "irs-rev-proc-2005-70",
+    "rp-06-53": "irs-rev-proc-2006-53",
+    "rp-07-66": "irs-rev-proc-2007-66",
+    "rp-08-66": "irs-rev-proc-2008-66",
+    "rp-09-50": "irs-rev-proc-2009-50",
+    "rp-10-40": "irs-rev-proc-2010-40",
+    "rp-11-12": "irs-rev-proc-2011-12",
+    "rp-11-52": "irs-rev-proc-2011-52",
+    "rp-13-15": "irs-rev-proc-2013-15",
+    "rp-13-35": "irs-rev-proc-2013-35",
+    "rp-14-61": "irs-rev-proc-2014-61",
+    "rp-15-53": "irs-rev-proc-2015-53",
+    "rp-16-55": "irs-rev-proc-2016-55",
+    "rp-17-58": "irs-rev-proc-2017-58",
+    "rp-18-57": "irs-rev-proc-2018-57",
+    "rp-19-44": "irs-rev-proc-2019-44",
+    "rp-20-45": "irs-rev-proc-2020-45",
+    "rp-21-45": "irs-rev-proc-2021-45",
+    "rp-22-38": "irs-rev-proc-2022-38",
+    "rp-23-34": "irs-rev-proc-2023-34",
+    "rp-24-40": "irs-rev-proc-2024-40",
+    "rp-25-32": "irs-rev-proc-2025-32",
+    "rp-99-42": "irs-rev-proc-1999-42"
+  },
+  "notes": {
+    "1972907463": {
+      "cites": [
+        "pl-110-343"
+      ],
+      "why": "Pub. L. 110-343 §211 enacts the unindexed $20 bicycle amount for 2009 on."
+    },
+    "05a05fe770": {
+      "cites": [
+        "rp-08-66"
+      ],
+      "why": "Rev. Proc. 2008-66 publishes the 2009 amounts as printed (transit $120 kept for January-February)."
+    },
+    "09d1fbb6df": {
+      "cites": [
+        "rp-15-53"
+      ],
+      "why": "Rev. Proc. 2015-53 publishes the 2016 amounts as printed."
+    },
+    "1321d4e017": {
+      "cites": [
+        "pl-111-5"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "ARRA §1151 applies parking parity from March 2009; the 2024 edition of §132 does not state the 2009 schedule."
+    },
+    "15c0a60c09": {
+      "cites": [
+        "rp-01-59"
+      ],
+      "why": "Rev. Proc. 2001-59 publishes the 2002 amounts."
+    },
+    "268bc9c596": {
+      "cites": [
+        "rp-22-38"
+      ],
+      "why": "Rev. Proc. 2022-38 publishes the 2023 amounts."
+    },
+    "27e8a67537": {
+      "cites": [
+        "pl-112-240",
+        "rp-13-15"
+      ],
+      "negated": [
+        "rp-11-52"
+      ],
+      "why": "ATRA §203 restores parity for 2012 and Rev. Proc. 2013-15 §3 restates $240; Rev. Proc. 2011-52 is named only as the procedure being corrected ($125)."
+    },
+    "2e2fd11fd7": {
+      "cites": [
+        "rp-21-45"
+      ],
+      "why": "Rev. Proc. 2021-45 publishes the 2022 amounts."
+    },
+    "48dd52b470": {
+      "cites": [
+        "pl-114-113",
+        "n-16-06"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "PATH div. Q §105 makes parity permanent from 2015 and Notice 2016-6 states $250 for 2015."
+    },
+    "54ca609bfb": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "Pub. L. 119-21 §70112(a) repeals bicycle commuting from 2026; the 2024 edition of §132 still contains it."
+    },
+    "6544600e1b": {
+      "cites": [
+        "pl-105-178"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "TEA-21 §9010(b)(2) substitutes $65/$175 for 1999; Rev. Proc. 98-61 has no item, and the 2024 edition of §132 prints later amounts."
+    },
+    "69c2bfdd69": {
+      "cites": [
+        "pl-110-343"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "§132(f)(1)(D) does not exist before 2009 because Pub. L. 110-343 added it from 2009."
+    },
+    "69d086a28e": {
+      "cites": [
+        "rp-20-45"
+      ],
+      "why": "Rev. Proc. 2020-45 publishes the 2021 amounts."
+    },
+    "6d424dd800": {
+      "cites": [
+        "rp-13-15"
+      ],
+      "why": "Rev. Proc. 2013-15 publishes the 2013 amounts."
+    },
+    "713e2c91f6": {
+      "cites": [
+        "rp-02-70"
+      ],
+      "why": "Rev. Proc. 2002-70 publishes the 2003 amounts."
+    },
+    "7476b19f26": {
+      "cites": [
+        "rp-11-12"
+      ],
+      "why": "Rev. Proc. 2011-12 publishes the 2011 amounts."
+    },
+    "7521c80c9a": {
+      "cites": [
+        "pl-105-178"
+      ],
+      "why": "TEA-21 §9010(c) sets the $100 transit amount for 2002."
+    },
+    "7d6e3236db": {
+      "cites": [
+        "rp-01-13"
+      ],
+      "why": "Rev. Proc. 2001-13 publishes the 2001 amounts."
+    },
+    "8d03a4f1ea": {
+      "cites": [
+        "rp-16-55"
+      ],
+      "why": "Rev. Proc. 2016-55 publishes the 2017 amounts."
+    },
+    "92533686df": {
+      "cites": [
+        "rp-24-40"
+      ],
+      "why": "Rev. Proc. 2024-40 publishes the 2025 amounts."
+    },
+    "98009f6a11": {
+      "cites": [
+        "rp-19-44"
+      ],
+      "why": "Rev. Proc. 2019-44 publishes the 2020 amounts."
+    },
+    "a2964947ba": {
+      "cites": [
+        "n-16-06",
+        "pl-114-113"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "Notice 2016-6 states $255 for 2016 after PATH §105; the § 132(f) inside the quotation is not the 2024 Code edition."
+    },
+    "af460022a7": {
+      "cites": [
+        "rp-11-52"
+      ],
+      "why": "Rev. Proc. 2011-52 publishes the 2012 amounts as printed."
+    },
+    "b1e81ae096": {
+      "cites": [
+        "rp-25-32"
+      ],
+      "why": "Rev. Proc. 2025-32 publishes the 2026 amounts."
+    },
+    "b26dc0bdf9": {
+      "cites": [
+        "rp-03-85"
+      ],
+      "why": "Rev. Proc. 2003-85 publishes the 2004 amounts."
+    },
+    "b3ff9890fd": {
+      "cites": [
+        "rp-06-53"
+      ],
+      "why": "Rev. Proc. 2006-53 publishes the 2007 amounts."
+    },
+    "b4a4037ef9": {
+      "cites": [
+        "rp-05-70"
+      ],
+      "why": "Rev. Proc. 2005-70 publishes the 2006 amounts."
+    },
+    "b73a064457": {
+      "cites": [
+        "rp-99-42"
+      ],
+      "why": "Rev. Proc. 99-42 publishes the 2000 amounts."
+    },
+    "bdc808be5f": {
+      "cites": [
+        "rp-09-50"
+      ],
+      "why": "Rev. Proc. 2009-50 publishes the 2010 amounts."
+    },
+    "c0129cac9e": {
+      "cites": [
+        "rp-18-57"
+      ],
+      "why": "Rev. Proc. 2018-57 publishes the 2019 amounts."
+    },
+    "c6434228cf": {
+      "cites": [
+        "rp-04-71"
+      ],
+      "why": "Rev. Proc. 2004-71 publishes the 2005 amounts."
+    },
+    "c9c7e0069b": {
+      "cites": [
+        "rp-23-34"
+      ],
+      "why": "Rev. Proc. 2023-34 publishes the 2024 amounts."
+    },
+    "eb5a29aa76": {
+      "cites": [
+        "rp-14-61"
+      ],
+      "why": "Rev. Proc. 2014-61 publishes the 2015 amounts as printed."
+    },
+    "f2599342e1": {
+      "cites": [
+        "pl-115-97"
+      ],
+      "negated": [
+        "usc-26-132"
+      ],
+      "why": "TCJA §11047 suspends bicycle commuting for 2018-2025."
+    },
+    "f56b58bac9": {
+      "cites": [
+        "rp-17-58"
+      ],
+      "why": "Rev. Proc. 2017-58 publishes the 2018 amounts."
+    },
+    "fe0e7b1b55": {
+      "cites": [
+        "pl-113-295"
+      ],
+      "why": "TIPA div. A §103 extends parity through 2014, so transit is $250."
+    },
+    "fe49c440f7": {
+      "cites": [
+        "rp-13-35"
+      ],
+      "why": "Rev. Proc. 2013-35 publishes the 2014 amounts as printed."
+    },
+    "fe9460a46f": {
+      "cites": [
+        "rp-07-66"
+      ],
+      "why": "Rev. Proc. 2007-66 publishes the 2008 amounts."
+    }
+  }
+}

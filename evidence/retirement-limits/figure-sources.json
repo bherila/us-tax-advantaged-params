@@ -1,0 +1,502 @@
+{
+  "ids": {
+    "ir-01-115": "irs-ir-2001-115",
+    "ir-12-077": "irs-ir-2012-77",
+    "ir-13-086": "irs-ir-2013-86",
+    "ir-14-099": "irs-ir-2014-99",
+    "irs-codas-2002": "irs-coda-manual-2002",
+    "irs-sep-sarsep-audit-2003": "irs-sep-sarsep-audit",
+    "n-00-66": "irs-notice-2000-66",
+    "n-02-71": "irs-notice-2002-71",
+    "n-03-73": "irs-notice-2003-73",
+    "n-04-72": "irs-notice-2004-72",
+    "n-05-75": "irs-notice-2005-75",
+    "n-06-98": "irs-notice-2006-98",
+    "n-07-87": "irs-notice-2007-87",
+    "n-08-102": "irs-notice-2008-102",
+    "n-09-94": "irs-notice-2009-94",
+    "n-10-78": "irs-notice-2010-78",
+    "n-11-90": "irs-notice-2011-90",
+    "n-12-67": "irs-notice-2012-67",
+    "n-13-73": "irs-notice-2013-73",
+    "n-14-70": "irs-notice-2014-70",
+    "n-15-75": "irs-notice-2015-75",
+    "n-16-62": "irs-notice-2016-62",
+    "n-17-64": "irs-notice-2017-64",
+    "n-18-83": "irs-notice-2018-83",
+    "n-19-59": "irs-notice-2019-59",
+    "n-20-79": "irs-notice-2020-79",
+    "n-21-61": "irs-notice-2021-61",
+    "n-22-55": "irs-notice-2022-55",
+    "n-23-62": "irs-notice-2023-62",
+    "n-23-75": "irs-notice-2023-75",
+    "n-24-80": "irs-notice-2024-80",
+    "n-25-67": "irs-notice-2025-67",
+    "n-96-55": "irs-notice-1996-55",
+    "n-97-58": "irs-notice-1997-58",
+    "n-98-53": "irs-notice-1998-53",
+    "n-99-55": "irs-notice-1999-55",
+    "p590-1995": "irs-pub-590-1995",
+    "p590-1996": "irs-pub-590-1996",
+    "p590-1997": "irs-pub-590-1997",
+    "p590-1998": "irs-pub-590-1998",
+    "p590-1999": "irs-pub-590-1999",
+    "p590-2000": "irs-pub-590-2000",
+    "p590-2002": "irs-pub-590-2002",
+    "rp-06-53": "irs-rev-proc-2006-53"
+  },
+  "notes": {
+    "03497c3f8a": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [
+            "n-07-87",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2007-87 publishes the joint start and §219(g)(7)(B)/(g)(3)(B)(iii) fix the width and the married-filing-separately band."
+    },
+    "0fcdcfc06a": {
+      "cites": [
+        "n-24-80"
+      ],
+      "why": "Notice 2024-80 states the $2,500 stays for 2025."
+    },
+    "10061de00f": {
+      "cites": [
+        "pl-107-16",
+        "usc-26-25B"
+      ],
+      "why": "EGTRRA §618 enacts the unindexed §25B(b) table, printed as the base table in usc-26-25B; Pub. L. 109-280 is not in the corpus."
+    },
+    "14c89f9816": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-10-78",
+            "usc-26-219"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-10-78",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2010-78 publishes the starts; §219(g) fixes the widths and the zero start for married filing separately."
+    },
+    "15ba2e56f1": {
+      "cites": [],
+      "why": "Statutory and not yet operative (SECURE 2.0 §414(v)(7)(A)); §414 is not among the corpus's sources."
+    },
+    "178f51180d": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-11-90",
+            "usc-26-219"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-11-90",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2011-90 publishes the starts; §219(g) fixes the widths and the zero start for married filing separately."
+    },
+    "26f818cbd5": {
+      "cites": [
+        "ir-01-115",
+        "pl-107-16"
+      ],
+      "why": "IR-2001-115 states $130,000 and EGTRRA §613 enacts it."
+    },
+    "287f4ecc87": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-11-90",
+            "usc-26-408A"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-11-90",
+            "usc-26-408A"
+          ]
+        }
+      },
+      "negated": [
+        "usc-26-408"
+      ],
+      "why": "Notice 2011-90 publishes the starts; §408A(c)(3) fixes the widths and the zero start for married filing separately."
+    },
+    "2e1b842c70": {
+      "cites": [
+        "irs-sep-sarsep-audit-2003"
+      ],
+      "why": "Named by title: IRS SEP/SARSEP Audit Techniques, chapter 13."
+    },
+    "2fc46c0fb7": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [
+            "n-10-78",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2010-78 publishes the joint start; §219(g)(7)(B)/(g)(3)(B)(iii) fix the width and the married-filing-separately band."
+    },
+    "378ea3df6b": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-08-102",
+            "usc-26-408A"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-08-102",
+            "usc-26-408A"
+          ]
+        }
+      },
+      "negated": [
+        "usc-26-408"
+      ],
+      "why": "Notice 2008-102 publishes the starts; §408A(c)(3) fixes the widths and the zero start for married filing separately."
+    },
+    "439eab25d4": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-09-94",
+            "usc-26-219"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-09-94",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2009-94 publishes the starts; §219(g) fixes the widths and the zero start for married filing separately."
+    },
+    "5c59f8665e": {
+      "cites": [],
+      "byField": [
+        {
+          "pattern": "^(?:sep|section457b|traditional401k)",
+          "cites": [
+            "pl-95-600"
+          ]
+        },
+        {
+          "pattern": "^ira(?:Contribution|CompensationFraction)_219b1$",
+          "cites": [],
+          "useYearSource": true
+        }
+      ],
+      "negated": [
+        "usc-26-457",
+        "usc-26-401"
+      ],
+      "why": "The IRS Bulletin (the year source, irs-soi-ira-1983) covers the $1,500/15% IRA rule and Pub. L. 95-600 covers the SEP, §457 and §401(k) fields, so no single id fits every covered field."
+    },
+    "6400d7050d": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "why": "The statutory flat $1,000 at §219(b)(5)(B)(ii) in usc-26-219."
+    },
+    "671d453ab3": {
+      "cites": [
+        "n-25-67"
+      ],
+      "why": "Notice 2025-67 states $2,600 for 2026."
+    },
+    "6a4c43ca42": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "why": "§408A's effective-date note (Pub. L. 105-34 §302(f)) in usc-26-408A makes the Roth IRA unavailable in 1997; the group covers only iraRothAvailable_408A that year."
+    },
+    "816f3e3a7c": {
+      "cites": [
+        "usc-26-401",
+        "usc-26-403"
+      ],
+      "negated": [
+        "n-24-80"
+      ],
+      "why": "The 2024 amounts are statutory (§401(k)(16)(D) and §403(b)(16)(D)); Notice 2024-80 publishes the 2025 amounts and only implies 2024's $6,000 by 'remains'."
+    },
+    "87f2172946": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [
+            "n-09-94",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2009-94 publishes the joint start; §219(g)(7)(B)/(g)(3)(B)(iii) fix the width and the married-filing-separately band."
+    },
+    "8ef1293152": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [
+            "n-08-102",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2008-102 publishes the joint start; §219(g)(7)(B)/(g)(3)(B)(iii) fix the width and the married-filing-separately band, which no notice publishes."
+    },
+    "92019f96c6": {
+      "cites": [],
+      "negated": [
+        "n-23-75"
+      ],
+      "why": "Statutory (§414(v)(7)(A), not in the corpus); the note says Notice 2023-75 does not state it."
+    },
+    "94d8ae97da": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "why": "§219(d)(1) and its Pub. L. 116-94 repeal note (effective after 2019) in usc-26-219 keep the restriction for 2019; Pub. L. 116-94 is not in the corpus."
+    },
+    "a34cd19c89": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-08-102",
+            "usc-26-219"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-08-102",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2008-102 publishes the starts; §219(g) fixes the widths and the zero start for married filing separately."
+    },
+    "a537cf9af6": {
+      "cites": [
+        "pl-107-16"
+      ],
+      "citesInYears": {
+        "usc-26-25B": [
+          2002,
+          2025
+        ],
+        "pl-119-21": [
+          2026,
+          2026
+        ]
+      },
+      "why": "EGTRRA §618 enacts §25B(d)(1); the 2024 Code text holds through 2025, and Pub. L. 119-21 §70116 governs from 2026."
+    },
+    "b921a7aaa1": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [],
+          "useYearSource": true
+        }
+      },
+      "why": "The note explains only the married-filing-separately band (§219(g), usc-26-219); the joint band it also governs is printed by that year's notice (the year source) from 2013."
+    },
+    "ba281dd811": {
+      "cites": [
+        "usc-26-402A"
+      ],
+      "negated": [
+        "usc-26-402"
+      ],
+      "why": "§402A(e), with the Pub. L. 117-328 §127(g) effective date, in usc-26-402A; usc-26-402 is only a substring."
+    },
+    "d8f7bbc12f": {
+      "cites": [
+        "pl-93-406"
+      ],
+      "why": "'The ERISA rules' are Pub. L. 93-406; the group covers only the ERISA IRA fields, and the 1976 Act spousal fields fall to the year source pl-94-455."
+    },
+    "db3cbff871": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "marriedFilingJointly": {
+          "cites": [
+            "n-11-90",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2011-90 publishes the joint start; §219(g)(7)(B)/(g)(3)(B)(iii) fix the width and the married-filing-separately band."
+    },
+    "dea314efa9": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-10-78",
+            "usc-26-408A"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-10-78",
+            "usc-26-408A"
+          ]
+        }
+      },
+      "negated": [
+        "usc-26-408"
+      ],
+      "why": "Notice 2010-78 publishes the starts; §408A(c)(3) fixes the widths and the zero start for married filing separately."
+    },
+    "df31043930": {
+      "cites": [
+        "usc-26-219"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-07-87",
+            "usc-26-219"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-07-87",
+            "usc-26-219"
+          ]
+        }
+      },
+      "why": "Notice 2007-87 publishes the single and joint starts, §219(g)(2)(A)(ii) the widths, and §219(g)(3)(B)(iii) the zero start for married filing separately."
+    },
+    "e41d79fc41": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-09-94",
+            "usc-26-408A"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-09-94",
+            "usc-26-408A"
+          ]
+        }
+      },
+      "negated": [
+        "usc-26-408"
+      ],
+      "why": "Notice 2009-94 publishes the starts; §408A(c)(3) fixes the widths and the zero start for married filing separately."
+    },
+    "eb18c69067": {
+      "cites": [
+        "usc-26-402A"
+      ],
+      "negated": [
+        "n-23-75",
+        "usc-26-402"
+      ],
+      "why": "§402A(e)(3)(A) fixes the unadjusted $2,500 for 2024; Notice 2023-75 does not state it, and usc-26-402 is only a substring."
+    },
+    "eb9cbeca12": {
+      "cites": [
+        "usc-26-408A"
+      ],
+      "byMember": {
+        "singleOrHeadOfHousehold": {
+          "cites": [
+            "n-07-87",
+            "usc-26-408A"
+          ]
+        },
+        "marriedFilingJointly": {
+          "cites": [
+            "n-07-87",
+            "usc-26-408A"
+          ]
+        }
+      },
+      "negated": [
+        "usc-26-408"
+      ],
+      "why": "Notice 2007-87 publishes the single and joint starts, and §408A(c)(3) fixes the widths and the zero start for married filing separately; usc-26-408 appears only as a substring of usc-26-408A."
+    }
+  },
+  "fieldOverrides": [
+    {
+      "pattern": "^annualAdditionsCompensationFraction_415c1B$",
+      "years": [
+        1987,
+        2000
+      ],
+      "cites": [],
+      "note": "The 25 percent of compensation limit is fixed by IRC 415(c)(1)(B) as then in effect; neither the IRS Cash or Deferred Arrangements table nor Publication 590 for these years prints it.",
+      "why": "pdftotext of codas.pdf and p590--1995/2000.pdf finds no 25 percent figure, so neither year source states it."
+    },
+    {
+      "pattern": "^sepMaximumEmployerContributionRate_preEgtrra$",
+      "years": [
+        1987,
+        1994
+      ],
+      "cites": [],
+      "note": "The 15 percent of compensation SEP limit is fixed by IRC 404(h)(1)(C) and 402(h)(2) as then in effect; the IRS Cash or Deferred Arrangements table does not print it.",
+      "why": "pdftotext of codas.pdf finds 15 percent only in a deferral example; Publication 590 states the SEP limit from 1995, so those years keep it."
+    }
+  ]
+}

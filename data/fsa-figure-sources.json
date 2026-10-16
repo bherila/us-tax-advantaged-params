@@ -1,0 +1,840 @@
+{
+  "figureCitations": {
+    "dependentCare.exclusionLimit": "IRC 129(a)(2)(A); Pub. L. 117-2 s.9632; Pub. L. 119-21 s.70404",
+    "dependentCare.marriedFilingSeparatelyExclusionLimit": "IRC 129(a)(2)(A); Pub. L. 117-2 s.9632; Pub. L. 119-21 s.70404",
+    "dependentCare.state": "IRC 129(a)(2)(A); Pub. L. 99-514 s.1163(a)",
+    "healthFsa.carryoverLimit": "Notice 2013-71; Notice 2020-33",
+    "healthFsa.salaryReductionLimit": "IRC 125(i)",
+    "healthFsa.state": "IRC 125(i); Pub. L. 111-148 s.9005; Notice 2012-40"
+  },
+  "figureNotes": [
+    "Statutory amounts at IRC 129(a)(2)(A), not inflation adjusted and therefore absent from the annual revenue procedures. Pub. L. 99-514 section 1163(a) amended IRC 129(a) generally to add the limitation of exclusion, applicable to taxable years beginning after December 31, 1986 (section 1163(c)). See usc-26-129, whose 1988 amendment note quotes the pre-1988 text of paragraph (2) with the same $5,000 ($2,500) figures.",
+    "Notice 2013-71 section III created the carryover option at a fixed $500 of unused amounts from a plan year, not indexed and stated in no revenue procedure. The figure belongs to the plan year the amounts are carried FROM.",
+    "Notice 2012-40 section III, the unindexed statutory $2,500 amount at IRC 125(i)(1); no annual revenue procedure states a 2013 figure. Rev. Proc. 2012-41 (irb12-45) lists the 2013 adjusted items and has no Cafeteria Plans entry, because IRC 125(i)(2) indexes only for years beginning after December 31, 2013.",
+    "Rev. Proc. 2013-35 section 3.15 (Cafeteria Plans).",
+    "Rev. Proc. 2014-61 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. 2015-53 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. 2016-55 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. 2017-58 section 3.16 (Cafeteria Plans). Rev. Proc. 2018-18 (irb18-10) reissued the 2018 figures after the Tax Cuts and Jobs Act changed the indexing measure, but its sections 3 and 5 list the modified and superseded sections of Rev. Proc. 2017-58 as running 3.14, 3.15, 3.18 - section 3.16 is absent - so the Cafeteria Plans figure was neither restated nor changed.",
+    "Rev. Proc. 2018-57 section 3.17 (Cafeteria Plans).",
+    "Notice 2020-33 section III.A raised the carryover to 20 percent of the IRC 125(i) limit for that plan year and states $550 for a plan year starting in 2020 (20 percent of $2,750). Rev. Proc. 2019-44 states no carryover figure.",
+    "Rev. Proc. 2019-44 section 3.17 (Cafeteria Plans).",
+    "American Rescue Plan Act of 2021, Pub. L. 117-2, section 9632(a), adding IRC 129(a)(2)(D): for a taxable year beginning after December 31, 2020 and before January 1, 2022, subparagraph (A) is applied by substituting \"$10,500 (half such dollar amount\" for \"$5,000 ($2,500\". Half of $10,500 is $5,250. Section 9632(b) applies the amendment to taxable years beginning after December 31, 2020. This is not an inflation adjustment, so no revenue procedure carries it; Rev. Proc. 2020-45 predates the March 2021 enactment and could not.",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $550\" for taxable years beginning in 2021; the 20-percent rule itself is Notice 2020-33 (20 percent of $2750).",
+    "Rev. Proc. 2020-45 section 3.17 (Cafeteria Plans).",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $570\" for taxable years beginning in 2022; the 20-percent rule itself is Notice 2020-33 (20 percent of $2850).",
+    "Rev. Proc. 2021-45 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $610\" for taxable years beginning in 2023; the 20-percent rule itself is Notice 2020-33 (20 percent of $3050).",
+    "Rev. Proc. 2022-38 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $640\" for taxable years beginning in 2024; the 20-percent rule itself is Notice 2020-33 (20 percent of $3200).",
+    "Rev. Proc. 2023-34 section 3.16 (Cafeteria Plans).",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $660\" for taxable years beginning in 2025; the 20-percent rule itself is Notice 2020-33 (20 percent of $3300).",
+    "Rev. Proc. 2024-40 section 3.16 (Cafeteria Plans).",
+    "Pub. L. 119-21, section 70404(a), striking \"$5,000 ($2,500\" from IRC 129(a)(2)(A) and inserting \"$7,500 ($3,750\"; section 70404(b) applies the amendment to taxable years beginning after December 31, 2025. A fixed-dollar substitution with no indexing mechanism, so no revenue procedure carries it. usc-26-129 is the 2024 edition of the Code and still prints $5,000/$2,500.",
+    "Rev. Proc. section stated above, \"If the cafeteria plan permits the carryover of unused amounts, the maximum carryover amount is $680\" for taxable years beginning in 2026; the 20-percent rule itself is Notice 2020-33 (20 percent of $3400).",
+    "Rev. Proc. 2025-32 section 3.15 (Cafeteria Plans)."
+  ],
+  "figureSets": [
+    [
+      "dependentCare.state",
+      "healthFsa.state"
+    ],
+    []
+  ],
+  "figureSources": {
+    "1986": {
+      "sources": [],
+      "figures": 0,
+      "exceptions": {}
+    },
+    "1987": {
+      "sources": [
+        "usc-26-129"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1988": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1989": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1990": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1991": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1992": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1993": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1994": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1995": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1996": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1997": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1998": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "1999": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2000": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2001": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2002": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2003": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2004": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "usc-26-129"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "irs-notice-2012-40"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "sources": [
+            "usc-26-129",
+            "pl-99-514"
+          ],
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-notice-2012-40",
+            "usc-26-125"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2013-35"
+          ],
+          "note": 3
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2014-61"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2015-53"
+          ],
+          "note": 5
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2016-55"
+          ],
+          "note": 6
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2017-58"
+          ],
+          "note": 7
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2013-71"
+          ],
+          "note": 1
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2018-57"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-notice-2020-33"
+          ],
+          "note": 9
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2019-44"
+          ],
+          "note": 10
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "pl-117-2",
+        "usc-26-129"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 11
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 11
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2020-45"
+          ],
+          "note": 12
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2020-45"
+          ],
+          "note": 13
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2021-45"
+          ],
+          "note": 14
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2021-45"
+          ],
+          "note": 15
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2022-38"
+          ],
+          "note": 16
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2022-38"
+          ],
+          "note": 17
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2023-34"
+          ],
+          "note": 18
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2023-34"
+          ],
+          "note": 19
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 0
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 0
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2024-40"
+          ],
+          "note": 20
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2024-40"
+          ],
+          "note": 21
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "pl-119-21"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "dependentCare.exclusionLimit": {
+          "note": 22
+        },
+        "dependentCare.marriedFilingSeparatelyExclusionLimit": {
+          "note": 22
+        },
+        "healthFsa.carryoverLimit": {
+          "sources": [
+            "irs-rev-proc-2025-32"
+          ],
+          "note": 23
+        },
+        "healthFsa.salaryReductionLimit": {
+          "sources": [
+            "irs-rev-proc-2025-32"
+          ],
+          "note": 24
+        }
+      }
+    }
+  }
+}

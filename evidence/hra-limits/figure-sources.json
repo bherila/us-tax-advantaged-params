@@ -1,0 +1,137 @@
+{
+  "ids": {
+    "n-17-67": "irs-notice-2017-67",
+    "rp-17-58": "irs-rev-proc-2017-58",
+    "rp-18-57": "irs-rev-proc-2018-57",
+    "rp-19-44": "irs-rev-proc-2019-44",
+    "rp-20-43": "irs-rev-proc-2020-43",
+    "rp-20-45": "irs-rev-proc-2020-45",
+    "rp-21-25": "irs-rev-proc-2021-25",
+    "rp-21-45": "irs-rev-proc-2021-45",
+    "rp-22-24": "irs-rev-proc-2022-24",
+    "rp-22-38": "irs-rev-proc-2022-38",
+    "rp-23-23": "irs-rev-proc-2023-23",
+    "rp-23-34": "irs-rev-proc-2023-34",
+    "rp-24-25": "irs-rev-proc-2024-25",
+    "rp-24-40": "irs-rev-proc-2024-40",
+    "rp-25-19": "irs-rev-proc-2025-19",
+    "rp-25-32": "irs-rev-proc-2025-32"
+  },
+  "notes": {
+    "027ce73ab9": {
+      "cites": [
+        "rp-25-32"
+      ],
+      "why": "Rev. Proc. 2025-32 publishes the 2026 QSEHRA limits."
+    },
+    "283e1e6801": {
+      "cites": [
+        "td-9867"
+      ],
+      "why": "T.D. 9867's 2020 applicability date makes both plan-year HRAs unavailable before 2020."
+    },
+    "2bbd79bbe5": {
+      "cites": [
+        "rp-21-45"
+      ],
+      "why": "Rev. Proc. 2021-45 publishes the 2022 QSEHRA limits."
+    },
+    "3e3258a715": {
+      "cites": [
+        "rp-20-43"
+      ],
+      "why": "Rev. Proc. 2020-43 §1 states the EBHRA limit stays $1,800 for 2021."
+    },
+    "49f93053b7": {
+      "cites": [
+        "rp-24-40"
+      ],
+      "why": "Rev. Proc. 2024-40 publishes the 2025 QSEHRA limits."
+    },
+    "4ea162823a": {
+      "cites": [
+        "rp-22-24"
+      ],
+      "why": "Rev. Proc. 2022-24 publishes the 2023 EBHRA limit."
+    },
+    "5aa219dc45": {
+      "cites": [
+        "rp-23-23"
+      ],
+      "why": "Rev. Proc. 2023-23 publishes the 2024 EBHRA limit."
+    },
+    "64e2ba5fd8": {
+      "cites": [
+        "rp-21-25"
+      ],
+      "why": "Rev. Proc. 2021-25 publishes the 2022 EBHRA limit."
+    },
+    "6cc8399268": {
+      "cites": [
+        "rp-22-38"
+      ],
+      "why": "Rev. Proc. 2022-38 publishes the 2023 QSEHRA limits."
+    },
+    "7041a74f9a": {
+      "cites": [
+        "rp-18-57"
+      ],
+      "why": "Rev. Proc. 2018-57 publishes the 2019 QSEHRA limits."
+    },
+    "71c411dc81": {
+      "cites": [
+        "n-17-67",
+        "usc-26-9831"
+      ],
+      "why": "Notice 2017-67 fn. 5 fixes the 2017 $10,050 family limit and the unchanged $4,950, using the §9831(d)(2) base and indexing rule."
+    },
+    "7586244738": {
+      "cites": [
+        "td-9867"
+      ],
+      "why": "T.D. 9867 (54.9802-4) makes the ICHRA available from 2020 with no dollar limit."
+    },
+    "8d282992c0": {
+      "cites": [
+        "rp-25-19"
+      ],
+      "why": "Rev. Proc. 2025-19 publishes the 2026 EBHRA limit."
+    },
+    "9f2c3f1151": {
+      "cites": [
+        "rp-23-34"
+      ],
+      "why": "Rev. Proc. 2023-34 publishes the 2024 QSEHRA limits."
+    },
+    "a008872b1a": {
+      "cites": [
+        "td-9867"
+      ],
+      "why": "T.D. 9867 (54.9831-1(c)(3)(viii)(B)(1)) fixes the $1,800 EBHRA limit for 2020."
+    },
+    "a2adda8193": {
+      "cites": [
+        "rp-24-25"
+      ],
+      "why": "Rev. Proc. 2024-25 publishes the 2025 EBHRA limit."
+    },
+    "aa343c057f": {
+      "cites": [
+        "rp-20-45"
+      ],
+      "why": "Rev. Proc. 2020-45 publishes the 2021 QSEHRA limits."
+    },
+    "c93e3f79a1": {
+      "cites": [
+        "rp-19-44"
+      ],
+      "why": "Rev. Proc. 2019-44 publishes the 2020 QSEHRA limits."
+    },
+    "cd57f4b07a": {
+      "cites": [
+        "rp-17-58"
+      ],
+      "why": "Rev. Proc. 2017-58 publishes the 2018 QSEHRA limits."
+    }
+  }
+}

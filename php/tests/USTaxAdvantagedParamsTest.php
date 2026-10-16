@@ -1214,6 +1214,80 @@ test('payroll parameter and scenario builder snapshots are detached', static fun
     assertSameValue(10000, $builder->toInput()['payrollTax']['persons'][0]['wages'][0]['medicareWages']);
 });
 
+const PROVENANCE_TABLES = [
+    ['parametersForYear', 'parameterSourcesForYear', 'supportedTaxYears', 'sourceMetadata'],
+    ['hsaParametersForYear', 'hsaParameterSourcesForYear', 'supportedHsaTaxYears', 'hsaSourceMetadata'],
+    ['fsaParametersForYear', 'fsaParameterSourcesForYear', 'supportedFsaTaxYears', 'fsaSourceMetadata'],
+    ['payrollParametersForYear', 'payrollParameterSourcesForYear', 'supportedPayrollTaxYears', 'payrollSourceMetadata'],
+    ['educationParametersForYear', 'educationParameterSourcesForYear', 'supportedEducationTaxYears', 'educationSourceMetadata'],
+    ['ableParametersForYear', 'ableParameterSourcesForYear', 'supportedAbleTaxYears', 'ableSourceMetadata'],
+    ['adoptionParametersForYear', 'adoptionParameterSourcesForYear', 'supportedAdoptionTaxYears', 'adoptionSourceMetadata'],
+    ['hraParametersForYear', 'hraParameterSourcesForYear', 'supportedHraTaxYears', 'hraSourceMetadata'],
+    ['commuterParametersForYear', 'commuterParameterSourcesForYear', 'supportedCommuterTaxYears', 'commuterSourceMetadata'],
+];
+
+test('every attributed figure exists in its row and cites listed sources', function (): void {
+    foreach (PROVENANCE_TABLES as [$rowLookup, $sourceLookup, $rangeLookup, $metadataLookup]) {
+        $range = U::{$rangeLookup}();
+        $listed = array_column(U::{$metadataLookup}(), 'id');
+        $attributed = 0;
+        for ($year = $range['minimum']; $year <= $range['maximum']; $year++) {
+            $row = U::{$rowLookup}($year);
+            $sources = U::{$sourceLookup}($year);
+            assertSameValue($row === null, $sources === null, "{$sourceLookup}({$year}) and {$rowLookup}({$year}) disagree on null");
+            if ($row === null || $sources === null) {
+                continue;
+            }
+            assertSameValue($year, $sources['taxYear']);
+            $visit = function (mixed $node, mixed $value, string $path) use (&$visit, &$attributed, $listed, $sourceLookup, $year): void {
+                if (is_array($node) && isset($node['sources']) && is_array($node['sources'])) {
+                    $attributed++;
+                    assertSameValue(true, is_string($node['citation']), "{$path} citation");
+                    assertSameValue(true, $node['note'] === null || is_string($node['note']), "{$path} note");
+                    foreach ($node['sources'] as $source) {
+                        foreach (['id', 'title', 'url', 'authority'] as $key) {
+                            assertSameValue(true, is_string($source[$key] ?? null), "{$path} source {$key}");
+                        }
+                        assertSameValue(true, str_starts_with($source['url'], 'https://'), "{$path} url");
+                        assertSameValue(true, in_array($source['id'], $listed, true), "{$source['id']} is listed");
+                    }
+                    return;
+                }
+                foreach ((array) $node as $key => $child) {
+                    if (!is_array($value) || !array_key_exists($key, $value)) {
+                        failTest("{$sourceLookup}({$year}) attributes {$path}{$key}, which the row does not have");
+                    }
+                    $visit($child, $value[$key], "{$path}{$key}.");
+                }
+            };
+            $visit($sources['figures'], $row, '');
+        }
+        assertSameValue(true, $attributed > 0, "{$sourceLookup} attributes some figure");
+    }
+});
+
+test('provenance lookups refuse the years their tables refuse', function (): void {
+    try {
+        U::parameterSourcesForYear(2027);
+        failTest('2027 should be unsupported');
+    } catch (UnsupportedTaxYearException) {
+    }
+    try {
+        U::parameterSourcesForYear(2026.5);
+        failTest('2026.5 should be invalid');
+    } catch (ParameterException $error) {
+        assertSameValue('INVALID_TAX_YEAR', $error->errorCode);
+    }
+    assertSameValue(null, U::payrollParameterSourcesForYear(1990));
+});
+
+test('provenance snapshots are detached from the embedded table', function (): void {
+    $first = U::parameterSourcesForYear(2026);
+    $first['figures']['electiveDeferral402g']['sources'] = [];
+    $again = U::parameterSourcesForYear(2026);
+    assertSameValue(true, count($again['figures']['electiveDeferral402g']['sources']) > 0);
+});
+
 $started = microtime(true);
 foreach ($tests as $name => $body) {
     try {

@@ -1,0 +1,852 @@
+{
+  "figureCitations": {
+    "additionalContributionAmountAge55": "IRC 223(b)(3)(B)",
+    "annualContributionLimit.family": "IRC 223(b)(2)(B)",
+    "annualContributionLimit.selfOnly": "IRC 223(b)(2)(A)",
+    "contributionLimitCappedByHdhpAnnualDeductible": "IRC 223(b)(2) pre-amendment; Pub. L. 109-432 s.303",
+    "hdhp.maximumAnnualOutOfPocket.family": "IRC 223(c)(2)(A)(ii)",
+    "hdhp.maximumAnnualOutOfPocket.selfOnly": "IRC 223(c)(2)(A)(ii)",
+    "hdhp.minimumAnnualDeductible.family": "IRC 223(c)(2)(A)(i)",
+    "hdhp.minimumAnnualDeductible.selfOnly": "IRC 223(c)(2)(A)(i)",
+    "lastMonthRuleAvailable": "IRC 223(b)(8); Pub. L. 109-432 s.305",
+    "testingPeriodMonths": "IRC 223(b)(8)(B)(iii)"
+  },
+  "figureNotes": [
+    "statutory table at IRC 223(b)(3)(B); not inflation adjusted, so absent from the annual Rev. Procs. See usc-26-223 and Notice 2004-2 A-14.",
+    "Rules for a taxable year beginning before 2007: the §223(b)(2) lesser-of deductible cap is in force and §223(b)(8) is not yet enacted. See _policyFlagsComment and usc-26-223.",
+    "Rules for a taxable year beginning after 2006: Pub. L. 109-432 §303 removed the §223(b)(2) deductible cap and §305 added the §223(b)(8) last-month rule, both applicable to taxable years beginning after December 31, 2006. See _policyFlagsComment and usc-26-223.",
+    "rp-06-53 (Rev. Proc. 2006-53 section 3.24) states the 2007 HDHP deductible and out-of-pocket figures; rp-07-36 restates the 2007 contribution limits after the Tax Relief and Health Care Act of 2006 removed the deductible cap."
+  ],
+  "figureSets": [
+    [
+      "annualContributionLimit.family",
+      "annualContributionLimit.selfOnly",
+      "hdhp.maximumAnnualOutOfPocket.family",
+      "hdhp.maximumAnnualOutOfPocket.selfOnly",
+      "hdhp.minimumAnnualDeductible.family",
+      "hdhp.minimumAnnualDeductible.selfOnly"
+    ],
+    [
+      "annualContributionLimit.family",
+      "annualContributionLimit.selfOnly"
+    ]
+  ],
+  "figureSources": {
+    "2004": {
+      "sources": [
+        "irs-notice-2004-2"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "irs-rev-proc-2004-71"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "irs-rev-proc-2005-70"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 1
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "irs-rev-proc-2007-36"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "hdhp.maximumAnnualOutOfPocket.family": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ],
+          "note": 3
+        },
+        "hdhp.maximumAnnualOutOfPocket.selfOnly": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ],
+          "note": 3
+        },
+        "hdhp.minimumAnnualDeductible.family": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ],
+          "note": 3
+        },
+        "hdhp.minimumAnnualDeductible.selfOnly": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ],
+          "note": 3
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "irs-rev-proc-2007-36"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "irs-rev-proc-2008-29"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "irs-rev-proc-2009-29"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "irs-rev-proc-2010-22"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "irs-rev-proc-2011-32"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "irs-rev-proc-2012-26"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "irs-rev-proc-2013-25"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "irs-rev-proc-2014-30"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "irs-rev-proc-2015-30"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "irs-rev-proc-2016-28"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "irs-rev-proc-2018-27"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "irs-rev-proc-2018-30"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "irs-rev-proc-2019-25"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "irs-rev-proc-2020-32"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "irs-rev-proc-2021-25"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "irs-rev-proc-2022-24"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "irs-rev-proc-2023-23"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "irs-rev-proc-2024-25"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "irs-rev-proc-2025-19"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "2027": {
+      "sources": [
+        "irs-rev-proc-2026-24"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "additionalContributionAmountAge55": {
+          "sources": [
+            "usc-26-223",
+            "irs-notice-2004-2"
+          ],
+          "note": 0
+        },
+        "contributionLimitCappedByHdhpAnnualDeductible": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "lastMonthRuleAvailable": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        },
+        "testingPeriodMonths": {
+          "sources": [
+            "usc-26-223"
+          ],
+          "note": 2
+        }
+      }
+    }
+  }
+}

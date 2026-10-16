@@ -29391,6 +29391,101 @@
       "expectError": {
         "code": "INVALID_TAX_YEAR"
       }
+    },
+    {
+      "name": "Figure sources: 2026 elective deferral cites Notice 2025-67",
+      "description": "IRS Notice 2025-67 states that the IRC 402(g)(1) limitation on elective deferrals is increased from $23,500 to $24,500 for 2026. The figure is set under IRC 402(g)(1) and that notice is its only published source, with nothing left for a note to explain.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parameterSourcesForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "taxYear": 2026,
+        "figures.electiveDeferral402g.citation": "IRC 402(g)(1)",
+        "figures.electiveDeferral402g.sources.0.id": "irs-notice-2025-67",
+        "figures.electiveDeferral402g.sources.0.authority": "IRS",
+        "figures.electiveDeferral402g.note": null
+      }
+    },
+    {
+      "name": "Figure sources: 2008 IRA limit cites EGTRRA, not the 2008 notice",
+      "description": "Pub. L. 107-16 section 601 amended IRC 219(b)(5)(A) to a deductible amount of $5,000 for 2008 and later, with cost-of-living indexing only for years after 2008. The 2008 IRA limit is therefore the statutory amount EGTRRA enacted, not a figure Notice 2007-87 adjusted, and its source is the Act.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parameterSourcesForYear",
+        "taxYear": 2008
+      },
+      "expect": {
+        "figures.ira.baseContributionLimit.citation": "IRC 219(b)(5)(A)",
+        "figures.ira.baseContributionLimit.sources.0.id": "pl-107-16"
+      }
+    },
+    {
+      "name": "Figure sources: 2024 Roth catch-up threshold cites no notice",
+      "description": "IRC 414(v)(7)(A), added by SECURE 2.0 section 603, fixes a $145,000 prior-year FICA wage threshold, which Notice 2023-75 does not state; Notice 2023-62 then deferred the requirement through 2025, so the data carries null for 2024. No document in the corpus publishes the figure, so it cites none and its note says why.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parameterSourcesForYear",
+        "taxYear": 2024
+      },
+      "expect": {
+        "figures.rothCatchUpPriorYearFicaWageThreshold.citation": "IRC 414(v)(7)(A)",
+        "figures.rothCatchUpPriorYearFicaWageThreshold.sources": [],
+        "figures.rothCatchUpPriorYearFicaWageThreshold.note": "statutory; not stated in Notice 2023-75 The data carries null rather than the transcribed figure: Notice 2023-62 transition period."
+      }
+    },
+    {
+      "name": "Figure sources: 1990 annual-additions fraction rests on the statute alone",
+      "description": "Former IRC 415(c)(1)(B) limited annual additions to 25 percent of compensation. The IRS Cash or Deferred Arrangements table that supplies the 1990 dollar limits does not print the fraction, so the figure cites no document rather than inheriting that table.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parameterSourcesForYear",
+        "taxYear": 1990
+      },
+      "expect": {
+        "figures.annualAdditionsCompensationFraction.citation": "IRC 415(c)(1)(B)",
+        "figures.annualAdditionsCompensationFraction.sources": []
+      }
+    },
+    {
+      "name": "Figure sources: 2026 Social Security wage base cites the SSA determination",
+      "description": "The Social Security Administration determination for 2026, published at 90 FR 49047 on November 3, 2025, sets the contribution and benefit base under section 230 of the Social Security Act at $184,500, which IRC 3121(a)(1) and 1402(b)(1) adopt.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "payrollParameterSourcesForYear",
+        "taxYear": 2026
+      },
+      "expect": {
+        "figures.contributionAndBenefitBase.citation": "Social Security Act 230 (42 U.S.C. 430); IRC 3121(a)(1), 1402(b)(1)",
+        "figures.contributionAndBenefitBase.sources.0.id": "fr-2025-19763",
+        "figures.contributionAndBenefitBase.sources.0.authority": "Social Security Administration"
+      }
+    },
+    {
+      "name": "Figure sources: 2027 HSA limit cites Rev. Proc. 2026-24",
+      "description": "IRS Rev. Proc. 2026-24 sets the 2027 IRC 223(b)(2)(A) annual contribution limit for self-only coverage at $4,500, so that revenue procedure is the source of the figure.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "hsaParameterSourcesForYear",
+        "taxYear": 2027
+      },
+      "expect": {
+        "figures.annualContributionLimit.selfOnly.citation": "IRC 223(b)(2)(A)",
+        "figures.annualContributionLimit.selfOnly.sources.0.id": "irs-rev-proc-2026-24"
+      }
+    },
+    {
+      "name": "Figure sources: an unsupported retirement year is refused",
+      "description": "The provenance lookup accepts exactly the years its table accepts. The retirement table encodes 1975 through 2026 and never extrapolates, so 2027 is refused with UNSUPPORTED_TAX_YEAR, as parametersForYear(2027) is.",
+      "operation": "tableLookup",
+      "input": {
+        "method": "parameterSourcesForYear",
+        "taxYear": 2027
+      },
+      "expectError": {
+        "code": "UNSUPPORTED_TAX_YEAR"
+      }
     }
   ]
 }

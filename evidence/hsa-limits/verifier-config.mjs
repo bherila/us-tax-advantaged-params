@@ -51,4 +51,20 @@ export default {
   aliases: {
     additionalContributionAmount55_223b3B: "additionalContributionAmountAge55",
   },
+
+  /**
+   * Group source keys in this corpus's year blocks: keys that cover several
+   * figures rather than one field. scripts/derive-figure-sources.mjs applies
+   * the first group, in this order, that is present in a block and whose
+   * pattern matches the raw field name. A field no group matches keeps a
+   * `<field>_source` key if it has one, else the year's `source`.
+   */
+  sources: {
+    groups: [
+      // 2007 only; HDHP figures come from Rev. Proc. 2006-53 while the contribution limits keep the year source Rev. Proc. 2007-36.
+      ["hdhpFigures_source", /^hdhp(?:MinimumAnnualDeductible_223c2Ai|MaximumAnnualOutOfPocket_223c2Aii)$/],
+      // Exactly the three rule fields _policyFlagsComment names; no dollar amount.
+      ["statutoryPolicyFlags_source", /^(?:contributionLimitCappedByHdhpAnnualDeductible_223b2|lastMonthRuleAvailable_223b8|testingPeriodMonths_223b8Biii)$/],
+    ],
+  },
 };

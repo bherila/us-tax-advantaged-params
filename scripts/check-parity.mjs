@@ -26,14 +26,18 @@ const cases = vectors.map((vector) => ({ name: vector.name, input: parityInput(v
 // the class rather than listed here, so a table added later is covered without
 // editing this script, and the PHP runner reports its own list so that a lookup
 // present in only one runtime fails as well. Each table is read one year either
-// side of its supported range, with its range and its source metadata.
+// side of its supported range, with its range and its source metadata, and so
+// is its figure-source twin over the same years.
 const TABLE_LOOKUP = /(?:^p|P)arametersForYear$/;
+const LOOKUP = /(?:^p|P)arameter(?:s|Sources)ForYear$/;
 const tableMethods = Object.getOwnPropertyNames(USTaxAdvantagedParams)
-  .filter((name) => TABLE_LOOKUP.test(name) && typeof USTaxAdvantagedParams[name] === "function")
+  .filter((name) => LOOKUP.test(name) && typeof USTaxAdvantagedParams[name] === "function")
   .sort();
 cases.push({ name: "parameter-table lookups exposed", input: { __operation: "tableMethods" } });
-for (const method of tableMethods) {
+for (const method of tableMethods.filter((name) => TABLE_LOOKUP.test(name))) {
   const prefix = method.slice(0, -"ParametersForYear".length);
+  const sourcesMethod = prefix === "" ? "parameterSourcesForYear" : `${prefix}ParameterSourcesForYear`;
+  assert.ok(tableMethods.includes(sourcesMethod), `${method} has no ${sourcesMethod} twin.`);
   const domain = prefix.charAt(0).toUpperCase() + prefix.slice(1);
   const rangeMethod = `supported${domain}TaxYears`;
   const metadataMethod = prefix === "" ? "sourceMetadata" : `${prefix}SourceMetadata`;
@@ -41,11 +45,13 @@ for (const method of tableMethods) {
     cases.push({ name: `${lookup}()`, input: { __operation: "table", method: lookup, args: [] } });
   }
   const range = USTaxAdvantagedParams[rangeMethod]();
-  for (let year = range.minimum - 1; year <= range.maximum + 1; year += 1) {
-    cases.push({ name: `${method}(${year})`, input: { __operation: "table", method, args: [year] } });
-  }
-  for (const year of [range.minimum - 0.5, 3000000000, Number.MAX_SAFE_INTEGER + 1, { __number: "NaN" }, { __number: "Infinity" }, { __number: "-Infinity" }]) {
-    cases.push({ name: `${method}(${typeof year === "number" ? year : year.__number})`, input: { __operation: "table", method, args: [year] } });
+  for (const lookup of [method, sourcesMethod]) {
+    for (let year = range.minimum - 1; year <= range.maximum + 1; year += 1) {
+      cases.push({ name: `${lookup}(${year})`, input: { __operation: "table", method: lookup, args: [year] } });
+    }
+    for (const year of [range.minimum - 0.5, 3000000000, Number.MAX_SAFE_INTEGER + 1, { __number: "NaN" }, { __number: "Infinity" }, { __number: "-Infinity" }]) {
+      cases.push({ name: `${lookup}(${typeof year === "number" ? year : year.__number})`, input: { __operation: "table", method: lookup, args: [year] } });
+    }
   }
 }
 
@@ -97,5 +103,5 @@ for (let index = 0; index < cases.length; index += 1) {
   }
 }
 console.log(
-  `TypeScript/PHP full-output parity passed for ${vectors.length} vectors and ${cases.length - vectors.length - 1} parameter-table lookups across ${tableMethods.length} tables.`,
+  `TypeScript/PHP full-output parity passed for ${vectors.length} vectors and ${cases.length - vectors.length - 1} parameter-table and figure-source lookups across ${tableMethods.filter((name) => TABLE_LOOKUP.test(name)).length} tables.`,
 );

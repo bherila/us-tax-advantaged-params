@@ -1,0 +1,1503 @@
+{
+  "figureCitations": {
+    "coverdellEducationSavingsAccount.annualContributionLimit": "IRC 530(b)(1)(A)(iii)",
+    "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": "IRC 530(c)(1)",
+    "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": "IRC 530(c)(1)",
+    "coverdellEducationSavingsAccount.state": "IRC 530; Pub. L. 105-34 sec. 213(f)",
+    "educationalAssistanceProgram.annualExclusionLimit": "IRC 127(a)(2)",
+    "educationalAssistanceProgram.state": "IRC 127",
+    "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": "IRC 529(e)(3)",
+    "qualifiedTuitionProgram.elementarySecondaryExpenseScope": "IRC 529(c)(7); Pub. L. 119-21 sec. 70413(a)",
+    "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": "IRC 529(c)(9)(B)",
+    "qualifiedTuitionProgram.rothIraRolloverLifetimeLimit": "IRC 529(c)(3)(E)(ii)(II)",
+    "qualifiedTuitionProgram.state": "IRC 529(b)(6)"
+  },
+  "figureNotes": [
+    "pl-105-34 section 213(f) applies IRC 530 to taxable years beginning after December 31, 1997",
+    "pl-104-188 section 1202(a) extends IRC 127 through May 31, 1997, for taxable years beginning after December 31, 1994 (section 1202(c)(1)); the $5,250 is IRC 127(a)(2), usc-26-127",
+    "pl-104-188 section 1806(c)(1): \"The amendments made by this section shall apply to taxable years ending after the date of the enactment of this Act\" (August 20, 1996). A 1996 taxable year may end on or before that date, so whether IRC 529 applies depends on when the taxable year ends. IRC 529(b)(6) states no dollar limit; see usc-26-529.",
+    "pl-105-34 section 221 extends IRC 127 to courses beginning on or before May 31, 2000, for taxable years beginning after December 31, 1996; usc-26-127 notes record Pub. L. 106-170 substituting December 31, 2001; the $5,250 is IRC 127(a)(2)",
+    "IRC 529(b)(6) requires only safeguards against contributions in excess of those necessary for qualified higher education expenses and states no dollar limit; pl-104-188 section 1806(c)(1) applies IRC 529 to taxable years ending after August 20, 1996. See usc-26-529.",
+    "pl-105-34 section 213(a), IRC 530(b)(1)(A)(iii) $500 and IRC 530(c)(1) $95,000 ($150,000 joint) over a $15,000 ($10,000 joint) width, for taxable years beginning after December 31, 1997",
+    "pl-107-16 section 401(a)(1) substitutes $2,000 for $500 and section 401(b) substitutes $190,000 and $30,000 in IRC 530(c)(1), for taxable years beginning after December 31, 2001; continued past the EGTRRA sunset by pl-111-312 section 101(a)(1) and pl-112-240 section 101(a); usc-26-530",
+    "pl-107-16 section 411(a) strikes the IRC 127(d) termination for courses beginning after December 31, 2001; pl-111-312 section 101(a)(1) moves the EGTRRA sunset to December 31, 2012; the $5,250 is IRC 127(a)(2)",
+    "pl-112-240 section 101(a) strikes EGTRRA title IX for taxable years beginning after December 31, 2012; the $5,250 is IRC 127(a)(2), usc-26-127",
+    "IRC 529(e)(3) last sentence, $10,000, added by Pub. L. 115-97 section 11032(a)(2) for distributions made after December 31, 2017 (section 11032(b), quoted in the usc-26-529 notes)",
+    "IRC 529(c)(7), added by Pub. L. 115-97 section 11032(a)(1) for distributions made after December 31, 2017: \"expenses for tuition in connection with enrollment or attendance at an elementary or secondary public, private, or religious school\" (usc-26-529); IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\"",
+    "IRC 529(c)(9)(B), added by Pub. L. 116-94 div. O section 302(b)(1), applicable to distributions made after December 31, 2018 per the usc-26-529 effective-date note",
+    "IRC 529(c)(3)(E)(ii)(II), added by Pub. L. 117-328 div. T section 126(a), applicable to distributions after December 31, 2023 per the usc-26-529 effective-date note",
+    "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition through (H) educational therapies, and section 70413(a)(2) applies it \"to distributions made after the date of the enactment of this Act\" (July 4, 2025); before that date usc-26-529's tuition-only text applies",
+    "pl-119-21 section 70413(b) substitutes $20,000 for $10,000 in the last sentence of IRC 529(e)(3), for taxable years beginning after December 31, 2025",
+    "pl-119-21 section 70413(a)(1) rewrites IRC 529(c)(7) to (A) tuition, (B) curriculum and curricular materials, (C) books or other instructional materials, (D) online educational materials, (E) qualifying tutoring or classes outside the home, (F) examination fees, (G) dual enrollment fees and (H) educational therapies for students with disabilities; IRC 529(e)(3) caps \"expenses described in subsection (c)(7)\""
+  ],
+  "figureSets": [
+    []
+  ],
+  "figureSources": {
+    "1996": {
+      "sources": [
+        "pl-104-188",
+        "usc-26-127"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.state": {
+          "sources": [
+            "pl-105-34",
+            "usc-26-530"
+          ],
+          "note": 0
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "note": 1
+        },
+        "educationalAssistanceProgram.state": {
+          "note": 1
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "pl-104-188",
+            "usc-26-529"
+          ],
+          "note": 2
+        }
+      }
+    },
+    "1997": {
+      "sources": [
+        "usc-26-127",
+        "pl-105-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.state": {
+          "sources": [
+            "pl-105-34",
+            "usc-26-530"
+          ],
+          "note": 0
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "note": 3
+        },
+        "educationalAssistanceProgram.state": {
+          "note": 3
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "1998": {
+      "sources": [
+        "pl-105-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 5
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "1999": {
+      "sources": [
+        "pl-105-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 5
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2000": {
+      "sources": [
+        "pl-105-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 5
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "usc-26-127",
+            "pl-105-34"
+          ],
+          "note": 3
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2001": {
+      "sources": [
+        "pl-105-34"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 5
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 5
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "usc-26-127"
+          ],
+          "note": 3
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "usc-26-127"
+          ],
+          "note": 3
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2002": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2003": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2004": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-111-312"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127",
+            "pl-111-312"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127",
+            "pl-111-312"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-111-312"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127",
+            "pl-111-312"
+          ],
+          "note": 7
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-127",
+            "pl-111-312"
+          ],
+          "note": 7
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 10
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.rothIraRolloverLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 12
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 9
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "pl-119-21",
+            "usc-26-529"
+          ],
+          "note": 13
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.rothIraRolloverLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 12
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "pl-107-16",
+        "usc-26-530",
+        "pl-112-240"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "coverdellEducationSavingsAccount.annualContributionLimit": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.jointReturn": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.contributionPhaseout.otherReturns": {
+          "note": 6
+        },
+        "coverdellEducationSavingsAccount.state": {
+          "note": 6
+        },
+        "educationalAssistanceProgram.annualExclusionLimit": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "educationalAssistanceProgram.state": {
+          "sources": [
+            "pl-112-240",
+            "usc-26-127"
+          ],
+          "note": 8
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseAnnualLimit": {
+          "sources": [
+            "pl-119-21"
+          ],
+          "note": 14
+        },
+        "qualifiedTuitionProgram.elementarySecondaryExpenseScope": {
+          "sources": [
+            "pl-119-21"
+          ],
+          "note": 15
+        },
+        "qualifiedTuitionProgram.qualifiedEducationLoanLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 11
+        },
+        "qualifiedTuitionProgram.rothIraRolloverLifetimeLimit": {
+          "sources": [
+            "usc-26-529"
+          ],
+          "note": 12
+        },
+        "qualifiedTuitionProgram.state": {
+          "sources": [
+            "usc-26-529",
+            "pl-104-188"
+          ],
+          "note": 4
+        }
+      }
+    }
+  }
+}

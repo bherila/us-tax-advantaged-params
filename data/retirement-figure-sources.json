@@ -1,0 +1,2911 @@
+{
+  "figureCitations": {
+    "age60To63CatchUp": "IRC 414(v)(2)(E)(i)",
+    "annualAdditions415c": "IRC 415(c)(1)(A)",
+    "annualAdditionsCompensationFraction": "IRC 415(c)(1)(B)",
+    "annualCompensation401a17": "IRC 401(a)(17)",
+    "annualCompensation401a17GrandfatheredGovernmental": "OBRA '93 sec. 13212(d)(3) grandfathered compensation limit for eligible participants in certain governmental plans, published annually alongside the IRC 401(a)(17) limit",
+    "availability.designatedRoth401k": "IRC 402A, effective for taxable years after 2005",
+    "availability.designatedRoth403b": "IRC 402A, effective for taxable years after 2005",
+    "availability.governmental457b": "IRC 457 (governmental plans), effective 1979",
+    "availability.nongovernmental457b": "IRC 457 (tax-exempt plans), effective 1979",
+    "availability.pensionLinkedEmergencySavings": "IRC 402A(e), added by Pub. L. 117-328 section 127(e)(1) for plan years beginning after December 31, 2023",
+    "availability.rothIra": "IRC 408A, effective for years after 1997",
+    "availability.rothSimpleOrSep": "IRC 408(k)(7), 408(p)(12)",
+    "availability.rothTsp": "77 FR 26417, effective May 7, 2012",
+    "availability.sepIra": "IRC 408(k), effective 1979",
+    "availability.simpleIra": "IRC 408(p), effective 1997",
+    "availability.starter401kOrSafeHarbor403b": "IRC 401(k)(16), 403(b)(16), effective 2024",
+    "availability.traditional401k": "IRC 401(k) (Revenue Act of 1978 text)",
+    "availability.traditional403b": "IRC 403(b)",
+    "availability.traditionalIra": "IRC 219 and 408 (historical text)",
+    "availability.traditionalTsp": "5 USC 8432, 1987 implementation",
+    "definedBenefitAnnualBenefit415b": "IRC 415(b)(1)(A)",
+    "electiveDeferral402g": "IRC 402(g)(1)",
+    "generalAge50CatchUp": "IRC 414(v)(2)(B)(i)",
+    "highlyCompensatedEmployeeCompensation414q": "IRC 414(q)(1)(B)",
+    "ira.age50CatchUp": "IRC 219(b)(5)(B)(ii)",
+    "ira.baseContributionLimit": "IRC 219(b)(5)(A)",
+    "ira.compensationFraction": "IRC 219(b)(1) (historical text); IRC 219(b)(1)(B)",
+    "ira.nondeductibleContributionAvailable": "IRC 408(o)(1)",
+    "ira.nonworkingSpouseIndividualLimit": "IRC 219(c)(2), 2000-dollar per-account ceiling on the spousal IRA; null once SBJPA gave each spouse a full limit for 1997",
+    "ira.oneEarnerHouseholdCombinedLimit": "IRC 219(c)(2)(A)(i) (ERTA 1981 text)",
+    "ira.rothAvailable": "IRC 408A, effective for years after 1997",
+    "ira.spousalDeductionIsTwiceTheLesserOfContributions": "Former IRC 220(b)(1)(A): the one-earner deduction is twice the amount paid to whichever account received the lesser amount, so no per-account ceiling exists for the years it governs",
+    "ira.spousalIraAvailable": "IRC 219(c) (ERTA 1981 text)",
+    "ira.traditionalContributionAge70HalfRestriction": "IRC 219(b)(3) (historical text)",
+    "ira.universalEligibility": "IRC 219(b)(2) (historical text)",
+    "keyEmployeeOfficerCompensation416i": "IRC 416(i)(1)(A)(i)",
+    "pensionLinkedEmergencySavingsBalanceCap402A": "IRC 402A(e)(3)(A)(i)",
+    "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": "IRC 408A(c)(3)",
+    "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": "IRC 408A(c)(3)",
+    "phaseouts.rothIra.singleOrHeadOfHousehold": "IRC 408A(c)(3)",
+    "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": "IRC 219(g)(3)",
+    "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": "IRC 219(g)(3)",
+    "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": "IRC 219(g)(3)",
+    "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": "IRC 219(g)(7)(A)",
+    "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": "IRC 219(g)(3)(B)(iii), 219(g)(7)(B)",
+    "rothCatchUpPriorYearFicaWageThreshold": "IRC 414(v)(7)(A)",
+    "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": "IRC 25B(b)(2)(B)",
+    "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": "IRC 25B(b)(2)(B)",
+    "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": "IRC 25B(b)(2)(B)",
+    "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": "IRC 25B(b)(2)(A)",
+    "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": "IRC 25B(b)(2)(A)",
+    "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": "IRC 25B(b)(2)(A)",
+    "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": "IRC 25B(b)(1)",
+    "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": "IRC 25B(b)(1)",
+    "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": "IRC 25B(b)(1)",
+    "saversCredit25B.retirementPlanAndIraContributionsQualify": "IRC 25B(d)(1); Pub. L. 119-21 sec. 70116(a)(1) counts them only for taxable years beginning before January 1, 2027",
+    "section457b.available": "IRC 457 (Revenue Act of 1978 text)",
+    "section457b.baseDeferralLimit": "IRC 457(e)(15)",
+    "section457b.includibleCompensationFraction": "IRC 457(b)(2)(B); IRC 457(b)(2)(B) (Revenue Act of 1978 text)",
+    "section457b.specialLastThreeYearsMaximum": "IRC 457(b)(3)(A) (Revenue Act of 1978 text)",
+    "sep.available": "IRC 408(k) (Revenue Act of 1978 text)",
+    "sep.grandfatheredSarsepMayOperate": "IRC 408(k)(6)(A), SBJPA transition",
+    "sep.maximumEmployerContributionRate": "IRS SEP/SARSEP Audit Techniques, pre-EGTRRA rate",
+    "sep.minimumEligibleCompensation": "IRC 408(k)(2)(C)",
+    "sep.newSarsepMayBeEstablished": "IRC 408(k)(6)(A), SBJPA transition",
+    "simple.additionalNonelectiveContributionCap": "IRC 408(p)(2)(A)(iv)",
+    "simple.certainPlanAge50CatchUp": "IRC 414(v)(2)(B)(iii)",
+    "simple.certainPlanEnhancedSalaryReductionLimit": "IRC 408(p)(2)(E)(i)(I)-(II)",
+    "simple.generalAge50CatchUp": "IRC 414(v)(2)(B)(ii)",
+    "simple.salaryReductionLimit": "IRC 408(p)(2)(E)",
+    "special403b15YearCatchUp.annualLimit": "IRC 402(g)(7)(A)(i)",
+    "special403b15YearCatchUp.lifetimeLimit": "IRC 402(g)(7)(A)(ii)",
+    "special403b15YearCatchUp.serviceLimitPerYear": "IRC 402(g)(7)(A)(iii)",
+    "starterDeferralOnly.age50CatchUp": "Notice 2024-80, 2025 starter-plan age-50 increase",
+    "starterDeferralOnly.baseDeferralLimit": "IRC 401(k)(16)(D)(i)(II), 403(b)(16)(D)(i)(II)"
+  },
+  "figureNotes": [
+    "The $1,500-or-15-percent rule, exclusion of active participants, and age-70½ restriction remain the ERISA rules. The 1976 Act added the $1,750 joint spousal deduction for taxable years beginning after December 31, 1976.",
+    "The IRS Bulletin records that 1981-and-earlier IRA deductions were limited to $1,500 or 15 percent of earned income, while one-earner married couples had a combined IRA limit; it contrasts the 1982 universal-eligibility change for participants covered by an employer plan. The unchanged SEP, §457, and §401(k) fields are the statutory rules enacted by Pub. L. 95-600.",
+    "The 25 percent of compensation limit is fixed by IRC 415(c)(1)(B) as then in effect; neither the IRS Cash or Deferred Arrangements table nor Publication 590 for these years prints it.",
+    "The 15 percent of compensation SEP limit is fixed by IRC 404(h)(1)(C) and 402(h)(2) as then in effect; the IRS Cash or Deferred Arrangements table does not print it.",
+    "Section 408A applies to taxable years beginning after December 31, 1997; the 1997 data therefore has no Roth IRA and no pre-1997 fixed nonworking-spouse or one-earner cap.",
+    "IRS SEP/SARSEP Audit Techniques states that SBJPA prohibited new SARSEPs after December 31, 1996 while pre-1997 SARSEPs could continue.",
+    "ir-01-115 states the $130,000 \"as added by Section 613 of EGTRRA\"; pl-107-16 section 613(a)(1)(B) inserts it in IRC 416(i)(1)(A)(i), and section 613 applies to years beginning after December 31, 2001",
+    "pl-107-16 section 618(a) enacts the IRC 25B(b) table for taxable years beginning after December 31, 2001 (section 618(d)); the amounts were not indexed until Pub. L. 109-280 section 833(a), for taxable years beginning in a calendar year after 2006, so no notice states them",
+    "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027",
+    "Notice 2007-87 publishes the applicable dollar amounts under §408A(c)(3)(C)(ii); each end is the start plus the statutory width in §408A(c)(3)(A)(ii), and the married-filing-separately start is zero under §408A(c)(3)(C)(ii)(III). See usc-26-408A.",
+    "Notice 2007-87 publishes the applicable dollar amounts under §219(g)(3)(B)(i) and (ii); each end is the start plus the statutory width in §219(g)(2)(A)(ii), while the married-filing-separately start is the zero amount in §219(g)(3)(B)(iii). See usc-26-219.",
+    "Notice 2007-87 publishes the joint applicable dollar amount under §219(g)(7)(A); §219(g)(7)(B) supplies the $10,000 width, and a married individual filing separately keeps the zero applicable amount in §219(g)(3)(B)(iii). See usc-26-219.",
+    "statutory flat $1,000 under §219(b)(5)(B)(ii); not COLA-adjusted before 2024, so absent from the COLA notices",
+    "Starts from Notice 2008-102, which cites them as §408A(c)(3)(C)(ii)(I) and (II); the same limits are §408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by §408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under §408A(c)(3)(B)(ii)(III). See usc-26-408A.",
+    "Notice 2008-102 publishes the applicable dollar amounts under §219(g)(3)(B)(i) (joint return or qualifying widow(er)) and §219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by §219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at §219(g)(3)(B)(iii). See usc-26-219.",
+    "Start from Notice 2008-102 (§219(g)(7)(A)); the end is the start plus the $10,000 width that §219(g)(7)(B) substitutes for §219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+    "§414(v)(7)(A) was enacted by SECURE 2.0 and is not operative for this year; the table carries the statutory $145,000 base inertly",
+    "Starts from Notice 2009-94, which cites them as §408A(c)(3)(C)(ii)(I) and (II); the same limits are §408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by §408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under §408A(c)(3)(B)(ii)(III). See usc-26-408A.",
+    "Notice 2009-94 publishes the applicable dollar amounts under §219(g)(3)(B)(i) (joint return or qualifying widow(er)) and §219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by §219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at §219(g)(3)(B)(iii). See usc-26-219.",
+    "Start from Notice 2009-94 (§219(g)(7)(A)); the end is the start plus the $10,000 width that §219(g)(7)(B) substitutes for §219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+    "Starts from Notice 2010-78, which cites them as §408A(c)(3)(C)(ii)(I) and (II); the same limits are §408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by §408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under §408A(c)(3)(B)(ii)(III). See usc-26-408A.",
+    "Notice 2010-78 publishes the applicable dollar amounts under §219(g)(3)(B)(i) (joint return or qualifying widow(er)) and §219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by §219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at §219(g)(3)(B)(iii). See usc-26-219.",
+    "Start from Notice 2010-78 (§219(g)(7)(A)); the end is the start plus the $10,000 width that §219(g)(7)(B) substitutes for §219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+    "Starts from Notice 2011-90, which cites them as §408A(c)(3)(C)(ii)(I) and (II); the same limits are §408A(c)(3)(B)(ii)(I) and (II) in the current Code, a relettering with no change in substance. Each end is the start plus the width fixed by §408A(c)(3)(A)(ii): $15,000, or $10,000 on a joint return or for a married individual filing a separate return, whose applicable dollar amount is zero under §408A(c)(3)(B)(ii)(III). See usc-26-408A.",
+    "Notice 2011-90 publishes the applicable dollar amounts under §219(g)(3)(B)(i) (joint return or qualifying widow(er)) and §219(g)(3)(B)(ii) (all other taxpayers other than married filing separately), which are the band starts; unlike the notices from 2013 on it does not print the ranges themselves. Each end is the start plus the width fixed by §219(g)(2)(A)(ii): $10,000, or $20,000 on a joint return. The married-filing-separately start is the zero applicable dollar amount at §219(g)(3)(B)(iii). See usc-26-219.",
+    "Start from Notice 2011-90 (§219(g)(7)(A)); the end is the start plus the $10,000 width that §219(g)(7)(B) substitutes for §219(g)(2)(A)(ii) in the spouse-covered case. See usc-26-219. The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+    "The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+    "Section 219(d)(1) was repealed by Pub. L. 116-94 for taxable years beginning after December 31, 2019, so the former age-70½ restriction still applied in 2019.",
+    "usc-26-402A. IRC 402A(e) was added by Pub. L. 117-328, div. T, title I, section 127(e)(1), and section 127(g) applies the amendments to \"plan years beginning after December 31, 2023\", making 2024 the first year a pension-linked emergency savings account may exist.",
+    "usc-26-402A. Notice 2023-75 does not state this figure. IRC 402A(e)(3)(A) fixes the limitation at \"$2,500\" and its flush text directs the Secretary to adjust it only \"[i]n the case of contributions made in taxable years beginning after December 31, 2024\", so 2024 — the first effective year — carries the unadjusted statutory amount rather than an adjusted or carried-forward one.",
+    "statutory; not stated in Notice 2023-75 The data carries null rather than the transcribed figure: Notice 2023-62 transition period.",
+    "Notice 2024-80 states that the 2025 amounts remain $6,000 and $1,000, confirming the initial 2024 statutory amounts.",
+    "n-24-80: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans remains $2,500.\"",
+    "The data carries null rather than the transcribed figure: Notice 2023-62 transition period.",
+    "n-25-67: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,500 to $2,600.\""
+  ],
+  "figureSets": [
+    [
+      "availability.traditionalIra",
+      "ira.compensationFraction",
+      "ira.traditionalContributionAge70HalfRestriction",
+      "ira.universalEligibility"
+    ],
+    [
+      "ira.spousalDeductionIsTwiceTheLesserOfContributions"
+    ],
+    [
+      "availability.sepIra",
+      "availability.traditional401k",
+      "availability.traditionalIra",
+      "ira.compensationFraction",
+      "ira.traditionalContributionAge70HalfRestriction",
+      "ira.universalEligibility",
+      "section457b.available",
+      "section457b.includibleCompensationFraction",
+      "section457b.specialLastThreeYearsMaximum",
+      "sep.available"
+    ],
+    [
+      "availability.traditional401k",
+      "availability.traditionalIra",
+      "ira.compensationFraction",
+      "ira.traditionalContributionAge70HalfRestriction",
+      "ira.universalEligibility",
+      "section457b.available",
+      "section457b.includibleCompensationFraction",
+      "section457b.specialLastThreeYearsMaximum",
+      "sep.available"
+    ],
+    [
+      "availability.traditional401k",
+      "availability.traditionalIra",
+      "ira.compensationFraction",
+      "ira.nonworkingSpouseIndividualLimit",
+      "ira.oneEarnerHouseholdCombinedLimit",
+      "ira.spousalDeductionIsTwiceTheLesserOfContributions",
+      "ira.spousalIraAvailable",
+      "section457b.available",
+      "section457b.includibleCompensationFraction",
+      "section457b.specialLastThreeYearsMaximum",
+      "sep.available"
+    ],
+    [
+      "availability.traditional401k",
+      "availability.traditionalIra",
+      "ira.compensationFraction",
+      "ira.oneEarnerHouseholdCombinedLimit",
+      "ira.spousalIraAvailable",
+      "section457b.available",
+      "section457b.includibleCompensationFraction",
+      "section457b.specialLastThreeYearsMaximum",
+      "sep.available"
+    ],
+    [
+      "annualAdditions415c",
+      "electiveDeferral402g"
+    ],
+    [
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "electiveDeferral402g"
+    ],
+    [
+      "ira.baseContributionLimit",
+      "ira.nonworkingSpouseIndividualLimit",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether",
+      "sep.maximumEmployerContributionRate"
+    ],
+    [
+      "ira.baseContributionLimit",
+      "ira.rothAvailable",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether",
+      "sep.maximumEmployerContributionRate"
+    ],
+    [
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "electiveDeferral402g",
+      "highlyCompensatedEmployeeCompensation414q",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "ira.age50CatchUp",
+      "ira.baseContributionLimit",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly",
+      "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether"
+    ],
+    [
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "keyEmployeeOfficerCompensation416i",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "keyEmployeeOfficerCompensation416i",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.age50CatchUp",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.additionalNonelectiveContributionCap",
+      "simple.certainPlanAge50CatchUp",
+      "simple.certainPlanEnhancedSalaryReductionLimit",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.age50CatchUp",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.additionalNonelectiveContributionCap",
+      "simple.certainPlanAge50CatchUp",
+      "simple.certainPlanEnhancedSalaryReductionLimit",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit",
+      "starterDeferralOnly.age50CatchUp",
+      "starterDeferralOnly.baseDeferralLimit"
+    ],
+    [
+      "age60To63CatchUp",
+      "annualAdditions415c",
+      "annualCompensation401a17",
+      "annualCompensation401a17GrandfatheredGovernmental",
+      "definedBenefitAnnualBenefit415b",
+      "electiveDeferral402g",
+      "generalAge50CatchUp",
+      "highlyCompensatedEmployeeCompensation414q",
+      "ira.age50CatchUp",
+      "ira.baseContributionLimit",
+      "keyEmployeeOfficerCompensation416i",
+      "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.rothIra.singleOrHeadOfHousehold",
+      "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse",
+      "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether",
+      "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold",
+      "rothCatchUpPriorYearFicaWageThreshold",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent",
+      "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent",
+      "section457b.baseDeferralLimit",
+      "sep.minimumEligibleCompensation",
+      "simple.additionalNonelectiveContributionCap",
+      "simple.certainPlanAge50CatchUp",
+      "simple.certainPlanEnhancedSalaryReductionLimit",
+      "simple.generalAge50CatchUp",
+      "simple.salaryReductionLimit",
+      "starterDeferralOnly.age50CatchUp",
+      "starterDeferralOnly.baseDeferralLimit"
+    ]
+  ],
+  "figureSources": {
+    "1975": {
+      "sources": [
+        "pl-93-406"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "availability.traditional403b": {
+          "sources": [
+            "usc-26-403"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        }
+      }
+    },
+    "1976": {
+      "sources": [
+        "pl-93-406"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        }
+      }
+    },
+    "1977": {
+      "sources": [
+        "pl-94-455"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "availability.traditionalIra": {
+          "sources": [
+            "pl-93-406"
+          ],
+          "note": 0
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-93-406"
+          ],
+          "citation": "IRC 219(b)(1) (historical text)",
+          "note": 0
+        },
+        "ira.compensationFraction": {
+          "sources": [
+            "pl-93-406"
+          ],
+          "note": 0
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRC 220(b)(1)(C) (Tax Reform Act of 1976 text)"
+        },
+        "ira.spousalIraAvailable": {
+          "citation": "IRC 220 (Tax Reform Act of 1976 text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "sources": [
+            "pl-93-406"
+          ],
+          "note": 0
+        },
+        "ira.universalEligibility": {
+          "sources": [
+            "pl-93-406"
+          ],
+          "note": 0
+        }
+      }
+    },
+    "1978": {
+      "sources": [
+        "pl-94-455"
+      ],
+      "figures": 0,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRC 220(b)(1)(C) (Tax Reform Act of 1976 text)"
+        },
+        "ira.spousalIraAvailable": {
+          "citation": "IRC 220 (Tax Reform Act of 1976 text)"
+        }
+      }
+    },
+    "1979": {
+      "sources": [
+        "pl-95-600"
+      ],
+      "figures": 2,
+      "exceptions": {
+        "availability.governmental457b": {
+          "sources": [
+            "usc-26-457"
+          ]
+        },
+        "availability.nongovernmental457b": {
+          "sources": [
+            "usc-26-457"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRC 220(b)(1)(C) (Tax Reform Act of 1976 text)"
+        },
+        "ira.spousalIraAvailable": {
+          "citation": "IRC 220 (Tax Reform Act of 1976 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1980": {
+      "sources": [
+        "pl-95-600"
+      ],
+      "figures": 3,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRC 220(b)(1)(C) (Tax Reform Act of 1976 text)"
+        },
+        "ira.spousalIraAvailable": {
+          "citation": "IRC 220 (Tax Reform Act of 1976 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1981": {
+      "sources": [
+        "irs-soi-ira-1983"
+      ],
+      "figures": 1,
+      "exceptions": {
+        "availability.traditional401k": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "note": 1
+        },
+        "availability.traditionalIra": {
+          "sources": [],
+          "note": 1
+        },
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)",
+          "note": 1
+        },
+        "ira.compensationFraction": {
+          "note": 1
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRC 219(c), no fixed one-earner household cap"
+        },
+        "ira.spousalIraAvailable": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRS SOI Bulletin, one-earner spousal IRA rule"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "sources": [],
+          "note": 1
+        },
+        "ira.universalEligibility": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRS SOI Bulletin, 1982 universal-eligibility change"
+        },
+        "section457b.available": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "note": 1
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)",
+          "note": 1
+        },
+        "section457b.includibleCompensationFraction": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "note": 1
+        },
+        "section457b.specialLastThreeYearsMaximum": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "note": 1
+        },
+        "sep.available": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "note": 1
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [
+            "pl-95-600"
+          ],
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)",
+          "note": 1
+        }
+      }
+    },
+    "1982": {
+      "sources": [
+        "pl-97-34"
+      ],
+      "figures": 4,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019"
+        },
+        "ira.universalEligibility": {
+          "citation": "IRC 219 (ERTA 1981 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1983": {
+      "sources": [
+        "pl-97-34"
+      ],
+      "figures": 5,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019"
+        },
+        "ira.universalEligibility": {
+          "citation": "IRC 219 (ERTA 1981 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1984": {
+      "sources": [
+        "pl-97-34"
+      ],
+      "figures": 5,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019"
+        },
+        "ira.universalEligibility": {
+          "citation": "IRC 219 (ERTA 1981 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1985": {
+      "sources": [
+        "pl-97-34"
+      ],
+      "figures": 5,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019"
+        },
+        "ira.universalEligibility": {
+          "citation": "IRC 219 (ERTA 1981 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1986": {
+      "sources": [
+        "pl-97-34"
+      ],
+      "figures": 5,
+      "exceptions": {
+        "ira.baseContributionLimit": {
+          "citation": "IRC 219(b)(1) (historical text)"
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019"
+        },
+        "ira.universalEligibility": {
+          "citation": "IRC 219 (ERTA 1981 text)"
+        },
+        "section457b.baseDeferralLimit": {
+          "citation": "IRC 457(b)(2)(A) (Revenue Act of 1978 text)"
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRC 404(h)(1)(C) (Revenue Act of 1978 text)"
+        }
+      }
+    },
+    "1987": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 6,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "availability.traditionalTsp": {
+          "sources": [
+            "usc-5-8432"
+          ]
+        },
+        "ira.nondeductibleContributionAvailable": {
+          "sources": [
+            "usc-26-408"
+          ]
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1988": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1989": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1990": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1991": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1992": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1993": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1994": {
+      "sources": [
+        "irs-coda-manual-2002"
+      ],
+      "figures": 7,
+      "exceptions": {
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "sep.maximumEmployerContributionRate": {
+          "sources": [],
+          "note": 3
+        }
+      }
+    },
+    "1995": {
+      "sources": [
+        "irs-pub-590-1995"
+      ],
+      "figures": 8,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRC 219(c), no fixed one-earner household cap"
+        }
+      }
+    },
+    "1996": {
+      "sources": [
+        "irs-pub-590-1996"
+      ],
+      "figures": 8,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-coda-manual-2002"
+          ]
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRC 219(c), no fixed one-earner household cap"
+        }
+      }
+    },
+    "1997": {
+      "sources": [
+        "irs-pub-590-1997"
+      ],
+      "figures": 8,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-notice-1996-55"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-notice-1996-55"
+          ]
+        },
+        "availability.simpleIra": {
+          "sources": [
+            "usc-26-408"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-notice-1996-55"
+          ]
+        },
+        "highlyCompensatedEmployeeCompensation414q": {
+          "sources": [
+            "irs-notice-1996-55"
+          ]
+        },
+        "ira.oneEarnerHouseholdCombinedLimit": {
+          "citation": "IRS Statistics of Income Bulletin (1982 transition); IRC 219(c), no fixed one-earner household cap"
+        },
+        "ira.rothAvailable": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 4
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-notice-1996-55"
+          ],
+          "citation": "IRC 457(b)(2), (c)(1)"
+        },
+        "sep.grandfatheredSarsepMayOperate": {
+          "sources": [
+            "irs-sep-sarsep-audit"
+          ],
+          "note": 5
+        },
+        "sep.minimumEligibleCompensation": {
+          "sources": [
+            "irs-notice-1996-55"
+          ]
+        },
+        "sep.newSarsepMayBeEstablished": {
+          "sources": [
+            "irs-sep-sarsep-audit"
+          ],
+          "note": 5
+        },
+        "simple.salaryReductionLimit": {
+          "sources": [
+            "irs-notice-1996-55"
+          ],
+          "citation": "IRC 408(p)(2)(A)"
+        }
+      }
+    },
+    "1998": {
+      "sources": [
+        "irs-pub-590-1998"
+      ],
+      "figures": 9,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "annualCompensation401a17GrandfatheredGovernmental": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "availability.rothIra": {
+          "sources": [
+            "usc-26-408A"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "highlyCompensatedEmployeeCompensation414q": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-notice-1997-58"
+          ],
+          "citation": "IRC 457(b)(2), (c)(1)"
+        },
+        "sep.minimumEligibleCompensation": {
+          "sources": [
+            "irs-notice-1997-58"
+          ]
+        },
+        "simple.salaryReductionLimit": {
+          "sources": [
+            "irs-notice-1997-58"
+          ],
+          "citation": "IRC 408(p)(2)(A)"
+        }
+      }
+    },
+    "1999": {
+      "sources": [
+        "irs-pub-590-1999"
+      ],
+      "figures": 9,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "annualCompensation401a17GrandfatheredGovernmental": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "highlyCompensatedEmployeeCompensation414q": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-notice-1998-53"
+          ],
+          "citation": "IRC 457(b)(2), (c)(1)"
+        },
+        "sep.minimumEligibleCompensation": {
+          "sources": [
+            "irs-notice-1998-53"
+          ]
+        },
+        "simple.salaryReductionLimit": {
+          "sources": [
+            "irs-notice-1998-53"
+          ],
+          "citation": "IRC 408(p)(2)(A)"
+        }
+      }
+    },
+    "2000": {
+      "sources": [
+        "irs-pub-590-2000"
+      ],
+      "figures": 9,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [],
+          "note": 2
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "annualCompensation401a17GrandfatheredGovernmental": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "highlyCompensatedEmployeeCompensation414q": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-notice-1999-55"
+          ],
+          "citation": "IRC 457(b)(2), (c)(1)"
+        },
+        "sep.minimumEligibleCompensation": {
+          "sources": [
+            "irs-notice-1999-55"
+          ]
+        },
+        "simple.salaryReductionLimit": {
+          "sources": [
+            "irs-notice-1999-55"
+          ],
+          "citation": "IRC 408(p)(2)(A)"
+        }
+      }
+    },
+    "2001": {
+      "sources": [
+        "irs-notice-2000-66"
+      ],
+      "figures": 10,
+      "exceptions": {}
+    },
+    "2002": {
+      "sources": [
+        "irs-pub-590-2002"
+      ],
+      "figures": 11,
+      "exceptions": {
+        "annualAdditions415c": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "annualAdditionsCompensationFraction": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "annualCompensation401a17": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "annualCompensation401a17GrandfatheredGovernmental": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "generalAge50CatchUp": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "highlyCompensatedEmployeeCompensation414q": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "keyEmployeeOfficerCompensation416i": {
+          "sources": [
+            "irs-ir-2001-115",
+            "pl-107-16"
+          ],
+          "note": 6
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "section457b.includibleCompensationFraction": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "sep.maximumEmployerContributionRate": {
+          "citation": "IRS Publication 590 (2002), SEP contribution limit"
+        },
+        "sep.minimumEligibleCompensation": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "simple.generalAge50CatchUp": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "simple.salaryReductionLimit": {
+          "sources": [
+            "irs-ir-2001-115"
+          ]
+        },
+        "special403b15YearCatchUp.annualLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.lifetimeLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.serviceLimitPerYear": {
+          "sources": [
+            "usc-26-402"
+          ]
+        }
+      }
+    },
+    "2003": {
+      "sources": [
+        "irs-notice-2002-71"
+      ],
+      "figures": 12,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2004": {
+      "sources": [
+        "irs-notice-2003-73"
+      ],
+      "figures": 12,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2005": {
+      "sources": [
+        "irs-notice-2004-72"
+      ],
+      "figures": 12,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2006": {
+      "sources": [
+        "irs-notice-2005-75"
+      ],
+      "figures": 12,
+      "exceptions": {
+        "availability.designatedRoth401k": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "availability.designatedRoth403b": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 7
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2007": {
+      "sources": [
+        "irs-notice-2006-98"
+      ],
+      "figures": 12,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "irs-rev-proc-2006-53"
+          ]
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2008": {
+      "sources": [
+        "irs-notice-2007-87"
+      ],
+      "figures": 13,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "ira.baseContributionLimit": {
+          "sources": [
+            "pl-107-16"
+          ]
+        },
+        "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2007-87",
+            "usc-26-408A"
+          ],
+          "note": 9
+        },
+        "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 9
+        },
+        "phaseouts.rothIra.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2007-87",
+            "usc-26-408A"
+          ],
+          "note": 9
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2007-87",
+            "usc-26-219"
+          ],
+          "note": 10
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 10
+        },
+        "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2007-87",
+            "usc-26-219"
+          ],
+          "note": 10
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "sources": [
+            "irs-notice-2007-87",
+            "usc-26-219"
+          ],
+          "note": 11
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 11
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2009": {
+      "sources": [
+        "irs-notice-2008-102"
+      ],
+      "figures": 14,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2008-102",
+            "usc-26-408A"
+          ],
+          "note": 13
+        },
+        "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 13
+        },
+        "phaseouts.rothIra.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2008-102",
+            "usc-26-408A"
+          ],
+          "note": 13
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2008-102",
+            "usc-26-219"
+          ],
+          "note": 14
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 14
+        },
+        "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2008-102",
+            "usc-26-219"
+          ],
+          "note": 14
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "sources": [
+            "irs-notice-2008-102",
+            "usc-26-219"
+          ],
+          "note": 15
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 15
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2010": {
+      "sources": [
+        "irs-notice-2009-94"
+      ],
+      "figures": 14,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2009-94",
+            "usc-26-408A"
+          ],
+          "note": 17
+        },
+        "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 17
+        },
+        "phaseouts.rothIra.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2009-94",
+            "usc-26-408A"
+          ],
+          "note": 17
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2009-94",
+            "usc-26-219"
+          ],
+          "note": 18
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 18
+        },
+        "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2009-94",
+            "usc-26-219"
+          ],
+          "note": 18
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "sources": [
+            "irs-notice-2009-94",
+            "usc-26-219"
+          ],
+          "note": 19
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 19
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2011": {
+      "sources": [
+        "irs-notice-2010-78"
+      ],
+      "figures": 14,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2010-78",
+            "usc-26-408A"
+          ],
+          "note": 20
+        },
+        "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 20
+        },
+        "phaseouts.rothIra.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2010-78",
+            "usc-26-408A"
+          ],
+          "note": 20
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2010-78",
+            "usc-26-219"
+          ],
+          "note": 21
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 21
+        },
+        "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2010-78",
+            "usc-26-219"
+          ],
+          "note": 21
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "sources": [
+            "irs-notice-2010-78",
+            "usc-26-219"
+          ],
+          "note": 22
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 22
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2012": {
+      "sources": [
+        "irs-notice-2011-90"
+      ],
+      "figures": 14,
+      "exceptions": {
+        "availability.rothTsp": {
+          "sources": [
+            "fr-2012-05-04"
+          ]
+        },
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.rothIra.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2011-90",
+            "usc-26-408A"
+          ],
+          "note": 23
+        },
+        "phaseouts.rothIra.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-408A"
+          ],
+          "note": 23
+        },
+        "phaseouts.rothIra.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2011-90",
+            "usc-26-408A"
+          ],
+          "note": 23
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingJointlyOrQualifyingSurvivingSpouse": {
+          "sources": [
+            "irs-notice-2011-90",
+            "usc-26-219"
+          ],
+          "note": 24
+        },
+        "phaseouts.traditionalIraCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 24
+        },
+        "phaseouts.traditionalIraCovered.singleOrHeadOfHousehold": {
+          "sources": [
+            "irs-notice-2011-90",
+            "usc-26-219"
+          ],
+          "note": 24
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "sources": [
+            "irs-notice-2011-90",
+            "usc-26-219"
+          ],
+          "note": 25
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 25
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2013": {
+      "sources": [
+        "irs-ir-2012-77"
+      ],
+      "figures": 15,
+      "exceptions": {
+        "electiveDeferral402g": {
+          "sources": [
+            "irs-ir-2012-77",
+            "irs-ir-2013-86"
+          ]
+        },
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "irs-notice-2012-67"
+          ]
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        },
+        "section457b.baseDeferralLimit": {
+          "sources": [
+            "irs-ir-2012-77",
+            "irs-ir-2013-86"
+          ]
+        }
+      }
+    },
+    "2014": {
+      "sources": [
+        "irs-ir-2013-86"
+      ],
+      "figures": 16,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "irs-notice-2013-73"
+          ]
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2015": {
+      "sources": [
+        "irs-ir-2014-99"
+      ],
+      "figures": 16,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.fiftyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.tenPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.allOtherTaxpayers.twentyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.fiftyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.tenPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.headOfHousehold.twentyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.fiftyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.adjustedGrossIncomeLimits.jointReturn.twentyPercent": {
+          "sources": [
+            "irs-notice-2014-70"
+          ]
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2016": {
+      "sources": [
+        "irs-notice-2015-75"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2017": {
+      "sources": [
+        "irs-notice-2016-62"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2018": {
+      "sources": [
+        "irs-notice-2017-64"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2019": {
+      "sources": [
+        "irs-notice-2018-83"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "ira.traditionalContributionAge70HalfRestriction": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "citation": "IRC 219(d)(1) (ERTA 1981 text); IRC 219(d)(1), repealed for years after 2019",
+          "note": 27
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2020": {
+      "sources": [
+        "irs-notice-2019-59"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2021": {
+      "sources": [
+        "irs-notice-2020-79"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2022": {
+      "sources": [
+        "irs-notice-2021-61"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2023": {
+      "sources": [
+        "irs-notice-2022-55"
+      ],
+      "figures": 17,
+      "exceptions": {
+        "availability.rothSimpleOrSep": {
+          "sources": [
+            "usc-26-408"
+          ]
+        },
+        "ira.age50CatchUp": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 12
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 16
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2024": {
+      "sources": [
+        "irs-notice-2023-75"
+      ],
+      "figures": 18,
+      "exceptions": {
+        "availability.pensionLinkedEmergencySavings": {
+          "sources": [
+            "usc-26-402A"
+          ],
+          "note": 28
+        },
+        "availability.starter401kOrSafeHarbor403b": {
+          "sources": [
+            "usc-26-401",
+            "usc-26-403"
+          ]
+        },
+        "pensionLinkedEmergencySavingsBalanceCap402A": {
+          "sources": [
+            "usc-26-402A"
+          ],
+          "note": 29
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "sources": [],
+          "note": 30
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        },
+        "starterDeferralOnly.age50CatchUp": {
+          "sources": [
+            "usc-26-401",
+            "usc-26-403"
+          ],
+          "note": 31
+        },
+        "starterDeferralOnly.baseDeferralLimit": {
+          "sources": [
+            "usc-26-401",
+            "usc-26-403"
+          ],
+          "note": 31
+        }
+      }
+    },
+    "2025": {
+      "sources": [
+        "irs-notice-2024-80"
+      ],
+      "figures": 19,
+      "exceptions": {
+        "pensionLinkedEmergencySavingsBalanceCap402A": {
+          "note": 32
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "rothCatchUpPriorYearFicaWageThreshold": {
+          "note": 33
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "usc-26-25B"
+          ],
+          "note": 8
+        }
+      }
+    },
+    "2026": {
+      "sources": [
+        "irs-notice-2025-67"
+      ],
+      "figures": 20,
+      "exceptions": {
+        "pensionLinkedEmergencySavingsBalanceCap402A": {
+          "note": 34
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "pl-119-21"
+          ],
+          "note": 8
+        },
+        "special403b15YearCatchUp.annualLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.lifetimeLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.serviceLimitPerYear": {
+          "sources": [
+            "usc-26-402"
+          ]
+        }
+      }
+    }
+  }
+}

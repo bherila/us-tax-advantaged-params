@@ -1,0 +1,180 @@
+{
+  "ids": {},
+  "notes": {
+    "158b61fa7c": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. (the year source) states the $680 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "1e7e142070": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. (the year source) states the $610 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "252fb98ae2": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. (the year source) states the $660 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "271943a1a9": {
+      "cites": [
+        "irs-rev-proc-2013-35"
+      ],
+      "why": "Rev. Proc. 2013-35 §3.15 publishes the 2014 limit."
+    },
+    "3df093cbfd": {
+      "cites": [
+        "pl-117-2",
+        "usc-26-129"
+      ],
+      "negated": [
+        "irs-rev-proc-2020-45"
+      ],
+      "why": "ARPA §9632 adds §129(a)(2)(D) (printed in usc-26-129) for 2021's $10,500/$5,250; Rev. Proc. 2020-45 predates it."
+    },
+    "42aea91464": {
+      "cites": [
+        "irs-rev-proc-2023-34"
+      ],
+      "why": "Rev. Proc. 2023-34 §3.16 publishes the 2024 limit."
+    },
+    "4b48bde157": {
+      "cites": [
+        "irs-rev-proc-2019-44"
+      ],
+      "why": "Rev. Proc. 2019-44 §3.17 publishes the 2020 limit."
+    },
+    "515c4e05c3": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "negated": [
+        "irs-rev-proc-2019-44",
+        "usc-26-125"
+      ],
+      "why": "Notice 2020-33 states the $550 carryover for 2020; Rev. Proc. 2019-44 states none, and §125(i) gives only the base."
+    },
+    "53c25600e8": {
+      "cites": [
+        "irs-notice-2013-71"
+      ],
+      "why": "Notice 2013-71 created the fixed $500 carryover."
+    },
+    "615db9f305": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. ('section stated above', the year source) states the $550 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "6f24795af1": {
+      "cites": [
+        "irs-rev-proc-2025-32"
+      ],
+      "why": "Rev. Proc. 2025-32 §3.15 publishes the 2026 limit."
+    },
+    "86bbb08847": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. (the year source) states the $640 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "873a86df4f": {
+      "cites": [
+        "irs-rev-proc-2016-55"
+      ],
+      "why": "Rev. Proc. 2016-55 §3.16 publishes the 2017 limit."
+    },
+    "9ef32e0253": {
+      "cites": [
+        "irs-notice-2012-40",
+        "usc-26-125"
+      ],
+      "negated": [
+        "irs-rev-proc-2012-41"
+      ],
+      "why": "Notice 2012-40 and §125(i)(1) fix the unindexed $2,500 for 2013; Rev. Proc. 2012-41 is cited only as having no Cafeteria Plans entry."
+    },
+    "9f484ff17f": {
+      "cites": [
+        "irs-rev-proc-2022-38"
+      ],
+      "why": "Rev. Proc. 2022-38 §3.16 publishes the 2023 limit."
+    },
+    "a0e31c962b": {
+      "cites": [
+        "irs-rev-proc-2018-57"
+      ],
+      "why": "Rev. Proc. 2018-57 §3.17 publishes the 2019 limit."
+    },
+    "a30845ee10": {
+      "cites": [
+        "usc-26-129",
+        "pl-99-514"
+      ],
+      "why": "The statutory $5,000/$2,500 at §129(a)(2)(A), added by TRA 1986 §1163, and printed in usc-26-129."
+    },
+    "aa172845b7": {
+      "cites": [
+        "irs-rev-proc-2021-45"
+      ],
+      "why": "Rev. Proc. 2021-45 §3.16 publishes the 2022 limit."
+    },
+    "af8ea12a0a": {
+      "cites": [
+        "pl-119-21"
+      ],
+      "negated": [
+        "usc-26-129"
+      ],
+      "why": "Pub. L. 119-21 §70404 sets $7,500/$3,750 from 2026; the note says usc-26-129 still prints $5,000/$2,500."
+    },
+    "c147d8d43a": {
+      "cites": [
+        "irs-notice-2020-33"
+      ],
+      "useYearSource": true,
+      "why": "The year's Rev. Proc. (the year source) states the $570 carryover, and Notice 2020-33 is its 20-percent rule."
+    },
+    "c6c0e5acf8": {
+      "cites": [
+        "irs-rev-proc-2014-61"
+      ],
+      "why": "Rev. Proc. 2014-61 §3.16 publishes the 2015 limit."
+    },
+    "d2f63ec95a": {
+      "cites": [
+        "irs-rev-proc-2015-53"
+      ],
+      "why": "Rev. Proc. 2015-53 §3.16 publishes the 2016 limit."
+    },
+    "d78504e522": {
+      "cites": [
+        "irs-rev-proc-2020-45"
+      ],
+      "why": "Rev. Proc. 2020-45 §3.17 publishes the 2021 limit."
+    },
+    "d7fc3889cf": {
+      "cites": [
+        "irs-rev-proc-2024-40"
+      ],
+      "why": "Rev. Proc. 2024-40 §3.16 publishes the 2025 limit."
+    },
+    "e63d87383e": {
+      "cites": [
+        "irs-rev-proc-2017-58"
+      ],
+      "negated": [
+        "irs-rev-proc-2018-18"
+      ],
+      "why": "Rev. Proc. 2017-58 §3.16 publishes the 2018 limit; Rev. Proc. 2018-18 neither restated nor changed it."
+    }
+  }
+}

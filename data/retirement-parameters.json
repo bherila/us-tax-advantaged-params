@@ -79,7 +79,7 @@
     {
       "id": "usc-26-402",
       "title": "26 U.S.C. § 402(g)(7), special rule for certain 403(b) organizations",
-      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402&num=0&edition=prelim",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapD-partI-subpartA-sec402.htm",
       "authority": "U.S. House Office of the Law Revision Counsel"
     },
     {
@@ -90,14 +90,14 @@
     },
     {
       "id": "pl-107-16",
-      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38 (section 632 repeal of the IRC 403(b)(2) exclusion allowance and the IRC 415(c)(4) elections)",
+      "title": "Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16, 115 Stat. 38",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-107publ16/pdf/PLAW-107publ16.pdf",
       "authority": "U.S. Congress"
     },
     {
       "id": "usc-26-402A",
       "title": "26 U.S.C. § 402A(e), pension-linked emergency savings accounts, including the § 402A(e)(3)(A)(i) limitation and its post-2024 adjustment rule",
-      "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section402A&num=0&edition=prelim",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapD-partI-subpartA-sec402A.htm",
       "authority": "U.S. House Office of the Law Revision Counsel"
     },
     {
@@ -111,6 +111,312 @@
       "title": "Pub. L. 119-21, section 70116, which rewrites IRC 25B(d)(1) so that retirement contributions count only for taxable years beginning before January 1, 2027, and repeals Pub. L. 117-328 div. T section 103(e)(1)",
       "url": "https://www.govinfo.gov/content/pkg/PLAW-119publ21/pdf/PLAW-119publ21.pdf",
       "authority": "U.S. Congress"
+    },
+    {
+      "id": "fr-2012-05-04",
+      "title": "Federal Retirement Thrift Investment Board, Roth Feature to the Thrift Savings Plan, 77 FR 26417 (May 4, 2012)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2012-05-04/pdf/FR-2012-05-04.pdf",
+      "authority": "Federal Retirement Thrift Investment Board"
+    },
+    {
+      "id": "irs-ir-2001-115",
+      "title": "IRS News Release IR-2001-115, Pension Plan Limitations for Tax Year 2002",
+      "url": "https://www.irs.gov/pub/irs-news/ir01-115.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-ir-2012-77",
+      "title": "IRS News Release IR-2012-77, IRS Announces 2013 Pension Plan Limitations",
+      "url": "https://www.irs.gov/pub/irs-news/IR-12-077.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-ir-2013-86",
+      "title": "IRS News Release IR-2013-86, IRS Announces 2014 Pension Plan Limitations",
+      "url": "https://www.irs.gov/pub/irs-news/IR-13-086.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-ir-2014-99",
+      "title": "IRS News Release IR-2014-99, IRS Announces 2015 Pension Plan Limitations",
+      "url": "https://www.irs.gov/pub/irs-news/IR-14-099.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-1996-55",
+      "title": "Notice 1996-55, 1997 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb96-47.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-1997-58",
+      "title": "Notice 1997-58, 1998 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb97-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-1998-53",
+      "title": "Notice 1998-53, 1999 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb98-46.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-1999-55",
+      "title": "Notice 1999-55, 2000 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb99-49.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2000-66",
+      "title": "Notice 2000-66, 2001 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb00-52.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2002-71",
+      "title": "Notice 2002-71, 2003 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb02-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2003-73",
+      "title": "Notice 2003-73, 2004 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb03-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2004-72",
+      "title": "Notice 2004-72, 2005 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb04-46.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2005-75",
+      "title": "Notice 2005-75, 2006 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb05-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2006-98",
+      "title": "Notice 2006-98, 2007 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb06-46.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2007-87",
+      "title": "Notice 2007-87, 2008 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb07-45.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2008-102",
+      "title": "Notice 2008-102, 2009 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-08-102.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2009-94",
+      "title": "Notice 2009-94, 2010 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-09-94.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2010-78",
+      "title": "Notice 2010-78, 2011 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb10-49.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2011-90",
+      "title": "Notice 2011-90, 2012 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb11-47.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2012-67",
+      "title": "Notice 2012-67, 2013 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb12-50.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2013-73",
+      "title": "Notice 2013-73, 2014 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb13-49.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2014-70",
+      "title": "Notice 2014-70, 2015 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-irbs/irb14-48.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2015-75",
+      "title": "Notice 2015-75, 2016 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-15-75.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2016-62",
+      "title": "Notice 2016-62, 2017 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-16-62.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2017-64",
+      "title": "Notice 2017-64, 2018 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-17-64.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2018-83",
+      "title": "Notice 2018-83, 2019 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-18-83.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2019-59",
+      "title": "Notice 2019-59, 2020 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-19-59.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2020-79",
+      "title": "Notice 2020-79, 2021 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-20-79.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2021-61",
+      "title": "Notice 2021-61, 2022 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-21-61.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2022-55",
+      "title": "Notice 2022-55, 2023 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-22-55.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-notice-2023-75",
+      "title": "Notice 2023-75, 2024 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-23-75.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-1995",
+      "title": "Publication 590 (1995), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--1995.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-1996",
+      "title": "Publication 590 (1996), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--1996.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-1997",
+      "title": "Publication 590 (1997), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--1997.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-1998",
+      "title": "Publication 590 (1998), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--1998.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-1999",
+      "title": "Publication 590 (1999), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--1999.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-2000",
+      "title": "Publication 590 (2000), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--2000.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-pub-590-2002",
+      "title": "Publication 590 (2002), Individual Retirement Arrangements (IRAs)",
+      "url": "https://www.irs.gov/pub/irs-prior/p590--2002.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "irs-rev-proc-2006-53",
+      "title": "Rev. Proc. 2006-53, 2007 inflation adjusted items",
+      "url": "https://www.irs.gov/pub/irs-drop/rp-06-53.pdf",
+      "authority": "IRS"
+    },
+    {
+      "id": "pl-93-406",
+      "title": "Employee Retirement Income Security Act of 1974, Pub. L. 93-406, 88 Stat. 829",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-88/pdf/STATUTE-88-Pg829.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-94-455",
+      "title": "Tax Reform Act of 1976, Pub. L. 94-455, 90 Stat. 1520",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-90/pdf/STATUTE-90-Pg1520.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-95-600",
+      "title": "Revenue Act of 1978, Pub. L. 95-600, 92 Stat. 2763",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-92/pdf/STATUTE-92-Pg2763.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "pl-97-34",
+      "title": "Economic Recovery Tax Act of 1981, Pub. L. 97-34, 95 Stat. 172",
+      "url": "https://www.govinfo.gov/content/pkg/STATUTE-95/pdf/STATUTE-95-Pg172.pdf",
+      "authority": "U.S. Congress"
+    },
+    {
+      "id": "usc-26-219",
+      "title": "26 U.S.C. 219, retirement savings (2023 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2023-title26/pdf/USCODE-2023-title26-subtitleA-chap1-subchapB-partVII-sec219.pdf",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-401",
+      "title": "26 U.S.C. 401, qualified pension, profit-sharing, and stock bonus plans (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapD-partI-subpartA-sec401.htm",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-403",
+      "title": "26 U.S.C. 403, taxation of employee annuities (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapD-partI-subpartA-sec403.htm",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-408",
+      "title": "26 U.S.C. 408, individual retirement accounts, including subsection (o) (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapD-partI-subpartA-sec408.htm",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-408A",
+      "title": "26 U.S.C. 408A, Roth IRAs (2023 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2023-title26/pdf/USCODE-2023-title26-subtitleA-chap1-subchapD-partI-subpartA-sec408A.pdf",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-26-457",
+      "title": "26 U.S.C. 457, deferred compensation plans of State and local governments and tax-exempt organizations (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title26/html/USCODE-2024-title26-subtitleA-chap1-subchapE-partII-subpartB-sec457.htm",
+      "authority": "Office of the Law Revision Counsel"
+    },
+    {
+      "id": "usc-5-8432",
+      "title": "5 U.S.C. 8432, contributions to Thrift Savings Fund (2024 edition)",
+      "url": "https://www.govinfo.gov/content/pkg/USCODE-2024-title5/html/USCODE-2024-title5-partIII-subpartG-chap84-subchapIII-sec8432.htm",
+      "authority": "Office of the Law Revision Counsel"
     }
   ],
   "years": {
