@@ -29229,6 +29229,303 @@
       }
     },
     {
+      "name": "ordinary 2027 401k plan-term capacity",
+      "description": "Notice 2026-66 increases the IRC 402(g)(1) elective-deferral limit \"from $24,500 to $25,500\" and the IRC 415(c)(1)(A) annual-additions limit \"from $72,000 to $75,000\" for 2027. With 200000 of compensation, the IRC 415(c)(1)(B) 100-percent-of-compensation limit does not bind. The stated 25500 deferral leaves 75000 - 25500 = 49500 that can be filled only if the plan terms permit employer or after-tax contributions, so that portion is determinate_with_assumptions.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "w2Compensation": 200000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 200000
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate_with_assumptions",
+        "accounts.0.statutoryMaximumAnnualContribution": 75000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 25500,
+        "accounts.0.planTermDependentCapacity": 49500,
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 25500
+      }
+    },
+    {
+      "name": "2027 high-wage age-60-to-63 Roth catch-up",
+      "description": "Notice 2026-66 sets the 2027 IRC 402(g)(1) limit at 25500 and the IRC 414(v)(2)(E)(i) catch-up for an individual who attains age 60, 61, 62 or 63 in 2027 at 11750 (\"increases from $11,250 to $11,750\"). A participant born in 1965 attains 62 in 2027. The notice increases the IRC 414(v)(7)(A) Roth catch-up wage threshold \"from $150,000 to $155,000\"; prior-year FICA wages of 155001 exceed it, so the 11750 catch-up must be designated Roth. 25500 + 11750 = 37250.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 155001
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "permitsRothContributions": true,
+              "permitsRothCatchUp": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 25500,
+        "accounts.0.contributionComponents.employeeRothCatchUp": 11750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 37250
+      },
+      "expectDiagnosticCodes": [
+        "HIGH_WAGE_CATCH_UP_ALLOCATED_AS_ROTH"
+      ]
+    },
+    {
+      "name": "2027 prior-year wages equal to the IRC 414(v)(7)(A) threshold leave the catch-up pre-tax",
+      "description": "Boundary pair for the vector above. IRC 414(v)(7)(A) applies to a participant whose prior-year FICA wages from the sponsoring employer \"exceed\" the threshold, which Notice 2026-66 sets at 155000 for 2027 catch-ups. Wages of exactly 155000 do not exceed it, so the requirement does not apply and the 11750 age-60-to-63 catch-up (age 62 in 2027) is an ordinary pre-tax additional elective deferral. 25500 + 11750 = 37250, the same total as above with the opposite character.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 155000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "permitsRothContributions": true,
+              "permitsRothCatchUp": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 25500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 11750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 37250
+      }
+    },
+    {
+      "name": "2027 age-50 catch-up at age 56",
+      "description": "Notice 2026-66 increases the IRC 414(v)(2)(B)(i) catch-up for individuals aged 50 or over \"from $8,000 to $8,500\" for 2027. A participant born in 1971 attains 56, outside the 60-to-63 window, so the ordinary catch-up applies. Prior-year FICA wages of 100000 are below the 155000 IRC 414(v)(7)(A) threshold, so it stays pre-tax: 25500 + 8500 = 34000, the total IR-2026-136 states for participants aged 50 and over.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1971,
+            "compensation": {
+              "w2Compensation": 250000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "k",
+            "ownerId": "t",
+            "type": "401k",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 250000,
+              "permitsRothContributions": true,
+              "permitsRothCatchUp": true
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 25500,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 8500,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 34000
+      }
+    },
+    {
+      "name": "2027 Roth IRA MFJ phaseout",
+      "description": "IRC 408A(c)(3) reduces a Roth IRA contribution across the phase-out range. Notice 2026-66 states that for 2027 \"the adjusted gross income phase-out range for taxpayers making contributions to a Roth IRA is between $250,000 and $260,000 for married couples filing jointly\", and that the IRC 219(b)(5)(A) deductible amount \"remains $7,500\". At MAGI 255000 the reduction is 7500 x (255000 - 250000) / 10000 = 3750, leaving 7500 - 3750 = 3750 (already a multiple of the 10-dollar rounding increment).",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "MFJ",
+        "persons": [
+          {
+            "id": "t",
+            "role": "taxpayer",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "rothIra": 255000
+            },
+            "coveredByEmployerRetirementPlan": false
+          },
+          {
+            "id": "s",
+            "role": "spouse",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "rothIra": 255000
+            },
+            "coveredByEmployerRetirementPlan": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "roth",
+            "ownerId": "t",
+            "type": "roth_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.rothIra": 3750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 3750
+      }
+    },
+    {
+      "name": "2027 covered single traditional IRA deduction phase-out",
+      "description": "Notice 2026-66 states that for 2027 the traditional IRA deduction \"is phased out for single individuals and heads of household who are active participants ... between $83,000 and $93,000\", and the IRC 219(b)(5)(A) amount remains 7500. At MAGI 88000 the deductible amount is 7500 - (7500 x 5000 / 10000) = 3750; the remaining 3750 may still be contributed as a nondeductible contribution, so the total stays 7500.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980,
+            "compensation": {
+              "iraCompensation": 100000
+            },
+            "magi": {
+              "traditionalIraDeduction": 88000
+            },
+            "coveredByEmployerRetirementPlan": true
+          }
+        ],
+        "accounts": [
+          {
+            "id": "i",
+            "ownerId": "t",
+            "type": "traditional_ira"
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.status": "determinate",
+        "accounts.0.contributionComponents.deductibleIra": 3750,
+        "accounts.0.contributionComponents.nondeductibleIra": 3750,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 7500
+      }
+    },
+    {
+      "name": "2027 enhanced SIMPLE",
+      "description": "Notice 2026-66 increases the IRC 408(p)(2)(E)(i)(I)/(II) limit for SIMPLE retirement accounts maintained by certain eligible employers \"from $18,100 to $19,100\" for 2027, and states that the IRC 414(v)(2)(E)(ii) catch-up for SIMPLE participants who attain age 60 to 63 in 2027 \"remains $5,250\". A participant born in 1965 attains 62. The mandatory match is 3 percent of 100000 = 3000 under IRC 408(p)(2)(A)(iii), so 19100 + 5250 + 3000 = 27350.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1965,
+            "compensation": {
+              "w2Compensation": 100000
+            },
+            "priorYearFicaWagesByEmployer": {
+              "e": 100000
+            }
+          }
+        ],
+        "accounts": [
+          {
+            "id": "simple",
+            "ownerId": "t",
+            "type": "simple_ira",
+            "employerId": "e",
+            "planRules": {
+              "planCompensation": 100000,
+              "simpleEnhancedLimitEligible": true,
+              "simpleEmployerContributionMethod": "match_3_percent"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accounts.0.contributionComponents.employeePreTaxDeferral": 19100,
+        "accounts.0.contributionComponents.employeePreTaxCatchUp": 5250,
+        "accounts.0.contributionComponents.employerPreTax": 3000,
+        "accounts.0.maximumAnnualContributionBasedOnInputs": 27350
+      }
+    },
+    {
+      "name": "2027 retirement parameters published in the result",
+      "description": "Figures Notice 2026-66 states for 2027: the IRC 415(b)(1)(A) defined-benefit limit \"is increased from $290,000 to $300,000\"; the IRC 401(a)(17) compensation limit \"from $360,000 to $375,000\" and the OBRA '93 grandfathered governmental figure \"from $535,000 to $555,000\"; the IRC 414(q)(1)(B) threshold \"from $160,000 to $170,000\"; the IRC 416(i)(1)(A)(i) threshold \"from $235,000 to $245,000\"; the IRC 402A(e)(3)(A)(i) PLESA cap \"from $2,600 to $2,700\"; the starter-plan IRC 401(k)(16)(D)(i)(II) limit \"from $6,000 to $6,500\"; the IRC 408(p)(2)(A)(iv) additional nonelective cap \"from $5,300 to $5,400\"; the IRC 25B(b)(1)(C)-(D) joint ceiling \"from $80,500 to $83,000\". Pub. L. 119-21 section 70116(a)(1) rewrote IRC 25B(d)(1) so that IRA contributions, elective deferrals and voluntary employee contributions count only \"in the case of any taxable year beginning before January 1, 2027\"; footnote 2 of Notice 2026-66 confirms that Saver's Match under section 6433 replaces the credit for those contributions from 2027 while ABLE contributions still qualify, so the flag is false.",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "S",
+        "persons": [
+          {
+            "id": "t",
+            "birthYear": 1980
+          }
+        ],
+        "accounts": []
+      },
+      "expect": {
+        "parameters.definedBenefitAnnualBenefit415b": 300000,
+        "parameters.annualCompensation401a17": 375000,
+        "parameters.annualCompensation401a17GrandfatheredGovernmental": 555000,
+        "parameters.highlyCompensatedEmployeeCompensation414q": 170000,
+        "parameters.keyEmployeeOfficerCompensation416i": 245000,
+        "parameters.pensionLinkedEmergencySavingsBalanceCap402A": 2700,
+        "parameters.starterDeferralOnly.baseDeferralLimit": 6500,
+        "parameters.simple.additionalNonelectiveContributionCap": 5400,
+        "parameters.saversCredit25B.adjustedGrossIncomeLimits.jointReturn.tenPercent": 83000,
+        "parameters.saversCredit25B.retirementPlanAndIraContributionsQualify": false
+      }
+    },
+    {
       "name": "Parameter lookup: 2026 retirement limits",
       "description": "IRS Notice 2025-67 states the 2026 IRA contribution limit is $7,500, the IRC 402(g) elective-deferral limit is $24,500, and the IRC 415(c) annual-additions limit is $72,000. The retirement lookup returns those published amounts.",
       "operation": "tableLookup",
@@ -29477,11 +29774,11 @@
     },
     {
       "name": "Figure sources: an unsupported retirement year is refused",
-      "description": "The provenance lookup accepts exactly the years its table accepts. The retirement table encodes 1975 through 2026 and never extrapolates, so 2027 is refused with UNSUPPORTED_TAX_YEAR, as parametersForYear(2027) is.",
+      "description": "The provenance lookup accepts exactly the years its table accepts. The retirement table encodes 1975 through 2027 and never extrapolates, so 2028 is refused with UNSUPPORTED_TAX_YEAR, as parametersForYear(2028) is.",
       "operation": "tableLookup",
       "input": {
         "method": "parameterSourcesForYear",
-        "taxYear": 2027
+        "taxYear": 2028
       },
       "expectError": {
         "code": "UNSUPPORTED_TAX_YEAR"

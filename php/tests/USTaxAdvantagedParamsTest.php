@@ -93,8 +93,8 @@ function scenario(
     ]);
 }
 
-test('supports 1975 through 2026 without extrapolation', function (): void {
-    assertSameValue(['minimum' => 1975, 'maximum' => 2026], U::supportedTaxYears());
+test('supports 1975 through 2027 without extrapolation', function (): void {
+    assertSameValue(['minimum' => 1975, 'maximum' => 2027], U::supportedTaxYears());
     assertSameValue(1500, U::parametersForYear(1975)['ira']['baseContributionLimit']);
     assertSameValue(7500, U::parametersForYear(2026)['ira']['baseContributionLimit']);
     assertSameValue([
@@ -103,7 +103,7 @@ test('supports 1975 through 2026 without extrapolation', function (): void {
         'serviceLimitPerYear' => 5000,
     ], U::parametersForYear(2026)['special403b15YearCatchUp']);
     try {
-        U::parametersForYear(2027);
+        U::parametersForYear(2028);
         failTest('Expected UnsupportedTaxYearException');
     } catch (UnsupportedTaxYearException) {
     }
@@ -1268,8 +1268,8 @@ test('every attributed figure exists in its row and cites listed sources', funct
 
 test('provenance lookups refuse the years their tables refuse', function (): void {
     try {
-        U::parameterSourcesForYear(2027);
-        failTest('2027 should be unsupported');
+        U::parameterSourcesForYear(2028);
+        failTest('2028 should be unsupported');
     } catch (UnsupportedTaxYearException) {
     }
     try {

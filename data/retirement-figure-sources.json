@@ -111,7 +111,8 @@
     "Notice 2024-80 states that the 2025 amounts remain $6,000 and $1,000, confirming the initial 2024 statutory amounts.",
     "n-24-80: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans remains $2,500.\"",
     "The data carries null rather than the transcribed figure: Notice 2023-62 transition period.",
-    "n-25-67: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,500 to $2,600.\""
+    "n-25-67: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,500 to $2,600.\"",
+    "n-26-66: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,600 to $2,700.\""
   ],
   "figureSets": [
     [
@@ -2873,6 +2874,48 @@
       "exceptions": {
         "pensionLinkedEmergencySavingsBalanceCap402A": {
           "note": 34
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
+          "note": 26
+        },
+        "phaseouts.traditionalIraSpouseCovered.marriedFilingSeparatelyLivingTogether": {
+          "sources": [
+            "usc-26-219"
+          ],
+          "note": 26
+        },
+        "saversCredit25B.retirementPlanAndIraContributionsQualify": {
+          "sources": [
+            "pl-107-16",
+            "pl-119-21"
+          ],
+          "note": 8
+        },
+        "special403b15YearCatchUp.annualLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.lifetimeLimit": {
+          "sources": [
+            "usc-26-402"
+          ]
+        },
+        "special403b15YearCatchUp.serviceLimitPerYear": {
+          "sources": [
+            "usc-26-402"
+          ]
+        }
+      }
+    },
+    "2027": {
+      "sources": [
+        "irs-notice-2026-66"
+      ],
+      "figures": 20,
+      "exceptions": {
+        "pensionLinkedEmergencySavingsBalanceCap402A": {
+          "note": 35
         },
         "phaseouts.traditionalIraSpouseCovered.marriedFilingJointly": {
           "note": 26

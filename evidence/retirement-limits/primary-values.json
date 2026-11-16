@@ -65,7 +65,8 @@
     "n-14-70": "IRS Notice 2014-70, 2015 Limitations Adjusted as Provided in Section 415(d), etc., in Internal Revenue Bulletin 2014-48",
     "rp-06-53": "Rev. Proc. 2006-53, 2007 inflation adjusted items; section 3.06 states the IRC 25B(b) applicable-percentage amounts for taxable years beginning in 2007, the first year Pub. L. 109-280 section 833(a) indexed them",
     "usc-26-25B": "26 U.S.C. 25B (2024 edition of the United States Code), for subsection (b). It predates Pub. L. 119-21: its note on subsection (d)(1) describes the Pub. L. 117-328 div. T section 103(e)(1) amendment, which Pub. L. 119-21 section 70116(a)(2) repealed as though never enacted; see pl-119-21",
-    "pl-119-21": "Pub. L. 119-21, section 70116(a)(1), rewriting IRC 25B(d)(1) for taxable years ending after December 31, 2025 so that IRA contributions, elective deferrals and voluntary employee contributions count only for taxable years beginning before January 1, 2027, and section 70116(a)(2), repealing Pub. L. 117-328 div. T section 103(e)(1)"
+    "pl-119-21": "Pub. L. 119-21, section 70116(a)(1), rewriting IRC 25B(d)(1) for taxable years ending after December 31, 2025 so that IRA contributions, elective deferrals and voluntary employee contributions count only for taxable years beginning before January 1, 2027, and section 70116(a)(2), repealing Pub. L. 117-328 div. T section 103(e)(1)",
+    "n-26-66": "IRS Notice 2026-66, 2027 Amounts Relating to Retirement Plans and IRAs, as Adjusted for Changes in Cost-of-Living"
   },
   "planYears": {
     "1975": {
@@ -2416,6 +2417,94 @@
       },
       "saversCreditRetirementContributionsQualify_25Bd1": true,
       "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
+    },
+    "2027": {
+      "source": "n-26-66",
+      "annualAdditions_415c1A": 75000,
+      "electiveDeferral_402g1": 25500,
+      "section457b_457e15": 25500,
+      "catchUp50_414v2Bi": 8500,
+      "simpleSalaryReduction_408p2E": 17500,
+      "simpleCatchUp50_414v2Bii": 4000,
+      "simpleCertainPlanEnhancedSalaryReduction_408p2EiIorII": 19100,
+      "simpleCertainPlanAge50CatchUp_414v2Biii": 3850,
+      "simpleAdditionalNonelectiveContributionCap_408p2Aiv": 5400,
+      "sepCompensation_408k2C": 800,
+      "starterDeferralOnlyBase_401k16DiII_403b16DiII": 6500,
+      "starterDeferralOnlyAge50CatchUp": 1100,
+      "catchUp60To63_414v2Ei": 11750,
+      "rothCatchUpWageThreshold_414v7A": 155000,
+      "rothCatchUpWageThreshold_note": "Notice 2026-66 calls this 'the Roth catch-up wage threshold for 2026', used to determine whether 2027 catch-up contributions must be designated as Roth. Keyed here by the CATCH-UP year, matching the repository convention.",
+      "special403bAnnualCatchUp_402g7Ai": 3000,
+      "special403bLifetimeCatchUp_402g7Aii": 15000,
+      "special403bServiceLimit_402g7Aiii": 5000,
+      "special403bCatchUp_source": "usc-26-402",
+      "compensationLimit_401a17": 375000,
+      "compensationLimit401a17GrandfatheredGovernmental_obra93_13212d3": 555000,
+      "compensationLimit401a17GrandfatheredGovernmental_obra93_13212d3_source": "n-26-66",
+      "dbAnnualBenefit_415b1A": 300000,
+      "plesaBalanceCap_402Ae3Ai": 2700,
+      "plesaBalanceCap_source": "n-26-66: \"The limitation under section 402A(e)(3)(A)(i) concerning pension-linked emergency savings accounts that may be included in certain types of defined contribution plans is increased from $2,600 to $2,700.\"",
+      "iraContribution_219b5A": 7500,
+      "iraCatchUp50_219b5Bii": 1100,
+      "traditionalCoveredPhaseout": {
+        "singleOrHeadOfHousehold": {
+          "start": 83000,
+          "end": 93000
+        },
+        "marriedFilingJointly": {
+          "start": 133000,
+          "end": 153000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_219g7A": {
+        "marriedFilingJointly": {
+          "start": 250000,
+          "end": 260000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "traditionalSpouseCoveredPhaseout_source": "The married-filing-separately band is published by no notice. §219(g)(7)(A) replaces only the joint applicable dollar amount, so a married individual filing a separate return keeps the zero fixed by §219(g)(3)(B)(iii), and §219(g)(7)(B) substitutes a $10,000 width for §219(g)(2)(A)(ii). §219(g)(4) removes spouses who lived apart for the whole year from the subsection altogether, which is why the data names this band 'living together'. See usc-26-219.",
+      "rothPhaseout_408Ac3": {
+        "singleOrHeadOfHousehold": {
+          "start": 158000,
+          "end": 173000
+        },
+        "marriedFilingJointly": {
+          "start": 250000,
+          "end": 260000
+        },
+        "marriedFilingSeparately": {
+          "start": 0,
+          "end": 10000
+        }
+      },
+      "hceCompensation_414q1B": 170000,
+      "keyEmployeeCompensation_416i1Ai": 245000,
+      "saversCreditAgiJointReturn_25Bb1": {
+        "fiftyPercent": 50000,
+        "twentyPercent": 54000,
+        "tenPercent": 83000
+      },
+      "saversCreditAgiHeadOfHousehold_25Bb2A": {
+        "fiftyPercent": 37500,
+        "twentyPercent": 40500,
+        "tenPercent": 62250
+      },
+      "saversCreditAgiAllOtherTaxpayers_25Bb2B": {
+        "fiftyPercent": 25000,
+        "twentyPercent": 27000,
+        "tenPercent": 41500
+      },
+      "saversCreditRetirementContributionsQualify_25Bd1": false,
+      "saversCreditRetirementContributionsQualify_source": "IRC 25B(d)(1)(A)-(C) as enacted by pl-107-16 section 618(a); pl-119-21 section 70116(a)(1) moves them to IRC 25B(d)(1)(B) and counts them only for taxable years beginning before January 1, 2027"
     }
   },
   "_electiveDeferralComment": "Section 402(g)(1) and section 457(e)(15) have been identical in every year listed. 2013 and 2014 are established by IR-2013-86 ('remains unchanged at $17,500' for 2014, which fixes 2013 at the same amount); 2015 by IR-2014-99; 2016 onward by the named notice.",
@@ -2475,6 +2564,10 @@
     "2026": {
       "amount": 24500,
       "source": "n-25-67"
+    },
+    "2027": {
+      "amount": 25500,
+      "source": "n-26-66"
     }
   }
 }

@@ -9,8 +9,8 @@ const cjs = require("../dist/cjs/USTaxAdvantagedParams.js");
 for (const runtime of [esm, cjs]) {
   const U = runtime.default;
   assert.equal(typeof U, "function");
-  assert.deepEqual(U.supportedTaxYears(), { minimum: 1975, maximum: 2026 });
-  assert.equal(U.parametersForYear(2026).annualCompensation401a17, 360000);
+  assert.deepEqual(U.supportedTaxYears(), { minimum: 1975, maximum: 2027 });
+  assert.equal(U.parametersForYear(2027).annualCompensation401a17, 375000);
   const result = U.calculate({
     taxYear: 1997,
     filingStatus: "S",
