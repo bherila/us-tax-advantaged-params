@@ -1167,7 +1167,7 @@ test("an agreed whole share with both person records retains paragraph-5 Archer 
 });
 
 test("payroll parameter and scenario builder snapshots are detached", () => {
-  assert.deepEqual(U.supportedPayrollTaxYears(), { minimum: 1991, maximum: 2026 });
+  assert.deepEqual(U.supportedPayrollTaxYears(), { minimum: 1991, maximum: 2027 });
   const row = U.payrollParametersForYear(2026)!;
   row.contributionAndBenefitBase = 1;
   assert.equal(U.payrollParametersForYear(2026)!.contributionAndBenefitBase, 184500);

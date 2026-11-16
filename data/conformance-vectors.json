@@ -26678,6 +26678,64 @@
       }
     },
     {
+      "name": "Payroll: 2027 above base",
+      "description": "The SSA determination for 2027 (91 FR 67380): \"The OASDI contribution and benefit base is $192,300 for remuneration paid in 2027\". IRC 3101(a)/3111(a): min(200000,192300)*6.2%=11922.60 on each side. IRC 3101(b)(1)/3111(b): uncapped 200000*1.45%=2900 on each side. Explicit complete inputs determine the result.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 200000,
+                "medicareWages": 200000
+              }
+            ],
+            "netEarningsBeforeAdjustment": 0
+          }
+        ]
+      },
+      "expect": {
+        "status": "determinate",
+        "totals.employeeSocialSecurity": 11922.6,
+        "totals.employerSocialSecurity": 11922.6,
+        "totals.employeeMedicare": 2900,
+        "totals.employerMedicare": 2900
+      }
+    },
+    {
+      "name": "Payroll: 2027 self-employment above base",
+      "description": "IRC1402(a)(12):300000*.9235=277050. IRC1402(b)(1) and the 2027 SSA base of 192300 (91 FR 67380) cap OASDI SE income: 192300*.124=23845.20. IRC1401(b)(1): 277050*.029=8034.45; IRC1401(b)(2):(277050-200000)*.009=693.45. IRC164(f) excludes the additional component: (23845.20+8034.45)/2=15939.825 rounds15939.83.",
+      "operation": "payrollTax",
+      "input": {
+        "taxYear": 2027,
+        "filingStatus": "single",
+        "persons": [
+          {
+            "id": "t",
+            "wages": [
+              {
+                "employerId": "e",
+                "socialSecurityWages": 0,
+                "medicareWages": 0
+              }
+            ],
+            "netEarningsBeforeAdjustment": 300000
+          }
+        ]
+      },
+      "expect": {
+        "persons.0.adjustedNetEarnings": 277050,
+        "totals.selfEmploymentSocialSecurity": 23845.2,
+        "totals.selfEmploymentMedicare": 8034.45,
+        "totals.additionalMedicareSelfEmploymentLiability": 693.45,
+        "totals.selfEmploymentTaxDeduction": 15939.83
+      }
+    },
+    {
       "name": "Payroll: 1991 Medicare cap transition",
       "description": "Circular E 1991 states SS base 53400 and HI base 125000. At 200000 wages, SS=min(200000,53400)*6.2%=3310.80; each HI side=125000*1.45%=1812.50. Null is the documented uncapped state.",
       "operation": "payrollTax",
@@ -27579,11 +27637,11 @@
       ]
     },
     {
-      "name": "Payroll: 2027 unavailable parameters",
-      "description": "The evidence-backed table starts1991 and ends2026. Input contract for2027: return null parameters and totals with indeterminate status and PAYROLL_PARAMETERS_UNAVAILABLE; no interpolation or projection is authorized.",
+      "name": "Payroll: 2028 unavailable parameters",
+      "description": "The evidence-backed table starts1991 and ends2027. Input contract for2028: return null parameters and totals with indeterminate status and PAYROLL_PARAMETERS_UNAVAILABLE; no interpolation or projection is authorized.",
       "operation": "payrollTax",
       "input": {
-        "taxYear": 2027,
+        "taxYear": 2028,
         "filingStatus": "single",
         "persons": [
           {

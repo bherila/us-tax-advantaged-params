@@ -1203,7 +1203,7 @@ test('an agreed whole share with both person records retains paragraph-5 Archer 
 });
 
 test('payroll parameter and scenario builder snapshots are detached', static function (): void {
-    assertSameValue(['minimum' => 1991, 'maximum' => 2026], U::supportedPayrollTaxYears());
+    assertSameValue(['minimum' => 1991, 'maximum' => 2027], U::supportedPayrollTaxYears());
     $row = U::payrollParametersForYear(2026);
     $row['contributionAndBenefitBase'] = 1;
     assertSameValue(184500, U::payrollParametersForYear(2026)['contributionAndBenefitBase']);

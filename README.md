@@ -1958,11 +1958,11 @@ The package does not calculate:
 - Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. All three §402A(f)(1) hosts are modelled, the governmental §457(b) one as its own account type. §402A(e)(9), which orders excess deferrals distributed under §402(g)(2)(A) out of the emergency account first, is not implemented at all — no excess-deferral ordering is — and its reach is in any case unsettled for a §457(b)-hosted account: it speaks of "any pension-linked emergency savings account of the participant", while a §457(b) deferral is not among the elective deferrals §402(g)(3) enumerates and so can produce no §402(g)(2)(A) excess of its own. No regulation or notice addresses the cross-plan case.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 
-## Payroll-tax effects (1991–2026)
+## Payroll-tax effects (1991–2027)
 
 `calculatePayrollTax` calculates ordinary FICA and SECA from explicit annual facts.
 `payrollParametersForYear(year)` returns a detached published row, or `null` outside
-1991–2026. The standalone calculation returns `indeterminate` with a diagnostic
+1991–2027. The standalone calculation returns `indeterminate` with a diagnostic
 for those missing years. It never projects a wage base.
 
 ```ts

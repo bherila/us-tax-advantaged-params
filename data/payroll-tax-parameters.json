@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedThroughTaxYear": 2026,
+  "generatedThroughTaxYear": 2027,
   "supportedTaxYears": {
     "minimum": 1991,
-    "maximum": 2026
+    "maximum": 2027
   },
   "historicalCoveragePolicy": {
     "start": "1991 is the approved floor. Missing rows are unknown, never projected.",
@@ -281,6 +281,12 @@
       "id": "fr-2025-19763",
       "title": "Social Security Administration, Cost-of-Living Increase and Other Determinations for 2026, 90 FR 49047 (November 3, 2025)",
       "url": "https://www.govinfo.gov/content/pkg/FR-2025-11-03/html/2025-19763.htm",
+      "authority": "Social Security Administration"
+    },
+    {
+      "id": "fr-2026-21796",
+      "title": "Social Security Administration, Cost-of-Living Increase and Other Determinations for 2027, 91 FR 67380 (October 26, 2026)",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2026-10-26/html/2026-21796.htm",
       "authority": "Social Security Administration"
     },
     {
@@ -1118,6 +1124,29 @@
       "additionalMedicareSeparateThresholdFraction": 0.5,
       "additionalMedicareWithholdingThreshold": 200000,
       "source": "LINKED, not committed here: evidence/retirement-limits/sources/fr-2025-19763.txt"
+    },
+    "2027": {
+      "taxYear": 2027,
+      "contributionAndBenefitBase": 192300,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2026-21796.txt"
     }
   }
 }

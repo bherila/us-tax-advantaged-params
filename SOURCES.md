@@ -701,9 +701,9 @@ Primary text: [IRC §414](https://uscode.house.gov/view.xhtml?req=granuleid:USC-
 [IRC §457](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section457&num=0&edition=prelim),
 and [IRC §415](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section415&num=0&edition=prelim).
 
-## Ordinary FICA and SECA parameters (1991–2026)
+## Ordinary FICA and SECA parameters (1991–2027)
 
-`data/payroll-tax-parameters.json` is backed by `evidence/payroll-tax/` (684 scalar
+`data/payroll-tax-parameters.json` is backed by `evidence/payroll-tax/` (703 scalar
 comparisons). The corpus contains the actual primary documents, quoted narrative
 transcriptions, and SHA-256 digests. Its README describes the annual source map.
 
@@ -718,7 +718,11 @@ transcriptions, and SHA-256 digests. Its README describes the annual source map.
   The December 15, 2017 correction (82 FR 59937) supersedes the initial 2018
   $128,700 base with $128,400; both source documents are retained.
   The 2024–2026 documents already in `retirement-limits` are linked using the
-  established `LINKED, not committed here:` convention, never duplicated.
+  established `LINKED, not committed here:` convention, never duplicated. The
+  2027 determination, [91 FR 67380](https://www.govinfo.gov/content/pkg/FR-2026-10-26/html/2026-21796.htm)
+  (October 26, 2026), is committed in the payroll corpus itself as
+  `fr-2026-21796.txt`: "The OASDI contribution and benefit base is $192,300 for
+  remuneration paid in 2027".
 - [26 USC §3101](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3101&num=0&edition=prelim),
   §3111, §3121, §1401, §1402, §164(f), and §3102(f): employee/employer/SECA rates,
   wage-first coordination, minimum earnings, deduction, and the separate

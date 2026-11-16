@@ -356,7 +356,7 @@ compensation nor the prior-year §414(v)(7) FICA input substitutes for those fac
 One person is required per individual/separate return and two per joint return.
 Duplicate IDs are rejected; an explicit empty wage collection establishes zero.
 
-The standalone calculation has an independent 1991–2026 evidence table and
+The standalone calculation has an independent 1991–2027 evidence table and
 returns unknown for missing rows, even where the retirement engine supports an
 earlier year. A null Medicare base *inside a known row* means uncapped. Published
 percent units are retained in data. The net-earnings factor and MFS threshold are
