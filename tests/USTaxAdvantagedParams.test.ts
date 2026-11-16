@@ -19,7 +19,7 @@ function account(result: ReturnType<typeof U.calculate>, id: string) {
 }
 
 test("supports the first general IRA year through the generated year without extrapolation", () => {
-  assert.deepEqual(U.supportedTaxYears(), { minimum: 1975, maximum: 2026 });
+  assert.deepEqual(U.supportedTaxYears(), { minimum: 1975, maximum: 2027 });
   assert.equal(U.parametersForYear(1975).ira.baseContributionLimit, 1_500);
   assert.equal(U.parametersForYear(2026).ira.baseContributionLimit, 7_500);
   assert.deepEqual(U.parametersForYear(2026).special403b15YearCatchUp, {
@@ -27,7 +27,7 @@ test("supports the first general IRA year through the generated year without ext
     lifetimeLimit: 15_000,
     serviceLimitPerYear: 5_000,
   });
-  assert.throws(() => U.parametersForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
+  assert.throws(() => U.parametersForYear(2028), (error: unknown) => error instanceof UnsupportedTaxYearError);
 });
 
 test("exposes the IRC 414(q), 416(i) and 25B figures from the first year each has one", () => {
@@ -673,8 +673,8 @@ test("exposes the 2027 IRC 223 amounts Rev. Proc. 2026-24 publishes, and no late
   assert.equal(row?.additionalContributionAmountAge55, 1_000);
   assert.ok(U.hsaSourceMetadata().some((source) => source.id === "irs-rev-proc-2026-24"));
   assert.equal(U.hsaParametersForYear(2028), null);
-  // The scenario range is the retirement table's, which still ends at 2026.
-  assert.throws(() => U.parametersForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
+  // The scenario range is the retirement table's, which also ends at 2027.
+  assert.throws(() => U.parametersForYear(2028), (error: unknown) => error instanceof UnsupportedTaxYearError);
 });
 
 test("exposes the IRC 125 and IRC 129 parameter table without extrapolating it", () => {
@@ -1167,7 +1167,7 @@ test("an agreed whole share with both person records retains paragraph-5 Archer 
 });
 
 test("payroll parameter and scenario builder snapshots are detached", () => {
-  assert.deepEqual(U.supportedPayrollTaxYears(), { minimum: 1991, maximum: 2026 });
+  assert.deepEqual(U.supportedPayrollTaxYears(), { minimum: 1991, maximum: 2027 });
   const row = U.payrollParametersForYear(2026)!;
   row.contributionAndBenefitBase = 1;
   assert.equal(U.payrollParametersForYear(2026)!.contributionAndBenefitBase, 184500);
@@ -1228,7 +1228,7 @@ test("every attributed figure exists in its row and cites listed sources", () =>
 });
 
 test("provenance lookups refuse the years their tables refuse", () => {
-  assert.throws(() => U.parameterSourcesForYear(2027), (error: unknown) => error instanceof UnsupportedTaxYearError);
+  assert.throws(() => U.parameterSourcesForYear(2028), (error: unknown) => error instanceof UnsupportedTaxYearError);
   assert.throws(() => U.parameterSourcesForYear(2026.5), (error: unknown) => error instanceof ParameterError && error.code === "INVALID_TAX_YEAR");
   assert.equal(U.payrollParameterSourcesForYear(1990), null);
   assert.throws(() => U.hsaParameterSourcesForYear(Number.NaN), (error: unknown) => error instanceof ParameterError && error.code === "INVALID_TAX_YEAR");

@@ -1,6 +1,6 @@
 # Payroll-tax evidence
 
-Coverage: 1991-2026. Primary narrative text, not a summary table, supplies each annual base. Circular E supplies 1991-1994, and Federal Register SSA determinations supply subsequent years. The next determination explicitly states the current base for 1995 and 2014. The 2024-2026 documents are linked from retirement-limits and remain hashed only there, following the existing LINKED convention.
+Coverage: 1991-2027. Primary narrative text, not a summary table, supplies each annual base. Circular E supplies 1991-1994, and Federal Register SSA determinations supply subsequent years. The next determination explicitly states the current base for 1995 and 2014. The 2024-2026 documents are linked from retirement-limits and remain hashed only there, following the existing LINKED convention. The 2027 determination (91 FR 67380) is committed here as fr-2026-21796.txt.
 
 Rates and mechanics come from the committed Code text. Pub. L. 111-312 section 601 and Pub. L. 112-96 section 1001 establish the 2011-2012 holiday and its distinct deduction rules; the two Schedule SE forms corroborate their application. Published percent units are retained; net-earnings and MFS dollar results are derived in the engine rather than transcribed as primary amounts.
 

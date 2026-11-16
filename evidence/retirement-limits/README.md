@@ -53,14 +53,14 @@ pre-2020 age-70½ restriction, and pre-Roth availability.
 Every available plan-year block transcribes three additional figures that its
 notice publishes and the package models: §408(p)(2)(E) SIMPLE salary reduction,
 §414(v)(2)(B)(ii) SIMPLE catch-up, and §408(k)(2)(C) SEP compensation. For
-2024–2026, it also binds the SECURE 2.0-era certain-SIMPLE, additional
+2024–2027, it also binds the SECURE 2.0-era certain-SIMPLE, additional
 nonelective, and starter-plan dollar limits published in the notices. Section
 457(e)(15) base deferrals are compared in both the plan-year blocks and the
 separate elective-deferral/457 series; the latter retains its wider treatment
 for the historical releases.
 
-2024 through 2026 also record the §402A(e)(3)(A)(i) pension-linked emergency
-savings account limitation. The notices state it for 2025 and 2026 only — Notice
+2024 through 2027 also record the §402A(e)(3)(A)(i) pension-linked emergency
+savings account limitation. The notices state it for 2025 through 2027 only — Notice
 2023-75 is silent — so 2024 is transcribed from 26 U.S.C. §402A itself, whose
 flush text adjusts the amount only "[i]n the case of contributions made in taxable
 years beginning after December 31, 2024", leaving the first effective year on the
@@ -94,8 +94,8 @@ The §402(g)/§457(e)(15) elective series is compared for every year it records.
 
 Three plan-status and credit figures the notices publish beside the limits are
 compared too: the §414(q)(1)(B) highly-compensated-employee threshold for
-1997–2026, the §416(i)(1)(A)(i) key-employee threshold for 2002–2026, and all
-nine §25B(b) adjusted gross income ceilings for 2002–2026, as three members for
+1997–2027, the §416(i)(1)(A)(i) key-employee threshold for 2002–2027, and all
+nine §25B(b) adjusted gross income ceilings for 2002–2027, as three members for
 each of the joint, head-of-household and all-other columns. The head-of-household
 and all-other amounts are compared as printed rather than derived from the joint
 column. Each block records where a figure came from when its own source does not

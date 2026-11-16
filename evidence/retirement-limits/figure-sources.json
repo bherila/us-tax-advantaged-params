@@ -32,6 +32,7 @@
     "n-23-75": "irs-notice-2023-75",
     "n-24-80": "irs-notice-2024-80",
     "n-25-67": "irs-notice-2025-67",
+    "n-26-66": "irs-notice-2026-66",
     "n-96-55": "irs-notice-1996-55",
     "n-97-58": "irs-notice-1997-58",
     "n-98-53": "irs-notice-1998-53",
@@ -331,10 +332,10 @@
         ],
         "pl-119-21": [
           2026,
-          2026
+          2027
         ]
       },
-      "why": "EGTRRA §618 enacts §25B(d)(1); the 2024 Code text holds through 2025, and Pub. L. 119-21 §70116 governs from 2026."
+      "why": "EGTRRA §618 enacts §25B(d)(1); the 2024 Code text holds through 2025, and Pub. L. 119-21 §70116 governs from 2026 (its §25B(d)(1)(B) cut-off removes retirement and IRA contributions from 2027)."
     },
     "b921a7aaa1": {
       "cites": [
@@ -475,6 +476,12 @@
         "usc-26-408"
       ],
       "why": "Notice 2007-87 publishes the single and joint starts, and §408A(c)(3) fixes the widths and the zero start for married filing separately; usc-26-408 appears only as a substring of usc-26-408A."
+    },
+    "f12bbeabc4": {
+      "cites": [
+        "n-26-66"
+      ],
+      "why": "Notice 2026-66 states $2,700 for 2027."
     }
   },
   "fieldOverrides": [

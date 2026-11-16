@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "package": "us-tax-advantaged-params",
-  "generatedThroughTaxYear": 2026,
+  "generatedThroughTaxYear": 2027,
   "supportedTaxYears": {
     "minimum": 1975,
-    "maximum": 2026
+    "maximum": 2027
   },
   "moneyUnit": "USD",
   "rounding": {
@@ -16,6 +16,12 @@
     "pre1987EmployerPlanLimitStatus": "requires_plan_document_and_historical_law_facts"
   },
   "sources": [
+    {
+      "id": "irs-notice-2026-66",
+      "title": "Notice 2026-66, 2027 retirement-plan cost-of-living adjustments",
+      "url": "https://www.irs.gov/pub/irs-drop/n-26-66.pdf",
+      "authority": "IRS"
+    },
     {
       "id": "irs-notice-2025-67",
       "title": "Notice 2025-67, 2026 retirement-plan cost-of-living adjustments",
@@ -6715,6 +6721,148 @@
           "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
             242000,
             252000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        }
+      },
+      "special403b15YearCatchUp": {
+        "annualLimit": 3000,
+        "lifetimeLimit": 15000,
+        "serviceLimitPerYear": 5000
+      }
+    },
+    "2027": {
+      "year": 2027,
+      "ira": {
+        "baseContributionLimit": 7500,
+        "age50CatchUp": 1100,
+        "compensationFraction": 1,
+        "universalEligibility": true,
+        "nondeductibleContributionAvailable": true,
+        "spousalIraAvailable": true,
+        "nonworkingSpouseIndividualLimit": null,
+        "spousalDeductionIsTwiceTheLesserOfContributions": false,
+        "oneEarnerHouseholdCombinedLimit": null,
+        "traditionalContributionAge70HalfRestriction": false,
+        "rothAvailable": true
+      },
+      "electiveDeferral402g": 25500,
+      "generalAge50CatchUp": 8500,
+      "age60To63CatchUp": 11750,
+      "rothCatchUpPriorYearFicaWageThreshold": 155000,
+      "annualAdditions415c": 75000,
+      "annualAdditionsCompensationFraction": 1,
+      "annualCompensation401a17": 375000,
+      "annualCompensation401a17GrandfatheredGovernmental": 555000,
+      "highlyCompensatedEmployeeCompensation414q": 170000,
+      "keyEmployeeOfficerCompensation416i": 245000,
+      "saversCredit25B": {
+        "adjustedGrossIncomeLimits": {
+          "jointReturn": {
+            "fiftyPercent": 50000,
+            "twentyPercent": 54000,
+            "tenPercent": 83000
+          },
+          "headOfHousehold": {
+            "fiftyPercent": 37500,
+            "twentyPercent": 40500,
+            "tenPercent": 62250
+          },
+          "allOtherTaxpayers": {
+            "fiftyPercent": 25000,
+            "twentyPercent": 27000,
+            "tenPercent": 41500
+          }
+        },
+        "retirementPlanAndIraContributionsQualify": false
+      },
+      "definedBenefitAnnualBenefit415b": 300000,
+      "pensionLinkedEmergencySavingsBalanceCap402A": 2700,
+      "sep": {
+        "available": true,
+        "maximumEmployerContributionRate": 0.25,
+        "selfEmployedEquivalentRate": 0.2,
+        "minimumEligibleCompensation": 800,
+        "newSarsepMayBeEstablished": false,
+        "grandfatheredSarsepMayOperate": true,
+        "rothSepAvailable": true
+      },
+      "simple": {
+        "available": true,
+        "salaryReductionLimit": 17500,
+        "generalAge50CatchUp": 4000,
+        "age60To63CatchUp": 5250,
+        "certainPlanEnhancedSalaryReductionLimit": 19100,
+        "certainPlanAge50CatchUp": 3850,
+        "additionalNonelectiveContributionCap": 5400
+      },
+      "section457b": {
+        "available": true,
+        "baseDeferralLimit": 25500,
+        "includibleCompensationFraction": 1,
+        "specialLastThreeYearsMaximum": 51000,
+        "governmentalAge50CatchUp": 8500,
+        "governmentalAge60To63CatchUp": 11750,
+        "designatedRothAvailableForGovernmentalPlans": true
+      },
+      "starterDeferralOnly": {
+        "available": true,
+        "baseDeferralLimit": 6500,
+        "age50CatchUp": 1100
+      },
+      "availability": {
+        "traditionalIra": true,
+        "rothIra": true,
+        "sepIra": true,
+        "simpleIra": true,
+        "traditional401k": true,
+        "designatedRoth401k": true,
+        "traditional403b": true,
+        "designatedRoth403b": true,
+        "governmental457b": true,
+        "nongovernmental457b": true,
+        "traditionalTsp": true,
+        "rothTsp": true,
+        "rothSimpleOrSep": true,
+        "starter401kOrSafeHarbor403b": true,
+        "pensionLinkedEmergencySavings": true
+      },
+      "phaseouts": {
+        "traditionalIraCovered": {
+          "singleOrHeadOfHousehold": [
+            83000,
+            93000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            133000,
+            153000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "traditionalIraSpouseCovered": {
+          "marriedFilingJointly": [
+            250000,
+            260000
+          ],
+          "marriedFilingSeparatelyLivingTogether": [
+            0,
+            10000
+          ]
+        },
+        "rothIra": {
+          "singleOrHeadOfHousehold": [
+            158000,
+            173000
+          ],
+          "marriedFilingJointlyOrQualifyingSurvivingSpouse": [
+            250000,
+            260000
           ],
           "marriedFilingSeparatelyLivingTogether": [
             0,

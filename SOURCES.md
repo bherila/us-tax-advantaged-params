@@ -19,6 +19,9 @@ came from" in README.md.
 
 ## Core annual-limit sources
 
+- **IRS Notice 2026-66 (IR-2026-136, November 12, 2026)** — 2027 retirement-plan and IRA cost-of-living adjustments, including §402(g), §457(e)(15), IRA, SIMPLE, catch-up (including the §414(v)(7)(A) Roth catch-up wage threshold), §415(b), §415(c), §401(a)(17), §414(q), §416(i), PLESA, starter-plan, SEP eligibility, Saver's Credit and phase-out figures. Its footnote 2 confirms that from 2027 the Saver's Match under §6433 replaces the Saver's Credit for elective contributions to retirement plans and IRAs. The Internal Revenue Bulletin carrying the notice had not been published when the 2027 row was added, so the IRS drop copy is cited and committed as `evidence/retirement-limits/sources/n-26-66.pdf`, fixed by `SHA256SUMS.txt`.  
+  `https://www.irs.gov/pub/irs-drop/n-26-66.pdf`
+
 - **IRS Notice 2025-67 / Internal Revenue Bulletin 2025-49** — 2026 retirement-plan and IRA cost-of-living adjustments, including §402(g), IRA, SIMPLE, catch-up, §415(c), §401(a)(17), SEP eligibility, and phase-out figures.  
   `https://www.irs.gov/pub/irs-irbs/irb25-49.pdf`
 
@@ -625,7 +628,7 @@ absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,65
 - **IRS Notice 2001-56** states that §401(a)(17) limits annual compensation used to determine allocations under a defined-contribution plan and discusses the effective date of the EGTRRA compensation-limit increase.  
   `https://www.irs.gov/pub/irs-drop/n-01-56.pdf`
 
-- **Omnibus Budget Reconciliation Act of 1993, Pub. L. 103-66, §13212(d)(3)** grandfathers the pre-OBRA compensation limit for an eligible participant in a governmental plan that, as in effect on July 1, 1993, allowed cost-of-living adjustments to its own §401(a)(17) compensation limitation: the reduced limit "shall not apply to the extent that it would reduce the amount of compensation that is allowed to be taken into account under the plan below the amount which was allowed to be taken into account under the plan as in effect on July 1, 1993." The annual figure is published in the same cost-of-living notice as the ordinary §401(a)(17) limit; the series encoded here runs from tax year 1998, the first the IRS published, through 2026, each notice's "increased from" amount matching the prior year's. **Tax years 1994 through 1997 are `null`**: IRS Notice 96-55, which publishes the 1997 limitations, does not state the grandfathered figure at all, so no value is recoverable from primary authority and none is extrapolated.  
+- **Omnibus Budget Reconciliation Act of 1993, Pub. L. 103-66, §13212(d)(3)** grandfathers the pre-OBRA compensation limit for an eligible participant in a governmental plan that, as in effect on July 1, 1993, allowed cost-of-living adjustments to its own §401(a)(17) compensation limitation: the reduced limit "shall not apply to the extent that it would reduce the amount of compensation that is allowed to be taken into account under the plan below the amount which was allowed to be taken into account under the plan as in effect on July 1, 1993." The annual figure is published in the same cost-of-living notice as the ordinary §401(a)(17) limit; the series encoded here runs from tax year 1998, the first the IRS published, through 2027, each notice's "increased from" amount matching the prior year's. **Tax years 1994 through 1997 are `null`**: IRS Notice 96-55, which publishes the 1997 limitations, does not state the grandfathered figure at all, so no value is recoverable from primary authority and none is extrapolated.  
   `https://www.govinfo.gov/content/pkg/STATUTE-107/pdf/STATUTE-107-Pg312.pdf`
 
 - **IRS Employee Plans News, Fall 2009, “When Limits Collide, Which One Wins?”** distinguishes §401(a)(17), §415(c), and §402(g). It describes the compensation cap for plan contributions while explaining why the cap should not be applied as an extra cutoff preventing an employee from completing the annual elective-deferral amount.  
@@ -639,7 +642,7 @@ absent — so the operative 2018 authority is Rev. Proc. 2017-58 §3.16 at $2,65
 
 ## Plan-status thresholds and the saver's credit (IRC §§414(q), 416(i), 25B)
 
-- **IRS cost-of-living notices, Notice 96-55 through Notice 2025-67** — the notices that carry the contribution limits also state the §414(q)(1)(B) highly-compensated-employee threshold from 1997, the §416(i)(1)(A)(i) key-employee threshold from 2002, and all nine §25B(b) adjusted gross income ceilings from 2008. Each year's figures are recorded in `evidence/retirement-limits/primary-values.json` and compared against the data file, and each notice's "increased from" amounts match the prior year's. Notice 96-55 is the first to state the §414(q)(1)(B) figure — "as amended by the Small Business Job Protection Act of 1996, is $80,000" — so earlier years are `null`. For 2013 through 2015 the corpus held only IR-series news releases, which print just the top §25B ceiling for each filer; Notices 2012-67, 2013-73 and 2014-70 are now committed from Internal Revenue Bulletins 2012-50, 2013-49 and 2014-48 for the full table.  
+- **IRS cost-of-living notices, Notice 96-55 through Notice 2026-66** — the notices that carry the contribution limits also state the §414(q)(1)(B) highly-compensated-employee threshold from 1997, the §416(i)(1)(A)(i) key-employee threshold from 2002, and all nine §25B(b) adjusted gross income ceilings from 2008. Each year's figures are recorded in `evidence/retirement-limits/primary-values.json` and compared against the data file, and each notice's "increased from" amounts match the prior year's. Notice 96-55 is the first to state the §414(q)(1)(B) figure — "as amended by the Small Business Job Protection Act of 1996, is $80,000" — so earlier years are `null`. For 2013 through 2015 the corpus held only IR-series news releases, which print just the top §25B ceiling for each filer; Notices 2012-67, 2013-73 and 2014-70 are now committed from Internal Revenue Bulletins 2012-50, 2013-49 and 2014-48 for the full table.  
   `https://www.irs.gov/pub/irs-irbs/irb12-50.pdf`, `https://www.irs.gov/pub/irs-irbs/irb13-49.pdf`, `https://www.irs.gov/pub/irs-irbs/irb14-48.pdf`
 
 - **Economic Growth and Tax Relief Reconciliation Act of 2001, Pub. L. 107-16 §§613 and 618** — §613(a)(1)(B) strikes §416(i)(1)(A)(i) and inserts "an officer of the employer having an annual compensation greater than $130,000", applying to years beginning after December 31, 2001. §618(a) enacts §25B with a fixed applicable-percentage table — $30,000 / $32,500 / $50,000 on a joint return, $22,500 / $24,375 / $37,500 for a head of household, and $15,000 / $16,250 / $25,000 in all other cases — applying to taxable years beginning after December 31, 2001. No notice states the 2002–2006 table, because it was not indexed.
@@ -659,7 +662,7 @@ Annual IRA contribution and phase-out values are encoded from the applicable IRS
 
 ## Historical confidence policy
 
-Historical tax law is not uniform across the full 1975–2026 range. Early salary-reduction arrangements, legacy 403(b) exclusion allowances, plan-document-specific limits, and actuarial pension funding cannot always be represented by one universal amount. The engines return diagnostics and an indeterminate result where the data does not support a precise answer.
+Historical tax law is not uniform across the full 1975–2027 range. Early salary-reduction arrangements, legacy 403(b) exclusion allowances, plan-document-specific limits, and actuarial pension funding cannot always be represented by one universal amount. The engines return diagnostics and an indeterminate result where the data does not support a precise answer.
 
 A historical row must not be added solely from a secondary summary when an IRS bulletin, publication, notice, regulation, statute, or Department of Labor source is reasonably available.
 
@@ -698,9 +701,9 @@ Primary text: [IRC §414](https://uscode.house.gov/view.xhtml?req=granuleid:USC-
 [IRC §457](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section457&num=0&edition=prelim),
 and [IRC §415](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section415&num=0&edition=prelim).
 
-## Ordinary FICA and SECA parameters (1991–2026)
+## Ordinary FICA and SECA parameters (1991–2027)
 
-`data/payroll-tax-parameters.json` is backed by `evidence/payroll-tax/` (684 scalar
+`data/payroll-tax-parameters.json` is backed by `evidence/payroll-tax/` (703 scalar
 comparisons). The corpus contains the actual primary documents, quoted narrative
 transcriptions, and SHA-256 digests. Its README describes the annual source map.
 
@@ -715,7 +718,11 @@ transcriptions, and SHA-256 digests. Its README describes the annual source map.
   The December 15, 2017 correction (82 FR 59937) supersedes the initial 2018
   $128,700 base with $128,400; both source documents are retained.
   The 2024–2026 documents already in `retirement-limits` are linked using the
-  established `LINKED, not committed here:` convention, never duplicated.
+  established `LINKED, not committed here:` convention, never duplicated. The
+  2027 determination, [91 FR 67380](https://www.govinfo.gov/content/pkg/FR-2026-10-26/html/2026-21796.htm)
+  (October 26, 2026), is committed in the payroll corpus itself as
+  `fr-2026-21796.txt`: "The OASDI contribution and benefit base is $192,300 for
+  remuneration paid in 2027".
 - [26 USC §3101](https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title26-section3101&num=0&edition=prelim),
   §3111, §3121, §1401, §1402, §164(f), and §3102(f): employee/employer/SECA rates,
   wage-first coordination, minimum earnings, deduction, and the separate

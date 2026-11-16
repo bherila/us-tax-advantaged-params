@@ -16,13 +16,13 @@ Annual legal parameters are maintained once, in the retirement, HSA, FSA, payrol
 
 ## Supported tax years
 
-The encoded range is **1975 through 2026**. The package does not extrapolate a future year. Calling a year outside the range throws `UnsupportedTaxYearError` in TypeScript or `UnsupportedTaxYearException` in PHP.
+The encoded range is **1975 through 2027**. The package does not extrapolate a future year. Calling a year outside the range throws `UnsupportedTaxYearError` in TypeScript or `UnsupportedTaxYearException` in PHP.
 
 The 1975 starting point corresponds to the first generally available IRA contribution year. Some early employer-plan years cannot be reduced to a universal modern dollar ceiling from tax year alone. In those cases the engine returns an explicit `indeterminate` status and diagnostic rather than inventing a value.
 
 ```ts
 USTaxAdvantagedParams.supportedTaxYears();
-// { minimum: 1975, maximum: 2026 }
+// { minimum: 1975, maximum: 2027 }
 ```
 
 Health savings accounts have their own range, **2004 through 2027**, because IRC §223 was
@@ -30,10 +30,11 @@ added by the Medicare Prescription Drug, Improvement, and Modernization Act of 2
 effective for taxable years beginning after 2003. A year before 2004 returns an
 `unavailable` HSA result rather than an extrapolated one.
 
-The range runs a year past the retirement table because the IRS publishes the HSA Revenue
-Procedure in the spring, months before the retirement cost-of-living notice. The 2027 amounts
-from Rev. Proc. 2026-24 are available through `hsaParametersForYear(2027)`. A scenario for
-2027 still throws `UnsupportedTaxYearError` until the retirement table reaches that year.
+The IRS publishes the HSA Revenue Procedure in the spring, months before the retirement
+cost-of-living notice, so the HSA table can run a year past the retirement table between the
+two. Both now end at 2027: the HSA amounts come from Rev. Proc. 2026-24 and the retirement
+amounts from Notice 2026-66. A scenario for a year past the retirement table throws
+`UnsupportedTaxYearError` even when the HSA table already has it.
 
 ```ts
 USTaxAdvantagedParams.supportedHsaTaxYears();
@@ -541,7 +542,7 @@ precisely so the account can be replenished.
 
 | Rule | Treatment |
 |---|---|
-| §402A(e)(3)(A)(i) dollar figure | `parameters.pensionLinkedEmergencySavingsBalanceCap402A`. $2,500 for 2024 and 2025, $2,600 for 2026 |
+| §402A(e)(3)(A)(i) dollar figure | `parameters.pensionLinkedEmergencySavingsBalanceCap402A`. $2,500 for 2024 and 2025, $2,600 for 2026, $2,700 for 2027 |
 | §402A(e)(3)(A)(ii) plan sponsor amount | Supplied as `planRules.planDocumentEmployeeDeferralLimit`; it lowers the contributable amount but not the reported statutory maximum |
 | Participant-contribution balance | **Required.** Supplied as `planRules.pensionLinkedEmergencySavingsParticipantContributionBalance`: the portion of the balance attributable to participant contributions **immediately before the proposed allocation** — including amounts contributed earlier in the same year that are still in the account, net of withdrawals under the plan's accounting, excluding earnings. Pass 0 for a new account. Omitted — or supplied as an explicit `null`, which states the absence of the fact in exactly the same way — the account is `indeterminate` with `PENSION_LINKED_EMERGENCY_SAVINGS_PRIOR_BALANCE_REQUIRED` (whose "prior" means *immediately prior to the allocation*, not an opening or prior-year figure) rather than defaulted to an empty account. This differs from the optional §402A(e)(3)(A)(ii) sponsor amount above, where a `null` means the sponsor set none |
 | §402(g) and §415(c) | On a §401(a)- or §403(b)-hosted account, base deferrals are consumed like any other elective deferral and annual addition, in the owner's and the employer group's shared pools; a §414(v) catch-up draws the owner's catch-up pool and, per §414(v)(3)(A)(i), not the annual-additions group. A governmental §457(b)-hosted account consumes neither: it draws the owner's §457(e)(15) pool and joins no annual-additions group, whatever `annualAdditionsGroupId` the caller supplies |
@@ -1466,7 +1467,7 @@ The result remains subject to §415(c), plan-document limits, and existing annua
 
 ### The OBRA '93 grandfathered governmental ceiling
 
-OBRA '93 §13212(d)(3) preserves the higher pre-OBRA ceiling for an eligible participant in a governmental plan that already indexed its own compensation limitation on July 1, 1993. The IRS publishes that amount annually beside the ordinary one — $535,000 against $360,000 for 2026 — and the engine uses the greater of the two, which is what the statute's "shall not apply to the extent that it would reduce" language directs.
+OBRA '93 §13212(d)(3) preserves the higher pre-OBRA ceiling for an eligible participant in a governmental plan that already indexed its own compensation limitation on July 1, 1993. The IRS publishes that amount annually beside the ordinary one — $555,000 against $375,000 for 2027 — and the engine uses the greater of the two, which is what the statute's "shall not apply to the extent that it would reduce" language directs.
 
 Set `planRules.grandfatheredGovernmentalCompensationLimit` to claim it. The one flag asserts both halves of the rule — that the plan qualifies and that this participant is an "eligible participant" under the pre-1994 participation test — because both are plan-document and service facts outside this package's scope.
 
@@ -1482,13 +1483,13 @@ Supplying `expectedEmployerContribution` bypasses formula inference because it r
 
 `parametersForYear` also returns three sets of figures that the annual notice publishes beside the contribution limits. The package reports them; it does not apply them.
 
-- `highlyCompensatedEmployeeCompensation414q` is the §414(q)(1)(B) compensation threshold in the definition of a highly compensated employee: $80,000 for 1997 and $160,000 for 2026. It is `null` before 1997, because Notice 96-55 is the first to state the figure "as amended by the Small Business Job Protection Act of 1996".
-- `keyEmployeeOfficerCompensation416i` is the §416(i)(1)(A)(i) compensation an officer must exceed to be a key employee for top-heavy purposes: $130,000 for 2002 and $235,000 for 2026. It is `null` before 2002, because EGTRRA §613 inserted the dollar threshold for years beginning after December 31, 2001.
-- `saversCredit25B.adjustedGrossIncomeLimits` gives the §25B(b) adjusted gross income ceilings for the 50, 20 and 10 percent credit rates, for a joint return, a head of household and all other filers. For 2026, a joint return's ceilings are $48,500, $52,500 and $80,500. 2002 through 2006 carry the fixed table EGTRRA §618 enacted; the Pension Protection Act of 2006 §833(a) indexed it from 2007. `saversCredit25B` is `null` before 2002.
+- `highlyCompensatedEmployeeCompensation414q` is the §414(q)(1)(B) compensation threshold in the definition of a highly compensated employee: $80,000 for 1997, $160,000 for 2026 and $170,000 for 2027. It is `null` before 1997, because Notice 96-55 is the first to state the figure "as amended by the Small Business Job Protection Act of 1996".
+- `keyEmployeeOfficerCompensation416i` is the §416(i)(1)(A)(i) compensation an officer must exceed to be a key employee for top-heavy purposes: $130,000 for 2002, $235,000 for 2026 and $245,000 for 2027. It is `null` before 2002, because EGTRRA §613 inserted the dollar threshold for years beginning after December 31, 2001.
+- `saversCredit25B.adjustedGrossIncomeLimits` gives the §25B(b) adjusted gross income ceilings for the 50, 20 and 10 percent credit rates, for a joint return, a head of household and all other filers. For 2026, a joint return's ceilings are $48,500, $52,500 and $80,500; for 2027, $50,000, $54,000 and $83,000. 2002 through 2006 carry the fixed table EGTRRA §618 enacted; the Pension Protection Act of 2006 §833(a) indexed it from 2007. `saversCredit25B` is `null` before 2002.
 
 Whether a particular employee is highly compensated or a key employee, and the amount of the credit, are not calculated; see [Deliberate exclusions](#deliberate-exclusions).
 
-**The saver's credit is not repealed after 2026.** Pub. L. 119-21 §70116(a)(1) rewrites §25B(d)(1) for taxable years ending after December 31, 2025. Contributions to the individual's ABLE account continue to qualify. IRA contributions, elective deferrals and voluntary employee contributions qualify only "in the case of any taxable year beginning before January 1, 2027". §70116(b) also raises the credit's contribution cap from $2,000 to $2,100 after 2026, and the §25B(b) table continues. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026, and the data validator requires `false` on any later row, so the change cannot be missed when a 2027 row is added.
+**The saver's credit is not repealed after 2026.** Pub. L. 119-21 §70116(a)(1) rewrites §25B(d)(1) for taxable years ending after December 31, 2025. Contributions to the individual's ABLE account continue to qualify. IRA contributions, elective deferrals and voluntary employee contributions qualify only "in the case of any taxable year beginning before January 1, 2027". §70116(b) also raises the credit's contribution cap from $2,000 to $2,100 after 2026, and the §25B(b) table continues. `saversCredit25B.retirementPlanAndIraContributionsQualify` is `true` for 2002 through 2026 and `false` from 2027, and the data validator requires `false` on every row after 2026. Notice 2026-66 (footnote 2) still publishes the 2027 §25B(b) table, which now governs ABLE contributions only; for taxable years beginning after December 31, 2026, Saver's Match contributions under §6433 replace the credit for elective contributions to retirement plans and IRAs. The Saver's Match itself is not modelled. Neither is the §25B(a) contribution cap, $2,000 through 2026 and $2,100 after.
 
 The 2024 edition of 26 U.S.C. §25B still shows an earlier SECURE 2.0 amendment, div. T §103(e)(1), which would have left only pre-2026 ABLE contributions. §70116(a)(2) repealed it "as though such paragraph were never enacted".
 
@@ -1957,11 +1958,11 @@ The package does not calculate:
 - Everything about a pension-linked emergency savings account except its §402A(e)(3)(A) contribution ceiling and the pools that ceiling feeds: the §402A(e)(2) eligibility test, which turns on §414(q) highly-compensated-employee status and the plan's own age and service terms; the §402A(e)(4) automatic contribution arrangement; the §402A(e)(5) participant disclosures; the §402A(e)(7) withdrawal right and the §402A(e)(8) treatment on termination; and the §402A(e)(12) anti-abuse procedures. All three §402A(f)(1) hosts are modelled, the governmental §457(b) one as its own account type. §402A(e)(9), which orders excess deferrals distributed under §402(g)(2)(A) out of the emergency account first, is not implemented at all — no excess-deferral ordering is — and its reach is in any case unsettled for a §457(b)-hosted account: it speaks of "any pension-linked emergency savings account of the participant", while a §457(b) deferral is not among the elective deferrals §402(g)(3) enumerates and so can produce no §402(g)(2)(A) excess of its own. No regulation or notice addresses the cross-plan case.
 - Investment returns, retirement sufficiency, or withdrawal planning.
 
-## Payroll-tax effects (1991–2026)
+## Payroll-tax effects (1991–2027)
 
 `calculatePayrollTax` calculates ordinary FICA and SECA from explicit annual facts.
 `payrollParametersForYear(year)` returns a detached published row, or `null` outside
-1991–2026. The standalone calculation returns `indeterminate` with a diagnostic
+1991–2027. The standalone calculation returns `indeterminate` with a diagnostic
 for those missing years. It never projects a wage base.
 
 ```ts

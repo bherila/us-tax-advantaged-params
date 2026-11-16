@@ -46,7 +46,8 @@
     "LINKED, not committed here: evidence/retirement-limits/sources/fr-2023-23317.txt": "Already hashed by retirement-limits; not duplicated. Contribution and benefit base for 2024: $168,600, determined by SSA",
     "LINKED, not committed here: evidence/retirement-limits/sources/fr-2024-24871.txt": "Already hashed by retirement-limits; not duplicated. Contribution and benefit base for 2025: $176,100, determined by SSA",
     "LINKED, not committed here: evidence/retirement-limits/sources/fr-2025-19763.txt": "Already hashed by retirement-limits; not duplicated. Contribution and benefit base for 2026: $184,500, determined by SSA",
-    "fr-2017-27105.txt": "https://www.govinfo.gov/content/pkg/FR-2017-12-15/html/2017-27105.htm"
+    "fr-2017-27105.txt": "https://www.govinfo.gov/content/pkg/FR-2017-12-15/html/2017-27105.htm",
+    "fr-2026-21796.txt": "https://www.govinfo.gov/content/pkg/FR-2026-10-26/html/2026-21796.htm"
   },
   "years": {
     "1991": {
@@ -947,6 +948,31 @@
       "additionalMedicareWithholdingThreshold": 200000,
       "source": "LINKED, not committed here: evidence/retirement-limits/sources/fr-2025-19763.txt",
       "_base_quote": "The OASDI contribution and benefit base is $184,500 for remuneration paid in 2026 and self-employment income earned in tax years beginning in 2026.",
+      "_rates_source": "IRC 3101(a)-(b), 3111(a)-(b), 1401(a)-(b); ordinary statutory rates",
+      "_mechanics_source": "IRC 1402(a)(12), 1402(b)(2), 164(f); Additional Medicare: 3101(b)(2), 3102(f), 1401(b)(2), effective from 2013."
+    },
+    "2027": {
+      "contributionAndBenefitBase": 192300,
+      "hospitalInsuranceWageBase": null,
+      "oasdiRateEmployeePercent": 6.2,
+      "oasdiRateEmployerPercent": 6.2,
+      "hiRateEmployeePercent": 1.45,
+      "hiRateEmployerPercent": 1.45,
+      "secaOasdiRatePercent": 12.4,
+      "secaHiRatePercent": 2.9,
+      "netEarningsOasdiRateBasisPercent": 12.4,
+      "netEarningsHiRateBasisPercent": 2.9,
+      "netEarningsDeductionFraction": 0.5,
+      "selfEmploymentMinimumNetEarnings": 400,
+      "secaOasdiDeductionFraction": 0.5,
+      "secaHiDeductionFraction": 0.5,
+      "additionalMedicareRatePercent": 0.9,
+      "additionalMedicareJointThreshold": 250000,
+      "additionalMedicareOtherThreshold": 200000,
+      "additionalMedicareSeparateThresholdFraction": 0.5,
+      "additionalMedicareWithholdingThreshold": 200000,
+      "source": "fr-2026-21796.txt",
+      "_base_quote": "The OASDI contribution and benefit base is $192,300 for remuneration paid in 2027 and self-employment income earned in tax years beginning in 2027.",
       "_rates_source": "IRC 3101(a)-(b), 3111(a)-(b), 1401(a)-(b); ordinary statutory rates",
       "_mechanics_source": "IRC 1402(a)(12), 1402(b)(2), 164(f); Additional Medicare: 3101(b)(2), 3102(f), 1401(b)(2), effective from 2013."
     }
