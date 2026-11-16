@@ -132,6 +132,32 @@ composer require bherila/us-tax-advantaged-params
 
 The PHP package requires PHP 8.4 or later and loads the native single-file implementation through Composer.
 
+## Upgrading to 0.7.0
+
+0.7.0 adds tax year 2027 to the retirement and payroll tables. No result for 2026 or an earlier
+year changes.
+
+**Additions:**
+
+- The retirement table runs through 2027, from Notice 2026-66. `supportedTaxYears()` returns a
+  maximum of 2027, and a 2027 scenario now calculates instead of throwing
+  `UnsupportedTaxYearError` / `UnsupportedTaxYearException`.
+- The payroll table runs through 2027. The OASDI contribution and benefit base is $192,300, from
+  the Social Security Administration's 2027 determination (91 FR 67380). Every other 2027 payroll
+  figure is the unchanged statutory rate or threshold.
+
+**Check before upgrading:**
+
+- Code that treated 2027 as unsupported now gets a row: `parametersForYear(2027)` and
+  `payrollParametersForYear(2027)` return data, and 2028 is the first unsupported year for both
+  tables.
+- From 2027, `saversCredit25B.retirementPlanAndIraContributionsQualify` is `false`. Pub. L. 119-21
+  §70116(a)(1) ends the Saver's Credit for retirement-plan and IRA contributions after 2026, and
+  footnote 2 of Notice 2026-66 confirms that the Saver's Match under §6433 replaces it for them.
+  ABLE contributions still qualify. The package doesn't model the Saver's Match.
+- The FSA, HRA, ABLE, adoption, commuter and education tables still end at 2026. The HSA table
+  already ran through 2027.
+
 ## Upgrading to 0.6.0
 
 0.6.0 adds provenance and changes no calculation result. Nothing needs to change in existing code.
